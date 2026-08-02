@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Users, Layers, GraduationCap, DollarSign } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, Users, Layers, GraduationCap, DollarSign, CheckSquare } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -18,6 +18,7 @@ import students from '@/routes/students';
 import batches from '@/routes/batches';
 import teachers from '@/routes/teachers';
 import fees from '@/routes/fees';
+import attendance from '@/routes/attendance';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -45,6 +46,11 @@ const mainNavItems: NavItem[] = [
         title: 'Fees',
         href: fees.index(),
         icon: DollarSign,
+    },
+    {
+        title: 'Attendance',
+        href: attendance.index(),
+        icon: CheckSquare,
     },
 ];
 
