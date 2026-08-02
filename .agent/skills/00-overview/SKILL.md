@@ -57,7 +57,7 @@ users (authentication + role)
 ├── student_id: nullable FK → students (links user to student record)
 │
 students (coaching-specific data)
-├── name, email, phone, address, DOB, gender, guardian info, status
+├── name, email, phone, class_name, section, address, DOB, gender, guardian info, status
 │
 batches
 ├── name, subject, schedule, capacity, fees, dates, status

@@ -1,20 +1,29 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { type Student } from '@/types';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
-import students from '@/routes/students';
+import batches from '@/routes/batches';
 
 type PageProps = {
     auth: { user: { role: string } };
-    students: {
-        data: Student[];
+    batches: {
+        data: Array<{
+            id: number;
+            name: string;
+            subject: string | null;
+            capacity: number;
+            fees_amount: number;
+            status: string;
+            enrollments_count: number;
+            start_date: string | null;
+            end_date: string | null;
+        }>;
         current_page: number;
         last_page: number;
         per_page: number;
@@ -26,51 +35,60 @@ type PageProps = {
     };
 };
 
-export default function StudentsIndex({ students: pagination, filters }: PageProps) {
+export default function BatchesIndex({ batches: pagination, filters }: PageProps) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
 
     const handleSearch = () => {
-        router.get(students.index(), { search, status }, { preserveState: true });
+        router.get(batches.index(), { search, status }, { preserveState: true });
     };
 
     const handleStatusChange = (value: string) => {
         setStatus(value === 'all' ? '' : value);
-        router.get(students.index(), { search, status: value === 'all' ? '' : value }, { preserveState: true });
+        router.get(batches.index(), { search, status: value === 'all' ? '' : value }, { preserveState: true });
     };
 
-    const handleDelete = (student: Student) => {
-        if (confirm(`Are you sure you want to delete ${student.name}?`)) {
-            router.delete(students.destroy(student.id));
+    const handleDelete = (batch: { id: number; name: string }) => {
+        if (confirm(`Are you sure you want to delete ${batch.name}?`)) {
+            router.delete(batches.destroy(batch.id));
         }
+    };
+
+    const getStatusBadge = (status: string) => {
+        const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
+            active: 'default',
+            inactive: 'secondary',
+            archived: 'destructive',
+        };
+        return variants[status] || 'secondary';
     };
 
     return (
         <>
-            <Head title="Students" />
+            <Head title="Batches" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title="Students" description="Manage all students" />
+                    <Heading title="Batches" description="Manage all batches" />
                     {isAdmin && (
-                        <Link href={students.create()}>
+                        <Link href={batches.create()}>
                             <Button>
                                 <Plus className="mr-2 size-4" />
-                                Add Student
+                                Add Batch
                             </Button>
                         </Link>
                     )}
                 </div>
 
                 <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-4">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center gap-4 mb-4">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search students..."
+                                    placeholder="Search batches..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -85,22 +103,22 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                     <SelectItem value="all">All Status</SelectItem>
                                     <SelectItem value="active">Active</SelectItem>
                                     <SelectItem value="inactive">Inactive</SelectItem>
+                                    <SelectItem value="archived">Archived</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Button variant="secondary" onClick={handleSearch}>
                                 Search
                             </Button>
                         </div>
-                    </CardHeader>
-                    <CardContent>
+
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Name</TableHead>
-                                    <TableHead>Class</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Phone</TableHead>
-                                    <TableHead>Guardian</TableHead>
+                                    <TableHead>Subject</TableHead>
+                                    <TableHead>Capacity</TableHead>
+                                    <TableHead>Enrolled</TableHead>
+                                    <TableHead>Fees</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
@@ -109,41 +127,37 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={7} className="text-center">
-                                            No students found.
+                                            No batches found.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    pagination.data.map((student) => (
-                                        <TableRow key={student.id}>
-                                            <TableCell className="font-medium">{student.name}</TableCell>
+                                    pagination.data.map((batch) => (
+                                        <TableRow key={batch.id}>
+                                            <TableCell className="font-medium">{batch.name}</TableCell>
+                                            <TableCell>{batch.subject || '-'}</TableCell>
+                                            <TableCell>{batch.capacity}</TableCell>
+                                            <TableCell>{batch.enrollments_count}</TableCell>
+                                            <TableCell>${batch.fees_amount}</TableCell>
                                             <TableCell>
-                                                {student.class_name
-                                                    ? `${student.class_name}${student.section ? ` - ${student.section}` : ''}`
-                                                    : '-'}
-                                            </TableCell>
-                                            <TableCell>{student.email || '-'}</TableCell>
-                                            <TableCell>{student.phone || '-'}</TableCell>
-                                            <TableCell>{student.guardian_name || '-'}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
-                                                    {student.status}
+                                                <Badge variant={getStatusBadge(batch.status)}>
+                                                    {batch.status}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
-                                                    <Link href={students.show(student.id)}>
+                                                    <Link href={batches.show(batch.id)}>
                                                         <Button variant="ghost" size="sm">
                                                             <Eye className="size-4" />
                                                         </Button>
                                                     </Link>
                                                     {isAdmin && (
                                                         <>
-                                                            <Link href={students.edit(student.id)}>
+                                                            <Link href={batches.edit(batch.id)}>
                                                                 <Button variant="ghost" size="sm">
                                                                     <Pencil className="size-4" />
                                                                 </Button>
                                                             </Link>
-                                                            <Button variant="ghost" size="sm" onClick={() => handleDelete(student)}>
+                                                            <Button variant="ghost" size="sm" onClick={() => handleDelete(batch)}>
                                                                 <Trash2 className="size-4" />
                                                             </Button>
                                                         </>
@@ -159,7 +173,7 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                         {pagination.last_page > 1 && (
                             <div className="mt-4 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of {pagination.total} students
+                                    Showing {pagination.data.length} of {pagination.total} batches
                                 </p>
                                 <div className="flex gap-2">
                                     {pagination.current_page > 1 && (
@@ -168,7 +182,7 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                             size="sm"
                                             onClick={() =>
                                                 router.get(
-                                                    students.index(),
+                                                    batches.index(),
                                                     { page: pagination.current_page - 1, search, status },
                                                     { preserveState: true }
                                                 )
@@ -183,7 +197,7 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                             size="sm"
                                             onClick={() =>
                                                 router.get(
-                                                    students.index(),
+                                                    batches.index(),
                                                     { page: pagination.current_page + 1, search, status },
                                                     { preserveState: true }
                                                 )
@@ -202,11 +216,11 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
     );
 }
 
-StudentsIndex.layout = {
+BatchesIndex.layout = {
     breadcrumbs: [
         {
-            title: 'Students',
-            href: students.index(),
+            title: 'Batches',
+            href: batches.index(),
         },
     ],
 };

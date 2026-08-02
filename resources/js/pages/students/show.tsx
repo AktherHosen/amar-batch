@@ -76,6 +76,14 @@ export default function StudentsShow({ student }: StudentsShowProps) {
                                 <p className="font-medium">{student.phone || '-'}</p>
                             </div>
                             <div>
+                                <p className="text-sm text-muted-foreground">Class / Grade</p>
+                                <p className="font-medium">{student.class_name || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Section</p>
+                                <p className="font-medium">{student.section || '-'}</p>
+                            </div>
+                            <div>
                                 <p className="text-sm text-muted-foreground">Date of Birth</p>
                                 <p className="font-medium">
                                     {student.date_of_birth

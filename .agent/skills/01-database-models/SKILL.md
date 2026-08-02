@@ -61,21 +61,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('students', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->nullable()->unique();
-            $table->string('phone')->nullable();
-            $table->text('address')->nullable();
-            $table->date('date_of_birth')->nullable();
-            $table->enum('gender', ['male', 'female', 'other'])->nullable();
-            $table->string('guardian_name')->nullable();
-            $table->string('guardian_phone')->nullable();
-            $table->string('photo')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-            $table->softDeletes();
-        });
+Schema::create('students', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->string('email')->nullable()->unique();
+    $table->string('phone')->nullable();
+    $table->string('class_name')->nullable(); // e.g. "Class 10", "Class 12", "B.Tech 2nd Year"
+    $table->string('section')->nullable();   // e.g. "A", "B"
+    $table->text('address')->nullable();
+    $table->date('date_of_birth')->nullable();
+    $table->enum('gender', ['male', 'female', 'other'])->nullable();
+    $table->string('guardian_name')->nullable();
+    $table->string('guardian_phone')->nullable();
+    $table->string('photo')->nullable();
+    $table->enum('status', ['active', 'inactive'])->default('active');
+    $table->timestamps();
+    $table->softDeletes();
+});
     }
 
     public function down(): void
@@ -104,7 +106,7 @@ class Student extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'email', 'phone', 'address', 'date_of_birth',
+        'name', 'email', 'phone', 'class_name', 'section', 'address', 'date_of_birth',
         'gender', 'guardian_name', 'guardian_phone', 'photo', 'status',
     ];
 

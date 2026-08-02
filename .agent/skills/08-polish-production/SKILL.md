@@ -15,6 +15,41 @@ Add comprehensive seeders, tests, and polish with RBAC considerations.
 
 ## Step 9.1: Seeders
 
+### StudentFactory
+
+Create `database/factories/StudentFactory.php`:
+
+```php
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Student;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class StudentFactory extends Factory
+{
+    protected $model = Student::class;
+
+    public function definition(): array
+    {
+        return [
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->phoneNumber(),
+            'class_name' => fake()->randomElement(['Class 9', 'Class 10', 'Class 11', 'Class 12', 'B.Tech 1st Year', 'B.Tech 2nd Year']),
+            'section' => fake()->randomElement(['A', 'B', 'C']),
+            'address' => fake()->address(),
+            'date_of_birth' => fake()->dateTimeBetween('-20 years', '-10 years'),
+            'gender' => fake()->randomElement(['male', 'female', 'other']),
+            'guardian_name' => fake()->name(),
+            'guardian_phone' => fake()->phoneNumber(),
+            'status' => fake()->randomElement(['active', 'active', 'active', 'inactive']),
+        ];
+    }
+}
+```
+
 ### UserFactory Update
 
 Update `database/factories/UserFactory.php` to support roles:

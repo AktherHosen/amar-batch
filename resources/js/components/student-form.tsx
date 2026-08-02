@@ -18,6 +18,8 @@ export default function StudentForm({ student, onSubmit, processing, errors }: S
         name: student?.name || '',
         email: student?.email || '',
         phone: student?.phone || '',
+        class_name: student?.class_name || '',
+        section: student?.section || '',
         address: student?.address || '',
         date_of_birth: student?.date_of_birth || '',
         gender: student?.gender || '',
@@ -66,6 +68,28 @@ export default function StudentForm({ student, onSubmit, processing, errors }: S
                         placeholder="Enter phone number"
                     />
                     <InputError message={errors.phone} />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="class_name">Class / Grade</Label>
+                    <Input
+                        id="class_name"
+                        value={data.class_name}
+                        onChange={(e) => setData('class_name', e.target.value)}
+                        placeholder="e.g. Class 10, B.Tech 2nd Year"
+                    />
+                    <InputError message={errors.class_name} />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="section">Section</Label>
+                    <Input
+                        id="section"
+                        value={data.section}
+                        onChange={(e) => setData('section', e.target.value)}
+                        placeholder="e.g. A, B"
+                    />
+                    <InputError message={errors.section} />
                 </div>
 
                 <div className="space-y-2">

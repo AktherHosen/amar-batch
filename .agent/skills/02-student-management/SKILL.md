@@ -155,6 +155,8 @@ class StoreStudentRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255', 'unique:students,email'],
             'phone' => ['nullable', 'string', 'max:20'],
+            'class_name' => ['nullable', 'string', 'max:100'],
+            'section' => ['nullable', 'string', 'max:10'],
             'address' => ['nullable', 'string'],
             'date_of_birth' => ['nullable', 'date'],
             'gender' => ['nullable', 'in:male,female,other'],
@@ -192,7 +194,9 @@ export default function StudentsIndex({ students, filters }) {
     const isAdmin = auth.user.role === 'admin';
 
     return (
-        // ... same table structure
+        // ... same table structure with columns:
+        // Name, Email, Phone, Class, Status, Enrollments, Actions
+        // Class column shows: {student.class_name} {student.section}
         // Conditionally render admin-only buttons
         {isAdmin && (
             <Link href={students.create()}>
@@ -211,7 +215,112 @@ export default function StudentsIndex({ students, filters }) {
 
 ## Step 2.4: Student Form Component
 
-Create `resources/js/components/student-form.tsx` — same as before, only used in admin create/edit pages.
+Create `resources/js/components/student-form.tsx`:
+
+```tsx
+import { Form } from '@inertiajs/react';
+import StudentController from '@/actions/App/Http/Controllers/StudentController';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Student } from '@/types';
+
+type StudentFormProps = { student?: Student; mode: 'create' | 'edit' };
+
+export default function StudentForm({ student, mode }: StudentFormProps) {
+    const formAction = mode === 'edit'
+        ? StudentController.update.form(student!.id)
+        : StudentController.store.form();
+
+    return (
+        <Form {...formAction} options={{ preserveScroll: true }} className="space-y-6">
+            {({ processing, errors }) => (
+                <>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Name *</Label>
+                            <Input id="name" name="name" defaultValue={student?.name} required placeholder="Full name" />
+                            <InputError message={errors.name} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" name="email" type="email" defaultValue={student?.email} placeholder="Email address" />
+                            <InputError message={errors.email} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="phone">Phone</Label>
+                            <Input id="phone" name="phone" defaultValue={student?.phone} placeholder="Phone number" />
+                            <InputError message={errors.phone} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="class_name">Class / Grade</Label>
+                            <Input id="class_name" name="class_name" defaultValue={student?.class_name} placeholder="e.g. Class 10, B.Tech 2nd Year" />
+                            <InputError message={errors.class_name} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="section">Section</Label>
+                            <Input id="section" name="section" defaultValue={student?.section} placeholder="e.g. A, B" />
+                            <InputError message={errors.section} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="date_of_birth">Date of Birth</Label>
+                            <Input id="date_of_birth" name="date_of_birth" type="date" defaultValue={student?.date_of_birth} />
+                            <InputError message={errors.date_of_birth} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Gender</Label>
+                            <Select name="gender" defaultValue={student?.gender}>
+                                <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="male">Male</SelectItem>
+                                    <SelectItem value="female">Female</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.gender} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Status</Label>
+                            <Select name="status" defaultValue={student?.status || 'active'}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.status} />
+                        </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label htmlFor="guardian_name">Guardian Name</Label>
+                            <Input id="guardian_name" name="guardian_name" defaultValue={student?.guardian_name} placeholder="Guardian name" />
+                            <InputError message={errors.guardian_name} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="guardian_phone">Guardian Phone</Label>
+                            <Input id="guardian_phone" name="guardian_phone" defaultValue={student?.guardian_phone} placeholder="Guardian phone" />
+                            <InputError message={errors.guardian_phone} />
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input id="address" name="address" defaultValue={student?.address} placeholder="Full address" />
+                        <InputError message={errors.address} />
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Button disabled={processing} data-test="save-student-button">
+                            {mode === 'create' ? 'Create Student' : 'Update Student'}
+                        </Button>
+                    </div>
+                </>
+            )}
+        </Form>
+    );
+}
+```
 
 ## Step 2.5: Create/Edit Pages
 
@@ -235,6 +344,30 @@ Route::resource('students', StudentController::class);
 ```
 
 Register in `routes/web.php`.
+
+## Step 2.9: Add Student Type to TypeScript
+
+Add to `resources/js/types/index.ts`:
+
+```typescript
+export type Student = {
+    id: number;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    class_name: string | null;
+    section: string | null;
+    address: string | null;
+    date_of_birth: string | null;
+    gender: 'male' | 'female' | 'other' | null;
+    guardian_name: string | null;
+    guardian_phone: string | null;
+    photo: string | null;
+    status: 'active' | 'inactive';
+    created_at: string;
+    updated_at: string;
+};
+```
 
 ## After Completion
 
