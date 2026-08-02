@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBatchRequest;
 use App\Http\Requests\UpdateBatchRequest;
 use App\Models\Batch;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,10 +70,12 @@ class BatchController extends Controller
         $batch->load(['enrollments.student', 'teachers']);
 
         $teachers = User::where('role', 'teacher')->get();
+        $students = Student::orderBy('name')->get();
 
         return Inertia::render('batches/show', [
             'batch' => $batch,
             'teachers' => $teachers,
+            'students' => $students,
         ]);
     }
 

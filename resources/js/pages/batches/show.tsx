@@ -49,12 +49,16 @@ type Batch = {
 type BatchesShowProps = {
     batch: Batch;
     teachers: Teacher[];
+    students: Student[];
 };
 
-export default function BatchesShow({ batch, teachers }: BatchesShowProps) {
+export default function BatchesShow({ batch, teachers, students }: BatchesShowProps) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [selectedTeacher, setSelectedTeacher] = useState('');
+    const [selectedStudent, setSelectedStudent] = useState('');
+    const [teacherSearch, setTeacherSearch] = useState('');
+    const [studentSearch, setStudentSearch] = useState('');
 
     const handleDelete = () => {
         if (confirm(`Are you sure you want to delete ${batch.name}?`)) {
@@ -80,16 +84,37 @@ export default function BatchesShow({ batch, teachers }: BatchesShowProps) {
         }
     };
 
+    const handleEnrollStudent = () => {
+        if (!selectedStudent) return;
+
+        router.post(`/batches/${batch.id}/enroll`, { student_id: parseInt(selectedStudent) }, {
+            preserveScroll: true,
+            onSuccess: () => setSelectedStudent(''),
+        });
+    };
+
+    const handleUpdateEnrollmentStatus = (enrollmentId: number, status: string) => {
+        router.put(`/enrollments/${enrollmentId}`, { status }, {
+            preserveScroll: true,
+        });
+    };
+
+    const handleUnenroll = (enrollmentId: number) => {
+        if (confirm('Are you sure you want to unenroll this student?')) {
+            router.delete(`/enrollments/${enrollmentId}`, {
+                preserveScroll: true,
+            });
+        }
+    };
+
     const getStatusBadge = (status: string) => {
         const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
             active: 'default',
-            inactive: 'secondary',
-            archived: 'destructive',
+            completed: 'secondary',
+            dropped: 'destructive',
         };
         return variants[status] || 'secondary';
     };
-
-    const [teacherSearch, setTeacherSearch] = useState('');
 
     const availableTeachers = teachers.filter(
         (t) =>
@@ -260,12 +285,66 @@ export default function BatchesShow({ batch, teachers }: BatchesShowProps) {
                     </Card>
                 )}
 
-                {batch.enrollments.length > 0 && (
+                {(isAdmin || auth.user.role === 'teacher') && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Enrolled Students</CardTitle>
+                            <CardTitle>Enroll Students</CardTitle>
                         </CardHeader>
                         <CardContent>
+                            {(() => {
+                                const enrolledIds = batch.enrollments.map((e) => e.student.id);
+                                const availableStudents = students.filter(
+                                    (s) =>
+                                        !enrolledIds.includes(s.id) &&
+                                        (s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                                            s.email?.toLowerCase().includes(studentSearch.toLowerCase()))
+                                );
+
+                                return availableStudents.length > 0 || studentSearch ? (
+                                    <div className="space-y-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Search students by name or email..."
+                                            value={studentSearch}
+                                            onChange={(e) => setStudentSearch(e.target.value)}
+                                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        />
+                                        {availableStudents.length > 0 ? (
+                                            <div className="flex gap-2">
+                                                <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                                                    <SelectTrigger className="flex-1">
+                                                        <SelectValue placeholder="Select a student" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableStudents.map((student) => (
+                                                            <SelectItem key={student.id} value={student.id.toString()}>
+                                                                {student.name} ({student.email || 'No email'})
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <Button onClick={handleEnrollStudent} disabled={!selectedStudent}>
+                                                    Enroll
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">No students found.</p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">All students are enrolled in this batch.</p>
+                                );
+                            })()}
+                        </CardContent>
+                    </Card>
+                )}
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Enrolled Students ({batch.enrollments.length})</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {batch.enrollments.length > 0 ? (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -273,34 +352,62 @@ export default function BatchesShow({ batch, teachers }: BatchesShowProps) {
                                         <TableHead>Email</TableHead>
                                         <TableHead>Enrolled At</TableHead>
                                         <TableHead>Status</TableHead>
+                                        {(isAdmin || auth.user.role === 'teacher') && (
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        )}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {batch.enrollments.map((enrollment) => (
                                         <TableRow key={enrollment.id}>
                                             <TableCell className="font-medium">{enrollment.student.name}</TableCell>
-                                            <TableCell>{enrollment.student.email}</TableCell>
+                                            <TableCell>{enrollment.student.email || '-'}</TableCell>
                                             <TableCell>{new Date(enrollment.enrolled_at).toLocaleDateString()}</TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant={
-                                                        enrollment.status === 'active'
-                                                            ? 'default'
-                                                            : enrollment.status === 'completed'
-                                                            ? 'secondary'
-                                                            : 'destructive'
-                                                    }
-                                                >
+                                                <Badge variant={getStatusBadge(enrollment.status)}>
                                                     {enrollment.status}
                                                 </Badge>
                                             </TableCell>
+                                            {(isAdmin || auth.user.role === 'teacher') && (
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        {enrollment.status === 'active' && (
+                                                            <>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'completed')}
+                                                                >
+                                                                    Complete
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'dropped')}
+                                                                >
+                                                                    Drop
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleUnenroll(enrollment.id)}
+                                                        >
+                                                            <UserMinus className="size-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            )}
                                         </TableRow>
                                     ))}
                                 </TableBody>
                             </Table>
-                        </CardContent>
-                    </Card>
-                )}
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No students enrolled yet.</p>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </>
     );
