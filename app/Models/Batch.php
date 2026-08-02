@@ -30,7 +30,7 @@ class Batch extends Model
 
     public function teachers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'teacher_batch')
+        return $this->belongsToMany(User::class, 'teacher_batch', 'batch_id', 'teacher_id')
             ->withPivot('assigned_at')
             ->withTimestamps();
     }

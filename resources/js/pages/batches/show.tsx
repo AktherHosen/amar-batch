@@ -89,8 +89,13 @@ export default function BatchesShow({ batch, teachers }: BatchesShowProps) {
         return variants[status] || 'secondary';
     };
 
+    const [teacherSearch, setTeacherSearch] = useState('');
+
     const availableTeachers = teachers.filter(
-        (t) => !batch.teachers.some((bt) => bt.id === t.id)
+        (t) =>
+            !batch.teachers.some((bt) => bt.id === t.id) &&
+            (t.name.toLowerCase().includes(teacherSearch.toLowerCase()) ||
+                t.email.toLowerCase().includes(teacherSearch.toLowerCase()))
     );
 
     return (
@@ -219,25 +224,38 @@ export default function BatchesShow({ batch, teachers }: BatchesShowProps) {
                                 <p className="text-sm text-muted-foreground">No teachers assigned.</p>
                             )}
 
-                            {availableTeachers.length > 0 && (
-                                <div className="mt-4 flex gap-2">
-                                    <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
-                                        <SelectTrigger className="flex-1">
-                                            <SelectValue placeholder="Select a teacher" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {availableTeachers.map((teacher) => (
-                                                <SelectItem key={teacher.id} value={teacher.id.toString()}>
-                                                    {teacher.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Button onClick={handleAssignTeacher} disabled={!selectedTeacher}>
-                                        Assign
-                                    </Button>
+                            {availableTeachers.length > 0 || teacherSearch ? (
+                                <div className="mt-4 space-y-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Search teachers by name or email..."
+                                        value={teacherSearch}
+                                        onChange={(e) => setTeacherSearch(e.target.value)}
+                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                    />
+                                    {availableTeachers.length > 0 ? (
+                                        <div className="flex gap-2">
+                                            <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+                                                <SelectTrigger className="flex-1">
+                                                    <SelectValue placeholder="Select a teacher" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {availableTeachers.map((teacher) => (
+                                                        <SelectItem key={teacher.id} value={teacher.id.toString()}>
+                                                            {teacher.name} ({teacher.email})
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <Button onClick={handleAssignTeacher} disabled={!selectedTeacher}>
+                                                Assign
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">No teachers found.</p>
+                                    )}
                                 </div>
-                            )}
+                            ) : null}
                         </CardContent>
                     </Card>
                 )}
