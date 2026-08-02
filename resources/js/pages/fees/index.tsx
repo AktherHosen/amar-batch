@@ -138,8 +138,8 @@ export default function FeesIndex({ feeStatuses: pagination, filters }: PageProp
                                         <TableRow key={fee.id}>
                                             <TableCell className="font-medium">{fee.student.name}</TableCell>
                                             <TableCell>{fee.batch.name}</TableCell>
-                                            <TableCell>${fee.amount_paid.toFixed(2)}</TableCell>
-                                            <TableCell>${fee.amount_due.toFixed(2)}</TableCell>
+                                            <TableCell>${Number(fee.amount_paid).toFixed(2)}</TableCell>
+                                            <TableCell>${Number(fee.amount_due).toFixed(2)}</TableCell>
                                             <TableCell>{fee.due_date ? new Date(fee.due_date).toLocaleDateString() : '-'}</TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusBadge(fee.status)}>{fee.status}</Badge>

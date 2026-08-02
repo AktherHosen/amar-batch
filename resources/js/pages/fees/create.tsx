@@ -14,12 +14,18 @@ type Batch = {
     name: string;
 };
 
+type Enrollment = {
+    student: Student;
+    batch: Batch;
+};
+
 type PageProps = {
     students: Student[];
     batches: Batch[];
+    enrollments: Enrollment[];
 };
 
-export default function FeesCreate({ students, batches }: PageProps) {
+export default function FeesCreate({ students, batches, enrollments }: PageProps) {
     return (
         <>
             <Head title="Add Fee Record" />
@@ -32,7 +38,7 @@ export default function FeesCreate({ students, batches }: PageProps) {
                         <CardTitle>Fee Details</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <FeeForm students={students} batches={batches} />
+                        <FeeForm students={students} batches={batches} enrollments={enrollments} />
                     </CardContent>
                 </Card>
             </div>

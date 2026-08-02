@@ -4,6 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeeForm from '@/components/fee-form';
 import fees from '@/routes/fees';
 
+type Student = {
+    id: number;
+    name: string;
+};
+
+type Batch = {
+    id: number;
+    name: string;
+};
+
+type Enrollment = {
+    student: Student;
+    batch: Batch;
+};
+
 type FeeStatus = {
     id: number;
     student_id: number;
@@ -16,23 +31,14 @@ type FeeStatus = {
     notes: string | null;
 };
 
-type Student = {
-    id: number;
-    name: string;
-};
-
-type Batch = {
-    id: number;
-    name: string;
-};
-
 type PageProps = {
     fee: FeeStatus;
     students: Student[];
     batches: Batch[];
+    enrollments: Enrollment[];
 };
 
-export default function FeesEdit({ fee, students, batches }: PageProps) {
+export default function FeesEdit({ fee, students, batches, enrollments }: PageProps) {
     return (
         <>
             <Head title="Edit Fee Record" />
@@ -45,7 +51,7 @@ export default function FeesEdit({ fee, students, batches }: PageProps) {
                         <CardTitle>Fee Details</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <FeeForm fee={fee} students={students} batches={batches} isEdit />
+                        <FeeForm fee={fee} students={students} batches={batches} enrollments={enrollments} isEdit />
                     </CardContent>
                 </Card>
             </div>

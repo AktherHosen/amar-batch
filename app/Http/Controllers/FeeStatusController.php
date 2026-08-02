@@ -42,16 +42,27 @@ class FeeStatusController extends Controller
     {
         $students = Student::orderBy('name')->get();
         $batches = Batch::orderBy('name')->get();
+        $enrollments = \App\Models\Enrollment::where('status', 'active')->with('student', 'batch')->get();
 
         return Inertia::render('fees/create', [
             'students' => $students,
             'batches' => $batches,
+            'enrollments' => $enrollments,
         ]);
     }
 
     public function store(StoreFeeStatusRequest $request)
     {
-        FeeStatus::create($request->validated());
+        FeeStatus::create([
+            'student_id' => $request->student_id,
+            'batch_id' => $request->batch_id,
+            'amount_paid' => $request->amount_paid,
+            'amount_due' => $request->amount_due ?? 0,
+            'due_date' => $request->due_date ?: null,
+            'status' => $request->status,
+            'payment_date' => $request->payment_date ?: null,
+            'notes' => $request->notes ?: null,
+        ]);
 
         return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee status created successfully.']);
     }
@@ -61,17 +72,28 @@ class FeeStatusController extends Controller
         $fee->load(['student', 'batch']);
         $students = Student::orderBy('name')->get();
         $batches = Batch::orderBy('name')->get();
+        $enrollments = \App\Models\Enrollment::where('status', 'active')->with('student', 'batch')->get();
 
         return Inertia::render('fees/edit', [
             'fee' => $fee,
             'students' => $students,
             'batches' => $batches,
+            'enrollments' => $enrollments,
         ]);
     }
 
     public function update(UpdateFeeStatusRequest $request, FeeStatus $fee)
     {
-        $fee->update($request->validated());
+        $fee->update([
+            'student_id' => $request->student_id,
+            'batch_id' => $request->batch_id,
+            'amount_paid' => $request->amount_paid,
+            'amount_due' => $request->amount_due ?? 0,
+            'due_date' => $request->due_date ?: null,
+            'status' => $request->status,
+            'payment_date' => $request->payment_date ?: null,
+            'notes' => $request->notes ?: null,
+        ]);
 
         return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee status updated successfully.']);
     }

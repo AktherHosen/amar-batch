@@ -17,7 +17,7 @@ class StoreFeeStatusRequest extends FormRequest
             'student_id' => 'required|exists:students,id',
             'batch_id' => 'required|exists:batches,id',
             'amount_paid' => 'required|numeric|min:0',
-            'amount_due' => 'required|numeric|min:0',
+            'amount_due' => 'nullable|numeric|min:0',
             'due_date' => 'nullable|date',
             'status' => 'required|in:paid,partial,unpaid',
             'payment_date' => 'nullable|date',
