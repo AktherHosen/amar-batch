@@ -14,6 +14,16 @@ use Inertia\Response;
 
 class FeeStatusController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!$request->user()->isAdmin()) {
+                abort(403);
+            }
+            return $next($request);
+        });
+    }
+
     public function index(Request $request): Response
     {
         $query = FeeStatus::with(['student', 'batch']);

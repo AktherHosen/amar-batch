@@ -20,7 +20,8 @@ class StudentController extends Controller
 
         if ($request->user()->isTeacher()) {
             $studentIds = $request->user()->assignedBatches()
-                ->whereHas('enrollments', fn ($q) => $q->where('status', 'active'))
+                ->join('enrollments', 'batches.id', '=', 'enrollments.batch_id')
+                ->where('enrollments.status', 'active')
                 ->pluck('enrollments.student_id')
                 ->unique();
             $query->whereIn('students.id', $studentIds);
