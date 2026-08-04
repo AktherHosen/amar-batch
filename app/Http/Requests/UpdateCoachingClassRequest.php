@@ -14,7 +14,7 @@ class UpdateCoachingClassRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255', 'unique:coaching_classes,name,' . $this->route('coachingClass')->id],
+            'name' => ['required', 'string', 'max:255', 'unique:coaching_classes,name,' . $this->route('coaching_class')->id],
             'default_fee' => ['required', 'numeric', 'min:0'],
         ];
     }
