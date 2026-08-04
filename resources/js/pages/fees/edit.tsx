@@ -23,11 +23,9 @@ type FeeStatus = {
     id: number;
     student_id: number;
     batch_id: number;
+    month: number;
+    year: number;
     amount_paid: number;
-    amount_due: number;
-    due_date: string | null;
-    status: 'paid' | 'partial' | 'unpaid';
-    payment_date: string | null;
     notes: string | null;
 };
 
@@ -44,7 +42,7 @@ export default function FeesEdit({ fee, students, batches, enrollments }: PagePr
             <Head title="Edit Fee Record" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title="Edit Fee Record" description="Update fee status details" />
+                <Heading title="Edit Fee Record" description="Update fee payment details" />
 
                 <Card>
                     <CardHeader>
@@ -63,7 +61,7 @@ FeesEdit.layout = {
     breadcrumbs: [
         {
             title: 'Fees',
-            href: fees.index(),
+            href: fees.index.url(),
         },
         {
             title: 'Edit',

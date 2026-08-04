@@ -16,10 +16,9 @@ class FeeStatusFactory extends Factory
         return [
             'student_id' => Student::factory(),
             'batch_id' => Batch::factory(),
+            'month' => fake()->numberBetween(1, 12),
+            'year' => fake()->numberBetween(2025, 2027),
             'amount_paid' => fake()->randomFloat(2, 0, 1000),
-            'amount_due' => fake()->randomFloat(2, 0, 500),
-            'status' => fake()->randomElement(['paid', 'partial', 'unpaid']),
-            'due_date' => fake()->dateTimeBetween('now', '+1 year'),
         ];
     }
 }

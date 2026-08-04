@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateStudentRequest extends FormRequest
 {
@@ -16,9 +15,8 @@ class UpdateStudentRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('students', 'email')->ignore($this->route('student'))],
             'phone' => ['nullable', 'string', 'max:20'],
-            'class_name' => ['nullable', 'string', 'max:100'],
+            'coaching_class_id' => ['nullable', 'exists:coaching_classes,id'],
             'section' => ['nullable', 'string', 'max:10'],
             'address' => ['nullable', 'string'],
             'date_of_birth' => ['nullable', 'date'],
@@ -26,6 +24,7 @@ class UpdateStudentRequest extends FormRequest
             'guardian_name' => ['nullable', 'string', 'max:255'],
             'guardian_phone' => ['nullable', 'string', 'max:20'],
             'status' => ['sometimes', 'in:active,inactive'],
+            'joined_at' => ['nullable', 'date'],
         ];
     }
 }

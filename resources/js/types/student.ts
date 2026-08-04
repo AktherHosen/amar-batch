@@ -1,9 +1,9 @@
 export type Student = {
     id: number;
     name: string;
-    email: string | null;
     phone: string | null;
-    class_name: string | null;
+    coaching_class_id: number | null;
+    coaching_class: { id: number; name: string; default_fee: number } | null;
     section: string | null;
     address: string | null;
     date_of_birth: string | null;
@@ -12,6 +12,21 @@ export type Student = {
     guardian_phone: string | null;
     photo: string | null;
     status: 'active' | 'inactive';
+    joined_at: string | null;
     created_at: string;
     updated_at: string;
+    enrollments?: Array<{
+        id: number;
+        batch: { id: number; name: string; subject: string | null };
+        enrolled_at: string;
+        status: string;
+    }>;
+    feeStatuses?: Array<{
+        id: number;
+        batch: { id: number; name: string };
+        month: number;
+        year: number;
+        amount_paid: number;
+        notes: string | null;
+    }>;
 };

@@ -6,19 +6,25 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/input-error';
 
+type CoachingClass = {
+    id: number;
+    name: string;
+    default_fee: number;
+};
+
 type StudentFormProps = {
     student?: Student;
+    coachingClasses: CoachingClass[];
     onSubmit: (data: any) => void;
     processing: boolean;
     errors: Record<string, string>;
 };
 
-export default function StudentForm({ student, onSubmit, processing, errors }: StudentFormProps) {
+export default function StudentForm({ student, coachingClasses, onSubmit, processing, errors }: StudentFormProps) {
     const { data, setData } = useForm({
         name: student?.name || '',
-        email: student?.email || '',
         phone: student?.phone || '',
-        class_name: student?.class_name || '',
+        coaching_class_id: student?.coaching_class_id ? String(student.coaching_class_id) : '',
         section: student?.section || '',
         address: student?.address || '',
         date_of_birth: student?.date_of_birth || '',
@@ -26,6 +32,7 @@ export default function StudentForm({ student, onSubmit, processing, errors }: S
         guardian_name: student?.guardian_name || '',
         guardian_phone: student?.guardian_phone || '',
         status: student?.status || 'active',
+        joined_at: student?.joined_at || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -48,18 +55,6 @@ export default function StudentForm({ student, onSubmit, processing, errors }: S
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
-                        placeholder="Enter email address"
-                    />
-                    <InputError message={errors.email} />
-                </div>
-
-                <div className="space-y-2">
                     <Label htmlFor="phone">Phone</Label>
                     <Input
                         id="phone"
@@ -71,14 +66,23 @@ export default function StudentForm({ student, onSubmit, processing, errors }: S
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="class_name">Class / Grade</Label>
-                    <Input
-                        id="class_name"
-                        value={data.class_name}
-                        onChange={(e) => setData('class_name', e.target.value)}
-                        placeholder="e.g. Class 10, B.Tech 2nd Year"
-                    />
-                    <InputError message={errors.class_name} />
+                    <Label htmlFor="coaching_class_id">Class</Label>
+                    <Select
+                        value={data.coaching_class_id}
+                        onValueChange={(value) => setData('coaching_class_id', value)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select class" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {coachingClasses.map((cls) => (
+                                <SelectItem key={cls.id} value={String(cls.id)}>
+                                    {cls.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <InputError message={errors.coaching_class_id} />
                 </div>
 
                 <div className="space-y-2">
@@ -90,6 +94,17 @@ export default function StudentForm({ student, onSubmit, processing, errors }: S
                         placeholder="e.g. A, B"
                     />
                     <InputError message={errors.section} />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="joined_at">Joined At</Label>
+                    <Input
+                        id="joined_at"
+                        type="date"
+                        value={data.joined_at}
+                        onChange={(e) => setData('joined_at', e.target.value)}
+                    />
+                    <InputError message={errors.joined_at} />
                 </div>
 
                 <div className="space-y-2">
@@ -120,7 +135,7 @@ export default function StudentForm({ student, onSubmit, processing, errors }: S
 
                 <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
-                    <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                    <Select value={data.status} onValueChange={(value) => setData('status', value as 'active' | 'inactive')}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select status" />
                         </SelectTrigger>

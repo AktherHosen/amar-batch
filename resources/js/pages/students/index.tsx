@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
 import students from '@/routes/students';
@@ -65,8 +65,8 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                 </div>
 
                 <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-4">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center gap-4 mb-4">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
@@ -91,16 +91,15 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                 Search
                             </Button>
                         </div>
-                    </CardHeader>
-                    <CardContent>
+
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Class</TableHead>
-                                    <TableHead>Email</TableHead>
                                     <TableHead>Phone</TableHead>
                                     <TableHead>Guardian</TableHead>
+                                    <TableHead>Joined At</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
@@ -117,13 +116,17 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                         <TableRow key={student.id}>
                                             <TableCell className="font-medium">{student.name}</TableCell>
                                             <TableCell>
-                                                {student.class_name
-                                                    ? `${student.class_name}${student.section ? ` - ${student.section}` : ''}`
-                                                    : '-'}
+                                                {student.coaching_class
+                                                    ? `${student.coaching_class.name}${student.section ? ` - ${student.section}` : ''}`
+                                                    : student.section || '-'}
                                             </TableCell>
-                                            <TableCell>{student.email || '-'}</TableCell>
                                             <TableCell>{student.phone || '-'}</TableCell>
                                             <TableCell>{student.guardian_name || '-'}</TableCell>
+                                            <TableCell>
+                                                {student.joined_at
+                                                    ? new Date(student.joined_at).toLocaleDateString()
+                                                    : '-'}
+                                            </TableCell>
                                             <TableCell>
                                                 <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
                                                     {student.status}

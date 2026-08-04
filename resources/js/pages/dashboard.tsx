@@ -3,7 +3,7 @@ import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, GraduationCap, Layers, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Users, GraduationCap, Layers, DollarSign, CheckCircle } from 'lucide-react';
 import { dashboard } from '@/routes';
 import students from '@/routes/students';
 import batches from '@/routes/batches';
@@ -18,12 +18,8 @@ type Stats = {
 };
 
 type FeeStats = {
-    total_paid: number;
-    total_partial: number;
-    total_unpaid: number;
-    paid_count: number;
-    partial_count: number;
-    unpaid_count: number;
+    total_collected: number;
+    total_records: number;
 };
 
 type Enrollment = {
@@ -38,7 +34,8 @@ type FeePayment = {
     student: { name: string };
     batch: { name: string };
     amount_paid: number;
-    payment_date: string | null;
+    month: number;
+    year: number;
 };
 
 type AttendanceStat = {
@@ -50,7 +47,7 @@ type AttendanceStat = {
 type RecentStudent = {
     id: number;
     name: string;
-    email: string | null;
+    coaching_class: { id: number; name: string } | null;
     status: string;
 };
 
@@ -63,9 +60,12 @@ type PageProps = {
     recentStudents: RecentStudent[];
 };
 
-export default function Dashboard({ stats, feeStats, recentEnrollments, recentFeePayments, todayAttendance, recentStudents }: PageProps) {
-    const totalFeeCollected = Number(feeStats.total_paid) + Number(feeStats.total_partial);
+const MONTH_NAMES = [
+    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
 
+export default function Dashboard({ stats, feeStats, recentEnrollments, recentFeePayments, todayAttendance, recentStudents }: PageProps) {
     return (
         <>
             <Head title="Dashboard" />
@@ -81,7 +81,7 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.total_students}</div>
-                            <Link href={students.index()} className="text-xs text-muted-foreground hover:underline">
+                            <Link href={students.index().url} className="text-xs text-muted-foreground hover:underline">
                                 View all
                             </Link>
                         </CardContent>
@@ -104,7 +104,7 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.active_batches}</div>
-                            <Link href={batches.index()} className="text-xs text-muted-foreground hover:underline">
+                            <Link href={batches.index().url} className="text-xs text-muted-foreground hover:underline">
                                 View all
                             </Link>
                         </CardContent>
@@ -124,26 +124,13 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Fee Collection</CardTitle>
+                            <CardTitle className="text-sm font-medium">Total Fee Collected</CardTitle>
                             <DollarSign className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">${totalFeeCollected.toFixed(2)}</div>
-                            <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                    <CheckCircle className="size-3 text-green-500" />
-                                    {feeStats.paid_count} paid
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <Clock className="size-3 text-yellow-500" />
-                                    {feeStats.partial_count} partial
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <XCircle className="size-3 text-red-500" />
-                                    {feeStats.unpaid_count} unpaid
-                                </span>
-                            </div>
-                            <Link href={fees.index()} className="text-xs text-muted-foreground hover:underline mt-2 block">
+                            <div className="text-2xl font-bold">{Number(feeStats.total_collected).toFixed(0)}</div>
+                            <p className="text-xs text-muted-foreground">{feeStats.total_records} payment records</p>
+                            <Link href={fees.index().url} className="text-xs text-muted-foreground hover:underline mt-2 block">
                                 View all
                             </Link>
                         </CardContent>
@@ -169,7 +156,7 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                                     <div className="text-xs text-muted-foreground">Late</div>
                                 </div>
                             </div>
-                            <Link href={attendance.index()} className="text-xs text-muted-foreground hover:underline mt-2 block">
+                            <Link href={attendance.index().url} className="text-xs text-muted-foreground hover:underline mt-2 block">
                                 View all
                             </Link>
                         </CardContent>
@@ -177,12 +164,12 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Unpaid Amount</CardTitle>
+                            <CardTitle className="text-sm font-medium">Fee Records</CardTitle>
                             <DollarSign className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-red-600">${Number(feeStats.total_unpaid).toFixed(2)}</div>
-                            <p className="text-xs text-muted-foreground">Pending collection</p>
+                            <div className="text-2xl font-bold">{feeStats.total_records}</div>
+                            <p className="text-xs text-muted-foreground">Monthly payments tracked</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -228,20 +215,16 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Student</TableHead>
+                                            <TableHead>Month</TableHead>
                                             <TableHead>Amount</TableHead>
-                                            <TableHead>Date</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {recentFeePayments.map((payment) => (
                                             <TableRow key={payment.id}>
                                                 <TableCell className="font-medium">{payment.student.name}</TableCell>
-                                                <TableCell>${Number(payment.amount_paid).toFixed(2)}</TableCell>
-                                                <TableCell>
-                                                    {payment.payment_date
-                                                        ? new Date(payment.payment_date).toLocaleDateString()
-                                                        : '-'}
-                                                </TableCell>
+                                                <TableCell>{MONTH_NAMES[payment.month]} {payment.year}</TableCell>
+                                                <TableCell>{Number(payment.amount_paid).toFixed(0)}</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -263,7 +246,7 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Name</TableHead>
-                                        <TableHead>Email</TableHead>
+                                        <TableHead>Class</TableHead>
                                         <TableHead>Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -271,7 +254,7 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                                     {recentStudents.map((student) => (
                                         <TableRow key={student.id}>
                                             <TableCell className="font-medium">{student.name}</TableCell>
-                                            <TableCell>{student.email || '-'}</TableCell>
+                                            <TableCell>{student.coaching_class?.name || '-'}</TableCell>
                                             <TableCell>
                                                 <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
                                                     {student.status}

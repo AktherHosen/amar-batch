@@ -24,11 +24,9 @@ type Enrollment = {
 type FeeFormData = {
     student_id: string;
     batch_id: string;
+    month: string;
+    year: string;
     amount_paid: string;
-    amount_due: string;
-    due_date: string;
-    status: 'paid' | 'partial' | 'unpaid';
-    payment_date: string;
     notes: string;
 };
 
@@ -36,11 +34,9 @@ type FeeStatus = {
     id?: number;
     student_id: number;
     batch_id: number;
+    month: number;
+    year: number;
     amount_paid: number;
-    amount_due: number;
-    due_date: string | null;
-    status: 'paid' | 'partial' | 'unpaid';
-    payment_date: string | null;
     notes: string | null;
 };
 
@@ -52,28 +48,25 @@ type FeeFormProps = {
     isEdit?: boolean;
 };
 
+const MONTH_NAMES = [
+    '', 'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+];
+
 export default function FeeForm({ fee, students, enrollments, isEdit = false }: FeeFormProps) {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
     const { data, setData, post, put, processing, errors } = useForm<FeeFormData>({
         student_id: fee?.student_id?.toString() || '',
         batch_id: fee?.batch_id?.toString() || '',
+        month: fee?.month?.toString() || currentMonth.toString(),
+        year: fee?.year?.toString() || currentYear.toString(),
         amount_paid: fee?.amount_paid?.toString() || '',
-        amount_due: fee?.amount_due?.toString() || '',
-        due_date: fee?.due_date ? new Date(fee.due_date).toISOString().split('T')[0] : '',
-        status: fee?.status || 'unpaid',
-        payment_date: fee?.payment_date ? new Date(fee.payment_date).toISOString().split('T')[0] : '',
         notes: fee?.notes || '',
     });
 
     const selectedStudentId = data.student_id;
-
-    const enrolledBatches = useMemo(() => {
-        if (!selectedStudentId) return [];
-        const studentId = parseInt(selectedStudentId);
-        const batchIds = enrollments
-            .filter((e) => e.student.id === studentId)
-            .map((e) => e.batch.id);
-        return [...new Set(batchIds)];
-    }, [selectedStudentId, enrollments]);
 
     const availableBatches = useMemo(() => {
         if (!selectedStudentId) return [];
@@ -101,7 +94,7 @@ export default function FeeForm({ fee, students, enrollments, isEdit = false }: 
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="student_id">Student</Label>
+                    <Label htmlFor="student_id">Student *</Label>
                     <Select value={data.student_id} onValueChange={handleStudentChange}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a student" />
@@ -118,7 +111,7 @@ export default function FeeForm({ fee, students, enrollments, isEdit = false }: 
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="batch_id">Batch</Label>
+                    <Label htmlFor="batch_id">Batch *</Label>
                     <Select value={data.batch_id} onValueChange={(v) => setData('batch_id', v)} disabled={!selectedStudentId}>
                         <SelectTrigger>
                             <SelectValue placeholder={selectedStudentId ? 'Select a batch' : 'Select a student first'} />
@@ -135,7 +128,37 @@ export default function FeeForm({ fee, students, enrollments, isEdit = false }: 
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="amount_paid">Amount Paid</Label>
+                    <Label htmlFor="month">Month *</Label>
+                    <Select value={data.month} onValueChange={(v) => setData('month', v)}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select month" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {MONTH_NAMES.slice(1).map((name, i) => (
+                                <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                    {name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <InputError message={errors.month} />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="year">Year *</Label>
+                    <Input
+                        id="year"
+                        type="number"
+                        min="2020"
+                        max="2100"
+                        value={data.year}
+                        onChange={(e) => setData('year', e.target.value)}
+                    />
+                    <InputError message={errors.year} />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="amount_paid">Amount Paid *</Label>
                     <Input
                         id="amount_paid"
                         type="number"
@@ -143,58 +166,9 @@ export default function FeeForm({ fee, students, enrollments, isEdit = false }: 
                         min="0"
                         value={data.amount_paid}
                         onChange={(e) => setData('amount_paid', e.target.value)}
+                        placeholder="Enter amount"
                     />
                     <InputError message={errors.amount_paid} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="amount_due">Amount Due (optional)</Label>
-                    <Input
-                        id="amount_due"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={data.amount_due}
-                        onChange={(e) => setData('amount_due', e.target.value)}
-                    />
-                    <InputError message={errors.amount_due} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select value={data.status} onValueChange={(v: 'paid' | 'partial' | 'unpaid') => setData('status', v)}>
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="paid">Paid</SelectItem>
-                            <SelectItem value="partial">Partial</SelectItem>
-                            <SelectItem value="unpaid">Unpaid</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <InputError message={errors.status} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="due_date">Due Date</Label>
-                    <Input
-                        id="due_date"
-                        type="date"
-                        value={data.due_date}
-                        onChange={(e) => setData('due_date', e.target.value)}
-                    />
-                    <InputError message={errors.due_date} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="payment_date">Payment Date</Label>
-                    <Input
-                        id="payment_date"
-                        type="date"
-                        value={data.payment_date}
-                        onChange={(e) => setData('payment_date', e.target.value)}
-                    />
-                    <InputError message={errors.payment_date} />
                 </div>
             </div>
 

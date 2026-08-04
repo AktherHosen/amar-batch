@@ -52,7 +52,6 @@ class StudentControllerTest extends TestCase
 
         $response = $this->post(route('students.store'), [
             'name' => 'Test Student',
-            'email' => 'test@student.com',
             'phone' => '555-0199',
             'status' => 'active',
         ]);

@@ -13,6 +13,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Student::class => \App\Policies\StudentPolicy::class,
         Batch::class => \App\Policies\BatchPolicy::class,
+        \App\Models\CoachingClass::class => \App\Policies\CoachingClassPolicy::class,
     ];
 
     public function boot(): void

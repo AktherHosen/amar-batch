@@ -16,6 +16,11 @@ type StudentsShowProps = {
     student: Student;
 };
 
+const MONTH_NAMES = [
+    '', 'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+];
+
 export default function StudentsShow({ student }: StudentsShowProps) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
@@ -68,20 +73,24 @@ export default function StudentsShow({ student }: StudentsShowProps) {
                                 <p className="font-medium">{student.name}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Email</p>
-                                <p className="font-medium">{student.email || '-'}</p>
-                            </div>
-                            <div>
                                 <p className="text-sm text-muted-foreground">Phone</p>
                                 <p className="font-medium">{student.phone || '-'}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Class / Grade</p>
-                                <p className="font-medium">{student.class_name || '-'}</p>
+                                <p className="text-sm text-muted-foreground">Class</p>
+                                <p className="font-medium">
+                                    {student.coaching_class
+                                        ? `${student.coaching_class.name}${student.section ? ` - ${student.section}` : ''}`
+                                        : student.section || '-'}
+                                </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Section</p>
-                                <p className="font-medium">{student.section || '-'}</p>
+                                <p className="text-sm text-muted-foreground">Joined At</p>
+                                <p className="font-medium">
+                                    {student.joined_at
+                                        ? new Date(student.joined_at).toLocaleDateString()
+                                        : '-'}
+                                </p>
                             </div>
                             <div>
                                 <p className="text-sm text-muted-foreground">Date of Birth</p>
@@ -172,41 +181,27 @@ export default function StudentsShow({ student }: StudentsShowProps) {
                 {student.feeStatuses && student.feeStatuses.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Fee Status</CardTitle>
+                            <CardTitle>Fee History</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Batch</TableHead>
+                                        <TableHead>Month</TableHead>
+                                        <TableHead>Year</TableHead>
                                         <TableHead>Amount Paid</TableHead>
-                                        <TableHead>Amount Due</TableHead>
-                                        <TableHead>Due Date</TableHead>
-                                        <TableHead>Status</TableHead>
+                                        <TableHead>Notes</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {student.feeStatuses.map((fee) => (
                                         <TableRow key={fee.id}>
                                             <TableCell className="font-medium">{fee.batch?.name}</TableCell>
-                                            <TableCell>${fee.amount_paid}</TableCell>
-                                            <TableCell>${fee.amount_due}</TableCell>
-                                            <TableCell>
-                                                {fee.due_date ? new Date(fee.due_date).toLocaleDateString() : '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant={
-                                                        fee.status === 'paid'
-                                                            ? 'default'
-                                                            : fee.status === 'partial'
-                                                            ? 'secondary'
-                                                            : 'destructive'
-                                                    }
-                                                >
-                                                    {fee.status}
-                                                </Badge>
-                                            </TableCell>
+                                            <TableCell>{MONTH_NAMES[fee.month]}</TableCell>
+                                            <TableCell>{fee.year}</TableCell>
+                                            <TableCell>{Number(fee.amount_paid).toFixed(0)}</TableCell>
+                                            <TableCell>{fee.notes || '-'}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>

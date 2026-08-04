@@ -1,12 +1,22 @@
 import { Head, router, Link } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import StudentForm from '@/components/student-form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import students from '@/routes/students';
 
-export default function StudentsCreate() {
+type CoachingClass = {
+    id: number;
+    name: string;
+    default_fee: number;
+};
+
+type PageProps = {
+    coachingClasses: CoachingClass[];
+};
+
+export default function StudentsCreate({ coachingClasses }: PageProps) {
     const handleSubmit = (data: any) => {
         router.post(students.store(), data, {
             preserveScroll: true,
@@ -30,7 +40,12 @@ export default function StudentsCreate() {
 
                 <Card>
                     <CardContent className="pt-6">
-                        <StudentForm onSubmit={handleSubmit} processing={false} errors={{}} />
+                        <StudentForm
+                            coachingClasses={coachingClasses}
+                            onSubmit={handleSubmit}
+                            processing={false}
+                            errors={{}}
+                        />
                     </CardContent>
                 </Card>
             </div>

@@ -3,69 +3,82 @@ import { useState } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Pencil } from 'lucide-react';
 import fees from '@/routes/fees';
 
-type FeeStatus = {
+type Student = {
     id: number;
-    student: { id: number; name: string; email: string };
-    batch: { id: number; name: string };
+    name: string;
+    coaching_class: { id: number; name: string } | null;
+};
+
+type Batch = {
+    id: number;
+    name: string;
+};
+
+type FeeRecord = {
+    id: number;
+    student_id: number;
+    batch_id: number;
+    month: number;
+    year: number;
     amount_paid: number;
-    amount_due: number;
-    due_date: string | null;
-    status: 'paid' | 'partial' | 'unpaid';
-    payment_date: string | null;
     notes: string | null;
+};
+
+type FeeGridItem = {
+    student: Student;
+    batch: Batch;
+    months: Record<number, FeeRecord>;
 };
 
 type PageProps = {
     auth: { user: { role: string } };
-    feeStatuses: {
-        data: FeeStatus[];
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    };
+    feeGrid: FeeGridItem[];
+    students: Student[];
+    batches: Batch[];
+    months: number[];
+    monthNames: Record<number, string>;
+    year: number;
     filters: {
         search?: string;
-        status?: string;
+        year?: string;
     };
 };
 
-export default function FeesIndex({ feeStatuses: pagination, filters }: PageProps) {
+export default function FeesIndex({ feeGrid, months, monthNames, year, filters }: PageProps) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
-    const [status, setStatus] = useState(filters.status || '');
+    const [selectedYear, setSelectedYear] = useState(year);
 
     const handleSearch = () => {
-        router.get(fees.index(), { search, status }, { preserveState: true });
+        router.get(fees.index.url({ search, year: selectedYear }), {}, { preserveState: true });
     };
 
-    const handleStatusChange = (value: string) => {
-        setStatus(value === 'all' ? '' : value);
-        router.get(fees.index(), { search, status: value === 'all' ? '' : value }, { preserveState: true });
+    const handleYearChange = (newYear: number) => {
+        setSelectedYear(newYear);
+        router.get(fees.index.url({ search, year: newYear }), {}, { preserveState: true });
     };
 
-    const handleDelete = (fee: FeeStatus) => {
+    const handleDelete = (feeId: number) => {
         if (confirm('Are you sure you want to delete this fee record?')) {
-            router.delete(fees.destroy(fee.id));
+            router.delete(fees.destroy.url(feeId));
         }
     };
 
-    const getStatusBadge = (status: string) => {
-        const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
-            paid: 'default',
-            partial: 'secondary',
-            unpaid: 'destructive',
-        };
-        return variants[status] || 'secondary';
+    const formatAmount = (amount: number) => {
+        return amount > 0 ? amount.toFixed(0) : '-';
     };
+
+    const yearOptions = [];
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear - 2; y <= currentYear + 1; y++) {
+        yearOptions.push(y);
+    }
 
     return (
         <>
@@ -73,9 +86,9 @@ export default function FeesIndex({ feeStatuses: pagination, filters }: PageProp
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title="Fee Management" description="Track student fee payments" />
+                    <Heading title="Fee Management" description="Track monthly fee payments" />
                     {isAdmin && (
-                        <Link href={fees.create()}>
+                        <Link href={fees.create.url()}>
                             <Button>
                                 <Plus className="mr-2 size-4" />
                                 Add Fee Record
@@ -85,124 +98,97 @@ export default function FeesIndex({ feeStatuses: pagination, filters }: PageProp
                 </div>
 
                 <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-4">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center gap-4 mb-4">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search by student name or email..."
+                                    placeholder="Search by student name..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                                     className="pl-9"
                                 />
                             </div>
-                            <Select value={status || 'all'} onValueChange={handleStatusChange}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="All Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="paid">Paid</SelectItem>
-                                    <SelectItem value="partial">Partial</SelectItem>
-                                    <SelectItem value="unpaid">Unpaid</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select
+                                value={selectedYear}
+                                onChange={(e) => handleYearChange(Number(e.target.value))}
+                                className="flex h-10 w-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                                {yearOptions.map((y) => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
                             <Button variant="secondary" onClick={handleSearch}>
                                 Search
                             </Button>
                         </div>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Student</TableHead>
-                                    <TableHead>Batch</TableHead>
-                                    <TableHead>Amount Paid</TableHead>
-                                    <TableHead>Amount Due</TableHead>
-                                    <TableHead>Due Date</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    {isAdmin && <TableHead className="text-right">Actions</TableHead>}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pagination.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={isAdmin ? 7 : 6} className="text-center">
-                                            No fee records found.
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    pagination.data.map((fee) => (
-                                        <TableRow key={fee.id}>
-                                            <TableCell className="font-medium">{fee.student.name}</TableCell>
-                                            <TableCell>{fee.batch.name}</TableCell>
-                                            <TableCell>${Number(fee.amount_paid).toFixed(2)}</TableCell>
-                                            <TableCell>${Number(fee.amount_due).toFixed(2)}</TableCell>
-                                            <TableCell>{fee.due_date ? new Date(fee.due_date).toLocaleDateString() : '-'}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={getStatusBadge(fee.status)}>{fee.status}</Badge>
-                                            </TableCell>
-                                            {isAdmin && (
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Link href={fees.edit(fee.id)}>
-                                                            <Button variant="ghost" size="sm">
-                                                                <Pencil className="size-4" />
-                                                            </Button>
-                                                        </Link>
-                                                        <Button variant="ghost" size="sm" onClick={() => handleDelete(fee)}>
-                                                            <Trash2 className="size-4" />
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
 
-                        {pagination.last_page > 1 && (
-                            <div className="mt-4 flex items-center justify-between">
-                                <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of {pagination.total} records
-                                </p>
-                                <div className="flex gap-2">
-                                    {pagination.current_page > 1 && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    fees.index(),
-                                                    { page: pagination.current_page - 1, search, status },
-                                                    { preserveState: true }
-                                                )
-                                            }
-                                        >
-                                            Previous
-                                        </Button>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="sticky left-0 bg-background z-10 min-w-[150px]">Student</TableHead>
+                                        <TableHead className="min-w-[100px]">Class</TableHead>
+                                        <TableHead className="min-w-[100px]">Batch</TableHead>
+                                        {months.map((m) => (
+                                            <TableHead key={m} className="text-center min-w-[80px]">
+                                                {monthNames[m].slice(0, 3)}
+                                            </TableHead>
+                                        ))}
+                                        {isAdmin && <TableHead className="text-right min-w-[80px]">Actions</TableHead>}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {feeGrid.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={isAdmin ? months.length + 4 : months.length + 3} className="text-center">
+                                                No fee records found. Click "Add Fee Record" to get started.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        feeGrid.map((item, idx) => (
+                                            <TableRow key={idx}>
+                                                <TableCell className="font-medium sticky left-0 bg-background z-10">
+                                                    {item.student.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {item.student.coaching_class?.name || '-'}
+                                                </TableCell>
+                                                <TableCell>{item.batch.name}</TableCell>
+                                                {months.map((m) => {
+                                                    const fee = item.months[m];
+                                                    return (
+                                                        <TableCell key={m} className="text-center">
+                                                            {fee ? (
+                                                                <span className={fee.amount_paid > 0 ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
+                                                                    {formatAmount(fee.amount_paid)}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">-</span>
+                                                            )}
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                                {isAdmin && (
+                                                    <TableCell className="text-right">
+                                                        {item.months[months[0]] && (
+                                                            <div className="flex justify-end gap-1">
+                                                                <Link href={fees.edit.url(item.months[months[0]].id)}>
+                                                                    <Button variant="ghost" size="sm">
+                                                                        <Pencil className="size-3" />
+                                                                    </Button>
+                                                                </Link>
+                                                            </div>
+                                                        )}
+                                                    </TableCell>
+                                                )}
+                                            </TableRow>
+                                        ))
                                     )}
-                                    {pagination.current_page < pagination.last_page && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    fees.index(),
-                                                    { page: pagination.current_page + 1, search, status },
-                                                    { preserveState: true }
-                                                )
-                                            }
-                                        >
-                                            Next
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -214,7 +200,7 @@ FeesIndex.layout = {
     breadcrumbs: [
         {
             title: 'Fees',
-            href: fees.index(),
+            href: fees.index.url(),
         },
     ],
 };

@@ -56,7 +56,6 @@ class AttendanceController extends Controller
                     return [
                         'id' => $enrollment->student->id,
                         'name' => $enrollment->student->name,
-                        'email' => $enrollment->student->email,
                         'status' => $existing?->status ?? 'present',
                         'attendance_id' => $existing?->id,
                         'notes' => $existing?->notes ?? '',

@@ -5,8 +5,8 @@ namespace App\Models;
 use Database\Factories\StudentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
@@ -14,18 +14,21 @@ class Student extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'email', 'phone', 'class_name', 'section', 'address', 'date_of_birth',
-        'gender', 'guardian_name', 'guardian_phone', 'photo', 'status',
+        'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',
+        'gender', 'guardian_name', 'guardian_phone', 'photo', 'status', 'joined_at',
     ];
 
     protected function casts(): array
     {
-        return ['date_of_birth' => 'date'];
+        return [
+            'date_of_birth' => 'date',
+            'joined_at' => 'date',
+        ];
     }
 
-    public function user(): HasOne
+    public function coachingClass(): BelongsTo
     {
-        return $this->hasOne(User::class);
+        return $this->belongsTo(CoachingClass::class);
     }
 
     public function enrollments(): HasMany

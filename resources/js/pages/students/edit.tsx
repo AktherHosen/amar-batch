@@ -7,11 +7,18 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import students from '@/routes/students';
 
-type StudentsEditProps = {
-    student: Student;
+type CoachingClass = {
+    id: number;
+    name: string;
+    default_fee: number;
 };
 
-export default function StudentsEdit({ student }: StudentsEditProps) {
+type StudentsEditProps = {
+    student: Student;
+    coachingClasses: CoachingClass[];
+};
+
+export default function StudentsEdit({ student, coachingClasses }: StudentsEditProps) {
     const handleSubmit = (data: any) => {
         router.put(students.update(student.id), data, {
             preserveScroll: true,
@@ -35,7 +42,13 @@ export default function StudentsEdit({ student }: StudentsEditProps) {
 
                 <Card>
                     <CardContent className="pt-6">
-                        <StudentForm student={student} onSubmit={handleSubmit} processing={false} errors={{}} />
+                        <StudentForm
+                            student={student}
+                            coachingClasses={coachingClasses}
+                            onSubmit={handleSubmit}
+                            processing={false}
+                            errors={{}}
+                        />
                     </CardContent>
                 </Card>
             </div>

@@ -39,18 +39,18 @@ class FeeStatusControllerTest extends TestCase
         $response = $this->post(route('fees.store'), [
             'student_id' => $student->id,
             'batch_id' => $batch->id,
-            'amount_paid' => 100,
-            'amount_due' => 0,
-            'status' => 'paid',
-            'payment_date' => '2026-08-02',
+            'month' => 8,
+            'year' => 2026,
+            'amount_paid' => 500,
         ]);
 
         $response->assertRedirect(route('fees.index'));
         $this->assertDatabaseHas('fee_statuses', [
             'student_id' => $student->id,
             'batch_id' => $batch->id,
-            'amount_paid' => 100,
-            'status' => 'paid',
+            'month' => 8,
+            'year' => 2026,
+            'amount_paid' => 500,
         ]);
     }
 
@@ -64,9 +64,9 @@ class FeeStatusControllerTest extends TestCase
         $response = $this->put(route('fees.update', $fee->id), [
             'student_id' => $fee->student_id,
             'batch_id' => $fee->batch_id,
+            'month' => $fee->month,
+            'year' => $fee->year,
             'amount_paid' => 200,
-            'amount_due' => 0,
-            'status' => 'paid',
         ]);
 
         $response->assertRedirect(route('fees.index'));
@@ -108,8 +108,9 @@ class FeeStatusControllerTest extends TestCase
         $response = $this->post(route('fees.store'), [
             'student_id' => $student->id,
             'batch_id' => $batch->id,
-            'amount_paid' => 100,
-            'status' => 'paid',
+            'month' => 8,
+            'year' => 2026,
+            'amount_paid' => 500,
         ]);
 
         $response->assertForbidden();

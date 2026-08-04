@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
+use App\Models\CoachingClass;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class StudentController extends Controller
     {
         $this->authorize('viewAny', Student::class);
 
-        $query = Student::query();
+        $query = Student::with('coachingClass');
 
         if ($request->user()->isTeacher()) {
             $studentIds = $request->user()->assignedBatches()
@@ -30,7 +31,6 @@ class StudentController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%");
             });
         }
@@ -51,7 +51,11 @@ class StudentController extends Controller
     {
         $this->authorize('create', Student::class);
 
-        return Inertia::render('students/create');
+        $coachingClasses = CoachingClass::orderBy('name')->get();
+
+        return Inertia::render('students/create', [
+            'coachingClasses' => $coachingClasses,
+        ]);
     }
 
     public function store(StoreStudentRequest $request): RedirectResponse
@@ -67,7 +71,7 @@ class StudentController extends Controller
     {
         $this->authorize('view', $student);
 
-        $student->load(['enrollments.batch', 'feeStatuses.batch', 'attendances']);
+        $student->load(['coachingClass', 'enrollments.batch', 'feeStatuses.batch', 'attendances']);
 
         return Inertia::render('students/show', [
             'student' => $student,
@@ -78,8 +82,11 @@ class StudentController extends Controller
     {
         $this->authorize('update', $student);
 
+        $coachingClasses = CoachingClass::orderBy('name')->get();
+
         return Inertia::render('students/edit', [
             'student' => $student,
+            'coachingClasses' => $coachingClasses,
         ]);
     }
 

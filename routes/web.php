@@ -15,3 +15,4 @@ require __DIR__.'/batches.php';
 require __DIR__.'/teachers.php';
 require __DIR__.'/fees.php';
 require __DIR__.'/attendance.php';
+require __DIR__.'/classes.php';

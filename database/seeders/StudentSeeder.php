@@ -2,84 +2,38 @@
 
 namespace Database\Seeders;
 
+use App\Models\CoachingClass;
 use App\Models\Student;
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class StudentSeeder extends Seeder
 {
     public function run(): void
     {
+        $nursery = CoachingClass::where('name', 'Nursery')->first();
+        $kg = CoachingClass::where('name', 'KG')->first();
+        $class2 = CoachingClass::where('name', 'Class 2')->first();
+        $class3 = CoachingClass::where('name', 'Class 3')->first();
+        $class4 = CoachingClass::where('name', 'Class 4')->first();
+        $class5 = CoachingClass::where('name', 'Class 5')->first();
+
         $students = [
-            [
-                'name' => 'Alice Wilson',
-                'email' => 'alice@academia.com',
-                'phone' => '555-0101',
-                'guardian_name' => 'Robert Wilson',
-                'guardian_phone' => '555-0102',
-                'gender' => 'female',
-                'date_of_birth' => '2005-03-15',
-            ],
-            [
-                'name' => 'Bob Davis',
-                'email' => 'bob@academia.com',
-                'phone' => '555-0103',
-                'guardian_name' => 'Linda Davis',
-                'guardian_phone' => '555-0104',
-                'gender' => 'male',
-                'date_of_birth' => '2004-07-22',
-            ],
-            [
-                'name' => 'Charlie Martinez',
-                'email' => 'charlie@academia.com',
-                'phone' => '555-0105',
-                'guardian_name' => 'Maria Martinez',
-                'guardian_phone' => '555-0106',
-                'gender' => 'male',
-                'date_of_birth' => '2005-11-08',
-            ],
-            [
-                'name' => 'Diana Garcia',
-                'email' => 'diana@academia.com',
-                'phone' => '555-0107',
-                'guardian_name' => 'Carlos Garcia',
-                'guardian_phone' => '555-0108',
-                'gender' => 'female',
-                'date_of_birth' => '2004-05-30',
-            ],
-            [
-                'name' => 'Eve Rodriguez',
-                'email' => 'eve@academia.com',
-                'phone' => '555-0109',
-                'guardian_name' => 'Pedro Rodriguez',
-                'guardian_phone' => '555-0110',
-                'gender' => 'female',
-                'date_of_birth' => '2005-09-12',
-            ],
+            ['name' => 'Ishanto', 'coaching_class_id' => $class3?->id, 'joined_at' => '2026-05-03', 'gender' => 'male'],
+            ['name' => 'Saimon', 'coaching_class_id' => $class2?->id, 'joined_at' => '2026-05-03', 'gender' => 'male'],
+            ['name' => 'Saima', 'coaching_class_id' => $class2?->id, 'joined_at' => '2026-05-03', 'gender' => 'female'],
+            ['name' => 'Mehrab', 'coaching_class_id' => $class2?->id, 'joined_at' => '2026-05-04', 'gender' => 'male'],
+            ['name' => 'Muntaha', 'coaching_class_id' => $class2?->id, 'joined_at' => '2026-05-12', 'gender' => 'female'],
+            ['name' => 'Ripa', 'coaching_class_id' => $class2?->id, 'joined_at' => '2026-06-10', 'gender' => 'female'],
+            ['name' => 'Rahat', 'coaching_class_id' => $nursery?->id, 'joined_at' => '2026-06-10', 'gender' => 'male'],
+            ['name' => 'Samiya 2', 'coaching_class_id' => $class2?->id, 'joined_at' => '2026-06-18', 'gender' => 'female'],
+            ['name' => 'Rahat', 'coaching_class_id' => $kg?->id, 'joined_at' => '2026-07-01', 'gender' => 'male'],
+            ['name' => 'Saimon', 'coaching_class_id' => $kg?->id, 'joined_at' => '2026-07-18', 'gender' => 'male'],
+            ['name' => 'Emon', 'coaching_class_id' => $class5?->id, 'joined_at' => '2026-07-18', 'gender' => 'male'],
+            ['name' => 'Sahidul', 'coaching_class_id' => $class4?->id, 'joined_at' => '2026-08-02', 'gender' => 'male'],
         ];
 
         foreach ($students as $studentData) {
-            $student = Student::create($studentData);
-
-            User::create([
-                'name' => $studentData['name'],
-                'email' => $studentData['email'],
-                'password' => Hash::make('password'),
-                'role' => 'student',
-                'student_id' => $student->id,
-                'email_verified_at' => now(),
-            ]);
+            Student::create($studentData);
         }
-
-        $this->command->info('Student users created:');
-        $this->command->table(['Name', 'Email'], [
-            ['Alice Wilson', 'alice@academia.com'],
-            ['Bob Davis', 'bob@academia.com'],
-            ['Charlie Martinez', 'charlie@academia.com'],
-            ['Diana Garcia', 'diana@academia.com'],
-            ['Eve Rodriguez', 'eve@academia.com'],
-        ]);
-        $this->command->info('Password for all: password');
     }
 }

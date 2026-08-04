@@ -131,9 +131,6 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                                             <TableRow key={student.id}>
                                                 <TableCell className="font-medium">
                                                     {student.name}
-                                                    <span className="ml-2 text-sm text-muted-foreground">
-                                                        {student.email}
-                                                    </span>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Select

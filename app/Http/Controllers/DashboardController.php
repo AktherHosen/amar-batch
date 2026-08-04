@@ -25,12 +25,8 @@ class DashboardController extends Controller
         ];
 
         $feeStats = [
-            'total_paid' => FeeStatus::where('status', 'paid')->sum('amount_paid'),
-            'total_partial' => FeeStatus::where('status', 'partial')->sum('amount_paid'),
-            'total_unpaid' => FeeStatus::where('status', 'unpaid')->sum('amount_due'),
-            'paid_count' => FeeStatus::where('status', 'paid')->count(),
-            'partial_count' => FeeStatus::where('status', 'partial')->count(),
-            'unpaid_count' => FeeStatus::where('status', 'unpaid')->count(),
+            'total_collected' => FeeStatus::sum('amount_paid'),
+            'total_records' => FeeStatus::count(),
         ];
 
         $recentEnrollments = Enrollment::with(['student', 'batch'])
@@ -39,8 +35,7 @@ class DashboardController extends Controller
             ->get();
 
         $recentFeePayments = FeeStatus::with(['student', 'batch'])
-            ->where('status', '!=', 'unpaid')
-            ->latest('payment_date')
+            ->latest('created_at')
             ->take(5)
             ->get();
 
@@ -50,7 +45,7 @@ class DashboardController extends Controller
             'late' => Attendance::whereDate('date', now())->where('status', 'late')->count(),
         ];
 
-        $recentStudents = Student::latest()->take(5)->get();
+        $recentStudents = Student::with('coachingClass')->latest()->take(5)->get();
 
         return Inertia::render('dashboard', [
             'stats' => $stats,

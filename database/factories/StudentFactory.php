@@ -13,9 +13,9 @@ class StudentFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->numerify('555-0###'),
             'status' => 'active',
+            'joined_at' => fake()->dateTimeBetween('-1 year', 'now'),
             'guardian_name' => fake()->name(),
             'guardian_phone' => fake()->numerify('555-0###'),
         ];

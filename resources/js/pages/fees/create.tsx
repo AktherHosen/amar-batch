@@ -31,7 +31,7 @@ export default function FeesCreate({ students, batches, enrollments }: PageProps
             <Head title="Add Fee Record" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title="Add Fee Record" description="Create a new fee status record" />
+                <Heading title="Add Fee Record" description="Record a monthly fee payment" />
 
                 <Card>
                     <CardHeader>
@@ -50,7 +50,7 @@ FeesCreate.layout = {
     breadcrumbs: [
         {
             title: 'Fees',
-            href: fees.index(),
+            href: fees.index.url(),
         },
         {
             title: 'Create',

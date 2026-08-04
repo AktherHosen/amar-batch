@@ -296,15 +296,14 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                 const availableStudents = students.filter(
                                     (s) =>
                                         !enrolledIds.includes(s.id) &&
-                                        (s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
-                                            s.email?.toLowerCase().includes(studentSearch.toLowerCase()))
+                                        s.name.toLowerCase().includes(studentSearch.toLowerCase())
                                 );
 
                                 return availableStudents.length > 0 || studentSearch ? (
                                     <div className="space-y-2">
                                         <input
                                             type="text"
-                                            placeholder="Search students by name or email..."
+                                            placeholder="Search students by name..."
                                             value={studentSearch}
                                             onChange={(e) => setStudentSearch(e.target.value)}
                                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -318,7 +317,7 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                                     <SelectContent>
                                                         {availableStudents.map((student) => (
                                                             <SelectItem key={student.id} value={student.id.toString()}>
-                                                                {student.name} ({student.email || 'No email'})
+                                                                {student.name}
                                                             </SelectItem>
                                                         ))}
                                                     </SelectContent>
@@ -349,7 +348,6 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Name</TableHead>
-                                        <TableHead>Email</TableHead>
                                         <TableHead>Enrolled At</TableHead>
                                         <TableHead>Status</TableHead>
                                         {(isAdmin || auth.user.role === 'teacher') && (
@@ -361,7 +359,6 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                     {batch.enrollments.map((enrollment) => (
                                         <TableRow key={enrollment.id}>
                                             <TableCell className="font-medium">{enrollment.student.name}</TableCell>
-                                            <TableCell>{enrollment.student.email || '-'}</TableCell>
                                             <TableCell>{new Date(enrollment.enrolled_at).toLocaleDateString()}</TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusBadge(enrollment.status)}>

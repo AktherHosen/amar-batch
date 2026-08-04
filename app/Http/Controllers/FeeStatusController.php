@@ -7,8 +7,8 @@ use App\Http\Requests\UpdateFeeStatusRequest;
 use App\Models\Batch;
 use App\Models\FeeStatus;
 use App\Models\Student;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,25 +26,50 @@ class FeeStatusController extends Controller
 
     public function index(Request $request): Response
     {
-        $query = FeeStatus::with(['student', 'batch']);
+        $year = $request->input('year', date('Y'));
 
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
+        $query = FeeStatus::with(['student.coachingClass', 'batch'])
+            ->where('year', $year);
+
+        if ($search = $request->input('search')) {
             $query->whereHas('student', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%");
             });
         }
 
-        if ($request->has('status') && $request->status) {
-            $query->where('status', $request->status);
+        $feeStatuses = $query->orderBy('month')->get();
+
+        $students = Student::with('coachingClass')->orderBy('name')->get();
+        $batches = Batch::orderBy('name')->get();
+
+        $months = range(1, 12);
+        $monthNames = [
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+        ];
+
+        $grid = [];
+        foreach ($feeStatuses as $fee) {
+            $key = "{$fee->student_id}_{$fee->batch_id}";
+            if (!isset($grid[$key])) {
+                $grid[$key] = [
+                    'student' => $fee->student,
+                    'batch' => $fee->batch,
+                    'months' => [],
+                ];
+            }
+            $grid[$key]['months'][$fee->month] = $fee;
         }
 
-        $feeStatuses = $query->orderBy('created_at', 'desc')->paginate(15);
-
         return Inertia::render('fees/index', [
-            'feeStatuses' => $feeStatuses,
-            'filters' => $request->only(['search', 'status']),
+            'feeGrid' => array_values($grid),
+            'students' => $students,
+            'batches' => $batches,
+            'months' => $months,
+            'monthNames' => $monthNames,
+            'year' => (int) $year,
+            'filters' => $request->only(['search', 'year']),
         ]);
     }
 
@@ -61,20 +86,22 @@ class FeeStatusController extends Controller
         ]);
     }
 
-    public function store(StoreFeeStatusRequest $request)
+    public function store(StoreFeeStatusRequest $request): RedirectResponse
     {
-        FeeStatus::create([
-            'student_id' => $request->student_id,
-            'batch_id' => $request->batch_id,
-            'amount_paid' => $request->amount_paid,
-            'amount_due' => $request->amount_due ?? 0,
-            'due_date' => $request->due_date ?: null,
-            'status' => $request->status,
-            'payment_date' => $request->payment_date ?: null,
-            'notes' => $request->notes ?: null,
-        ]);
+        FeeStatus::updateOrCreate(
+            [
+                'student_id' => $request->student_id,
+                'batch_id' => $request->batch_id,
+                'month' => $request->month,
+                'year' => $request->year,
+            ],
+            [
+                'amount_paid' => $request->amount_paid,
+                'notes' => $request->notes ?: null,
+            ]
+        );
 
-        return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee status created successfully.']);
+        return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee record saved successfully.']);
     }
 
     public function edit(FeeStatus $fee): Response
@@ -92,26 +119,24 @@ class FeeStatusController extends Controller
         ]);
     }
 
-    public function update(UpdateFeeStatusRequest $request, FeeStatus $fee)
+    public function update(UpdateFeeStatusRequest $request, FeeStatus $fee): RedirectResponse
     {
         $fee->update([
             'student_id' => $request->student_id,
             'batch_id' => $request->batch_id,
+            'month' => $request->month,
+            'year' => $request->year,
             'amount_paid' => $request->amount_paid,
-            'amount_due' => $request->amount_due ?? 0,
-            'due_date' => $request->due_date ?: null,
-            'status' => $request->status,
-            'payment_date' => $request->payment_date ?: null,
             'notes' => $request->notes ?: null,
         ]);
 
-        return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee status updated successfully.']);
+        return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee record updated successfully.']);
     }
 
-    public function destroy(FeeStatus $fee)
+    public function destroy(FeeStatus $fee): RedirectResponse
     {
         $fee->delete();
 
-        return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee status deleted successfully.']);
+        return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee record deleted successfully.']);
     }
 }

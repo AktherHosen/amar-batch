@@ -12,17 +12,15 @@ class FeeStatus extends Model
     use HasFactory;
 
     protected $fillable = [
-        'student_id', 'batch_id', 'amount_paid', 'amount_due',
-        'due_date', 'status', 'payment_date', 'notes',
+        'student_id', 'batch_id', 'month', 'year', 'amount_paid', 'notes',
     ];
 
     protected function casts(): array
     {
         return [
             'amount_paid' => 'decimal:2',
-            'amount_due' => 'decimal:2',
-            'due_date' => 'date',
-            'payment_date' => 'date',
+            'month' => 'integer',
+            'year' => 'integer',
         ];
     }
 
@@ -34,5 +32,12 @@ class FeeStatus extends Model
     public function batch(): BelongsTo
     {
         return $this->belongsTo(Batch::class);
+    }
+
+    public function getMonthNameAttribute(): string
+    {
+        return mktime(0, 0, 0, $this->month, 1)
+            ? date('F', mktime(0, 0, 0, $this->month, 1))
+            : '';
     }
 }
