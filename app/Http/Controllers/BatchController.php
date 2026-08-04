@@ -67,15 +67,21 @@ class BatchController extends Controller
     {
         $this->authorize('view', $batch);
 
-        $batch->load(['enrollments.student', 'teachers']);
+        $batch->load(['enrollments.student.coachingClass', 'teachers']);
 
         $teachers = User::where('role', 'teacher')->get();
-        $students = Student::orderBy('name')->get();
+        $students = Student::with('coachingClass')->orderBy('name')->get();
+
+        $enrolledStudentIds = \App\Models\Enrollment::where('status', 'active')
+            ->pluck('student_id')
+            ->unique()
+            ->toArray();
 
         return Inertia::render('batches/show', [
             'batch' => $batch,
             'teachers' => $teachers,
             'students' => $students,
+            'enrolledStudentIds' => $enrolledStudentIds,
         ]);
     }
 

@@ -22,7 +22,7 @@ type Teacher = {
 type Student = {
     id: number;
     name: string;
-    email: string;
+    coaching_class: { id: number; name: string } | null;
 };
 
 type Enrollment = {
@@ -50,9 +50,10 @@ type BatchesShowProps = {
     batch: Batch;
     teachers: Teacher[];
     students: Student[];
+    enrolledStudentIds: number[];
 };
 
-export default function BatchesShow({ batch, teachers, students }: BatchesShowProps) {
+export default function BatchesShow({ batch, teachers, students, enrolledStudentIds }: BatchesShowProps) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [selectedTeacher, setSelectedTeacher] = useState('');
@@ -292,10 +293,9 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                         </CardHeader>
                         <CardContent>
                             {(() => {
-                                const enrolledIds = batch.enrollments.map((e) => e.student.id);
                                 const availableStudents = students.filter(
                                     (s) =>
-                                        !enrolledIds.includes(s.id) &&
+                                        !enrolledStudentIds.includes(s.id) &&
                                         s.name.toLowerCase().includes(studentSearch.toLowerCase())
                                 );
 
@@ -317,7 +317,7 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                                     <SelectContent>
                                                         {availableStudents.map((student) => (
                                                             <SelectItem key={student.id} value={student.id.toString()}>
-                                                                {student.name}
+                                                                {student.name} ({student.coaching_class?.name || 'No Class'})
                                                             </SelectItem>
                                                         ))}
                                                     </SelectContent>
@@ -331,7 +331,7 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                         )}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">All students are enrolled in this batch.</p>
+                                    <p className="text-sm text-muted-foreground">All students are already enrolled in batches.</p>
                                 );
                             })()}
                         </CardContent>
@@ -348,6 +348,7 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Name</TableHead>
+                                        <TableHead>Class</TableHead>
                                         <TableHead>Enrolled At</TableHead>
                                         <TableHead>Status</TableHead>
                                         {(isAdmin || auth.user.role === 'teacher') && (
@@ -359,6 +360,7 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                     {batch.enrollments.map((enrollment) => (
                                         <TableRow key={enrollment.id}>
                                             <TableCell className="font-medium">{enrollment.student.name}</TableCell>
+                                            <TableCell>{enrollment.student.coaching_class?.name || '-'}</TableCell>
                                             <TableCell>{new Date(enrollment.enrolled_at).toLocaleDateString()}</TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusBadge(enrollment.status)}>
