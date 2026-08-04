@@ -10,11 +10,11 @@ type Batch = {
     id: number;
     name: string;
     subject: string | null;
-    schedule: string | null;
+    days: string | null;
+    time: string | null;
     capacity: number;
     start_date: string | null;
     end_date: string | null;
-    fees_amount: number;
     status: string;
 };
 

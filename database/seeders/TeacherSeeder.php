@@ -11,9 +11,8 @@ class TeacherSeeder extends Seeder
     public function run(): void
     {
         $teachers = [
-            ['name' => 'John Smith', 'email' => 'john@academia.com'],
-            ['name' => 'Sarah Johnson', 'email' => 'sarah@academia.com'],
-            ['name' => 'Michael Brown', 'email' => 'michael@academia.com'],
+            ['name' => 'Salma Chy', 'email' => 'salmachy4000@gmail.com'],
+            ['name' => 'Md Akther Hosen', 'email' => 'mdaktherhosen16@gmail.com'],
         ];
 
         foreach ($teachers as $teacher) {
@@ -28,9 +27,8 @@ class TeacherSeeder extends Seeder
 
         $this->command->info('Teacher users created:');
         $this->command->table(['Name', 'Email'], [
-            ['John Smith', 'john@academia.com'],
-            ['Sarah Johnson', 'sarah@academia.com'],
-            ['Michael Brown', 'michael@academia.com'],
+            ['Salma Chy', 'salmachy4000@gmail.com'],
+            ['Md Akther Hosen', 'mdaktherhosen16@gmail.com'],
         ]);
         $this->command->info('Password for all: password');
     }

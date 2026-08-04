@@ -36,11 +36,11 @@ type Batch = {
     id: number;
     name: string;
     subject: string | null;
-    schedule: string | null;
+    days: string | null;
+    time: string | null;
     capacity: number;
     start_date: string | null;
     end_date: string | null;
-    fees_amount: number;
     status: string;
     enrollments: Enrollment[];
     teachers: Teacher[];
@@ -177,10 +177,6 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                 <p className="font-medium">{batch.enrollments.length}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Fees</p>
-                                <p className="font-medium">${batch.fees_amount}</p>
-                            </div>
-                            <div>
                                 <p className="text-sm text-muted-foreground">Status</p>
                                 <Badge variant={getStatusBadge(batch.status)}>{batch.status}</Badge>
                             </div>
@@ -205,8 +201,12 @@ export default function BatchesShow({ batch, teachers, students }: BatchesShowPr
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Schedule</p>
-                                <p className="font-medium">{batch.schedule || '-'}</p>
+                                <p className="text-sm text-muted-foreground">Days</p>
+                                <p className="font-medium">{batch.days || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Time</p>
+                                <p className="font-medium">{batch.time || '-'}</p>
                             </div>
                         </CardContent>
                     </Card>

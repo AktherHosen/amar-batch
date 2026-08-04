@@ -178,37 +178,53 @@ export default function StudentsShow({ student }: StudentsShowProps) {
                     </Card>
                 )}
 
-                {student.feeStatuses && student.feeStatuses.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Fee History</CardTitle>
-                        </CardHeader>
-                        <CardContent>
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <CardTitle>Payment History</CardTitle>
+                            {student.feeStatuses && student.feeStatuses.length > 0 && (
+                                <div className="text-sm text-muted-foreground">
+                                    Total Paid: <span className="font-bold text-green-600">
+                                        {student.feeStatuses.reduce((sum, f) => sum + Number(f.amount_paid), 0).toFixed(0)}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {student.feeStatuses && student.feeStatuses.length > 0 ? (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Batch</TableHead>
                                         <TableHead>Month</TableHead>
                                         <TableHead>Year</TableHead>
-                                        <TableHead>Amount Paid</TableHead>
+                                        <TableHead>Batch</TableHead>
+                                        <TableHead className="text-right">Amount Paid</TableHead>
                                         <TableHead>Notes</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {student.feeStatuses.map((fee) => (
-                                        <TableRow key={fee.id}>
-                                            <TableCell className="font-medium">{fee.batch?.name}</TableCell>
-                                            <TableCell>{MONTH_NAMES[fee.month]}</TableCell>
-                                            <TableCell>{fee.year}</TableCell>
-                                            <TableCell>{Number(fee.amount_paid).toFixed(0)}</TableCell>
-                                            <TableCell>{fee.notes || '-'}</TableCell>
-                                        </TableRow>
-                                    ))}
+                                    {student.feeStatuses
+                                        .sort((a, b) => b.year - a.year || b.month - a.month)
+                                        .map((fee) => (
+                                            <TableRow key={fee.id}>
+                                                <TableCell className="font-medium">{MONTH_NAMES[fee.month]}</TableCell>
+                                                <TableCell>{fee.year}</TableCell>
+                                                <TableCell>{fee.batch?.name || '-'}</TableCell>
+                                                <TableCell className="text-right font-medium">
+                                                    {Number(fee.amount_paid).toFixed(0)}
+                                                </TableCell>
+                                                <TableCell>{fee.notes || '-'}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    }
                                 </TableBody>
                             </Table>
-                        </CardContent>
-                    </Card>
-                )}
+                        ) : (
+                            <p className="text-sm text-muted-foreground text-center py-4">No payment records yet.</p>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </>
     );

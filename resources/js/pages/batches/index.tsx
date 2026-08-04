@@ -18,7 +18,6 @@ type PageProps = {
             name: string;
             subject: string | null;
             capacity: number;
-            fees_amount: number;
             status: string;
             enrollments_count: number;
             start_date: string | null;
@@ -118,7 +117,6 @@ export default function BatchesIndex({ batches: pagination, filters }: PageProps
                                     <TableHead>Subject</TableHead>
                                     <TableHead>Capacity</TableHead>
                                     <TableHead>Enrolled</TableHead>
-                                    <TableHead>Fees</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
@@ -126,7 +124,7 @@ export default function BatchesIndex({ batches: pagination, filters }: PageProps
                             <TableBody>
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="text-center">
+                                        <TableCell colSpan={6} className="text-center">
                                             No batches found.
                                         </TableCell>
                                     </TableRow>
@@ -137,7 +135,6 @@ export default function BatchesIndex({ batches: pagination, filters }: PageProps
                                             <TableCell>{batch.subject || '-'}</TableCell>
                                             <TableCell>{batch.capacity}</TableCell>
                                             <TableCell>{batch.enrollments_count}</TableCell>
-                                            <TableCell>${batch.fees_amount}</TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusBadge(batch.status)}>
                                                     {batch.status}

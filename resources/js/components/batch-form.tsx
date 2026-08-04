@@ -9,11 +9,11 @@ type Batch = {
     id?: number;
     name: string;
     subject: string | null;
-    schedule: string | null;
+    days: string | null;
+    time: string | null;
     capacity: number;
     start_date: string | null;
     end_date: string | null;
-    fees_amount: number;
     status: string;
 };
 
@@ -24,15 +24,22 @@ type BatchFormProps = {
     errors: Record<string, string>;
 };
 
+const DAY_OPTIONS = [
+    'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu',
+    'Sat-Sun', 'Sun-Tue', 'Mon-Wed', 'Tue-Thu',
+    'Sat-Mon', 'Sun-Wed', 'Mon-Thu',
+    'Sat-Thu', 'Sat-Wed', 'Sun-Thu',
+];
+
 export default function BatchForm({ batch, onSubmit, processing, errors }: BatchFormProps) {
     const { data, setData } = useForm({
         name: batch?.name || '',
         subject: batch?.subject || '',
-        schedule: batch?.schedule || '',
+        days: batch?.days || '',
+        time: batch?.time || '',
         capacity: batch?.capacity || 30,
         start_date: batch?.start_date || '',
         end_date: batch?.end_date || '',
-        fees_amount: batch?.fees_amount || 0,
         status: batch?.status || 'active',
     });
 
@@ -67,6 +74,34 @@ export default function BatchForm({ batch, onSubmit, processing, errors }: Batch
                 </div>
 
                 <div className="space-y-2">
+                    <Label htmlFor="days">Days</Label>
+                    <Select value={data.days || ''} onValueChange={(value) => setData('days', value)}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select days" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {DAY_OPTIONS.map((day) => (
+                                <SelectItem key={day} value={day}>
+                                    {day}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <InputError message={errors.days} />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="time">Time</Label>
+                    <Input
+                        id="time"
+                        value={data.time || ''}
+                        onChange={(e) => setData('time', e.target.value)}
+                        placeholder="e.g. 10:00 AM - 12:00 PM"
+                    />
+                    <InputError message={errors.time} />
+                </div>
+
+                <div className="space-y-2">
                     <Label htmlFor="capacity">Capacity *</Label>
                     <Input
                         id="capacity"
@@ -76,19 +111,6 @@ export default function BatchForm({ batch, onSubmit, processing, errors }: Batch
                         min="1"
                     />
                     <InputError message={errors.capacity} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="fees_amount">Fees Amount *</Label>
-                    <Input
-                        id="fees_amount"
-                        type="number"
-                        step="0.01"
-                        value={data.fees_amount}
-                        onChange={(e) => setData('fees_amount', parseFloat(e.target.value) || 0)}
-                        min="0"
-                    />
-                    <InputError message={errors.fees_amount} />
                 </div>
 
                 <div className="space-y-2">
@@ -127,17 +149,6 @@ export default function BatchForm({ batch, onSubmit, processing, errors }: Batch
                     </Select>
                     <InputError message={errors.status} />
                 </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="schedule">Schedule (JSON)</Label>
-                <Input
-                    id="schedule"
-                    value={data.schedule || ''}
-                    onChange={(e) => setData('schedule', e.target.value)}
-                    placeholder='{"days": ["Mon", "Wed"], "time": "10:00-12:00"}'
-                />
-                <InputError message={errors.schedule} />
             </div>
 
             <div className="flex justify-end gap-2">

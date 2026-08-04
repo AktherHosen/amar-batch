@@ -16,11 +16,11 @@ class StoreBatchRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'subject' => ['nullable', 'string', 'max:255'],
-            'schedule' => ['nullable', 'json'],
+            'days' => ['nullable', 'string', 'max:255'],
+            'time' => ['nullable', 'string', 'max:50'],
             'capacity' => ['required', 'integer', 'min:1'],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'fees_amount' => ['required', 'numeric', 'min:0'],
             'status' => ['sometimes', 'in:active,inactive,archived'],
         ];
     }

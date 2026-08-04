@@ -14,17 +14,15 @@ class Batch extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'subject', 'schedule', 'capacity', 'start_date',
-        'end_date', 'fees_amount', 'status',
+        'name', 'subject', 'days', 'time', 'capacity', 'start_date',
+        'end_date', 'status',
     ];
 
     protected function casts(): array
     {
         return [
-            'schedule' => 'array',
             'start_date' => 'date',
             'end_date' => 'date',
-            'fees_amount' => 'decimal:2',
         ];
     }
 
