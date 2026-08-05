@@ -17,6 +17,7 @@ type Batch = {
 type Enrollment = {
     student: Student;
     batch: Batch;
+    enrolled_at: string | null;
 };
 
 type PageProps = {

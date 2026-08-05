@@ -1,11 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Pencil } from 'lucide-react';
+import { Plus, Search, Trash2 } from 'lucide-react';
 import fees from '@/routes/fees';
 
 type Student = {
@@ -32,6 +32,7 @@ type FeeRecord = {
 type FeeGridItem = {
     student: Student;
     batch: Batch;
+    enrolled_at: string | null;
     months: Record<number, FeeRecord>;
 };
 
@@ -49,11 +50,128 @@ type PageProps = {
     };
 };
 
+function FeeCell({
+    fee,
+    studentId,
+    batchId,
+    month,
+    year,
+    isAdmin,
+    disabled,
+}: {
+    fee: FeeRecord | undefined;
+    studentId: number;
+    batchId: number;
+    month: number;
+    year: number;
+    isAdmin: boolean;
+    disabled: boolean;
+}) {
+    const [editing, setEditing] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    if (disabled) {
+        return <span className="text-muted-foreground"></span>;
+    }
+
+    const handleSave = (value: string) => {
+        setEditing(false);
+        const numValue = value === '' ? 0 : parseFloat(value);
+
+        if ((value === '' || numValue === 0) && fee) {
+            router.delete(fees.destroy.url(fee.id), { preserveState: true });
+            return;
+        }
+
+        if (numValue > 0) {
+            if (fee) {
+                router.put(fees.update.url(fee.id), {
+                    student_id: fee.student_id,
+                    batch_id: fee.batch_id,
+                    month: fee.month,
+                    year: fee.year,
+                    amount_paid: numValue,
+                }, { preserveState: true });
+            } else {
+                router.post(fees.index.url(), {
+                    student_id: studentId,
+                    batch_id: batchId,
+                    month: month,
+                    year: year,
+                    amount_paid: numValue,
+                }, { preserveState: true });
+            }
+        }
+    };
+
+    if (!isAdmin) {
+        return (
+            <span className={fee && fee.amount_paid > 0 ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
+                {fee && fee.amount_paid > 0 ? Number(fee.amount_paid).toFixed(0) : '-'}
+            </span>
+        );
+    }
+
+    if (editing) {
+        return (
+            <Input
+                ref={inputRef}
+                type="number"
+                min="0"
+                className="h-8 w-[70px] text-center text-sm"
+                defaultValue={fee ? fee.amount_paid : ''}
+                placeholder="0"
+                onBlur={(e) => handleSave(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        handleSave(e.currentTarget.value);
+                    } else if (e.key === 'Escape') {
+                        setEditing(false);
+                    }
+                }}
+                autoFocus
+            />
+        );
+    }
+
+    return (
+        <button
+            type="button"
+            className={`h-8 w-[70px] rounded-md border border-transparent px-2 text-center text-sm transition-colors hover:border-border hover:bg-muted cursor-text ${
+                fee && fee.amount_paid > 0 ? 'text-green-600 font-medium' : 'text-muted-foreground'
+            }`}
+            onClick={() => setEditing(true)}
+        >
+            {fee && fee.amount_paid > 0 ? Number(fee.amount_paid).toFixed(0) : '0'}
+        </button>
+    );
+}
+
 export default function FeesIndex({ feeGrid, months, monthNames, year, filters }: PageProps) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
     const [selectedYear, setSelectedYear] = useState(year);
+
+    const isMonthDisabled = (enrolledAt: string | null, month: number, year: number): boolean => {
+        if (!enrolledAt) return false;
+        const enrollDate = new Date(enrolledAt);
+        const enrollYear = enrollDate.getFullYear();
+        const enrollMonth = enrollDate.getMonth() + 1;
+        if (year < enrollYear) return true;
+        if (year === enrollYear && month < enrollMonth) return true;
+        return false;
+    };
+
+    const handleDeleteRow = (studentId: number, batchId: number) => {
+        if (!confirm('Delete all fee records for this student in this batch for the year?')) return;
+        const feeIds = feeGrid
+            .filter((item) => item.student.id === studentId && item.batch.id === batchId)
+            .flatMap((item) => Object.values(item.months).map((f) => f.id));
+        feeIds.forEach((id) => {
+            router.delete(fees.destroy.url(id), { preserveState: true });
+        });
+    };
 
     const handleSearch = () => {
         router.get(fees.index.url({ search, year: selectedYear }), {}, { preserveState: true });
@@ -62,16 +180,6 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
     const handleYearChange = (newYear: number) => {
         setSelectedYear(newYear);
         router.get(fees.index.url({ search, year: newYear }), {}, { preserveState: true });
-    };
-
-    const handleDelete = (feeId: number) => {
-        if (confirm('Are you sure you want to delete this fee record?')) {
-            router.delete(fees.destroy.url(feeId));
-        }
-    };
-
-    const formatAmount = (amount: number) => {
-        return amount > 0 ? amount.toFixed(0) : '-';
     };
 
     const yearOptions = [];
@@ -136,13 +244,13 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
                                                 {monthNames[m].slice(0, 3)}
                                             </TableHead>
                                         ))}
-                                        {isAdmin && <TableHead className="text-right min-w-[80px]">Actions</TableHead>}
+                                        {isAdmin && <TableHead className="w-[50px]"></TableHead>}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {feeGrid.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={isAdmin ? months.length + 4 : months.length + 3} className="text-center">
+                                            <TableCell colSpan={months.length + 4} className="text-center">
                                                 No fee records found. Click "Add Fee Record" to get started.
                                             </TableCell>
                                         </TableRow>
@@ -156,31 +264,29 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
                                                     {item.student.coaching_class?.name || '-'}
                                                 </TableCell>
                                                 <TableCell>{item.batch.name}</TableCell>
-                                                {months.map((m) => {
-                                                    const fee = item.months[m];
-                                                    return (
-                                                        <TableCell key={m} className="text-center">
-                                                            {fee ? (
-                                                                <span className={fee.amount_paid > 0 ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
-                                                                    {formatAmount(fee.amount_paid)}
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-muted-foreground">-</span>
-                                                            )}
-                                                        </TableCell>
-                                                    );
-                                                })}
+                                                {months.map((m) => (
+                                                    <TableCell key={m} className="text-center p-1">
+                                                        <FeeCell
+                                                            fee={item.months[m]}
+                                                            studentId={item.student.id}
+                                                            batchId={item.batch.id}
+                                                            month={m}
+                                                            year={year}
+                                                            isAdmin={isAdmin}
+                                                            disabled={isMonthDisabled(item.enrolled_at, m, year)}
+                                                        />
+                                                    </TableCell>
+                                                ))}
                                                 {isAdmin && (
-                                                    <TableCell className="text-right">
-                                                        {item.months[months[0]] && (
-                                                            <div className="flex justify-end gap-1">
-                                                                <Link href={fees.edit.url(item.months[months[0]].id)}>
-                                                                    <Button variant="ghost" size="sm">
-                                                                        <Pencil className="size-3" />
-                                                                    </Button>
-                                                                </Link>
-                                                            </div>
-                                                        )}
+                                                    <TableCell className="text-center p-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                            onClick={() => handleDeleteRow(item.student.id, item.batch.id)}
+                                                        >
+                                                            <Trash2 className="size-4" />
+                                                        </Button>
                                                     </TableCell>
                                                 )}
                                             </TableRow>

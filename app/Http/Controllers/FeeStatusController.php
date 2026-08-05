@@ -53,9 +53,19 @@ class FeeStatusController extends Controller
         foreach ($feeStatuses as $fee) {
             $key = "{$fee->student_id}_{$fee->batch_id}";
             if (!isset($grid[$key])) {
+                $enrollment = \App\Models\Enrollment::where('student_id', $fee->student_id)
+                    ->where('batch_id', $fee->batch_id)
+                    ->where('status', 'active')
+                    ->first();
+
+                $enrolledAt = $fee->student->joined_at
+                    ? $fee->student->joined_at->format('Y-m-d')
+                    : ($enrollment ? $enrollment->created_at->format('Y-m-d') : null);
+
                 $grid[$key] = [
                     'student' => $fee->student,
                     'batch' => $fee->batch,
+                    'enrolled_at' => $enrolledAt,
                     'months' => [],
                 ];
             }
@@ -75,9 +85,18 @@ class FeeStatusController extends Controller
 
     public function create(): Response
     {
-        $students = Student::orderBy('name')->get();
+        $students = Student::with('coachingClass')->orderBy('name')->get();
         $batches = Batch::orderBy('name')->get();
-        $enrollments = \App\Models\Enrollment::where('status', 'active')->with('student', 'batch')->get();
+        $enrollments = \App\Models\Enrollment::where('status', 'active')
+            ->with('student', 'batch')
+            ->get()
+            ->map(fn($e) => [
+                'student' => $e->student,
+                'batch' => $e->batch,
+                'enrolled_at' => $e->student->joined_at
+                    ? $e->student->joined_at->format('Y-m-d')
+                    : $e->created_at->format('Y-m-d'),
+            ]);
 
         return Inertia::render('fees/create', [
             'students' => $students,
@@ -107,9 +126,18 @@ class FeeStatusController extends Controller
     public function edit(FeeStatus $fee): Response
     {
         $fee->load(['student', 'batch']);
-        $students = Student::orderBy('name')->get();
+        $students = Student::with('coachingClass')->orderBy('name')->get();
         $batches = Batch::orderBy('name')->get();
-        $enrollments = \App\Models\Enrollment::where('status', 'active')->with('student', 'batch')->get();
+        $enrollments = \App\Models\Enrollment::where('status', 'active')
+            ->with('student', 'batch')
+            ->get()
+            ->map(fn($e) => [
+                'student' => $e->student,
+                'batch' => $e->batch,
+                'enrolled_at' => $e->student->joined_at
+                    ? $e->student->joined_at->format('Y-m-d')
+                    : $e->created_at->format('Y-m-d'),
+            ]);
 
         return Inertia::render('fees/edit', [
             'fee' => $fee,

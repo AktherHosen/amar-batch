@@ -178,21 +178,21 @@ export default function StudentsShow({ student }: StudentsShowProps) {
                     </Card>
                 )}
 
-                <Card>
+                    <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <CardTitle>Payment History</CardTitle>
-                            {student.feeStatuses && student.feeStatuses.length > 0 && (
+                            {student.fee_statuses && student.fee_statuses.length > 0 && (
                                 <div className="text-sm text-muted-foreground">
                                     Total Paid: <span className="font-bold text-green-600">
-                                        {student.feeStatuses.reduce((sum, f) => sum + Number(f.amount_paid), 0).toFixed(0)}
+                                        {student.fee_statuses.reduce((sum, f) => sum + Number(f.amount_paid), 0).toFixed(0)}
                                     </span>
                                 </div>
                             )}
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {student.feeStatuses && student.feeStatuses.length > 0 ? (
+                        {student.fee_statuses && student.fee_statuses.length > 0 ? (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -204,7 +204,7 @@ export default function StudentsShow({ student }: StudentsShowProps) {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {student.feeStatuses
+                                    {student.fee_statuses
                                         .sort((a, b) => b.year - a.year || b.month - a.month)
                                         .map((fee) => (
                                             <TableRow key={fee.id}>

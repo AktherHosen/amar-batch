@@ -21,7 +21,7 @@ export type Student = {
         enrolled_at: string;
         status: string;
     }>;
-    feeStatuses?: Array<{
+    fee_statuses?: Array<{
         id: number;
         batch: { id: number; name: string };
         month: number;

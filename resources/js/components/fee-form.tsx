@@ -1,5 +1,4 @@
 import { useForm } from '@inertiajs/react';
-import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +8,7 @@ import InputError from '@/components/input-error';
 type Student = {
     id: number;
     name: string;
+    coaching_class: { id: number; name: string } | null;
 };
 
 type Batch = {
@@ -19,6 +19,7 @@ type Batch = {
 type Enrollment = {
     student: Student;
     batch: Batch;
+    enrolled_at: string | null;
 };
 
 type FeeFormData = {
@@ -53,32 +54,48 @@ const MONTH_NAMES = [
     'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-export default function FeeForm({ fee, students, enrollments, isEdit = false }: FeeFormProps) {
+export default function FeeForm({ fee, students, batches, enrollments, isEdit = false }: FeeFormProps) {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
+
+    const getDefaultMonth = () => {
+        if (fee?.month) return fee.month.toString();
+        return currentMonth.toString();
+    };
+
+    const getDefaultYear = () => {
+        if (fee?.year) return fee.year.toString();
+        return currentYear.toString();
+    };
 
     const { data, setData, post, put, processing, errors } = useForm<FeeFormData>({
         student_id: fee?.student_id?.toString() || '',
         batch_id: fee?.batch_id?.toString() || '',
-        month: fee?.month?.toString() || currentMonth.toString(),
-        year: fee?.year?.toString() || currentYear.toString(),
+        month: getDefaultMonth(),
+        year: getDefaultYear(),
         amount_paid: fee?.amount_paid?.toString() || '',
         notes: fee?.notes || '',
     });
 
     const selectedStudentId = data.student_id;
 
-    const availableBatches = useMemo(() => {
-        if (!selectedStudentId) return [];
-        return enrollments
-            .filter((e) => e.student.id === parseInt(selectedStudentId))
-            .map((e) => e.batch)
-            .filter((b, i, arr) => arr.findIndex((x) => x.id === b.id) === i);
-    }, [selectedStudentId, enrollments]);
+    const getEnrollmentForStudent = (studentId: string) => {
+        return enrollments.find((e) => e.student.id.toString() === studentId);
+    };
 
     const handleStudentChange = (v: string) => {
         setData('student_id', v);
-        setData('batch_id', '');
+        const enrollment = getEnrollmentForStudent(v);
+        if (enrollment) {
+            setData('batch_id', enrollment.batch.id.toString());
+            if (enrollment.enrolled_at) {
+                const enrollDate = new Date(enrollment.enrolled_at);
+                setData('month', (enrollDate.getMonth() + 1).toString());
+                setData('year', enrollDate.getFullYear().toString());
+            }
+        } else {
+            setData('batch_id', '');
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -102,7 +119,7 @@ export default function FeeForm({ fee, students, enrollments, isEdit = false }: 
                         <SelectContent>
                             {students.map((student) => (
                                 <SelectItem key={student.id} value={student.id.toString()}>
-                                    {student.name}
+                                    {student.name}{student.coaching_class ? ` (${student.coaching_class.name})` : ''}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -112,12 +129,12 @@ export default function FeeForm({ fee, students, enrollments, isEdit = false }: 
 
                 <div className="space-y-2">
                     <Label htmlFor="batch_id">Batch *</Label>
-                    <Select value={data.batch_id} onValueChange={(v) => setData('batch_id', v)} disabled={!selectedStudentId}>
+                    <Select value={data.batch_id} onValueChange={(v) => setData('batch_id', v)}>
                         <SelectTrigger>
-                            <SelectValue placeholder={selectedStudentId ? 'Select a batch' : 'Select a student first'} />
+                            <SelectValue placeholder="Select a batch" />
                         </SelectTrigger>
                         <SelectContent>
-                            {availableBatches.map((batch) => (
+                            {batches.map((batch) => (
                                 <SelectItem key={batch.id} value={batch.id.toString()}>
                                     {batch.name}
                                 </SelectItem>

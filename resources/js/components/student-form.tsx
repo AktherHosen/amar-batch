@@ -27,12 +27,12 @@ export default function StudentForm({ student, coachingClasses, onSubmit, proces
         coaching_class_id: student?.coaching_class_id ? String(student.coaching_class_id) : '',
         section: student?.section || '',
         address: student?.address || '',
-        date_of_birth: student?.date_of_birth || '',
+        date_of_birth: student?.date_of_birth ? student.date_of_birth.split('T')[0] : '',
         gender: student?.gender || '',
         guardian_name: student?.guardian_name || '',
         guardian_phone: student?.guardian_phone || '',
         status: student?.status || 'active',
-        joined_at: student?.joined_at || '',
+        joined_at: student?.joined_at ? student.joined_at.split('T')[0] : '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
