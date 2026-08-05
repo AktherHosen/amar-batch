@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import teachers from '@/routes/teachers';
 import batches from '@/routes/batches';
+import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
     auth: { user: { role: string } };
@@ -33,6 +34,7 @@ type TeachersShowProps = {
 };
 
 export default function TeachersShow({ teacher }: TeachersShowProps) {
+    const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
 
@@ -52,22 +54,22 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                         <Link href={teachers.index()}>
                             <Button variant="ghost" size="sm">
                                 <ArrowLeft className="mr-2 size-4" />
-                                Back
+                                {t('actions.back')}
                             </Button>
                         </Link>
-                        <Heading title={teacher.name} description="Teacher Details" />
+                        <Heading title={teacher.name} description={t('teachers.title')} />
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
                             <Link href={teachers.edit(teacher.id)}>
                                 <Button variant="outline">
                                     <Pencil className="mr-2 size-4" />
-                                    Edit
+                                    {t('actions.edit')}
                                 </Button>
                             </Link>
                             <Button variant="destructive" onClick={handleDelete}>
                                 <Trash2 className="mr-2 size-4" />
-                                Deactivate
+                                {t('actions.delete')}
                             </Button>
                         </div>
                     )}
@@ -75,19 +77,19 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Teacher Information</CardTitle>
+                        <CardTitle>{t('teachers.title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div>
-                            <p className="text-sm text-muted-foreground">Name</p>
+                            <p className="text-sm text-muted-foreground">{t('teachers.name')}</p>
                             <p className="font-medium">{teacher.name}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Email</p>
+                            <p className="text-sm text-muted-foreground">{t('teachers.email')}</p>
                             <p className="font-medium">{teacher.email}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Assigned Batches</p>
+                            <p className="text-sm text-muted-foreground">{t('batches.title')}</p>
                             <p className="font-medium">{teacher.assigned_batches_count}</p>
                         </div>
                     </CardContent>
@@ -95,18 +97,18 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Assigned Batches</CardTitle>
+                        <CardTitle>{t('batches.title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {teacher.assigned_batches.length > 0 ? (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Subject</TableHead>
-                                        <TableHead>Students</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+                                        <TableHead>{t('batches.name')}</TableHead>
+                                        <TableHead>{t('batches.subject')}</TableHead>
+                                        <TableHead>{t('batches.enrolled')}</TableHead>
+                                        <TableHead>{t('students.status')}</TableHead>
+                                        <TableHead className="text-right">{t('actions.view')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -131,7 +133,7 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                             <TableCell className="text-right">
                                                 <Link href={batches.show(batch.id)}>
                                                     <Button variant="ghost" size="sm">
-                                                        View
+                                                        {t('actions.view')}
                                                     </Button>
                                                 </Link>
                                             </TableCell>
@@ -140,7 +142,7 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                 </TableBody>
                             </Table>
                         ) : (
-                            <p className="text-sm text-muted-foreground">No batches assigned yet.</p>
+                            <p className="text-sm text-muted-foreground">{t('batches.title')}</p>
                         )}
                     </CardContent>
                 </Card>

@@ -13,6 +13,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useLocale } from '@/contexts/locale-context';
 import { dashboard } from '@/routes';
 import students from '@/routes/students';
 import batches from '@/routes/batches';
@@ -22,58 +23,47 @@ import attendance from '@/routes/attendance';
 import coachingClasses from '@/routes/coaching-classes';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Students',
-        href: students.index(),
-        icon: Users,
-    },
-    {
-        title: 'Classes',
-        href: coachingClasses.index(),
-        icon: School,
-    },
-    {
-        title: 'Teachers',
-        href: teachers.index(),
-        icon: GraduationCap,
-    },
-    {
-        title: 'Batches',
-        href: batches.index(),
-        icon: Layers,
-    },
-    {
-        title: 'Fees',
-        href: fees.index(),
-        icon: DollarSign,
-    },
-    {
-        title: 'Attendance',
-        href: attendance.index(),
-        icon: CheckSquare,
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
-
 export function AppSidebar() {
+    const { t } = useLocale();
+    
+    const mainNavItems: NavItem[] = [
+        {
+            title: t('nav.dashboard'),
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            title: t('nav.students'),
+            href: students.index(),
+            icon: Users,
+        },
+        {
+            title: t('nav.coaching_classes'),
+            href: coachingClasses.index(),
+            icon: School,
+        },
+        {
+            title: t('nav.teachers'),
+            href: teachers.index(),
+            icon: GraduationCap,
+        },
+        {
+            title: t('nav.batches'),
+            href: batches.index(),
+            icon: Layers,
+        },
+        {
+            title: t('nav.fees'),
+            href: fees.index(),
+            icon: DollarSign,
+        },
+        {
+            title: t('nav.attendance'),
+            href: attendance.index(),
+            icon: CheckSquare,
+        },
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -93,7 +83,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

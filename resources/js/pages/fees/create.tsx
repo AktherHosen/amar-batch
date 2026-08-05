@@ -3,6 +3,7 @@ import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeeForm from '@/components/fee-form';
 import fees from '@/routes/fees';
+import { useLocale } from '@/contexts/locale-context';
 
 type Student = {
     id: number;
@@ -27,16 +28,17 @@ type PageProps = {
 };
 
 export default function FeesCreate({ students, batches, enrollments }: PageProps) {
+    const { t } = useLocale();
     return (
         <>
-            <Head title="Add Fee Record" />
+            <Head title={t('fees.create')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title="Add Fee Record" description="Record a monthly fee payment" />
+                <Heading title={t('fees.create')} description={t('fees.title')} />
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Fee Details</CardTitle>
+                        <CardTitle>{t('fees.title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <FeeForm students={students} batches={batches} enrollments={enrollments} />

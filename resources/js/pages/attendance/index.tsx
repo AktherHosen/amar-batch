@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Trash2 } from 'lucide-react';
 import attendance from '@/routes/attendance';
+import { useLocale } from '@/contexts/locale-context';
 
 type AttendanceRecord = {
     id: number;
@@ -41,6 +42,7 @@ type PageProps = {
 };
 
 export default function AttendanceIndex({ attendances: pagination, batches, filters }: PageProps) {
+    const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const isTeacher = auth.user.role === 'teacher';
@@ -68,16 +70,16 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
 
     return (
         <>
-            <Head title="Attendance" />
+            <Head title={t('attendance.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title="Attendance" description="Track student attendance" />
+                    <Heading title={t('attendance.title')} description={t('attendance.title')} />
                     {(isAdmin || isTeacher) && (
                         <Link href={attendance.create()}>
                             <Button>
                                 <Plus className="mr-2 size-4" />
-                                Mark Attendance
+                                {t('attendance.mark')}
                             </Button>
                         </Link>
                     )}
@@ -91,7 +93,7 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
                                     <SelectValue placeholder="All Batches" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Batches</SelectItem>
+                                    <SelectItem value="all">{t('attendance.batch')}</SelectItem>
                                     {batches.map((batch) => (
                                         <SelectItem key={batch.id} value={batch.id.toString()}>
                                             {batch.name}
@@ -107,7 +109,7 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
                             />
                             <Button variant="secondary" onClick={handleFilter}>
                                 <Search className="mr-2 size-4" />
-                                Filter
+                                {t('actions.search')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -115,19 +117,19 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Student</TableHead>
-                                    <TableHead>Batch</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Notes</TableHead>
-                                    {(isAdmin || isTeacher) && <TableHead className="text-right">Actions</TableHead>}
+                                    <TableHead>{t('attendance.student')}</TableHead>
+                                    <TableHead>{t('attendance.batch')}</TableHead>
+                                    <TableHead>{t('attendance.date')}</TableHead>
+                                    <TableHead>{t('attendance.status')}</TableHead>
+                                    <TableHead>{t('attendance.notes')}</TableHead>
+                                    {(isAdmin || isTeacher) && <TableHead className="text-right">{t('actions.view')}</TableHead>}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={isAdmin || isTeacher ? 6 : 5} className="text-center">
-                                            No attendance records found.
+                                            {t('attendance.title')} {t('actions.search')}
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -156,7 +158,7 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
                         {pagination.last_page > 1 && (
                             <div className="mt-4 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of {pagination.total} records
+                                    Showing {pagination.data.length} of {pagination.total} {t('attendance.title')}
                                 </p>
                                 <div className="flex gap-2">
                                     {pagination.current_page > 1 && (
@@ -171,7 +173,7 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
                                                 )
                                             }
                                         >
-                                            Previous
+                                            {t('actions.back')}
                                         </Button>
                                     )}
                                     {pagination.current_page < pagination.last_page && (

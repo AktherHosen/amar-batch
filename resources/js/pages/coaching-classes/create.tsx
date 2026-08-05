@@ -7,8 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import InputError from '@/components/input-error';
 import { ArrowLeft } from 'lucide-react';
 import coachingClasses from '@/routes/coaching-classes';
+import { useLocale } from '@/contexts/locale-context';
 
 export default function CoachingClassCreate() {
+    const { t } = useLocale();
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         default_fee: '',
@@ -21,27 +23,27 @@ export default function CoachingClassCreate() {
 
     return (
         <>
-            <Head title="Create Class" />
+            <Head title={t('classes.create')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
                     <Link href={coachingClasses.index().url}>
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="mr-2 size-4" />
-                            Back
+                            {t('actions.back')}
                         </Button>
                     </Link>
-                    <Heading title="Create Class" description="Add a new coaching class" />
+                    <Heading title={t('classes.create')} description={t('classes.create')} />
                 </div>
 
                 <Card className="max-w-xl">
                     <CardHeader>
-                        <CardTitle>Class Details</CardTitle>
+                        <CardTitle>{t('classes.title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Class Name *</Label>
+                                <Label htmlFor="name">{t('classes.name')} *</Label>
                                 <Input
                                     id="name"
                                     value={data.name}
@@ -52,7 +54,7 @@ export default function CoachingClassCreate() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="default_fee">Default Fee *</Label>
+                                <Label htmlFor="default_fee">{t('classes.default_fee')} *</Label>
                                 <Input
                                     id="default_fee"
                                     type="number"
@@ -66,7 +68,7 @@ export default function CoachingClassCreate() {
 
                             <div className="flex justify-end gap-2">
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Saving...' : 'Create Class'}
+                                    {processing ? t('actions.save') + '...' : t('classes.create')}
                                 </Button>
                             </div>
                         </form>
@@ -80,7 +82,7 @@ export default function CoachingClassCreate() {
 CoachingClassCreate.layout = {
     breadcrumbs: [
         {
-            title: 'Classes',
+            title: 'Coaching Classes',
             href: coachingClasses.index().url,
         },
         {

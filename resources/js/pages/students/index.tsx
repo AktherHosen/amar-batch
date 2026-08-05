@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
 import students from '@/routes/students';
+import { useLocale } from '@/contexts/locale-context';
 
 const MONTH_NAMES = [
     '', 'January', 'February', 'March', 'April', 'May', 'June',
@@ -41,6 +42,7 @@ type PageProps = {
 };
 
 export default function StudentsIndex({ students: pagination, filters }: PageProps) {
+    const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
@@ -63,16 +65,16 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
 
     return (
         <>
-            <Head title="Students" />
+            <Head title={t('students.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title="Students" description="Manage all students" />
+                    <Heading title={t('students.title')} description={t('students.title')} />
                     {isAdmin && (
                         <Link href={students.create()}>
                             <Button>
                                 <Plus className="mr-2 size-4" />
-                                Add Student
+                                {t('students.create')}
                             </Button>
                         </Link>
                     )}
@@ -84,7 +86,7 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search students..."
+                                    placeholder={t('actions.search') + '...'}
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -96,33 +98,33 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                     <SelectValue placeholder="All Status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                    <SelectItem value="all">{t('actions.search')} Status</SelectItem>
+                                    <SelectItem value="active">{t('students.active')}</SelectItem>
+                                    <SelectItem value="inactive">{t('students.inactive')}</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Button variant="secondary" onClick={handleSearch}>
-                                Search
+                                {t('actions.search')}
                             </Button>
                         </div>
 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Class</TableHead>
-                                    <TableHead>Phone</TableHead>
-                                    <TableHead>Guardian</TableHead>
-                                    <TableHead>Joined At</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>{t('students.name')}</TableHead>
+                                    <TableHead>{t('students.class')}</TableHead>
+                                    <TableHead>{t('students.phone')}</TableHead>
+                                    <TableHead>{t('students.guardian_name')}</TableHead>
+                                    <TableHead>{t('students.joined_at')}</TableHead>
+                                    <TableHead>{t('students.status')}</TableHead>
+                                    <TableHead className="text-right">{t('actions.view')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={7} className="text-center">
-                                            No students found.
+                                            {t('students.title')} {t('actions.search')}
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -140,7 +142,7 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                                     {formatDate(student.joined_at)}
                                                 </TableCell>
                                             <TableCell>
-                                                <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
+                                                <Badge variant={student.status === 'active' ? 'default' : 'warning'}>
                                                     {student.status}
                                                 </Badge>
                                             </TableCell>
@@ -174,7 +176,7 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                         {pagination.last_page > 1 && (
                             <div className="mt-4 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of {pagination.total} students
+                                            Showing {pagination.data.length} of {pagination.total} {t('students.title')}
                                 </p>
                                 <div className="flex gap-2">
                                     {pagination.current_page > 1 && (
@@ -189,7 +191,7 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                                 )
                                             }
                                         >
-                                            Previous
+                                            {t('actions.back')}
                                         </Button>
                                     )}
                                     {pagination.current_page < pagination.last_page && (

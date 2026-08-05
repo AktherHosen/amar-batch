@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import coachingClasses from '@/routes/coaching-classes';
+import { useLocale } from '@/contexts/locale-context';
 
 type CoachingClass = {
     id: number;
@@ -30,6 +31,7 @@ type PageProps = {
 };
 
 export default function CoachingClassesIndex({ classes: pagination, filters }: PageProps) {
+    const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
@@ -46,16 +48,16 @@ export default function CoachingClassesIndex({ classes: pagination, filters }: P
 
     return (
         <>
-            <Head title="Classes" />
+            <Head title={t('classes.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title="Classes" description="Manage coaching classes" />
+                    <Heading title={t('classes.title')} description={t('classes.title')} />
                     {isAdmin && (
                         <Link href={coachingClasses.create()}>
                             <Button>
                                 <Plus className="mr-2 size-4" />
-                                Add Class
+                                {t('classes.create')}
                             </Button>
                         </Link>
                     )}
@@ -67,7 +69,7 @@ export default function CoachingClassesIndex({ classes: pagination, filters }: P
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search classes..."
+                                    placeholder={t('actions.search') + '...'}
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -75,24 +77,24 @@ export default function CoachingClassesIndex({ classes: pagination, filters }: P
                                 />
                             </div>
                             <Button variant="secondary" onClick={handleSearch}>
-                                Search
+                                {t('actions.search')}
                             </Button>
                         </div>
 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Default Fee</TableHead>
-                                    <TableHead>Students</TableHead>
-                                    {isAdmin && <TableHead className="text-right">Actions</TableHead>}
+                                    <TableHead>{t('classes.name')}</TableHead>
+                                    <TableHead>{t('classes.default_fee')}</TableHead>
+                                    <TableHead>{t('batches.enrolled')}</TableHead>
+                                    {isAdmin && <TableHead className="text-right">{t('actions.view')}</TableHead>}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={isAdmin ? 4 : 3} className="text-center">
-                                            No classes found.
+                                            {t('classes.title')} {t('actions.search')}
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -124,7 +126,7 @@ export default function CoachingClassesIndex({ classes: pagination, filters }: P
                         {pagination.last_page > 1 && (
                             <div className="mt-4 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of {pagination.total} classes
+                                    Showing {pagination.data.length} of {pagination.total} {t('classes.title')}
                                 </p>
                                 <div className="flex gap-2">
                                     {pagination.current_page > 1 && (
@@ -135,7 +137,7 @@ export default function CoachingClassesIndex({ classes: pagination, filters }: P
                                                 router.get(coachingClasses.index(), { page: pagination.current_page - 1, search }, { preserveState: true })
                                             }
                                         >
-                                            Previous
+                                            {t('actions.back')}
                                         </Button>
                                     )}
                                     {pagination.current_page < pagination.last_page && (
@@ -162,7 +164,7 @@ export default function CoachingClassesIndex({ classes: pagination, filters }: P
 CoachingClassesIndex.layout = {
     breadcrumbs: [
         {
-            title: 'Classes',
+            title: 'Coaching Classes',
             href: coachingClasses.index(),
         },
     ],

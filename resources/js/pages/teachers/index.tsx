@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
 import teachers from '@/routes/teachers';
+import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
     auth: { user: { role: string } };
@@ -28,6 +29,7 @@ type PageProps = {
 };
 
 export default function TeachersIndex({ teachers: pagination, filters }: PageProps) {
+    const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
@@ -44,16 +46,16 @@ export default function TeachersIndex({ teachers: pagination, filters }: PagePro
 
     return (
         <>
-            <Head title="Teachers" />
+            <Head title={t('teachers.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title="Teachers" description="Manage all teachers" />
+                    <Heading title={t('teachers.title')} description={t('teachers.title')} />
                     {isAdmin && (
                         <Link href={teachers.create()}>
                             <Button>
                                 <Plus className="mr-2 size-4" />
-                                Add Teacher
+                                {t('teachers.create')}
                             </Button>
                         </Link>
                     )}
@@ -65,7 +67,7 @@ export default function TeachersIndex({ teachers: pagination, filters }: PagePro
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search teachers..."
+                                    placeholder={t('actions.search') + '...'}
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -80,17 +82,17 @@ export default function TeachersIndex({ teachers: pagination, filters }: PagePro
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Assigned Batches</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>{t('teachers.name')}</TableHead>
+                                    <TableHead>{t('teachers.email')}</TableHead>
+                                    <TableHead>{t('batches.title')}</TableHead>
+                                    <TableHead className="text-right">{t('actions.view')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={4} className="text-center">
-                                            No teachers found.
+                                            {t('teachers.title')} {t('actions.search')}
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -129,7 +131,7 @@ export default function TeachersIndex({ teachers: pagination, filters }: PagePro
                         {pagination.last_page > 1 && (
                             <div className="mt-4 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of {pagination.total} teachers
+                                    Showing {pagination.data.length} of {pagination.total} {t('teachers.title')}
                                 </p>
                                 <div className="flex gap-2">
                                     {pagination.current_page > 1 && (
@@ -144,7 +146,7 @@ export default function TeachersIndex({ teachers: pagination, filters }: PagePro
                                                 )
                                             }
                                         >
-                                            Previous
+                                            {t('actions.back')}
                                         </Button>
                                     )}
                                     {pagination.current_page < pagination.last_page && (

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import students from '@/routes/students';
+import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
     auth: { user: { role: string } };
@@ -32,6 +33,7 @@ function formatDate(dateStr: string | null): string {
 }
 
 export default function StudentsShow({ student, attendanceSummary }: StudentsShowProps) {
+    const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
 
@@ -51,22 +53,22 @@ export default function StudentsShow({ student, attendanceSummary }: StudentsSho
                         <Link href={students.index()}>
                             <Button variant="ghost" size="sm">
                                 <ArrowLeft className="mr-2 size-4" />
-                                Back
+                                {t('actions.back')}
                             </Button>
                         </Link>
-                        <Heading title={student.name} description="Student Details" />
+                        <Heading title={student.name} description={t('students.title')} />
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
                             <Link href={students.edit(student.id)}>
                                 <Button variant="outline">
                                     <Pencil className="mr-2 size-4" />
-                                    Edit
+                                    {t('actions.edit')}
                                 </Button>
                             </Link>
                             <Button variant="destructive" onClick={handleDelete}>
                                 <Trash2 className="mr-2 size-4" />
-                                Delete
+                                {t('actions.delete')}
                             </Button>
                         </div>
                     )}
@@ -75,19 +77,19 @@ export default function StudentsShow({ student, attendanceSummary }: StudentsSho
                 <div className="grid gap-4 md:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Personal Information</CardTitle>
+                            <CardTitle>{t('students.name')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <p className="text-sm text-muted-foreground">Name</p>
+                                <p className="text-sm text-muted-foreground">{t('students.name')}</p>
                                 <p className="font-medium">{student.name}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Phone</p>
+                                <p className="text-sm text-muted-foreground">{t('students.phone')}</p>
                                 <p className="font-medium">{student.phone || '-'}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Class</p>
+                                <p className="text-sm text-muted-foreground">{t('students.class')}</p>
                                 <p className="font-medium">
                                     {student.coaching_class
                                         ? `${student.coaching_class.name}${student.section ? ` - ${student.section}` : ''}`
@@ -95,32 +97,32 @@ export default function StudentsShow({ student, attendanceSummary }: StudentsSho
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Joined At</p>
+                                <p className="text-sm text-muted-foreground">{t('students.joined_at')}</p>
                                 <p className="font-medium">
                                     {formatDate(student.joined_at)}
                                 </p>
                             </div>
                             {student.left_at && (
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Left At</p>
+                                    <p className="text-sm text-muted-foreground">{t('students.left_at')}</p>
                                     <p className="font-medium">
                                         {formatDate(student.left_at)}
                                     </p>
                                 </div>
                             )}
                             <div>
-                                <p className="text-sm text-muted-foreground">Date of Birth</p>
+                                <p className="text-sm text-muted-foreground">{t('students.date_of_birth')}</p>
                                 <p className="font-medium">
                                     {formatDate(student.date_of_birth)}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Gender</p>
+                                <p className="text-sm text-muted-foreground">{t('students.gender')}</p>
                                 <p className="font-medium capitalize">{student.gender || '-'}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Status</p>
-                                <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
+                                <p className="text-sm text-muted-foreground">{t('students.status')}</p>
+                                <Badge variant={student.status === 'active' ? 'default' : 'warning'}>
                                     {student.status}
                                 </Badge>
                             </div>
@@ -129,19 +131,19 @@ export default function StudentsShow({ student, attendanceSummary }: StudentsSho
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Guardian & Address</CardTitle>
+                            <CardTitle>{t('students.guardian_name')} & {t('students.address')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <p className="text-sm text-muted-foreground">Address</p>
+                                <p className="text-sm text-muted-foreground">{t('students.address')}</p>
                                 <p className="font-medium">{student.address || '-'}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Guardian Name</p>
+                                <p className="text-sm text-muted-foreground">{t('students.guardian_name')}</p>
                                 <p className="font-medium">{student.guardian_name || '-'}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Guardian Phone</p>
+                                <p className="text-sm text-muted-foreground">{t('students.guardian_phone')}</p>
                                 <p className="font-medium">{student.guardian_phone || '-'}</p>
                             </div>
                         </CardContent>
@@ -151,16 +153,16 @@ export default function StudentsShow({ student, attendanceSummary }: StudentsSho
                 {student.enrollments && student.enrollments.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Enrollments</CardTitle>
+                            <CardTitle>{t('students.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Batch</TableHead>
-                                        <TableHead>Subject</TableHead>
-                                        <TableHead>Enrolled At</TableHead>
-                                        <TableHead>Status</TableHead>
+                                        <TableHead>{t('batches.name')}</TableHead>
+                                        <TableHead>{t('batches.subject')}</TableHead>
+                                        <TableHead>{t('students.joined_at')}</TableHead>
+                                        <TableHead>{t('students.status')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -194,18 +196,18 @@ export default function StudentsShow({ student, attendanceSummary }: StudentsSho
 
                     <Card>
                     <CardHeader>
-                        <CardTitle>Attendance Summary</CardTitle>
+                        <CardTitle>{t('attendance.title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {Object.keys(attendanceSummary).length > 0 ? (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Month</TableHead>
-                                        <TableHead>Year</TableHead>
-                                        <TableHead className="text-center">Present</TableHead>
-                                        <TableHead className="text-center">Absent</TableHead>
-                                        <TableHead className="text-center">Late</TableHead>
+                                        <TableHead>{t('fees.month')}</TableHead>
+                                        <TableHead>{t('fees.year')}</TableHead>
+                                        <TableHead className="text-center">{t('attendance.present')}</TableHead>
+                                        <TableHead className="text-center">{t('attendance.absent')}</TableHead>
+                                        <TableHead className="text-center">{t('attendance.late')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -236,7 +238,7 @@ export default function StudentsShow({ student, attendanceSummary }: StudentsSho
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <CardTitle>Payment History</CardTitle>
+                            <CardTitle>{t('fees.payment_history')}</CardTitle>
                             {student.fee_statuses && student.fee_statuses.length > 0 && (
                                 <div className="text-sm text-muted-foreground">
                                     Total Paid: <span className="font-bold text-green-600">
@@ -251,11 +253,11 @@ export default function StudentsShow({ student, attendanceSummary }: StudentsSho
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Month</TableHead>
-                                        <TableHead>Year</TableHead>
-                                        <TableHead>Batch</TableHead>
-                                        <TableHead className="text-right">Amount Paid</TableHead>
-                                        <TableHead>Notes</TableHead>
+                                        <TableHead>{t('fees.month')}</TableHead>
+                                        <TableHead>{t('fees.year')}</TableHead>
+                                        <TableHead>{t('batches.name')}</TableHead>
+                                        <TableHead className="text-right">{t('fees.amount_paid')}</TableHead>
+                                        <TableHead>{t('attendance.notes')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

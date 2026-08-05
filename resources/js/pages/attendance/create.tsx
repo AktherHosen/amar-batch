@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import attendance from '@/routes/attendance';
+import { useLocale } from '@/contexts/locale-context';
 
 type Batch = {
     id: number;
@@ -30,6 +31,7 @@ type PageProps = {
 };
 
 export default function AttendanceCreate({ batches, students, selectedBatch, selectedDate }: PageProps) {
+    const { t } = useLocale();
     const [batchId, setBatchId] = useState(selectedBatch || '');
     const [date, setDate] = useState(selectedDate || new Date().toISOString().split('T')[0]);
     const [studentList, setStudentList] = useState<StudentAttendance[]>(students);
@@ -84,16 +86,16 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
 
     return (
         <>
-            <Head title="Mark Attendance" />
+            <Head title={t('attendance.mark')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title="Mark Attendance" description="Record attendance for a batch" />
+                <Heading title={t('attendance.mark')} description={t('attendance.title')} />
 
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-4">
                             <div className="space-y-2">
-                                <Label>Batch</Label>
+                                <Label>{t('attendance.batch')}</Label>
                                 <Select value={batchId} onValueChange={handleBatchChange}>
                                     <SelectTrigger className="w-[250px]">
                                         <SelectValue placeholder="Select a batch" />
@@ -108,7 +110,7 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Date</Label>
+                                <Label>{t('attendance.date')}</Label>
                                 <Input
                                     type="date"
                                     value={date}
@@ -123,21 +125,21 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                             <>
                                 <div className="flex gap-2 mb-4">
                                     <Button size="sm" variant="outline" onClick={() => markAll('present')}>
-                                        Mark All Present
+                                        {t('attendance.mark_all_present')}
                                     </Button>
                                     <Button size="sm" variant="outline" onClick={() => markAll('absent')}>
-                                        Mark All Absent
+                                        {t('attendance.mark_all_absent')}
                                     </Button>
                                     <Button size="sm" variant="outline" onClick={() => markAll(null)}>
-                                        Clear All
+                                        {t('attendance.clear_all')}
                                     </Button>
                                 </div>
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Student</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Notes</TableHead>
+                                            <TableHead>{t('attendance.student')}</TableHead>
+                                            <TableHead>{t('attendance.status')}</TableHead>
+                                            <TableHead>{t('attendance.notes')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -195,10 +197,10 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
 
                                 <div className="mt-4 flex justify-end gap-2">
                                     <Button variant="outline" onClick={() => window.history.back()}>
-                                        Cancel
+                                        {t('actions.cancel')}
                                     </Button>
                                     <Button onClick={handleSubmit}>
-                                        Save Attendance
+                                        {t('attendance.save')}
                                     </Button>
                                 </div>
                             </>

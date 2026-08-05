@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Plus, Search, Trash2, MoreHorizontal, Download } from 'lucide-react';
 import fees from '@/routes/fees';
+import { useLocale } from '@/contexts/locale-context';
 
 type Student = {
     id: number;
@@ -149,6 +150,7 @@ function FeeCell({
 }
 
 export default function FeesIndex({ feeGrid, months, monthNames, year, filters }: PageProps) {
+    const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
@@ -219,11 +221,11 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
 
     return (
         <>
-            <Head title="Fee Management" />
+            <Head title={t('fees.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title="Fee Management" description="Track monthly fee payments" />
+                    <Heading title={t('fees.title')} description={t('fees.title')} />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="icon">
@@ -235,13 +237,13 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
                                 <DropdownMenuItem asChild>
                                     <Link href={fees.create.url()}>
                                         <Plus className="mr-2 size-4" />
-                                        Add Fee Record
+                                        {t('fees.create')}
                                     </Link>
                                 </DropdownMenuItem>
                             )}
                             <DropdownMenuItem onClick={exportToExcel}>
                                 <Download className="mr-2 size-4" />
-                                Export to Excel
+                                {t('fees.export')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -253,7 +255,8 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search by student name..."
+                                    placeholder={t('actions.search') + '...'}
+
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -270,7 +273,7 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
                                 ))}
                             </select>
                             <Button variant="secondary" onClick={handleSearch}>
-                                Search
+                                {t('actions.search')}
                             </Button>
                         </div>
 
@@ -278,9 +281,9 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="sticky left-0 bg-background z-10 min-w-[150px]">Student</TableHead>
-                                        <TableHead className="min-w-[100px]">Class</TableHead>
-                                        <TableHead className="min-w-[100px]">Batch</TableHead>
+                                        <TableHead className="sticky left-0 bg-background z-10 min-w-[150px]">{t('fees.student')}</TableHead>
+                                        <TableHead className="min-w-[100px]">{t('students.class')}</TableHead>
+                                        <TableHead className="min-w-[100px]">{t('batches.name')}</TableHead>
                                         {months.map((m) => (
                                             <TableHead key={m} className="text-center min-w-[80px]">
                                                 {monthNames[m].slice(0, 3)}
@@ -293,7 +296,7 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
                                     {feeGrid.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={months.length + 4} className="text-center">
-                                                No fee records found. Click "Add Fee Record" to get started.
+                                                {t('fees.title')} {t('actions.search')}
                                             </TableCell>
                                         </TableRow>
                                     ) : (

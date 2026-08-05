@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
 import batches from '@/routes/batches';
+import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
     auth: { user: { role: string } };
@@ -35,6 +36,7 @@ type PageProps = {
 };
 
 export default function BatchesIndex({ batches: pagination, filters }: PageProps) {
+    const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
@@ -66,16 +68,16 @@ export default function BatchesIndex({ batches: pagination, filters }: PageProps
 
     return (
         <>
-            <Head title="Batches" />
+            <Head title={t('batches.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title="Batches" description="Manage all batches" />
+                    <Heading title={t('batches.title')} description={t('batches.title')} />
                     {isAdmin && (
                         <Link href={batches.create()}>
                             <Button>
                                 <Plus className="mr-2 size-4" />
-                                Add Batch
+                                {t('batches.create')}
                             </Button>
                         </Link>
                     )}
@@ -87,7 +89,7 @@ export default function BatchesIndex({ batches: pagination, filters }: PageProps
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search batches..."
+                                    placeholder={t('actions.search') + '...'}
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -99,33 +101,33 @@ export default function BatchesIndex({ batches: pagination, filters }: PageProps
                                     <SelectValue placeholder="All Status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                    <SelectItem value="all">{t('actions.search')} Status</SelectItem>
+                                    <SelectItem value="active">{t('students.active')}</SelectItem>
+                                    <SelectItem value="inactive">{t('students.inactive')}</SelectItem>
                                     <SelectItem value="archived">Archived</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Button variant="secondary" onClick={handleSearch}>
-                                Search
+                                {t('actions.search')}
                             </Button>
                         </div>
 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Subject</TableHead>
-                                    <TableHead>Capacity</TableHead>
-                                    <TableHead>Enrolled</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>{t('batches.name')}</TableHead>
+                                    <TableHead>{t('batches.subject')}</TableHead>
+                                    <TableHead>{t('batches.capacity')}</TableHead>
+                                    <TableHead>{t('batches.enrolled')}</TableHead>
+                                    <TableHead>{t('students.status')}</TableHead>
+                                    <TableHead className="text-right">{t('actions.view')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={6} className="text-center">
-                                            No batches found.
+                                            {t('batches.title')} {t('actions.search')}
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -170,7 +172,7 @@ export default function BatchesIndex({ batches: pagination, filters }: PageProps
                         {pagination.last_page > 1 && (
                             <div className="mt-4 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of {pagination.total} batches
+                                    Showing {pagination.data.length} of {pagination.total} {t('batches.title')}
                                 </p>
                                 <div className="flex gap-2">
                                     {pagination.current_page > 1 && (
@@ -185,7 +187,7 @@ export default function BatchesIndex({ batches: pagination, filters }: PageProps
                                                 )
                                             }
                                         >
-                                            Previous
+                                            {t('actions.back')}
                                         </Button>
                                     )}
                                     {pagination.current_page < pagination.last_page && (

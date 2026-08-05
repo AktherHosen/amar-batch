@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Pencil, Trash2, UserMinus } from 'lucide-react';
 import batches from '@/routes/batches';
+import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
     auth: { user: { role: string } };
@@ -54,6 +55,7 @@ type BatchesShowProps = {
 };
 
 export default function BatchesShow({ batch, teachers, students, enrolledStudentIds }: BatchesShowProps) {
+    const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [selectedTeacher, setSelectedTeacher] = useState('');
@@ -134,22 +136,22 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
                         <Link href={batches.index()}>
                             <Button variant="ghost" size="sm">
                                 <ArrowLeft className="mr-2 size-4" />
-                                Back
+                                {t('actions.back')}
                             </Button>
                         </Link>
-                        <Heading title={batch.name} description="Batch Details" />
+                        <Heading title={batch.name} description={t('batches.title')} />
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
                             <Link href={batches.edit(batch.id)}>
                                 <Button variant="outline">
                                     <Pencil className="mr-2 size-4" />
-                                    Edit
+                                    {t('actions.edit')}
                                 </Button>
                             </Link>
                             <Button variant="destructive" onClick={handleDelete}>
                                 <Trash2 className="mr-2 size-4" />
-                                Delete
+                                {t('actions.delete')}
                             </Button>
                         </div>
                     )}
@@ -158,27 +160,27 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
                 <div className="grid gap-4 md:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Batch Information</CardTitle>
+                            <CardTitle>{t('batches.title')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <p className="text-sm text-muted-foreground">Name</p>
+                                <p className="text-sm text-muted-foreground">{t('batches.name')}</p>
                                 <p className="font-medium">{batch.name}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Subject</p>
+                                <p className="text-sm text-muted-foreground">{t('batches.subject')}</p>
                                 <p className="font-medium">{batch.subject || '-'}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Capacity</p>
+                                <p className="text-sm text-muted-foreground">{t('batches.capacity')}</p>
                                 <p className="font-medium">{batch.capacity}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Enrolled</p>
+                                <p className="text-sm text-muted-foreground">{t('batches.enrolled')}</p>
                                 <p className="font-medium">{batch.enrollments.length}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Status</p>
+                                <p className="text-sm text-muted-foreground">{t('students.status')}</p>
                                 <Badge variant={getStatusBadge(batch.status)}>{batch.status}</Badge>
                             </div>
                         </CardContent>
@@ -186,27 +188,27 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Schedule</CardTitle>
+                            <CardTitle>{t('batches.schedule')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <p className="text-sm text-muted-foreground">Start Date</p>
+                                <p className="text-sm text-muted-foreground">{t('students.joined_at')}</p>
                                 <p className="font-medium">
                                     {batch.start_date ? new Date(batch.start_date).toLocaleDateString() : '-'}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">End Date</p>
+                                <p className="text-sm text-muted-foreground">{t('students.left_at')}</p>
                                 <p className="font-medium">
                                     {batch.end_date ? new Date(batch.end_date).toLocaleDateString() : '-'}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Days</p>
+                                <p className="text-sm text-muted-foreground">{t('batches.schedule')}</p>
                                 <p className="font-medium">{batch.days || '-'}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Time</p>
+                                <p className="text-sm text-muted-foreground">{t('batches.schedule')}</p>
                                 <p className="font-medium">{batch.time || '-'}</p>
                             </div>
                         </CardContent>
@@ -216,16 +218,16 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
                 {isAdmin && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Assigned Teachers</CardTitle>
+                            <CardTitle>{t('teachers.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {batch.teachers.length > 0 ? (
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Email</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                            <TableHead>{t('teachers.name')}</TableHead>
+                                            <TableHead>{t('teachers.email')}</TableHead>
+                                            <TableHead className="text-right">{t('actions.view')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -247,7 +249,7 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
                                     </TableBody>
                                 </Table>
                             ) : (
-                                <p className="text-sm text-muted-foreground">No teachers assigned.</p>
+                                <p className="text-sm text-muted-foreground">{t('teachers.title')}</p>
                             )}
 
                             {availableTeachers.length > 0 || teacherSearch ? (
@@ -289,7 +291,7 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
                 {(isAdmin || auth.user.role === 'teacher') && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Enroll Students</CardTitle>
+                                    <CardTitle>{t('students.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {(() => {
@@ -327,11 +329,11 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
                                                 </Button>
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-muted-foreground">No students found.</p>
+                                            <p className="text-sm text-muted-foreground">{t('students.title')} {t('actions.search')}</p>
                                         )}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">All students are already enrolled in batches.</p>
+                                    <p className="text-sm text-muted-foreground">{t('batches.enrolled')}</p>
                                 );
                             })()}
                         </CardContent>
@@ -340,19 +342,19 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Enrolled Students ({batch.enrollments.length})</CardTitle>
+                        <CardTitle>{t('batches.enrolled')} ({batch.enrollments.length})</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {batch.enrollments.length > 0 ? (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Class</TableHead>
-                                        <TableHead>Enrolled At</TableHead>
-                                        <TableHead>Status</TableHead>
+                                        <TableHead>{t('students.name')}</TableHead>
+                                        <TableHead>{t('students.class')}</TableHead>
+                                        <TableHead>{t('students.joined_at')}</TableHead>
+                                        <TableHead>{t('students.status')}</TableHead>
                                         {(isAdmin || auth.user.role === 'teacher') && (
-                                            <TableHead className="text-right">Actions</TableHead>
+                                            <TableHead className="text-right">{t('actions.view')}</TableHead>
                                         )}
                                     </TableRow>
                                 </TableHeader>
@@ -403,7 +405,7 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
                                 </TableBody>
                             </Table>
                         ) : (
-                            <p className="text-sm text-muted-foreground">No students enrolled yet.</p>
+                                    <p className="text-sm text-muted-foreground">{t('batches.enrolled')}</p>
                         )}
                     </CardContent>
                 </Card>
