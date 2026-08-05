@@ -14,6 +14,7 @@ type PageProps = {
 
 type StudentsShowProps = {
     student: Student;
+    attendanceSummary: Record<number, Record<number, Record<string, number>>>;
 };
 
 const MONTH_NAMES = [
@@ -30,7 +31,7 @@ function formatDate(dateStr: string | null): string {
     return `${day}/${month}/${year}`;
 }
 
-export default function StudentsShow({ student }: StudentsShowProps) {
+export default function StudentsShow({ student, attendanceSummary }: StudentsShowProps) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
 
@@ -192,6 +193,47 @@ export default function StudentsShow({ student }: StudentsShowProps) {
                 )}
 
                     <Card>
+                    <CardHeader>
+                        <CardTitle>Attendance Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {Object.keys(attendanceSummary).length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Month</TableHead>
+                                        <TableHead>Year</TableHead>
+                                        <TableHead className="text-center">Present</TableHead>
+                                        <TableHead className="text-center">Absent</TableHead>
+                                        <TableHead className="text-center">Late</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {Object.entries(attendanceSummary)
+                                        .sort(([a], [b]) => Number(b) - Number(a))
+                                        .flatMap(([year, months]) =>
+                                            Object.entries(months)
+                                                .sort(([a], [b]) => Number(b) - Number(a))
+                                                .map(([month, counts]) => (
+                                                    <TableRow key={`${year}-${month}`}>
+                                                        <TableCell className="font-medium">{MONTH_NAMES[Number(month)]}</TableCell>
+                                                        <TableCell>{year}</TableCell>
+                                                        <TableCell className="text-center text-green-600">{counts.present || 0}</TableCell>
+                                                        <TableCell className="text-center text-red-600">{counts.absent || 0}</TableCell>
+                                                        <TableCell className="text-center text-yellow-600">{counts.late || 0}</TableCell>
+                                                    </TableRow>
+                                                ))
+                                        )
+                                    }
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <p className="text-sm text-muted-foreground text-center py-4">No attendance records yet.</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <CardTitle>Payment History</CardTitle>

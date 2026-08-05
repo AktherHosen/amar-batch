@@ -57,7 +57,7 @@ class AttendanceController extends Controller
                     return [
                         'id' => $enrollment->student->id,
                         'name' => $enrollment->student->name,
-                        'status' => $existing?->status ?? 'present',
+                        'status' => $existing?->status ?? null,
                         'attendance_id' => $existing?->id,
                         'notes' => $existing?->notes ?? '',
                     ];
@@ -77,18 +77,25 @@ class AttendanceController extends Controller
         $attendances = $request->attendances;
 
         foreach ($attendances as $item) {
-            Attendance::updateOrCreate(
-                [
-                    'student_id' => $item['student_id'],
-                    'batch_id' => $request->batch_id,
-                    'date' => $request->date,
-                ],
-                [
-                    'status' => $item['status'],
-                    'marked_by' => $request->user()->id,
-                    'notes' => $item['notes'] ?? null,
-                ]
-            );
+            if ($item['status'] === null) {
+                Attendance::where('student_id', $item['student_id'])
+                    ->where('batch_id', $request->batch_id)
+                    ->whereDate('date', $request->date)
+                    ->delete();
+            } else {
+                Attendance::updateOrCreate(
+                    [
+                        'student_id' => $item['student_id'],
+                        'batch_id' => $request->batch_id,
+                        'date' => $request->date,
+                    ],
+                    [
+                        'status' => $item['status'],
+                        'marked_by' => $request->user()->id,
+                        'notes' => $item['notes'] ?? null,
+                    ]
+                );
+            }
         }
 
         return to_route('attendance.index')->with('toast', ['type' => 'success', 'message' => 'Attendance marked successfully.']);

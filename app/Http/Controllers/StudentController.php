@@ -73,8 +73,21 @@ class StudentController extends Controller
 
         $student->load(['coachingClass', 'enrollments.batch', 'feeStatuses.batch', 'attendances']);
 
+        $attendanceSummary = \App\Models\Attendance::where('student_id', $student->id)
+            ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')
+            ->groupBy('year', 'month', 'status')
+            ->get()
+            ->groupBy('year')
+            ->map(function ($months) {
+                return $months->mapWithKeys(function ($items) {
+                    $month = $items->first()->month;
+                    return [$month => $items->pluck('count', 'status')->toArray()];
+                });
+            });
+
         return Inertia::render('students/show', [
             'student' => $student,
+            'attendanceSummary' => $attendanceSummary,
         ]);
     }
 

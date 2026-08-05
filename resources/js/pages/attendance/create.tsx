@@ -17,8 +17,7 @@ type Batch = {
 type StudentAttendance = {
     id: number;
     name: string;
-    email: string;
-    status: 'present' | 'absent' | 'late';
+    status: 'present' | 'absent' | 'late' | null;
     attendance_id?: number;
     notes: string;
 };
@@ -53,10 +52,14 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
         }
     };
 
-    const updateStatus = (studentId: number, status: 'present' | 'absent' | 'late') => {
+    const updateStatus = (studentId: number, status: 'present' | 'absent' | 'late' | null) => {
         setStudentList((prev) =>
             prev.map((s) => (s.id === studentId ? { ...s, status } : s))
         );
+    };
+
+    const markAll = (status: 'present' | 'absent' | 'late' | null) => {
+        setStudentList((prev) => prev.map((s) => ({ ...s, status })));
     };
 
     const updateNotes = (studentId: number, notes: string) => {
@@ -118,6 +121,17 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                     <CardContent>
                         {batchId && studentList.length > 0 ? (
                             <>
+                                <div className="flex gap-2 mb-4">
+                                    <Button size="sm" variant="outline" onClick={() => markAll('present')}>
+                                        Mark All Present
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => markAll('absent')}>
+                                        Mark All Absent
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => markAll(null)}>
+                                        Clear All
+                                    </Button>
+                                </div>
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -133,21 +147,38 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                                                     {student.name}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Select
-                                                        value={student.status}
-                                                        onValueChange={(v: 'present' | 'absent' | 'late') =>
-                                                            updateStatus(student.id, v)
-                                                        }
-                                                    >
-                                                        <SelectTrigger className="w-[150px]">
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="present">Present</SelectItem>
-                                                            <SelectItem value="absent">Absent</SelectItem>
-                                                            <SelectItem value="late">Late</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
+                                                    <div className="flex gap-1">
+                                                        <Button
+                                                            size="sm"
+                                                            variant={student.status === 'present' ? 'default' : 'outline'}
+                                                            onClick={() => updateStatus(student.id, 'present')}
+                                                        >
+                                                            P
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant={student.status === 'absent' ? 'destructive' : 'outline'}
+                                                            onClick={() => updateStatus(student.id, 'absent')}
+                                                        >
+                                                            A
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant={student.status === 'late' ? 'secondary' : 'outline'}
+                                                            onClick={() => updateStatus(student.id, 'late')}
+                                                        >
+                                                            L
+                                                        </Button>
+                                                        {student.status !== null && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => updateStatus(student.id, null)}
+                                                            >
+                                                                Clear
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Input
