@@ -11,6 +11,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
 import students from '@/routes/students';
 
+const MONTH_NAMES = [
+    '', 'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+function formatDate(dateStr: string | null): string {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
 type PageProps = {
     auth: { user: { role: string } };
     students: {
@@ -122,11 +136,9 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                             </TableCell>
                                             <TableCell>{student.phone || '-'}</TableCell>
                                             <TableCell>{student.guardian_name || '-'}</TableCell>
-                                            <TableCell>
-                                                {student.joined_at
-                                                    ? new Date(student.joined_at).toLocaleDateString()
-                                                    : '-'}
-                                            </TableCell>
+                                                <TableCell>
+                                                    {formatDate(student.joined_at)}
+                                                </TableCell>
                                             <TableCell>
                                                 <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
                                                     {student.status}

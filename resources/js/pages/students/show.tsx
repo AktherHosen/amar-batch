@@ -21,6 +21,15 @@ const MONTH_NAMES = [
     'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+function formatDate(dateStr: string | null): string {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
 export default function StudentsShow({ student }: StudentsShowProps) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
@@ -87,17 +96,21 @@ export default function StudentsShow({ student }: StudentsShowProps) {
                             <div>
                                 <p className="text-sm text-muted-foreground">Joined At</p>
                                 <p className="font-medium">
-                                    {student.joined_at
-                                        ? new Date(student.joined_at).toLocaleDateString()
-                                        : '-'}
+                                    {formatDate(student.joined_at)}
                                 </p>
                             </div>
+                            {student.left_at && (
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Left At</p>
+                                    <p className="font-medium">
+                                        {formatDate(student.left_at)}
+                                    </p>
+                                </div>
+                            )}
                             <div>
                                 <p className="text-sm text-muted-foreground">Date of Birth</p>
                                 <p className="font-medium">
-                                    {student.date_of_birth
-                                        ? new Date(student.date_of_birth).toLocaleDateString()
-                                        : '-'}
+                                    {formatDate(student.date_of_birth)}
                                 </p>
                             </div>
                             <div>
@@ -155,7 +168,7 @@ export default function StudentsShow({ student }: StudentsShowProps) {
                                             <TableCell className="font-medium">{enrollment.batch?.name}</TableCell>
                                             <TableCell>{enrollment.batch?.subject || '-'}</TableCell>
                                             <TableCell>
-                                                {new Date(enrollment.enrolled_at).toLocaleDateString()}
+                                                {formatDate(enrollment.enrolled_at)}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge

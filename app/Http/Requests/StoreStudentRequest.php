@@ -25,6 +25,7 @@ class StoreStudentRequest extends FormRequest
             'guardian_phone' => ['nullable', 'string', 'max:20'],
             'status' => ['sometimes', 'in:active,inactive'],
             'joined_at' => ['nullable', 'date'],
+            'left_at' => ['nullable', 'date'],
         ];
     }
 }

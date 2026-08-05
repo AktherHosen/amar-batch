@@ -15,7 +15,7 @@ class Student extends Model
 
     protected $fillable = [
         'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',
-        'gender', 'guardian_name', 'guardian_phone', 'photo', 'status', 'joined_at',
+        'gender', 'guardian_name', 'guardian_phone', 'photo', 'status', 'joined_at', 'left_at',
     ];
 
     protected function casts(): array
@@ -23,6 +23,7 @@ class Student extends Model
         return [
             'date_of_birth' => 'date',
             'joined_at' => 'date',
+            'left_at' => 'date',
         ];
     }
 

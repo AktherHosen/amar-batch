@@ -33,6 +33,7 @@ export default function StudentForm({ student, coachingClasses, onSubmit, proces
         guardian_phone: student?.guardian_phone || '',
         status: student?.status || 'active',
         joined_at: student?.joined_at ? student.joined_at.split('T')[0] : '',
+        left_at: student?.left_at ? student.left_at.split('T')[0] : '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -101,17 +102,33 @@ export default function StudentForm({ student, coachingClasses, onSubmit, proces
                     <Input
                         id="joined_at"
                         type="date"
+                        lang="en-GB"
                         value={data.joined_at}
                         onChange={(e) => setData('joined_at', e.target.value)}
                     />
                     <InputError message={errors.joined_at} />
                 </div>
 
+                {student && (
+                    <div className="space-y-2">
+                        <Label htmlFor="left_at">Left At</Label>
+                        <Input
+                            id="left_at"
+                            type="date"
+                            lang="en-GB"
+                            value={data.left_at}
+                            onChange={(e) => setData('left_at', e.target.value)}
+                        />
+                        <InputError message={errors.left_at} />
+                    </div>
+                )}
+
                 <div className="space-y-2">
                     <Label htmlFor="date_of_birth">Date of Birth</Label>
                     <Input
                         id="date_of_birth"
                         type="date"
+                        lang="en-GB"
                         value={data.date_of_birth}
                         onChange={(e) => setData('date_of_birth', e.target.value)}
                     />

@@ -13,6 +13,7 @@ export type Student = {
     photo: string | null;
     status: 'active' | 'inactive';
     joined_at: string | null;
+    left_at: string | null;
     created_at: string;
     updated_at: string;
     enrollments?: Array<{
