@@ -45,6 +45,7 @@ class AttendanceController extends Controller
         if ($selectedBatch) {
             $students = Enrollment::where('batch_id', $selectedBatch)
                 ->where('status', 'active')
+                ->whereHas('student', fn ($q) => $q->where('status', 'active'))
                 ->with('student')
                 ->get()
                 ->map(function ($enrollment) use ($selectedBatch, $selectedDate) {

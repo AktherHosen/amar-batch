@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Plus, Search, Trash2, MoreHorizontal, Download } from 'lucide-react';
 import fees from '@/routes/fees';
 
 type Student = {
@@ -182,6 +183,34 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
         router.get(fees.index.url({ search, year: newYear }), {}, { preserveState: true });
     };
 
+    const exportToExcel = () => {
+        const headers = ['Student', 'Class', 'Batch', ...months.map((m) => monthNames[m]), 'Total'];
+        const rows = feeGrid.map((item) => {
+            const total = months.reduce((sum, m) => {
+                const fee = item.months[m];
+                return sum + (fee ? Number(fee.amount_paid) : 0);
+            }, 0);
+            return [
+                item.student.name,
+                item.student.coaching_class?.name || '',
+                item.batch.name,
+                ...months.map((m) => {
+                    const fee = item.months[m];
+                    return fee ? Number(fee.amount_paid) : 0;
+                }),
+                total,
+            ];
+        });
+        const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fees-${year}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     const yearOptions = [];
     const currentYear = new Date().getFullYear();
     for (let y = currentYear - 2; y <= currentYear + 1; y++) {
@@ -195,14 +224,27 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <Heading title="Fee Management" description="Track monthly fee payments" />
-                    {isAdmin && (
-                        <Link href={fees.create.url()}>
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                Add Fee Record
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon">
+                                <MoreHorizontal className="size-4" />
                             </Button>
-                        </Link>
-                    )}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {isAdmin && (
+                                <DropdownMenuItem asChild>
+                                    <Link href={fees.create.url()}>
+                                        <Plus className="mr-2 size-4" />
+                                        Add Fee Record
+                                    </Link>
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={exportToExcel}>
+                                <Download className="mr-2 size-4" />
+                                Export to Excel
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 <Card>

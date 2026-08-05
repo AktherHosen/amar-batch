@@ -70,7 +70,7 @@ class BatchController extends Controller
         $batch->load(['enrollments.student.coachingClass', 'teachers']);
 
         $teachers = User::where('role', 'teacher')->get();
-        $students = Student::with('coachingClass')->orderBy('name')->get();
+        $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
 
         $enrolledStudentIds = \App\Models\Enrollment::where('status', 'active')
             ->pluck('student_id')

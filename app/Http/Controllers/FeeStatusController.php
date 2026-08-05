@@ -29,7 +29,8 @@ class FeeStatusController extends Controller
         $year = $request->input('year', date('Y'));
 
         $query = FeeStatus::with(['student.coachingClass', 'batch'])
-            ->where('year', $year);
+            ->where('year', $year)
+            ->whereHas('student', fn ($q) => $q->where('status', 'active'));
 
         if ($search = $request->input('search')) {
             $query->whereHas('student', function ($q) use ($search) {
@@ -39,7 +40,7 @@ class FeeStatusController extends Controller
 
         $feeStatuses = $query->orderBy('month')->get();
 
-        $students = Student::with('coachingClass')->orderBy('name')->get();
+        $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::orderBy('name')->get();
 
         $months = range(1, 12);
@@ -85,7 +86,7 @@ class FeeStatusController extends Controller
 
     public function create(): Response
     {
-        $students = Student::with('coachingClass')->orderBy('name')->get();
+        $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::orderBy('name')->get();
         $enrollments = \App\Models\Enrollment::where('status', 'active')
             ->with('student', 'batch')
@@ -126,7 +127,7 @@ class FeeStatusController extends Controller
     public function edit(FeeStatus $fee): Response
     {
         $fee->load(['student', 'batch']);
-        $students = Student::with('coachingClass')->orderBy('name')->get();
+        $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::orderBy('name')->get();
         $enrollments = \App\Models\Enrollment::where('status', 'active')
             ->with('student', 'batch')
