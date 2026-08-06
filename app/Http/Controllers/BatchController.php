@@ -68,7 +68,7 @@ class BatchController extends Controller
     {
         $this->authorize('view', $batch);
 
-        $batch->load(['enrollments.student.coachingClass', 'teachers']);
+        $batch->load(['enrollments.student.coachingClass', 'teachers', 'history.student', 'history.user']);
 
         $teachers = User::where('role', 'teacher')->get();
         $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
@@ -146,5 +146,26 @@ class BatchController extends Controller
         $batch->teachers()->detach($request->teacher_id);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Teacher removed from batch.']);
+    }
+
+    public function complete(Batch $batch): RedirectResponse
+    {
+        $this->authorize('update', $batch);
+
+        $batch->update(['status' => 'completed']);
+
+        $activeEnrollments = $batch->enrollments()->where('status', 'active')->get();
+        foreach ($activeEnrollments as $enrollment) {
+            $enrollment->update(['status' => 'completed']);
+            BatchHistory::create([
+                'batch_id' => $batch->id,
+                'student_id' => $enrollment->student_id,
+                'action' => 'completed',
+                'user_id' => request()->user()->id,
+                'notes' => 'Batch completed',
+            ]);
+        }
+
+        return back()->with('toast', ['type' => 'success', 'message' => 'Batch completed successfully.']);
     }
 }

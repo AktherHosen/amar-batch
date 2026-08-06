@@ -46,6 +46,15 @@ type Enrollment = {
     enrolled_at: string;
 };
 
+type BatchHistory = {
+    id: number;
+    student: Student | null;
+    user: { name: string } | null;
+    action: string;
+    notes: string | null;
+    created_at: string;
+};
+
 type Batch = {
     id: number;
     name: string;
@@ -58,6 +67,7 @@ type Batch = {
     status: string;
     enrollments: Enrollment[];
     teachers: Teacher[];
+    history: BatchHistory[];
 };
 
 type BatchesShowProps = {
@@ -121,6 +131,7 @@ export default function BatchesShow({
             { student_id: parseInt(selectedStudent) },
             {
                 preserveScroll: true,
+                only: ['batch', 'enrolledStudentIds'],
                 onSuccess: () => setSelectedStudent(''),
             },
         );
@@ -153,11 +164,17 @@ export default function BatchesShow({
             'default' | 'secondary' | 'destructive'
         > = {
             active: 'default',
-            completed: 'secondary',
+            completed: 'default',
             dropped: 'destructive',
         };
 
         return variants[status] || 'secondary';
+    };
+
+    const getStatusClass = (status: string) => {
+        if (status === 'completed') return 'bg-green-600 text-white';
+        if (status === 'inactive') return 'bg-red-600 text-white';
+        return '';
     };
 
     const availableTeachers = teachers.filter(
@@ -181,7 +198,7 @@ export default function BatchesShow({
                         </Link>
                         <h1 className="text-lg font-bold tracking-tight sm:text-2xl">{batch.name}</h1>
                     </div>
-                    {isAdmin && (
+                    {isAdmin && batch.status !== 'completed' && (
                         <div className="flex gap-2">
                             <Link href={batches.edit(batch.id)}>
                                 <Button variant="outline">
@@ -239,7 +256,7 @@ export default function BatchesShow({
                                     <p className="text-xs text-muted-foreground">
                                         {t('students.status')}
                                     </p>
-                                    <Badge variant={getStatusBadge(batch.status)}>
+                                    <Badge variant={getStatusBadge(batch.status)} className={getStatusClass(batch.status)}>
                                         {batch.status}
                                     </Badge>
                                 </div>
@@ -298,7 +315,7 @@ export default function BatchesShow({
                     </Card>
                 </div>
 
-                {isAdmin && (
+                {isAdmin && batch.status !== 'completed' && (
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('teachers.title')}</CardTitle>
@@ -405,7 +422,7 @@ export default function BatchesShow({
                     </Card>
                 )}
 
-                {(isAdmin || auth.user.role === 'teacher') && (
+                {(isAdmin || auth.user.role === 'teacher') && batch.status !== 'completed' && (
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('students.title')}</CardTitle>
@@ -546,6 +563,7 @@ export default function BatchesShow({
                                                     variant={getStatusBadge(
                                                         enrollment.status,
                                                     )}
+                                                    className={getStatusClass(enrollment.status)}
                                                 >
                                                     {enrollment.status}
                                                 </Badge>
@@ -609,6 +627,57 @@ export default function BatchesShow({
                         )}
                     </CardContent>
                 </Card>
+
+                {batch.history && batch.history.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>History</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Student</TableHead>
+                                        <TableHead>Action</TableHead>
+                                        <TableHead>By</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {batch.history.map((item) => (
+                                        <TableRow key={item.id}>
+                                            <TableCell>
+                                                {new Date(item.created_at).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {item.student?.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant={
+                                                        item.action === 'enrolled' ? 'default' :
+                                                        item.action === 'completed' ? 'default' :
+                                                        'destructive'
+                                                    }
+                                                    className={
+                                                        item.action === 'completed' ? 'bg-green-600 text-white' :
+                                                        item.action === 'dropped' || item.action === 'removed' ? 'bg-red-600 text-white' :
+                                                        ''
+                                                    }
+                                                >
+                                                    {item.action}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {item.user?.name}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </>
     );

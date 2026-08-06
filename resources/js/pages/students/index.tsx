@@ -1,9 +1,7 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { Plus, Search, Eye, Pencil, Trash2, X } from 'lucide-react';
-import type { Student } from '@/types';
 import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -12,8 +10,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
     TableBody,
@@ -22,8 +18,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import students from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
+import students from '@/routes/students';
+import type { Student } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Eye, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { useState } from 'react';
 
 function formatDate(dateStr: string | null): string {
     if (!dateStr) {

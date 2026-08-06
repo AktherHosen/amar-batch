@@ -22,8 +22,8 @@ class Batch extends Model
     protected function casts(): array
     {
         return [
-            'start_date' => 'date',
-            'end_date' => 'date',
+            'start_date' => 'date:Y-m-d',
+            'end_date' => 'date:Y-m-d',
         ];
     }
 
@@ -59,6 +59,12 @@ class Batch extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    /** @return HasMany<BatchHistory, $this> */
+    public function history(): HasMany
+    {
+        return $this->hasMany(BatchHistory::class)->latest();
     }
 
     public function enrolledCount(): int

@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, Search, Eye, Pencil, Trash2, X } from 'lucide-react';
+import { Plus, Search, Eye, Pencil, Trash2, X, CheckCircle } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,6 +81,14 @@ export default function BatchesIndex({
         }
     };
 
+    const handleComplete = (batch: { id: number; name: string }) => {
+        if (confirm(`⚠️ Are you sure you want to complete "${batch.name}"?\n\nThis action cannot be undone. Once completed:\n- No new students can be enrolled\n- No teachers can be assigned\n- The batch cannot be reopened\n\nOnly deletion will be available.`)) {
+            router.put(`/batches/${batch.id}/complete`, {}, {
+                only: ['batches'],
+            });
+        }
+    };
+
     const getStatusBadge = (status: string) => {
         const variants: Record<
             string,
@@ -88,10 +96,17 @@ export default function BatchesIndex({
         > = {
             active: 'default',
             inactive: 'secondary',
+            completed: 'default',
             archived: 'destructive',
         };
 
         return variants[status] || 'secondary';
+    };
+
+    const getStatusClass = (status: string) => {
+        if (status === 'completed') return 'bg-green-600 text-white';
+        if (status === 'inactive') return 'bg-red-600 text-white';
+        return '';
     };
 
     return (
@@ -232,6 +247,7 @@ export default function BatchesIndex({
                                                     variant={getStatusBadge(
                                                         batch.status,
                                                     )}
+                                                    className={getStatusClass(batch.status)}
                                                 >
                                                     {batch.status}
                                                 </Badge>
@@ -275,6 +291,19 @@ export default function BatchesIndex({
                                                             >
                                                                 <Trash2 className="size-4" />
                                                             </Button>
+                                                            {batch.status !== 'completed' && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() =>
+                                                                        handleComplete(
+                                                                            batch,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <CheckCircle className="size-4" />
+                                                                </Button>
+                                                            )}
                                                         </>
                                                     )}
                                                 </div>
