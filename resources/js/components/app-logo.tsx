@@ -1,16 +1,9 @@
-import AppLogoIcon from '@/components/app-logo-icon';
-
 export default function AppLogo() {
     return (
-        <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white">
-                <AppLogoIcon className="size-5" />
-            </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-tight font-semibold">
-                    Karnaphuli Alpha Academy
-                </span>
-            </div>
-        </>
+        <div className="grid flex-1 text-left text-sm">
+            <span className="truncate leading-tight font-semibold">
+                Karnaphuli Alpha Academy
+            </span>
+        </div>
     );
 }

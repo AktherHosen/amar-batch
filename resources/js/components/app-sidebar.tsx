@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { LayoutGrid, Users, Layers, GraduationCap, DollarSign, CheckSquare, School } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -24,8 +24,10 @@ import type { NavItem } from '@/types';
 
 export function AppSidebar() {
     const { t } = useLocale();
+    const { auth } = usePage().props;
+    const isAdmin = auth.user?.role === 'admin';
     
-    const mainNavItems: NavItem[] = [
+    const allNavItems: NavItem[] = [
         {
             title: t('nav.dashboard'),
             href: dashboard(),
@@ -45,6 +47,7 @@ export function AppSidebar() {
             title: t('nav.teachers'),
             href: teachers.index(),
             icon: GraduationCap,
+            adminOnly: true,
         },
         {
             title: t('nav.batches'),
@@ -55,6 +58,7 @@ export function AppSidebar() {
             title: t('nav.fees'),
             href: fees.index(),
             icon: DollarSign,
+            adminOnly: true,
         },
         {
             title: t('nav.attendance'),
@@ -62,6 +66,10 @@ export function AppSidebar() {
             icon: CheckSquare,
         },
     ];
+
+    const mainNavItems = isAdmin
+        ? allNavItems
+        : allNavItems.filter((item) => !item.adminOnly);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
