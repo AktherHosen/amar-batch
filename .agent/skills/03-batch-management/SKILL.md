@@ -1,6 +1,6 @@
 ---
 name: phase-3-batch-management
-description: Phase 3 — Build batch management with RBAC: admin CRUD, teacher sees assigned batches, student sees enrolled batches. Run after Phase 2.
+description: Phase 3 — Build batch management with RBAC: admin CRUD, teacher sees assigned batches. Uses days/time fields instead of schedule JSON. Run after Phase 2.
 ---
 
 # Phase 3: Batch Management
@@ -42,11 +42,6 @@ class BatchController extends Controller
         // Teachers see only assigned batches
         if ($request->user()->isTeacher()) {
             $query->whereHas('teachers', fn($q) => $q->where('users.id', $request->user()->id));
-        }
-
-        // Students see only enrolled batches
-        if ($request->user()->isStudent()) {
-            $query->whereHas('enrollments', fn($q) => $q->where('student_id', $request->user()->student_id));
         }
 
         if ($search = $request->input('search')) {
@@ -175,6 +170,24 @@ class BatchController extends Controller
 
 Same pattern as Phase 2 with `authorize()` returning `$this->user()->isAdmin()`.
 
+### StoreBatchRequest
+
+```php
+public function rules(): array
+{
+    return [
+        'name' => ['required', 'string', 'max:255'],
+        'subject' => ['nullable', 'string', 'max:255'],
+        'days' => ['nullable', 'string', 'max:255'], // e.g. "Sun, Mon, Tue"
+        'time' => ['nullable', 'string', 'max:255'], // e.g. "10:00 AM - 12:00 PM"
+        'capacity' => ['required', 'integer', 'min:1'],
+        'start_date' => ['nullable', 'date'],
+        'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+        'status' => ['sometimes', 'in:active,inactive,archived'],
+    ];
+}
+```
+
 ## Step 3.3: Batches List Page
 
 Create `resources/js/pages/batches/index.tsx`:
@@ -182,12 +195,14 @@ Create `resources/js/pages/batches/index.tsx`:
 - Role-based rendering:
   - Admin: sees all batches with full actions
   - Teacher: sees assigned batches (read + manage students)
-  - Student: sees enrolled batches (read-only)
-- Status badges, capacity indicators, search, filter
+- Status badges, capacity indicators (`enrollments_count`/`capacity`), search, filter
+- Columns: Name, Subject, Days, Time, Capacity, Status, Actions
 
 ## Step 3.4: Batch Form
 
 Create `resources/js/components/batch-form.tsx` — admin-only create/edit.
+
+Fields: name, subject, days (text input), time (text input), capacity, start_date, end_date, status.
 
 ## Step 3.5: Batch Detail Page
 
@@ -195,12 +210,11 @@ Create `resources/js/pages/batches/show.tsx`:
 
 - Admin: full info + teacher assignment section + enroll student
 - Teacher: batch info + enrolled students + mark attendance button
-- Student: batch info + own attendance + fee status
+- Shows days and time fields
 
 ### Teacher Assignment Section (admin-only)
 
 ```tsx
-// In batch show page
 {isAdmin && (
     <Card>
         <CardHeader>

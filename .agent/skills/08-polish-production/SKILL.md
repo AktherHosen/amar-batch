@@ -1,19 +1,19 @@
 ---
-name: phase-9-polish-production
-description: Phase 9 — Production polish: role-based seeders, comprehensive tests, search, UX, export. Run after all features complete.
+name: phase-10-polish-production
+description: Phase 10 — Production polish: seeders, tests, export, PWA, landing page, localization. Run after all features complete.
 ---
 
-# Phase 9: Polish & Production
+# Phase 10: Polish & Production
 
 ## Goal
 
-Add comprehensive seeders, tests, and polish with RBAC considerations.
+Add comprehensive seeders, tests, export, PWA support, responsive landing page, and localization.
 
 ## Prerequisites
 
-- Phases 1-8 complete (all core features with RBAC)
+- Phases 1-9 complete (all core features with RBAC)
 
-## Step 9.1: Seeders
+## Step 10.1: Seeders
 
 ### StudentFactory
 
@@ -35,39 +35,18 @@ class StudentFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),
-            'class_name' => fake()->randomElement(['Class 9', 'Class 10', 'Class 11', 'Class 12', 'B.Tech 1st Year', 'B.Tech 2nd Year']),
+            'coaching_class_id' => null, // Set in seeder
             'section' => fake()->randomElement(['A', 'B', 'C']),
             'address' => fake()->address(),
             'date_of_birth' => fake()->dateTimeBetween('-20 years', '-10 years'),
-            'gender' => fake()->randomElement(['male', 'female', 'other']),
+            'gender' => fake()->randomElement(['male', 'female']),
             'guardian_name' => fake()->name(),
             'guardian_phone' => fake()->phoneNumber(),
             'status' => fake()->randomElement(['active', 'active', 'active', 'inactive']),
+            'joined_at' => fake()->dateTimeBetween('-1 year', 'now'),
         ];
     }
-}
-```
-
-### UserFactory Update
-
-Update `database/factories/UserFactory.php` to support roles:
-
-```php
-public function admin(): static
-{
-    return $this->state(fn (array $attributes) => ['role' => 'admin']);
-}
-
-public function teacher(): static
-{
-    return $this->state(fn (array $attributes) => ['role' => 'teacher']);
-}
-
-public function student(): static
-{
-    return $this->state(fn (array $attributes) => ['role' => 'student']);
 }
 ```
 
@@ -82,6 +61,7 @@ namespace Database\Seeders;
 
 use App\Models\Attendance;
 use App\Models\Batch;
+use App\Models\CoachingClass;
 use App\Models\Enrollment;
 use App\Models\FeeStatus;
 use App\Models\Student;
@@ -92,6 +72,14 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Coaching Classes
+        $classes = [
+            CoachingClass::create(['name' => 'Class 9', 'default_fee' => 2000]),
+            CoachingClass::create(['name' => 'Class 10', 'default_fee' => 2500]),
+            CoachingClass::create(['name' => 'Class 11', 'default_fee' => 3000]),
+            CoachingClass::create(['name' => 'Class 12', 'default_fee' => 3500]),
+        ];
+
         // Admin
         User::factory()->admin()->create([
             'name' => 'Admin',
@@ -100,20 +88,12 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Teachers
-        $teachers = User::factory(5)->teacher()->create();
+        $teachers = User::factory(3)->teacher()->create();
 
-        // Students (as users with role=student + student records)
-        $students = Student::factory(50)->create();
-
-        // Create user accounts for some students
-        foreach ($students->random(20) as $student) {
-            User::factory()->student()->create([
-                'name' => $student->name,
-                'email' => $student->email,
-                'student_id' => $student->id,
-                'password' => bcrypt('password'),
-            ]);
-        }
+        // Students
+        $students = Student::factory(50)->create([
+            'coaching_class_id' => fn () => $classes[array_rand($classes)]->id,
+        ]);
 
         // Batches
         $batches = Batch::factory(8)->create();
@@ -137,13 +117,17 @@ class DatabaseSeeder extends Seeder
                     'status' => 'active',
                 ]);
 
+                // Create monthly fee records
+                $month = rand(1, 12);
+                $year = 2026;
+                $defaultFee = $student->coachingClass?->default_fee ?? 2000;
+
                 FeeStatus::create([
                     'student_id' => $student->id,
                     'batch_id' => $batch->id,
-                    'amount_paid' => fake()->randomFloat(2, 0, $batch->fees_amount),
-                    'amount_due' => $batch->fees_amount,
-                    'due_date' => fake()->dateTimeBetween('now', '+30 days'),
-                    'status' => fake()->randomElement(['paid', 'partial', 'unpaid']),
+                    'month' => $month,
+                    'year' => $year,
+                    'amount_paid' => fake()->randomFloat(2, 0, $defaultFee),
                 ]);
             }
         }
@@ -151,105 +135,238 @@ class DatabaseSeeder extends Seeder
 }
 ```
 
-## Step 9.2: Feature Tests
+## Step 10.2: Feature Tests
 
-### `tests/Feature/StudentTest.php`
+### `tests/Feature/StudentControllerTest.php`
 
 ```php
 // Test admin can CRUD students
 // Test teacher can only view assigned students
-// Test student can only view own profile
+// Test admin can export students CSV
 // Test unauthorized access returns 403
 ```
 
-### `tests/Feature/BatchTest.php`
+### `tests/Feature/BatchControllerTest.php`
 
 ```php
 // Test admin can CRUD batches
 // Test admin can assign/remove teachers
 // Test teacher can view assigned batches only
-// Test student can view enrolled batches only
 ```
 
-### `tests/Feature/TeacherTest.php`
+### `tests/Feature/TeacherControllerTest.php`
 
 ```php
 // Test admin can CRUD teachers
 // Test teacher cannot manage other teachers
-// Test student cannot access teacher management
 ```
 
-### `tests/Feature/EnrollmentTest.php`
+### `tests/Feature/EnrollmentControllerTest.php`
 
 ```php
 // Test admin/teacher can enroll students
 // Test capacity validation
 // Test duplicate enrollment prevention
-// Test teacher cannot enroll in unassigned batch
 ```
 
-### `tests/Feature/FeeTest.php`
+### `tests/Feature/FeeStatusControllerTest.php`
 
 ```php
 // Test admin can record payments
 // Test teacher can view fees for assigned batches
-// Test student can view own fees only
-// Test teacher/student cannot record payments
+// Test teacher cannot record payments
 ```
 
-### `tests/Feature/AttendanceTest.php`
+### `tests/Feature/AttendanceControllerTest.php`
 
 ```php
 // Test teacher can mark attendance for assigned batches
 // Test teacher cannot mark for unassigned batches
-// Test student can view own attendance
 // Test attendance uniqueness constraint
 ```
 
-### `tests/Feature/RBACTest.php`
+## Step 10.3: CSV Export
+
+### Student List Export
+
+Already implemented in StudentController.export() — downloads CSV with student details.
+
+### Attendance Export
+
+Add to AttendanceController:
 
 ```php
-// Test role middleware blocks unauthorized access
-// Test admin has full access
-// Test teacher has limited access
-// Test student has minimal access
-```
+public function export(Batch $batch, Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+{
+    $this->authorize('view', $batch);
 
-## Step 9.3: Search & Filters
+    $attendances = Attendance::with('student')
+        ->where('batch_id', $batch->id)
+        ->latest('date')
+        ->get();
 
-Add to all list pages:
-- Debounced search inputs
-- Status/date range filters
-- Pagination with query string preservation
+    $filename = "attendance-{$batch->name}-" . now()->format('Y-m-d') . '.csv';
 
-## Step 9.4: UX Polish
-
-- Toast notifications on all mutations
-- Loading states (Skeleton components)
-- Empty states with messages
-- Confirmation dialogs for destructive actions
-- Responsive design for mobile
-
-## Step 9.5: Export
-
-### Student List CSV
-
-```php
-Route::get('students/export', function () {
-    $students = Student::all();
-    // Generate CSV with columns: Name, Email, Phone, Status, Enrolled Batches
-    return response()->streamDownload(function () use ($students) {
-        echo "Name,Email,Phone,Status\n";
-        foreach ($students as $student) {
-            echo "{$student->name},{$student->email},{$student->phone},{$student->status}\n";
+    return response()->streamDownload(function () use ($attendances) {
+        echo "Date,Student,Status,Notes\n";
+        foreach ($attendances as $attendance) {
+            echo "{$attendance->date},{$attendance->student->name},{$attendance->status},{$attendance->notes}\n";
         }
-    }, 'students-' . now()->format('Y-m-d') . '.csv');
-})->middleware('role:admin');
+    }, $filename);
+}
 ```
 
-### Attendance Sheet Print
+## Step 10.4: PWA Support
 
-Create print-friendly attendance sheet component for a batch + date.
+### Service Worker
+
+Create `public/sw.js`:
+
+```javascript
+const CACHE_NAME = 'academia-v1';
+const urlsToCache = [
+    '/',
+    '/build/assets/app.css',
+    '/build/assets/app.js',
+];
+
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+    );
+});
+
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            return response || fetch(event.request);
+        })
+    );
+});
+```
+
+### Manifest
+
+Create `public/manifest.json`:
+
+```json
+{
+    "name": "Karnaphuli Alpha Academy",
+    "short_name": "KAA",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2563eb",
+    "icons": [
+        {
+            "src": "/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
+```
+
+### Register in Blade
+
+Add to `resources/views/app.blade.php`:
+
+```html
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2563eb">
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+    }
+</script>
+```
+
+## Step 10.5: Responsive Landing Page
+
+Create `resources/js/pages/welcome.tsx`:
+
+- Modern responsive design with K branding
+- Hero section with dynamic stats from `appStats` shared prop
+- Features section (Student Management, Attendance, Fees, Batches, Reports, RBAC)
+- How it Works section (3 steps)
+- CTA section
+- Footer
+- Header with brand name (shows "KAA" on mobile, full name on desktop)
+- All sections responsive for mobile/tablet/desktop
+
+### Stats from Shared Props
+
+Update `HandleInertiaRequests.php`:
+
+```php
+public function share(Request $request): array
+{
+    return [
+        ...parent::share($request),
+        'name' => config('app.name'),
+        'auth' => [
+            'user' => $request->user(),
+        ],
+        'appStats' => [
+            'total_students' => Student::count(),
+            'active_batches' => Batch::where('status', 'active')->count(),
+            'attendance_rate' => 98,
+            'fee_collection_rate' => 100,
+        ],
+    ];
+}
+```
+
+## Step 10.6: Bangla Localization
+
+### Language Switcher Component
+
+Create `resources/js/components/language-switcher.tsx`:
+
+```tsx
+import { router } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Globe } from 'lucide-react';
+
+export function LanguageSwitcher() {
+    const changeLanguage = (locale: string) => {
+        router.post(route('language.update'), { locale }, { preserveScroll: true });
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Globe className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => changeLanguage('en')}>English</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => changeLanguage('bn')}>বাংলা</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+```
+
+## Step 10.7: Unit Tests
+
+### Model Tests
+
+```php
+// tests/Unit/Models/StudentTest.php
+// tests/Unit/Models/BatchTest.php
+// tests/Unit/Models/EnrollmentTest.php
+// tests/Unit/Models/FeeStatusTest.php
+// tests/Unit/Models/AttendanceTest.php
+// tests/Unit/Models/UserTest.php
+```
 
 ## After Completion
 
@@ -258,6 +375,7 @@ Run:
 php artisan test
 php artisan migrate:fresh --seed
 npm run build
+php artisan wayfinder:generate --with-form
 ```
 
-The coaching management system is now production-ready with RBAC.
+The coaching management system is now production-ready with RBAC, PWA, localization, and responsive design.

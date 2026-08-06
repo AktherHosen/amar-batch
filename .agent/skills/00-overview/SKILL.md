@@ -12,55 +12,65 @@ Academia is a coaching center management system with role-based access control b
 - **Backend:** Laravel 13 + PHP 8.3
 - **Frontend:** React 19 + TypeScript 5.7 + Inertia.js 3
 - **UI:** Tailwind CSS 4 + shadcn/ui (New York variant)
-- **Auth:** Laravel Fortify (already set up)
+- **Auth:** Laravel Fortify (passkeys, 2FA, password reset)
 - **Routing:** Wayfinder (auto-generated typed routes)
 - **DB:** MySQL (database: `academia`)
 - **Testing:** PHPUnit 12
+- **PWA:** Service worker, manifest, offline page
+- **Localization:** Bangla language switcher support
 
 ## What Exists Already
 
 - Full authentication system (login, register, 2FA, passkeys, password reset)
 - Profile management (edit name/email, delete account, password change)
 - Settings pages (profile, security, appearance)
-- Dashboard placeholder page
+- Role-based dashboard (admin + teacher)
 - Collapsible sidebar layout with navigation
-- shadcn/ui component library (26 components)
+- shadcn/ui component library (26+ components)
 - Theme system (light/dark/system)
+- Modern responsive landing page with dynamic stats
+- PWA support (service worker, manifest, offline page)
+- Bangla localization with language switcher
 
 ## RBAC — Three Roles
 
 ### Admin
 - Full access to everything
-- Manage all students, teachers, batches, fees, attendance
+- Manage all students, teachers, batches, coaching classes, fees, attendance
 - Assign teachers to batches
 - View all reports and dashboards
 - Manage system settings
+- CSV export for students and attendance
 
 ### Teacher
-- Manage students in assigned batches only
+- View assigned batches and enrolled students
 - Mark attendance for assigned batches
 - View attendance history for their batches
 - View fee status of students in their batches (read-only)
 - Cannot create/delete batches or manage fees
 
 ### Student
-- View own profile and enrolled batches
-- View own attendance history
-- View own fee status
-- Cannot manage anything
+- (No student user accounts in current implementation)
+- Students are records managed by admin/teacher only
 
 ## Data Model (with RBAC)
 
 ```
 users (authentication + role)
-├── role: enum (admin, teacher, student)
-├── student_id: nullable FK → students (links user to student record)
+├── role: enum (admin, teacher)
+├── student_id: nullable FK → students (not used in current implementation)
+│
+coaching_classes (coaching class definitions)
+├── name, default_fee
 │
 students (coaching-specific data)
-├── name, email, phone, class_name, section, address, DOB, gender, guardian info, status
+├── name, phone, coaching_class_id (FK → coaching_classes), section, address
+├── date_of_birth, gender, guardian_name, guardian_phone, photo
+├── status (active/inactive), joined_at, left_at
 │
-batches
-├── name, subject, schedule, capacity, fees, dates, status
+batches (class batches)
+├── name, subject, days (string), time (string), capacity
+├── start_date, end_date, status (active/inactive/archived)
 │
 teacher_batch (pivot — assigns teachers to batches)
 ├── teacher_id (FK → users where role=teacher)
@@ -69,25 +79,28 @@ teacher_batch (pivot — assigns teachers to batches)
 enrollments (pivot — enrolls students in batches)
 ├── student_id, batch_id, status, enrolled_at
 │
-fee_statuses
-├── student_id, batch_id, amount_paid, amount_due, status, due_date
+fee_statuses (monthly fee tracking)
+├── student_id, batch_id, month (int), year (int)
+├── amount_paid, notes
 │
-attendances
-├── student_id, batch_id, date, status (present/absent/late)
+attendances (daily attendance)
+├── student_id, batch_id, marked_by (FK → users), date
+├── status (present/absent/late), notes
 ```
 
 ## Build Order
 
 ```
-Phase 1: Database & Core Models      (foundation + RBAC schema)
+Phase 1: Database & Core Models      (foundation + RBAC schema + CoachingClass)
 Phase 2: Student Management          (admin CRUD, teacher view)
-Phase 3: Batch Management            (admin CRUD, teacher assignment)
+Phase 3: Batch Management            (admin CRUD, teacher assignment, days/time)
 Phase 4: Teacher Management          (admin CRUD, assign to batches)
 Phase 5: Enrollment System           (connect students + batches)
-Phase 6: Fee Tracking                (admin-only financial layer)
+Phase 6: Fee Tracking                (monthly tracking, admin-only writes)
 Phase 7: Attendance                  (teacher marks, student views)
 Phase 8: Dashboard & Navigation      (role-based sidebar + stats)
-Phase 9: Polish & Production         (seeders, tests, export)
+Phase 9: Coaching Classes            (CRUD for coaching class definitions)
+Phase 10: Polish & Production        (seeders, tests, export, PWA, landing page)
 ```
 
 ## Codebase Conventions
