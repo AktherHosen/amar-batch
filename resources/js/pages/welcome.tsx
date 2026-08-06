@@ -86,11 +86,7 @@ export default function Welcome({ stats }: Props) {
                 <header className="fixed top-0 right-0 left-0 z-50 border-b border-blue-100 bg-white/80 backdrop-blur-md dark:border-blue-900 dark:bg-[#0a0a0a]/80">
                     <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center gap-2">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
-                                <span className="text-lg font-bold text-white">
-                                    K
-                                </span>
-                            </div>
+                            <img src="/logo.png" alt="Karnaphuli Alpha Academy" className="h-10 w-10 shrink-0 rounded-md object-cover" />
                             <span className="hidden text-xl font-bold whitespace-nowrap text-gray-900 sm:inline dark:text-white">
                                 Karnaphuli Alpha Academy
                             </span>
