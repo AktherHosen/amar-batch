@@ -173,17 +173,13 @@ export default function BatchesShow({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                         <Link href={batches.index()}>
-                            <Button variant="ghost" size="sm">
-                                <ArrowLeft className="mr-2 size-4" />
-                                {t('actions.back')}
+                            <Button variant="ghost" size="icon" className="size-9">
+                                <ArrowLeft className="size-4" />
                             </Button>
                         </Link>
-                        <Heading
-                            title={batch.name}
-                            description={t('batches.title')}
-                        />
+                        <h1 className="text-lg font-bold tracking-tight sm:text-2xl">{batch.name}</h1>
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
@@ -209,42 +205,44 @@ export default function BatchesShow({
                         <CardHeader>
                             <CardTitle>{t('batches.title')}</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.name')}
-                                </p>
-                                <p className="font-medium">{batch.name}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.subject')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.subject || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.capacity')}
-                                </p>
-                                <p className="font-medium">{batch.capacity}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.enrolled')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.enrollments.length}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.status')}
-                                </p>
-                                <Badge variant={getStatusBadge(batch.status)}>
-                                    {batch.status}
-                                </Badge>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.name')}
+                                    </p>
+                                    <p className="text-sm font-medium">{batch.name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.subject')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.subject || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.capacity')}
+                                    </p>
+                                    <p className="text-sm font-medium">{batch.capacity}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.enrolled')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.enrollments.length}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.status')}
+                                    </p>
+                                    <Badge variant={getStatusBadge(batch.status)}>
+                                        {batch.status}
+                                    </Badge>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -253,46 +251,48 @@ export default function BatchesShow({
                         <CardHeader>
                             <CardTitle>{t('batches.schedule')}</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.joined_at')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.start_date
-                                        ? new Date(
-                                              batch.start_date,
-                                          ).toLocaleDateString()
-                                        : '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.left_at')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.end_date
-                                        ? new Date(
-                                              batch.end_date,
-                                          ).toLocaleDateString()
-                                        : '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.schedule')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.days || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.schedule')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.time || '-'}
-                                </p>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.schedule')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.days || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Time
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.time || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.joined_at')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.start_date
+                                            ? new Date(
+                                                  batch.start_date,
+                                              ).toLocaleDateString()
+                                            : '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.left_at')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.end_date
+                                            ? new Date(
+                                                  batch.end_date,
+                                              ).toLocaleDateString()
+                                            : '-'}
+                                    </p>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
