@@ -11,6 +11,7 @@ class StoreTeacherRequest extends FormRequest
         return $this->user()->isAdmin();
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEnrollmentRequest;
 use App\Models\Batch;
 use App\Models\Enrollment;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class EnrollmentController extends Controller
 {
-    public function store(StoreEnrollmentRequest $request, Batch $batch)
+    public function store(StoreEnrollmentRequest $request, Batch $batch): RedirectResponse
     {
         $existing = Enrollment::where('student_id', $request->student_id)
             ->where('batch_id', $batch->id)
@@ -29,7 +30,7 @@ class EnrollmentController extends Controller
         return back()->with('toast', ['type' => 'success', 'message' => 'Student enrolled successfully.']);
     }
 
-    public function update(Request $request, Enrollment $enrollment)
+    public function update(Request $request, Enrollment $enrollment): RedirectResponse
     {
         $request->validate([
             'status' => 'required|in:active,completed,dropped',
@@ -40,7 +41,7 @@ class EnrollmentController extends Controller
         return back()->with('toast', ['type' => 'success', 'message' => 'Enrollment status updated.']);
     }
 
-    public function destroy(Enrollment $enrollment)
+    public function destroy(Enrollment $enrollment): RedirectResponse
     {
         $enrollment->delete();
 

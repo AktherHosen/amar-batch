@@ -11,6 +11,7 @@ class StoreEnrollmentRequest extends FormRequest
         return $this->user()->isAdmin() || $this->user()->isTeacher();
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

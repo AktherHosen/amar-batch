@@ -7,6 +7,7 @@ use App\Models\FeeStatus;
 use App\Models\Student;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/** @extends Factory<FeeStatus> */
 class FeeStatusFactory extends Factory
 {
     protected $model = FeeStatus::class;

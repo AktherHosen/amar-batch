@@ -14,6 +14,7 @@ class CoachingClass extends Model
         return ['default_fee' => 'decimal:2'];
     }
 
+    /** @return HasMany<Student, $this> */
     public function students(): HasMany
     {
         return $this->hasMany(Student::class);

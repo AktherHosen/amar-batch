@@ -121,6 +121,7 @@ class BatchController extends Controller
             'teacher_id' => 'required|exists:users,id',
         ]);
 
+        /** @var User $teacher */
         $teacher = User::findOrFail($request->teacher_id);
 
         if ($teacher->role !== 'teacher') {

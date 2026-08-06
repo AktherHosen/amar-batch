@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
 {
+    /** @param array<string> $roles */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
         if (! auth()->check()) {

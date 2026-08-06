@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\CoachingClass;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCoachingClassRequest extends FormRequest
@@ -11,10 +12,14 @@ class UpdateCoachingClassRequest extends FormRequest
         return $this->user()->isAdmin();
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
+        /** @var CoachingClass $coachingClass */
+        $coachingClass = $this->route('coaching_class');
+
         return [
-            'name' => ['required', 'string', 'max:255', 'unique:coaching_classes,name,'.$this->route('coaching_class')->id],
+            'name' => ['required', 'string', 'max:255', 'unique:coaching_classes,name,'.$coachingClass->id],
             'default_fee' => ['required', 'numeric', 'min:0'],
         ];
     }

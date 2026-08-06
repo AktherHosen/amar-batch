@@ -6,6 +6,7 @@ use App\Http\Requests\StoreAttendanceRequest;
 use App\Models\Attendance;
 use App\Models\Batch;
 use App\Models\Enrollment;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -56,9 +57,9 @@ class AttendanceController extends Controller
                     return [
                         'id' => $enrollment->student->id,
                         'name' => $enrollment->student->name,
-                        'status' => $existing?->status ?? null,
-                        'attendance_id' => $existing?->id,
-                        'notes' => $existing?->notes ?? '',
+                        'status' => $existing->status ?? null,
+                        'attendance_id' => $existing->id ?? null,
+                        'notes' => $existing->notes ?? '',
                     ];
                 });
         }
@@ -71,7 +72,7 @@ class AttendanceController extends Controller
         ]);
     }
 
-    public function store(StoreAttendanceRequest $request)
+    public function store(StoreAttendanceRequest $request): RedirectResponse
     {
         $attendances = $request->attendances;
 
@@ -100,7 +101,7 @@ class AttendanceController extends Controller
         return to_route('attendance.index')->with('toast', ['type' => 'success', 'message' => 'Attendance marked successfully.']);
     }
 
-    public function destroy(Attendance $attendance)
+    public function destroy(Attendance $attendance): RedirectResponse
     {
         $attendance->delete();
 

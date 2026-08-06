@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\BatchFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Batch extends Model
 {
+    /** @use HasFactory<BatchFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
@@ -25,6 +27,7 @@ class Batch extends Model
         ];
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function teachers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'teacher_batch', 'batch_id', 'teacher_id')
@@ -32,23 +35,27 @@ class Batch extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<Enrollment, $this> */
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
     }
 
-    public function students()
+    /** @return BelongsToMany<Student, $this> */
+    public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class, 'enrollments')
             ->withPivot('status', 'enrolled_at')
             ->withTimestamps();
     }
 
+    /** @return HasMany<FeeStatus, $this> */
     public function feeStatuses(): HasMany
     {
         return $this->hasMany(FeeStatus::class);
     }
 
+    /** @return HasMany<Attendance, $this> */
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);

@@ -6,10 +6,11 @@ use App\Models\Batch;
 use App\Models\Enrollment;
 use App\Models\Student;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class WelcomeController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
         $stats = [
             'total_students' => Student::count(),

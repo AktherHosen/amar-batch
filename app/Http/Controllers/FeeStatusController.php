@@ -10,6 +10,7 @@ use App\Models\FeeStatus;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -52,6 +53,7 @@ class FeeStatusController extends Controller
             9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
         ];
 
+        /** @var array<string, array{student: Student, batch: Batch, enrolled_at: string|null, months: array<int, FeeStatus>}> $grid */
         $grid = [];
         foreach ($feeStatuses as $fee) {
             $key = "{$fee->student_id}_{$fee->batch_id}";
@@ -62,8 +64,8 @@ class FeeStatusController extends Controller
                     ->first();
 
                 $enrolledAt = $fee->student->joined_at
-                    ? $fee->student->joined_at->format('Y-m-d')
-                    : ($enrollment ? $enrollment->created_at->format('Y-m-d') : null);
+                    ? Carbon::parse($fee->student->joined_at)->format('Y-m-d')
+                    : ($enrollment?->created_at?->format('Y-m-d') ?? null);
 
                 $grid[$key] = [
                     'student' => $fee->student,
@@ -93,11 +95,11 @@ class FeeStatusController extends Controller
         $enrollments = Enrollment::where('status', 'active')
             ->with('student', 'batch')
             ->get()
-            ->map(fn ($e) => [
+            ->map(fn (Enrollment $e): array => [
                 'student' => $e->student,
                 'batch' => $e->batch,
                 'enrolled_at' => $e->student->joined_at
-                    ? $e->student->joined_at->format('Y-m-d')
+                    ? Carbon::parse($e->student->joined_at)->format('Y-m-d')
                     : $e->created_at->format('Y-m-d'),
             ]);
 
@@ -134,11 +136,11 @@ class FeeStatusController extends Controller
         $enrollments = Enrollment::where('status', 'active')
             ->with('student', 'batch')
             ->get()
-            ->map(fn ($e) => [
+            ->map(fn (Enrollment $e): array => [
                 'student' => $e->student,
                 'batch' => $e->batch,
                 'enrolled_at' => $e->student->joined_at
-                    ? $e->student->joined_at->format('Y-m-d')
+                    ? Carbon::parse($e->student->joined_at)->format('Y-m-d')
                     : $e->created_at->format('Y-m-d'),
             ]);
 

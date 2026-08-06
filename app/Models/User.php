@@ -34,11 +34,13 @@ class User extends Authenticatable implements PasskeyUser
         ];
     }
 
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
+    /** @return BelongsToMany<Batch, $this> */
     public function assignedBatches(): BelongsToMany
     {
         return $this->belongsToMany(Batch::class, 'teacher_batch', 'teacher_id', 'batch_id')
