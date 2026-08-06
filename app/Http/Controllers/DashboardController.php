@@ -57,6 +57,11 @@ class DashboardController extends Controller
 
         $recentStudents = Student::with('coachingClass')->latest()->take(5)->get();
 
+        $batchHistory = [
+            'completed' => Batch::where('status', 'completed')->count(),
+            'active' => Batch::where('status', 'active')->count(),
+        ];
+
         return Inertia::render('dashboard', [
             'stats' => $stats,
             'feeStats' => $feeStats,
@@ -64,6 +69,7 @@ class DashboardController extends Controller
             'recentFeePayments' => $recentFeePayments,
             'todayAttendance' => $todayAttendance,
             'recentStudents' => $recentStudents,
+            'batchHistory' => $batchHistory,
         ]);
     }
 
@@ -128,6 +134,11 @@ class DashboardController extends Controller
                 ->get();
         }
 
+        $batchHistory = [
+            'completed' => Batch::whereIn('id', $assignedBatchIds)->where('status', 'completed')->count(),
+            'active' => Batch::whereIn('id', $assignedBatchIds)->where('status', 'active')->count(),
+        ];
+
         return Inertia::render('dashboard', [
             'stats' => $stats,
             'feeStats' => $feeStats,
@@ -136,6 +147,7 @@ class DashboardController extends Controller
             'todayAttendance' => $todayAttendance,
             'recentStudents' => $recentStudents,
             'assignedBatches' => $assignedBatches,
+            'batchHistory' => $batchHistory,
         ]);
     }
 }

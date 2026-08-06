@@ -26,7 +26,7 @@ class AttendanceController extends Controller
         }
 
         $attendances = $query->orderBy('date', 'desc')->paginate(15);
-        $batches = Batch::orderBy('name')->get();
+        $batches = Batch::where('status', '!=', 'completed')->orderBy('name')->get();
 
         return Inertia::render('attendance/index', [
             'attendances' => $attendances,
@@ -37,7 +37,7 @@ class AttendanceController extends Controller
 
     public function create(Request $request): Response
     {
-        $batches = Batch::orderBy('name')->get();
+        $batches = Batch::where('status', '!=', 'completed')->orderBy('name')->get();
         $selectedBatch = $request->batch_id;
         $selectedDate = $request->date ?? now()->toDateString();
 

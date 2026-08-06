@@ -81,6 +81,7 @@ type PageProps = {
     todayAttendance: AttendanceStat;
     recentStudents: RecentStudent[];
     assignedBatches?: AssignedBatch[];
+    batchHistory?: { completed: number; active: number };
 };
 
 const MONTH_NAMES = [
@@ -106,6 +107,7 @@ export default function Dashboard({
     todayAttendance,
     recentStudents,
     assignedBatches,
+    batchHistory,
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage().props;
@@ -387,6 +389,34 @@ export default function Dashboard({
                                         No batches assigned yet. Contact admin.
                                     </p>
                                 )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {batchHistory && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Batch History</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="rounded-lg border p-4">
+                                        <div className="text-2xl font-bold text-green-600">
+                                            {batchHistory.completed}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            Completed
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border p-4">
+                                        <div className="text-2xl font-bold text-blue-600">
+                                            {batchHistory.active}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            Ongoing
+                                        </div>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     )}

@@ -61,10 +61,11 @@ export default function AttendanceCreate({
         setBatchId(value);
 
         if (value && date) {
-            router.reload({
-                url: `${attendance.create()}?batch_id=${value}&date=${date}`,
-                only: ['students'],
-            });
+            router.get(
+                attendance.create(),
+                { batch_id: value, date },
+                { preserveState: false, replace: true },
+            );
         }
     };
 
@@ -72,10 +73,11 @@ export default function AttendanceCreate({
         setDate(value);
 
         if (batchId && value) {
-            router.reload({
-                url: `${attendance.create()}?batch_id=${batchId}&date=${value}`,
-                only: ['students'],
-            });
+            router.get(
+                attendance.create(),
+                { batch_id: batchId, date: value },
+                { preserveState: false, replace: true },
+            );
         }
     };
 
