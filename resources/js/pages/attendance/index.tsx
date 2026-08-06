@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Trash2 } from 'lucide-react';
+import { Plus, Search, Trash2, X } from 'lucide-react';
 import attendance from '@/routes/attendance';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -87,9 +87,9 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
 
                 <Card>
                     <CardHeader>
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-col gap-3">
                             <Select value={batchId || 'all'} onValueChange={(v) => setBatchId(v === 'all' ? '' : v)}>
-                                <SelectTrigger className="w-[200px]">
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder="All Batches" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -101,16 +101,29 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Input
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                className="w-[200px]"
-                            />
-                            <Button variant="secondary" onClick={handleFilter}>
-                                <Search className="mr-2 size-4" />
-                                {t('actions.search')}
-                            </Button>
+                            <div className="flex gap-3">
+                                <div className="relative flex-1">
+                                    <Input
+                                        type="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        className="w-full pr-9"
+                                    />
+                                    {date && (
+                                        <button
+                                            type="button"
+                                            onClick={() => { setDate(''); router.get(attendance.index(), { batch_id: batchId }, { preserveState: true }); }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                        >
+                                            <X className="size-4" />
+                                        </button>
+                                    )}
+                                </div>
+                                <Button variant="secondary" onClick={handleFilter}>
+                                    <Search className="size-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">{t('actions.search')}</span>
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent>

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, Pencil, Trash2, X } from 'lucide-react';
 import students from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -82,7 +82,7 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="flex items-center gap-4 mb-4">
+                        <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:gap-4">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
@@ -90,22 +90,34 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    className="pl-9"
+                                    className="pl-9 pr-9"
                                 />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { setSearch(''); router.get(students.index(), { status }, { preserveState: true }); }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )}
                             </div>
-                            <Select value={status || 'all'} onValueChange={handleStatusChange}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="All Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t('actions.search')} Status</SelectItem>
-                                    <SelectItem value="active">{t('students.active')}</SelectItem>
-                                    <SelectItem value="inactive">{t('students.inactive')}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Button variant="secondary" onClick={handleSearch}>
-                                {t('actions.search')}
-                            </Button>
+                            <div className="flex gap-3 sm:gap-4">
+                                <Select value={status || 'all'} onValueChange={handleStatusChange}>
+                                    <SelectTrigger className="w-full sm:w-[180px]">
+                                        <SelectValue placeholder="All Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{t('actions.search')} Status</SelectItem>
+                                        <SelectItem value="active">{t('students.active')}</SelectItem>
+                                        <SelectItem value="inactive">{t('students.inactive')}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Button variant="secondary" onClick={handleSearch}>
+                                    <Search className="size-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">{t('actions.search')}</span>
+                                </Button>
+                            </div>
                         </div>
 
                         <Table>

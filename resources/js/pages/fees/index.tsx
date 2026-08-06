@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, Search, Trash2, MoreHorizontal, Download } from 'lucide-react';
+import { Plus, Search, Trash2, MoreHorizontal, Download, X } from 'lucide-react';
 import fees from '@/routes/fees';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -251,7 +251,7 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="flex items-center gap-4 mb-4">
+                        <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:gap-4">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
@@ -260,21 +260,33 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    className="pl-9"
+                                    className="pl-9 pr-9"
                                 />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { setSearch(''); router.get(fees.index.url({ search: '', year: selectedYear }), {}, { preserveState: true }); }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )}
                             </div>
-                            <select
-                                value={selectedYear}
-                                onChange={(e) => handleYearChange(Number(e.target.value))}
-                                className="flex h-10 w-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            >
-                                {yearOptions.map((y) => (
-                                    <option key={y} value={y}>{y}</option>
-                                ))}
-                            </select>
-                            <Button variant="secondary" onClick={handleSearch}>
-                                {t('actions.search')}
-                            </Button>
+                            <div className="flex gap-3 sm:gap-4">
+                                <select
+                                    value={selectedYear}
+                                    onChange={(e) => handleYearChange(Number(e.target.value))}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm sm:w-[120px]"
+                                >
+                                    {yearOptions.map((y) => (
+                                        <option key={y} value={y}>{y}</option>
+                                    ))}
+                                </select>
+                                <Button variant="secondary" onClick={handleSearch}>
+                                    <Search className="size-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">{t('actions.search')}</span>
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="overflow-x-auto">

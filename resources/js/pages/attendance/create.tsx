@@ -93,11 +93,11 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
 
                 <Card>
                     <CardHeader>
-                        <div className="flex items-center gap-4">
-                            <div className="space-y-2">
+                        <div className="flex flex-col gap-4">
+                            <div className="space-y-2 w-full">
                                 <Label>{t('attendance.batch')}</Label>
                                 <Select value={batchId} onValueChange={handleBatchChange}>
-                                    <SelectTrigger className="w-[250px]">
+                                    <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select a batch" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -109,13 +109,13 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-2 w-full sm:w-auto sm:max-w-[200px]">
                                 <Label>{t('attendance.date')}</Label>
                                 <Input
                                     type="date"
                                     value={date}
                                     onChange={(e) => handleDateChange(e.target.value)}
-                                    className="w-[200px]"
+                                    className="w-full"
                                 />
                             </div>
                         </div>
@@ -123,23 +123,25 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                     <CardContent>
                         {batchId && studentList.length > 0 ? (
                             <>
-                                <div className="flex gap-2 mb-4">
-                                    <Button size="sm" variant="outline" onClick={() => markAll('present')}>
+                                <div className="flex flex-col gap-2 mb-4 sm:flex-row">
+                                    <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => markAll('present')}>
                                         {t('attendance.mark_all_present')}
                                     </Button>
-                                    <Button size="sm" variant="outline" onClick={() => markAll('absent')}>
-                                        {t('attendance.mark_all_absent')}
-                                    </Button>
-                                    <Button size="sm" variant="outline" onClick={() => markAll(null)}>
-                                        {t('attendance.clear_all')}
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => markAll('absent')}>
+                                            {t('attendance.mark_all_absent')}
+                                        </Button>
+                                        <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => markAll(null)}>
+                                            {t('attendance.clear_all')}
+                                        </Button>
+                                    </div>
                                 </div>
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>{t('attendance.student')}</TableHead>
                                             <TableHead>{t('attendance.status')}</TableHead>
-                                            <TableHead>{t('attendance.notes')}</TableHead>
+                                            <TableHead className="hidden sm:table-cell">{t('attendance.notes')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -149,10 +151,11 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                                                     {student.name}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex gap-1">
+                                                    <div className="grid grid-cols-3 gap-1 sm:flex sm:flex-wrap sm:gap-1">
                                                         <Button
                                                             size="sm"
                                                             variant={student.status === 'present' ? 'default' : 'outline'}
+                                                            className="w-full sm:w-auto"
                                                             onClick={() => updateStatus(student.id, 'present')}
                                                         >
                                                             P
@@ -160,6 +163,7 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                                                         <Button
                                                             size="sm"
                                                             variant={student.status === 'absent' ? 'destructive' : 'outline'}
+                                                            className="w-full sm:w-auto"
                                                             onClick={() => updateStatus(student.id, 'absent')}
                                                         >
                                                             A
@@ -167,6 +171,7 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                                                         <Button
                                                             size="sm"
                                                             variant={student.status === 'late' ? 'secondary' : 'outline'}
+                                                            className="w-full sm:w-auto"
                                                             onClick={() => updateStatus(student.id, 'late')}
                                                         >
                                                             L
@@ -175,19 +180,20 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
                                                             <Button
                                                                 size="sm"
                                                                 variant="ghost"
+                                                                className="col-span-3 w-full px-2 sm:col-span-1 sm:w-auto"
                                                                 onClick={() => updateStatus(student.id, null)}
                                                             >
-                                                                Clear
+                                                                ✕
                                                             </Button>
                                                         )}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="hidden sm:table-cell">
                                                     <Input
                                                         placeholder="Optional notes..."
                                                         value={student.notes}
                                                         onChange={(e) => updateNotes(student.id, e.target.value)}
-                                                        className="w-[250px]"
+                                                        className="w-full sm:w-[250px]"
                                                     />
                                                 </TableCell>
                                             </TableRow>
