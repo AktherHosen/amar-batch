@@ -5,7 +5,7 @@ type Locale = 'en' | 'bn';
 const translations: Record<Locale, Record<string, string>> = {
     en: {
         // Common
-        'app.name': 'Academia',
+        'app.name': 'Karnaphuli Alpha Academy',
         'app.tagline': 'Coaching Center Management',
         
         // Navigation
@@ -124,7 +124,7 @@ const translations: Record<Locale, Record<string, string>> = {
     },
     bn: {
         // Common
-        'app.name': 'একাডেমিয়া',
+        'app.name': 'কর্ণফুলী আলফা একাডেমি',
         'app.tagline': 'কোচিং সেন্টার ম্যানেজমেন্ট',
         
         // Navigation
