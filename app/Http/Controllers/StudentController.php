@@ -78,11 +78,11 @@ class StudentController extends Controller
             ->groupBy('year', 'month', 'status')
             ->get()
             ->groupBy('year')
-            ->map(function ($months) {
-                return $months->mapWithKeys(function ($items) {
-                    $month = $items->first()->month;
-                    return [$month => $items->pluck('count', 'status')->toArray()];
-                });
+            ->map(function ($yearGroup) {
+                return $yearGroup->groupBy('month')
+                    ->mapWithKeys(function ($monthGroup, $month) {
+                        return [$month => $monthGroup->pluck('count', 'status')->toArray()];
+                    });
             });
 
         return Inertia::render('students/show', [
