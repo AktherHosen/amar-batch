@@ -1,7 +1,14 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    LayoutGrid,
+    Users,
+    Layers,
+    GraduationCap,
+    DollarSign,
+    CheckSquare,
+    School,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -13,31 +20,65 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useLocale } from '@/contexts/locale-context';
 import { dashboard } from '@/routes';
+import students from '@/routes/students';
+import batches from '@/routes/batches';
+import teachers from '@/routes/teachers';
+import fees from '@/routes/fees';
+import attendance from '@/routes/attendance';
+import coachingClasses from '@/routes/coaching-classes';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
-
 export function AppSidebar() {
+    const { t } = useLocale();
+    const { auth } = usePage().props;
+    const isAdmin = auth.user?.role === 'admin';
+
+    const allNavItems: NavItem[] = [
+        {
+            title: t('nav.dashboard'),
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            title: t('nav.students'),
+            href: students.index(),
+            icon: Users,
+        },
+        {
+            title: t('nav.coaching_classes'),
+            href: coachingClasses.index(),
+            icon: School,
+        },
+        {
+            title: t('nav.teachers'),
+            href: teachers.index(),
+            icon: GraduationCap,
+            adminOnly: true,
+        },
+        {
+            title: t('nav.batches'),
+            href: batches.index(),
+            icon: Layers,
+        },
+        {
+            title: t('nav.fees'),
+            href: fees.index(),
+            icon: DollarSign,
+            adminOnly: true,
+        },
+        {
+            title: t('nav.attendance'),
+            href: attendance.index(),
+            icon: CheckSquare,
+        },
+    ];
+
+    const mainNavItems = isAdmin
+        ? allNavItems
+        : allNavItems.filter((item) => !item.adminOnly);
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -57,7 +98,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

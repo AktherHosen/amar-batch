@@ -1,0 +1,37 @@
+{
+    "name": "Karnaphuli Alpha Academy",
+    "short_name": "Alpha Academy",
+    "description": "Education management platform for students, teachers, batches, fees, and attendance.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "theme_color": "#18181b",
+    "background_color": "#ffffff",
+    "lang": "en",
+    "dir": "ltr",
+    "id": "/",
+    "icons": [
+        {
+            "src": "/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icon-192x192.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}

@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Batch;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -42,6 +44,12 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'appStats' => [
+                'total_students' => Student::count(),
+                'active_batches' => Batch::where('status', 'active')->count(),
+                'attendance_rate' => 98,
+                'fee_collection_rate' => 100,
+            ],
         ];
     }
 }
