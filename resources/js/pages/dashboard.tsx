@@ -130,15 +130,15 @@ export default function Dashboard({
                     }
                 />
 
-                <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                    <Card className="py-3">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                             <CardTitle className="text-sm font-medium">
                                 {t('dashboard.total_students')}
                             </CardTitle>
                             <Users className="size-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="px-3 pb-2 pt-0">
                             <div className="text-2xl font-bold">
                                 {stats.total_students}
                             </div>
@@ -152,14 +152,14 @@ export default function Dashboard({
                     </Card>
 
                     {isAdmin && (
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <Card className="py-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                                 <CardTitle className="text-sm font-medium">
                                     {t('nav.teachers')}
                                 </CardTitle>
                                 <GraduationCap className="size-4 text-muted-foreground" />
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="px-3 pb-2 pt-0">
                                 <div className="text-2xl font-bold">
                                     {stats.total_teachers ?? '-'}
                                 </div>
@@ -167,14 +167,14 @@ export default function Dashboard({
                         </Card>
                     )}
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <Card className="py-3">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                             <CardTitle className="text-sm font-medium">
                                 {t('dashboard.active_batches')}
                             </CardTitle>
                             <Layers className="size-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="px-3 pb-2 pt-0">
                             <div className="text-2xl font-bold">
                                 {stats.active_batches}
                             </div>
@@ -188,14 +188,14 @@ export default function Dashboard({
                     </Card>
 
                     {isAdmin && (
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <Card className="py-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                                 <CardTitle className="text-sm font-medium">
                                     {t('dashboard.total_collected')}
                                 </CardTitle>
                                 <DollarSign className="size-4 text-muted-foreground" />
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="px-3 pb-2 pt-0">
                                 <div className="text-2xl font-bold">
                                     {Number(feeStats.total_collected).toFixed(
                                         0,
@@ -206,7 +206,7 @@ export default function Dashboard({
                                 </p>
                                 <Link
                                     href={fees.index().url}
-                                    className="mt-2 block text-xs text-muted-foreground hover:underline"
+                                    className="mt-1 block text-xs text-muted-foreground hover:underline"
                                 >
                                     {t('actions.view_all')}
                                 </Link>
@@ -215,14 +215,14 @@ export default function Dashboard({
                     )}
 
                     {isTeacher && (
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <Card className="py-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                                 <CardTitle className="text-sm font-medium">
                                     {t('dashboard.total_collected')}
                                 </CardTitle>
                                 <DollarSign className="size-4 text-muted-foreground" />
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="px-3 pb-2 pt-0">
                                 <div className="text-2xl font-bold">
                                     {Number(feeStats.total_collected).toFixed(
                                         0,
