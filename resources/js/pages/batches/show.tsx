@@ -1,12 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { ArrowLeft, Pencil, Trash2, UserMinus } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Pencil, Trash2, UserMinus } from 'lucide-react';
 import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -70,7 +70,9 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
     };
 
     const handleAssignTeacher = () => {
-        if (!selectedTeacher) return;
+        if (!selectedTeacher) {
+return;
+}
 
         router.post(batches.assignTeacher(batch.id), { teacher_id: parseInt(selectedTeacher) }, {
             preserveScroll: true,
@@ -88,7 +90,9 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
     };
 
     const handleEnrollStudent = () => {
-        if (!selectedStudent) return;
+        if (!selectedStudent) {
+return;
+}
 
         router.post(`/batches/${batch.id}/enroll`, { student_id: parseInt(selectedStudent) }, {
             preserveScroll: true,
@@ -116,6 +120,7 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
             completed: 'secondary',
             dropped: 'destructive',
         };
+
         return variants[status] || 'secondary';
     };
 

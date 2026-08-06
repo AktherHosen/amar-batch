@@ -1,9 +1,9 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { Users, GraduationCap, Layers, DollarSign, CheckCircle } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, GraduationCap, Layers, DollarSign, CheckCircle } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
 import { dashboard } from '@/routes';
 import students from '@/routes/students';
@@ -75,7 +75,7 @@ const MONTH_NAMES = [
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
-export default function Dashboard({ stats, feeStats, recentEnrollments, recentFeePayments, todayAttendance, recentStudents, assignedBatches }: PageProps) {
+export default function Dashboard({ stats, feeStats, recentFeePayments, todayAttendance, recentStudents, assignedBatches }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage().props;
     const isAdmin = auth.user?.role === 'admin';

@@ -1,9 +1,9 @@
 import { Head, router, Link } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import BatchForm from '@/components/batch-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 import batches from '@/routes/batches';
 
 type Batch = {

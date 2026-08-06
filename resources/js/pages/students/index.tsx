@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { type Student } from '@/types';
+import { Plus, Search, Eye, Pencil, Trash2, X } from 'lucide-react';
+import type {Student} from '@/types';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,21 +9,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Eye, Pencil, Trash2, X } from 'lucide-react';
 import students from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
 
-const MONTH_NAMES = [
-    '', 'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-];
-
 function formatDate(dateStr: string | null): string {
-    if (!dateStr) return '-';
+    if (!dateStr) {
+return '-';
+}
+
     const d = new Date(dateStr);
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
+
     return `${day}/${month}/${year}`;
 }
 
@@ -95,7 +94,9 @@ export default function StudentsIndex({ students: pagination, filters }: PagePro
                                 {search && (
                                     <button
                                         type="button"
-                                        onClick={() => { setSearch(''); router.get(students.index(), { status }, { preserveState: true }); }}
+                                        onClick={() => {
+ setSearch(''); router.get(students.index(), { status }, { preserveState: true }); 
+}}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                     >
                                         <X className="size-4" />

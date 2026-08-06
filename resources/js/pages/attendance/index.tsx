@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { Plus, Search, Trash2, X } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Trash2, X } from 'lucide-react';
 import attendance from '@/routes/attendance';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -65,6 +65,7 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
             late: 'secondary',
             absent: 'destructive',
         };
+
         return variants[status] || 'secondary';
     };
 
@@ -112,7 +113,9 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
                                     {date && (
                                         <button
                                             type="button"
-                                            onClick={() => { setDate(''); router.get(attendance.index(), { batch_id: batchId }, { preserveState: true }); }}
+                                            onClick={() => {
+ setDate(''); router.get(attendance.index(), { batch_id: batchId }, { preserveState: true }); 
+}}
                                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                         >
                                             <X className="size-4" />

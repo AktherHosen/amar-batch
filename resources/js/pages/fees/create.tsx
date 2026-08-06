@@ -29,6 +29,7 @@ type PageProps = {
 
 export default function FeesCreate({ students, batches, enrollments }: PageProps) {
     const { t } = useLocale();
+
     return (
         <>
             <Head title={t('fees.create')} />

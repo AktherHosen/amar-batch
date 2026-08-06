@@ -1,11 +1,11 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import attendance from '@/routes/attendance';
 import { useLocale } from '@/contexts/locale-context';
@@ -36,12 +36,9 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
     const [date, setDate] = useState(selectedDate || new Date().toISOString().split('T')[0]);
     const [studentList, setStudentList] = useState<StudentAttendance[]>(students);
 
-    useEffect(() => {
-        setStudentList(students);
-    }, [students]);
-
     const handleBatchChange = (value: string) => {
         setBatchId(value);
+
         if (value && date) {
             router.get(attendance.create(), { batch_id: value, date }, { preserveState: true, replace: true });
         }
@@ -49,6 +46,7 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
 
     const handleDateChange = (value: string) => {
         setDate(value);
+
         if (batchId && value) {
             router.get(attendance.create(), { batch_id: batchId, date: value }, { preserveState: true, replace: true });
         }
@@ -71,7 +69,9 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
     };
 
     const handleSubmit = () => {
-        if (!batchId || !date || studentList.length === 0) return;
+        if (!batchId || !date || studentList.length === 0) {
+return;
+}
 
         router.post(attendance.store(), {
             batch_id: parseInt(batchId),

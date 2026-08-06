@@ -1,11 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { type Student } from '@/types';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import type {Student} from '@/types';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import students from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -24,11 +24,15 @@ const MONTH_NAMES = [
 ];
 
 function formatDate(dateStr: string | null): string {
-    if (!dateStr) return '-';
+    if (!dateStr) {
+return '-';
+}
+
     const d = new Date(dateStr);
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
+
     return `${day}/${month}/${year}`;
 }
 

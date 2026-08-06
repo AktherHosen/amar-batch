@@ -1,12 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useRef } from 'react';
+import { Plus, Search, Trash2, MoreHorizontal, Download, X } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, Search, Trash2, MoreHorizontal, Download, X } from 'lucide-react';
 import fees from '@/routes/fees';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -82,6 +82,7 @@ function FeeCell({
 
         if ((value === '' || numValue === 0) && fee) {
             router.delete(fees.destroy.url(fee.id), { preserveState: true });
+
             return;
         }
 
@@ -157,17 +158,30 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
     const [selectedYear, setSelectedYear] = useState(year);
 
     const isMonthDisabled = (enrolledAt: string | null, month: number, year: number): boolean => {
-        if (!enrolledAt) return false;
+        if (!enrolledAt) {
+return false;
+}
+
         const enrollDate = new Date(enrolledAt);
         const enrollYear = enrollDate.getFullYear();
         const enrollMonth = enrollDate.getMonth() + 1;
-        if (year < enrollYear) return true;
-        if (year === enrollYear && month < enrollMonth) return true;
+
+        if (year < enrollYear) {
+return true;
+}
+
+        if (year === enrollYear && month < enrollMonth) {
+return true;
+}
+
         return false;
     };
 
     const handleDeleteRow = (studentId: number, batchId: number) => {
-        if (!confirm('Delete all fee records for this student in this batch for the year?')) return;
+        if (!confirm('Delete all fee records for this student in this batch for the year?')) {
+return;
+}
+
         const feeIds = feeGrid
             .filter((item) => item.student.id === studentId && item.batch.id === batchId)
             .flatMap((item) => Object.values(item.months).map((f) => f.id));
@@ -190,14 +204,17 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
         const rows = feeGrid.map((item) => {
             const total = months.reduce((sum, m) => {
                 const fee = item.months[m];
+
                 return sum + (fee ? Number(fee.amount_paid) : 0);
             }, 0);
+
             return [
                 item.student.name,
                 item.student.coaching_class?.name || '',
                 item.batch.name,
                 ...months.map((m) => {
                     const fee = item.months[m];
+
                     return fee ? Number(fee.amount_paid) : 0;
                 }),
                 total,
@@ -215,6 +232,7 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
 
     const yearOptions = [];
     const currentYear = new Date().getFullYear();
+
     for (let y = currentYear - 2; y <= currentYear + 1; y++) {
         yearOptions.push(y);
     }
@@ -265,7 +283,9 @@ export default function FeesIndex({ feeGrid, months, monthNames, year, filters }
                                 {search && (
                                     <button
                                         type="button"
-                                        onClick={() => { setSearch(''); router.get(fees.index.url({ search: '', year: selectedYear }), {}, { preserveState: true }); }}
+                                        onClick={() => {
+ setSearch(''); router.get(fees.index.url({ search: '', year: selectedYear }), {}, { preserveState: true }); 
+}}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                     >
                                         <X className="size-4" />

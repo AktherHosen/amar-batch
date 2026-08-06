@@ -1,9 +1,9 @@
 import { Head, router, Link } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import TeacherForm from '@/components/teacher-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 import teachers from '@/routes/teachers';
 
 export default function TeachersCreate() {

@@ -1,10 +1,10 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import teachers from '@/routes/teachers';
 import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';

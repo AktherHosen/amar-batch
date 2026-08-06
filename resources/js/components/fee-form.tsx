@@ -59,12 +59,18 @@ export default function FeeForm({ fee, students, batches, enrollments, isEdit = 
     const currentMonth = new Date().getMonth() + 1;
 
     const getDefaultMonth = () => {
-        if (fee?.month) return fee.month.toString();
+        if (fee?.month) {
+return fee.month.toString();
+}
+
         return currentMonth.toString();
     };
 
     const getDefaultYear = () => {
-        if (fee?.year) return fee.year.toString();
+        if (fee?.year) {
+return fee.year.toString();
+}
+
         return currentYear.toString();
     };
 
@@ -77,8 +83,6 @@ export default function FeeForm({ fee, students, batches, enrollments, isEdit = 
         notes: fee?.notes || '',
     });
 
-    const selectedStudentId = data.student_id;
-
     const getEnrollmentForStudent = (studentId: string) => {
         return enrollments.find((e) => e.student.id.toString() === studentId);
     };
@@ -86,8 +90,10 @@ export default function FeeForm({ fee, students, batches, enrollments, isEdit = 
     const handleStudentChange = (v: string) => {
         setData('student_id', v);
         const enrollment = getEnrollmentForStudent(v);
+
         if (enrollment) {
             setData('batch_id', enrollment.batch.id.toString());
+
             if (enrollment.enrolled_at) {
                 const enrollDate = new Date(enrollment.enrolled_at);
                 setData('month', (enrollDate.getMonth() + 1).toString());
@@ -100,6 +106,7 @@ export default function FeeForm({ fee, students, batches, enrollments, isEdit = 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (isEdit && fee?.id) {
             put(`/fees/${fee.id}`);
         } else {

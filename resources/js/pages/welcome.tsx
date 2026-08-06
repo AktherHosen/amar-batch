@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { Users, Calendar, DollarSign, GraduationCap, BarChart3, Shield, CheckCircle } from 'lucide-react';
 import { dashboard, login, register } from '@/routes';
-import { Users, Calendar, DollarSign, GraduationCap, BarChart3, Shield, Clock, CheckCircle } from 'lucide-react';
 
 type Stats = {
     total_students: number;

@@ -1,11 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import coachingClasses from '@/routes/coaching-classes';
 import { useLocale } from '@/contexts/locale-context';
 
