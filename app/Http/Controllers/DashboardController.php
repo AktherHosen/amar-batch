@@ -72,11 +72,20 @@ class DashboardController extends Controller
         $teacher = $request->user();
         $assignedBatchIds = $teacher->assignedBatches()->pluck('batches.id');
 
+        $assignedBatches = Batch::withCount(['enrollments' => function ($q) {
+            $q->where('status', 'active');
+        }])->whereIn('id', $assignedBatchIds)->get();
+
+        $enrolledStudentIds = Enrollment::where('status', 'active')
+            ->whereIn('batch_id', $assignedBatchIds)
+            ->pluck('student_id')
+            ->unique()
+            ->toArray();
+
+        $studentCount = count($enrolledStudentIds);
+
         $stats = [
-            'total_students' => Enrollment::where('status', 'active')
-                ->whereIn('batch_id', $assignedBatchIds)
-                ->distinct('student_id')
-                ->count('student_id'),
+            'total_students' => $studentCount,
             'total_teachers' => null,
             'active_batches' => $assignedBatchIds->count(),
             'total_enrollments' => Enrollment::where('status', 'active')
@@ -85,8 +94,8 @@ class DashboardController extends Controller
         ];
 
         $feeStats = [
-            'total_collected' => FeeStatus::whereIn('batch_id', $assignedBatchIds)->sum('amount_paid'),
-            'total_records' => FeeStatus::whereIn('batch_id', $assignedBatchIds)->count(),
+            'total_collected' => $assignedBatchIds->isEmpty() ? 0 : FeeStatus::whereIn('batch_id', $assignedBatchIds)->sum('amount_paid'),
+            'total_records' => $assignedBatchIds->isEmpty() ? 0 : FeeStatus::whereIn('batch_id', $assignedBatchIds)->count(),
         ];
 
         $recentEnrollments = Enrollment::with(['student', 'batch'])
@@ -102,19 +111,22 @@ class DashboardController extends Controller
             ->get();
 
         $todayAttendance = [
-            'present' => Attendance::whereDate('date', now())->where('status', 'present')
+            'present' => $assignedBatchIds->isEmpty() ? 0 : Attendance::whereDate('date', now())->where('status', 'present')
                 ->whereIn('batch_id', $assignedBatchIds)->count(),
-            'absent' => Attendance::whereDate('date', now())->where('status', 'absent')
+            'absent' => $assignedBatchIds->isEmpty() ? 0 : Attendance::whereDate('date', now())->where('status', 'absent')
                 ->whereIn('batch_id', $assignedBatchIds)->count(),
-            'late' => Attendance::whereDate('date', now())->where('status', 'late')
+            'late' => $assignedBatchIds->isEmpty() ? 0 : Attendance::whereDate('date', now())->where('status', 'late')
                 ->whereIn('batch_id', $assignedBatchIds)->count(),
         ];
 
-        $recentStudents = Student::with('coachingClass')
-            ->whereHas('enrollments', fn ($q) => $q->whereIn('batch_id', $assignedBatchIds)->where('status', 'active'))
-            ->latest()
-            ->take(5)
-            ->get();
+        $recentStudents = collect();
+        if (!empty($enrolledStudentIds)) {
+            $recentStudents = Student::with('coachingClass')
+                ->whereIn('id', $enrolledStudentIds)
+                ->latest()
+                ->take(5)
+                ->get();
+        }
 
         return Inertia::render('dashboard', [
             'stats' => $stats,
@@ -123,6 +135,7 @@ class DashboardController extends Controller
             'recentFeePayments' => $recentFeePayments,
             'todayAttendance' => $todayAttendance,
             'recentStudents' => $recentStudents,
+            'assignedBatches' => $assignedBatches,
         ]);
     }
 }

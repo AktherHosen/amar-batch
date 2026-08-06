@@ -52,6 +52,14 @@ type RecentStudent = {
     status: string;
 };
 
+type AssignedBatch = {
+    id: number;
+    name: string;
+    subject: string | null;
+    status: string;
+    enrollments_count: number;
+};
+
 type PageProps = {
     stats: Stats;
     feeStats: FeeStats;
@@ -59,6 +67,7 @@ type PageProps = {
     recentFeePayments: FeePayment[];
     todayAttendance: AttendanceStat;
     recentStudents: RecentStudent[];
+    assignedBatches?: AssignedBatch[];
 };
 
 const MONTH_NAMES = [
@@ -66,15 +75,21 @@ const MONTH_NAMES = [
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
-export default function Dashboard({ stats, feeStats, recentEnrollments, recentFeePayments, todayAttendance, recentStudents }: PageProps) {
+export default function Dashboard({ stats, feeStats, recentEnrollments, recentFeePayments, todayAttendance, recentStudents, assignedBatches }: PageProps) {
     const { t } = useLocale();
+    const { auth } = usePage().props;
+    const isAdmin = auth.user?.role === 'admin';
+    const isTeacher = auth.user?.role === 'teacher';
     
     return (
         <>
             <Head title={t('dashboard.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title={t('dashboard.title')} description={t('app.tagline')} />
+                <Heading
+                    title={isTeacher ? `Welcome, ${auth.user?.name}` : t('dashboard.title')}
+                    description={isTeacher ? 'Your assigned batches and students' : t('app.tagline')}
+                />
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
@@ -90,15 +105,17 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">{t('nav.teachers')}</CardTitle>
-                            <GraduationCap className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.total_teachers ?? '-'}</div>
-                        </CardContent>
-                    </Card>
+                    {isAdmin && (
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{t('nav.teachers')}</CardTitle>
+                                <GraduationCap className="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{stats.total_teachers ?? '-'}</div>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -113,19 +130,34 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">{t('dashboard.total_collected')}</CardTitle>
-                            <DollarSign className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{Number(feeStats.total_collected).toFixed(0)}</div>
-                            <p className="text-xs text-muted-foreground">{feeStats.total_records} payment records</p>
-                            <Link href={fees.index().url} className="text-xs text-muted-foreground hover:underline mt-2 block">
-                                {t('actions.view_all')}
-                            </Link>
-                        </CardContent>
-                    </Card>
+                    {isAdmin && (
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{t('dashboard.total_collected')}</CardTitle>
+                                <DollarSign className="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{Number(feeStats.total_collected).toFixed(0)}</div>
+                                <p className="text-xs text-muted-foreground">{feeStats.total_records} payment records</p>
+                                <Link href={fees.index().url} className="text-xs text-muted-foreground hover:underline mt-2 block">
+                                    {t('actions.view_all')}
+                                </Link>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {isTeacher && (
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{t('dashboard.total_collected')}</CardTitle>
+                                <DollarSign className="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{Number(feeStats.total_collected).toFixed(0)}</div>
+                                <p className="text-xs text-muted-foreground">{feeStats.total_records} payment records</p>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
@@ -155,82 +187,141 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">{t('nav.fees')}</CardTitle>
-                            <DollarSign className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{feeStats.total_records}</div>
-                            <p className="text-xs text-muted-foreground">Monthly payments tracked</p>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('dashboard.recent_students')}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {recentStudents.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>{t('students.name')}</TableHead>
-                                            <TableHead>{t('students.class')}</TableHead>
-                                            <TableHead>{t('students.status')}</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {recentStudents.map((student) => (
-                                            <TableRow key={student.id}>
-                                                <TableCell className="font-medium">{student.name}</TableCell>
-                                                <TableCell>{student.coaching_class?.name || '-'}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={student.status === 'active' ? 'default' : 'warning'}>
-                                                        {student.status === 'active' ? t('students.active') : t('students.inactive')}
-                                                    </Badge>
-                                                </TableCell>
+                    {isAdmin && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('dashboard.recent_students')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {recentStudents.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>{t('students.name')}</TableHead>
+                                                <TableHead>{t('students.class')}</TableHead>
+                                                <TableHead>{t('students.status')}</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No students yet.</p>
-                            )}
-                        </CardContent>
-                    </Card>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {recentStudents.map((student) => (
+                                                <TableRow key={student.id}>
+                                                    <TableCell className="font-medium">{student.name}</TableCell>
+                                                    <TableCell>{student.coaching_class?.name || '-'}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={student.status === 'active' ? 'default' : 'warning'}>
+                                                            {student.status === 'active' ? t('students.active') : t('students.inactive')}
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No students yet.</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('dashboard.recent_payments')}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {recentFeePayments.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>{t('fees.student')}</TableHead>
-                                            <TableHead>{t('fees.month')}</TableHead>
-                                            <TableHead>{t('fees.amount_paid')}</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {recentFeePayments.map((payment) => (
-                                            <TableRow key={payment.id}>
-                                                <TableCell className="font-medium">{payment.student.name}</TableCell>
-                                                <TableCell>{MONTH_NAMES[payment.month]} {payment.year}</TableCell>
-                                                <TableCell>{Number(payment.amount_paid).toFixed(0)}</TableCell>
+                    {isTeacher && assignedBatches && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>My Assigned Batches</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {assignedBatches.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>{t('batches.name')}</TableHead>
+                                                <TableHead>{t('batches.subject')}</TableHead>
+                                                <TableHead>Students</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No recent payments.</p>
-                            )}
-                        </CardContent>
-                    </Card>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {assignedBatches.map((batch) => (
+                                                <TableRow key={batch.id}>
+                                                    <TableCell className="font-medium">{batch.name}</TableCell>
+                                                    <TableCell>{batch.subject || '-'}</TableCell>
+                                                    <TableCell>{batch.enrollments_count}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No batches assigned yet. Contact admin.</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {isAdmin && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('dashboard.recent_payments')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {recentFeePayments.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>{t('fees.student')}</TableHead>
+                                                <TableHead>{t('fees.month')}</TableHead>
+                                                <TableHead>{t('fees.amount_paid')}</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {recentFeePayments.map((payment) => (
+                                                <TableRow key={payment.id}>
+                                                    <TableCell className="font-medium">{payment.student.name}</TableCell>
+                                                    <TableCell>{MONTH_NAMES[payment.month]} {payment.year}</TableCell>
+                                                    <TableCell>{Number(payment.amount_paid).toFixed(0)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No recent payments.</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {isTeacher && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('dashboard.recent_students')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {recentStudents.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>{t('students.name')}</TableHead>
+                                                <TableHead>{t('students.class')}</TableHead>
+                                                <TableHead>{t('students.status')}</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {recentStudents.map((student) => (
+                                                <TableRow key={student.id}>
+                                                    <TableCell className="font-medium">{student.name}</TableCell>
+                                                    <TableCell>{student.coaching_class?.name || '-'}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={student.status === 'active' ? 'default' : 'warning'}>
+                                                            {student.status === 'active' ? t('students.active') : t('students.inactive')}
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No students in your batches yet.</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
         </>
