@@ -17,7 +17,12 @@ type TeacherFormProps = {
     errors: Record<string, string>;
 };
 
-export default function TeacherForm({ teacher, onSubmit, processing, errors }: TeacherFormProps) {
+export default function TeacherForm({
+    teacher,
+    onSubmit,
+    processing,
+    errors,
+}: TeacherFormProps) {
     const { data, setData } = useForm({
         name: teacher?.name || '',
         email: teacher?.email || '',
@@ -58,7 +63,8 @@ export default function TeacherForm({ teacher, onSubmit, processing, errors }: T
 
                 <div className="space-y-2">
                     <Label htmlFor="password">
-                        Password {teacher ? '(leave blank to keep current)' : '*'}
+                        Password{' '}
+                        {teacher ? '(leave blank to keep current)' : '*'}
                     </Label>
                     <Input
                         id="password"
@@ -78,7 +84,9 @@ export default function TeacherForm({ teacher, onSubmit, processing, errors }: T
                         id="password_confirmation"
                         type="password"
                         value={data.password_confirmation}
-                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                        onChange={(e) =>
+                            setData('password_confirmation', e.target.value)
+                        }
                         placeholder="Confirm password"
                     />
                 </div>
@@ -86,7 +94,11 @@ export default function TeacherForm({ teacher, onSubmit, processing, errors }: T
 
             <div className="flex justify-end gap-2">
                 <Button type="submit" disabled={processing}>
-                    {processing ? 'Saving...' : teacher ? 'Update Teacher' : 'Create Teacher'}
+                    {processing
+                        ? 'Saving...'
+                        : teacher
+                          ? 'Update Teacher'
+                          : 'Create Teacher'}
                 </Button>
             </div>
         </form>

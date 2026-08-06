@@ -41,12 +41,20 @@ export default function BatchesEdit({ batch }: BatchesEditProps) {
                             Back
                         </Button>
                     </Link>
-                    <Heading title={`Edit ${batch.name}`} description="Update batch information" />
+                    <Heading
+                        title={`Edit ${batch.name}`}
+                        description="Update batch information"
+                    />
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <BatchForm batch={batch} onSubmit={handleSubmit} processing={false} errors={{}} />
+                        <BatchForm
+                            batch={batch}
+                            onSubmit={handleSubmit}
+                            processing={false}
+                            errors={{}}
+                        />
                     </CardContent>
                 </Card>
             </div>

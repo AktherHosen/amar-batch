@@ -14,7 +14,11 @@ export default function AuthLayout({
     const { appStats } = usePage().props as { appStats?: AppStats };
 
     return (
-        <AuthLayoutTemplate title={title} description={description} stats={appStats}>
+        <AuthLayoutTemplate
+            title={title}
+            description={description}
+            stats={appStats}
+        >
             {children}
         </AuthLayoutTemplate>
     );

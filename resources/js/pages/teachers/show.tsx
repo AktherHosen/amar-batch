@@ -4,7 +4,14 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import teachers from '@/routes/teachers';
 import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
@@ -57,7 +64,10 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                 {t('actions.back')}
                             </Button>
                         </Link>
-                        <Heading title={teacher.name} description={t('teachers.title')} />
+                        <Heading
+                            title={teacher.name}
+                            description={t('teachers.title')}
+                        />
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
@@ -67,7 +77,10 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                     {t('actions.edit')}
                                 </Button>
                             </Link>
-                            <Button variant="destructive" onClick={handleDelete}>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                            >
                                 <Trash2 className="mr-2 size-4" />
                                 {t('actions.delete')}
                             </Button>
@@ -81,16 +94,24 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div>
-                            <p className="text-sm text-muted-foreground">{t('teachers.name')}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t('teachers.name')}
+                            </p>
                             <p className="font-medium">{teacher.name}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">{t('teachers.email')}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t('teachers.email')}
+                            </p>
                             <p className="font-medium">{teacher.email}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">{t('batches.title')}</p>
-                            <p className="font-medium">{teacher.assigned_batches_count}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t('batches.title')}
+                            </p>
+                            <p className="font-medium">
+                                {teacher.assigned_batches_count}
+                            </p>
                         </div>
                     </CardContent>
                 </Card>
@@ -104,35 +125,60 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>{t('batches.name')}</TableHead>
-                                        <TableHead>{t('batches.subject')}</TableHead>
-                                        <TableHead>{t('batches.enrolled')}</TableHead>
-                                        <TableHead>{t('students.status')}</TableHead>
-                                        <TableHead className="text-right">{t('actions.view')}</TableHead>
+                                        <TableHead>
+                                            {t('batches.name')}
+                                        </TableHead>
+                                        <TableHead>
+                                            {t('batches.subject')}
+                                        </TableHead>
+                                        <TableHead>
+                                            {t('batches.enrolled')}
+                                        </TableHead>
+                                        <TableHead>
+                                            {t('students.status')}
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            {t('actions.view')}
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {teacher.assigned_batches.map((batch) => (
                                         <TableRow key={batch.id}>
-                                            <TableCell className="font-medium">{batch.name}</TableCell>
-                                            <TableCell>{batch.subject || '-'}</TableCell>
-                                            <TableCell>{batch.enrollments_count}</TableCell>
+                                            <TableCell className="font-medium">
+                                                {batch.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                {batch.subject || '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {batch.enrollments_count}
+                                            </TableCell>
                                             <TableCell>
                                                 <Badge
                                                     variant={
-                                                        batch.status === 'active'
+                                                        batch.status ===
+                                                        'active'
                                                             ? 'default'
-                                                            : batch.status === 'inactive'
-                                                            ? 'secondary'
-                                                            : 'destructive'
+                                                            : batch.status ===
+                                                                'inactive'
+                                                              ? 'secondary'
+                                                              : 'destructive'
                                                     }
                                                 >
                                                     {batch.status}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Link href={batches.show(batch.id)}>
-                                                    <Button variant="ghost" size="sm">
+                                                <Link
+                                                    href={batches.show(
+                                                        batch.id,
+                                                    )}
+                                                >
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                    >
                                                         {t('actions.view')}
                                                     </Button>
                                                 </Link>
@@ -142,7 +188,9 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                 </TableBody>
                             </Table>
                         ) : (
-                            <p className="text-sm text-muted-foreground">{t('batches.title')}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t('batches.title')}
+                            </p>
                         )}
                     </CardContent>
                 </Card>

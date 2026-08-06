@@ -25,12 +25,19 @@ export default function TeachersCreate() {
                             Back
                         </Button>
                     </Link>
-                    <Heading title="Create Teacher" description="Add a new teacher to the system" />
+                    <Heading
+                        title="Create Teacher"
+                        description="Add a new teacher to the system"
+                    />
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <TeacherForm onSubmit={handleSubmit} processing={false} errors={{}} />
+                        <TeacherForm
+                            onSubmit={handleSubmit}
+                            processing={false}
+                            errors={{}}
+                        />
                     </CardContent>
                 </Card>
             </div>

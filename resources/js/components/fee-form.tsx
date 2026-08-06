@@ -2,7 +2,13 @@ import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import InputError from '@/components/input-error';
 
 type Student = {
@@ -50,38 +56,56 @@ type FeeFormProps = {
 };
 
 const MONTH_NAMES = [
-    '', 'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    '',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
 ];
 
-export default function FeeForm({ fee, students, batches, enrollments, isEdit = false }: FeeFormProps) {
+export default function FeeForm({
+    fee,
+    students,
+    batches,
+    enrollments,
+    isEdit = false,
+}: FeeFormProps) {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
 
     const getDefaultMonth = () => {
         if (fee?.month) {
-return fee.month.toString();
-}
+            return fee.month.toString();
+        }
 
         return currentMonth.toString();
     };
 
     const getDefaultYear = () => {
         if (fee?.year) {
-return fee.year.toString();
-}
+            return fee.year.toString();
+        }
 
         return currentYear.toString();
     };
 
-    const { data, setData, post, put, processing, errors } = useForm<FeeFormData>({
-        student_id: fee?.student_id?.toString() || '',
-        batch_id: fee?.batch_id?.toString() || '',
-        month: getDefaultMonth(),
-        year: getDefaultYear(),
-        amount_paid: fee?.amount_paid?.toString() || '',
-        notes: fee?.notes || '',
-    });
+    const { data, setData, post, put, processing, errors } =
+        useForm<FeeFormData>({
+            student_id: fee?.student_id?.toString() || '',
+            batch_id: fee?.batch_id?.toString() || '',
+            month: getDefaultMonth(),
+            year: getDefaultYear(),
+            amount_paid: fee?.amount_paid?.toString() || '',
+            notes: fee?.notes || '',
+        });
 
     const getEnrollmentForStudent = (studentId: string) => {
         return enrollments.find((e) => e.student.id.toString() === studentId);
@@ -119,14 +143,23 @@ return fee.year.toString();
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="student_id">Student *</Label>
-                    <Select value={data.student_id} onValueChange={handleStudentChange}>
+                    <Select
+                        value={data.student_id}
+                        onValueChange={handleStudentChange}
+                    >
                         <SelectTrigger>
                             <SelectValue placeholder="Select a student" />
                         </SelectTrigger>
                         <SelectContent>
                             {students.map((student) => (
-                                <SelectItem key={student.id} value={student.id.toString()}>
-                                    {student.name}{student.coaching_class ? ` (${student.coaching_class.name})` : ''}
+                                <SelectItem
+                                    key={student.id}
+                                    value={student.id.toString()}
+                                >
+                                    {student.name}
+                                    {student.coaching_class
+                                        ? ` (${student.coaching_class.name})`
+                                        : ''}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -136,13 +169,19 @@ return fee.year.toString();
 
                 <div className="space-y-2">
                     <Label htmlFor="batch_id">Batch *</Label>
-                    <Select value={data.batch_id} onValueChange={(v) => setData('batch_id', v)}>
+                    <Select
+                        value={data.batch_id}
+                        onValueChange={(v) => setData('batch_id', v)}
+                    >
                         <SelectTrigger>
                             <SelectValue placeholder="Select a batch" />
                         </SelectTrigger>
                         <SelectContent>
                             {batches.map((batch) => (
-                                <SelectItem key={batch.id} value={batch.id.toString()}>
+                                <SelectItem
+                                    key={batch.id}
+                                    value={batch.id.toString()}
+                                >
                                     {batch.name}
                                 </SelectItem>
                             ))}
@@ -153,13 +192,19 @@ return fee.year.toString();
 
                 <div className="space-y-2">
                     <Label htmlFor="month">Month *</Label>
-                    <Select value={data.month} onValueChange={(v) => setData('month', v)}>
+                    <Select
+                        value={data.month}
+                        onValueChange={(v) => setData('month', v)}
+                    >
                         <SelectTrigger>
                             <SelectValue placeholder="Select month" />
                         </SelectTrigger>
                         <SelectContent>
                             {MONTH_NAMES.slice(1).map((name, i) => (
-                                <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                <SelectItem
+                                    key={i + 1}
+                                    value={(i + 1).toString()}
+                                >
                                     {name}
                                 </SelectItem>
                             ))}
@@ -208,7 +253,11 @@ return fee.year.toString();
             </div>
 
             <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => window.history.back()}>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => window.history.back()}
+                >
                     Cancel
                 </Button>
                 <Button type="submit" disabled={processing}>

@@ -27,12 +27,19 @@ export default function BatchesCreate() {
                             {t('actions.back')}
                         </Button>
                     </Link>
-                    <Heading title={t('batches.create')} description={t('batches.create')} />
+                    <Heading
+                        title={t('batches.create')}
+                        description={t('batches.create')}
+                    />
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <BatchForm onSubmit={handleSubmit} processing={false} errors={{}} />
+                        <BatchForm
+                            onSubmit={handleSubmit}
+                            processing={false}
+                            errors={{}}
+                        />
                     </CardContent>
                 </Card>
             </div>

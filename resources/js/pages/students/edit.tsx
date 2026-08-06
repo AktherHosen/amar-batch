@@ -1,6 +1,6 @@
 import { Head, router, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
-import type {Student} from '@/types';
+import type { Student } from '@/types';
 import Heading from '@/components/heading';
 import StudentForm from '@/components/student-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,7 +19,10 @@ type StudentsEditProps = {
     coachingClasses: CoachingClass[];
 };
 
-export default function StudentsEdit({ student, coachingClasses }: StudentsEditProps) {
+export default function StudentsEdit({
+    student,
+    coachingClasses,
+}: StudentsEditProps) {
     const { t } = useLocale();
     const handleSubmit = (data: any) => {
         router.put(students.update(student.id), data, {
@@ -39,7 +42,10 @@ export default function StudentsEdit({ student, coachingClasses }: StudentsEditP
                             {t('actions.back')}
                         </Button>
                     </Link>
-                    <Heading title={`${t('students.edit')} ${student.name}`} description={t('students.edit')} />
+                    <Heading
+                        title={`${t('students.edit')} ${student.name}`}
+                        description={t('students.edit')}
+                    />
                 </div>
 
                 <Card>

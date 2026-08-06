@@ -14,7 +14,11 @@ type CoachingClass = {
     default_fee: number;
 };
 
-export default function CoachingClassEdit({ coachingClass }: { coachingClass: CoachingClass }) {
+export default function CoachingClassEdit({
+    coachingClass,
+}: {
+    coachingClass: CoachingClass;
+}) {
     const { data, setData, put, processing, errors } = useForm({
         name: coachingClass.name,
         default_fee: String(coachingClass.default_fee),
@@ -37,7 +41,10 @@ export default function CoachingClassEdit({ coachingClass }: { coachingClass: Co
                             Back
                         </Button>
                     </Link>
-                    <Heading title={`Edit ${coachingClass.name}`} description="Update class details" />
+                    <Heading
+                        title={`Edit ${coachingClass.name}`}
+                        description="Update class details"
+                    />
                 </div>
 
                 <Card className="max-w-xl">
@@ -51,19 +58,25 @@ export default function CoachingClassEdit({ coachingClass }: { coachingClass: Co
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     placeholder="e.g. Nursery, KG, Class 1"
                                 />
                                 <InputError message={errors.name} />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="default_fee">Default Fee *</Label>
+                                <Label htmlFor="default_fee">
+                                    Default Fee *
+                                </Label>
                                 <Input
                                     id="default_fee"
                                     type="number"
                                     value={data.default_fee}
-                                    onChange={(e) => setData('default_fee', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('default_fee', e.target.value)
+                                    }
                                     placeholder="e.g. 500"
                                     min="0"
                                 />

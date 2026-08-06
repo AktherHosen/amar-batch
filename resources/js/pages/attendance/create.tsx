@@ -4,9 +4,22 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import attendance from '@/routes/attendance';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -30,17 +43,29 @@ type PageProps = {
     selectedDate: string;
 };
 
-export default function AttendanceCreate({ batches, students, selectedBatch, selectedDate }: PageProps) {
+export default function AttendanceCreate({
+    batches,
+    students,
+    selectedBatch,
+    selectedDate,
+}: PageProps) {
     const { t } = useLocale();
     const [batchId, setBatchId] = useState(selectedBatch || '');
-    const [date, setDate] = useState(selectedDate || new Date().toISOString().split('T')[0]);
-    const [studentList, setStudentList] = useState<StudentAttendance[]>(students);
+    const [date, setDate] = useState(
+        selectedDate || new Date().toISOString().split('T')[0],
+    );
+    const [studentList, setStudentList] =
+        useState<StudentAttendance[]>(students);
 
     const handleBatchChange = (value: string) => {
         setBatchId(value);
 
         if (value && date) {
-            router.get(attendance.create(), { batch_id: value, date }, { preserveState: true, replace: true });
+            router.get(
+                attendance.create(),
+                { batch_id: value, date },
+                { preserveState: true, replace: true },
+            );
         }
     };
 
@@ -48,13 +73,20 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
         setDate(value);
 
         if (batchId && value) {
-            router.get(attendance.create(), { batch_id: batchId, date: value }, { preserveState: true, replace: true });
+            router.get(
+                attendance.create(),
+                { batch_id: batchId, date: value },
+                { preserveState: true, replace: true },
+            );
         }
     };
 
-    const updateStatus = (studentId: number, status: 'present' | 'absent' | 'late' | null) => {
+    const updateStatus = (
+        studentId: number,
+        status: 'present' | 'absent' | 'late' | null,
+    ) => {
         setStudentList((prev) =>
-            prev.map((s) => (s.id === studentId ? { ...s, status } : s))
+            prev.map((s) => (s.id === studentId ? { ...s, status } : s)),
         );
     };
 
@@ -64,14 +96,14 @@ export default function AttendanceCreate({ batches, students, selectedBatch, sel
 
     const updateNotes = (studentId: number, notes: string) => {
         setStudentList((prev) =>
-            prev.map((s) => (s.id === studentId ? { ...s, notes } : s))
+            prev.map((s) => (s.id === studentId ? { ...s, notes } : s)),
         );
     };
 
     const handleSubmit = () => {
         if (!batchId || !date || studentList.length === 0) {
-return;
-}
+            return;
+        }
 
         router.post(attendance.store(), {
             batch_id: parseInt(batchId),
@@ -89,32 +121,43 @@ return;
             <Head title={t('attendance.mark')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title={t('attendance.mark')} description={t('attendance.title')} />
+                <Heading
+                    title={t('attendance.mark')}
+                    description={t('attendance.title')}
+                />
 
                 <Card>
                     <CardHeader>
                         <div className="flex flex-col gap-4">
-                            <div className="space-y-2 w-full">
+                            <div className="w-full space-y-2">
                                 <Label>{t('attendance.batch')}</Label>
-                                <Select value={batchId} onValueChange={handleBatchChange}>
+                                <Select
+                                    value={batchId}
+                                    onValueChange={handleBatchChange}
+                                >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select a batch" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {batches.map((batch) => (
-                                            <SelectItem key={batch.id} value={batch.id.toString()}>
+                                            <SelectItem
+                                                key={batch.id}
+                                                value={batch.id.toString()}
+                                            >
                                                 {batch.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-2 w-full sm:w-auto sm:max-w-[200px]">
+                            <div className="w-full space-y-2 sm:w-auto sm:max-w-[200px]">
                                 <Label>{t('attendance.date')}</Label>
                                 <Input
                                     type="date"
                                     value={date}
-                                    onChange={(e) => handleDateChange(e.target.value)}
+                                    onChange={(e) =>
+                                        handleDateChange(e.target.value)
+                                    }
                                     className="w-full"
                                 />
                             </div>
@@ -123,15 +166,30 @@ return;
                     <CardContent>
                         {batchId && studentList.length > 0 ? (
                             <>
-                                <div className="flex flex-col gap-2 mb-4 sm:flex-row">
-                                    <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => markAll('present')}>
+                                <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="w-full sm:w-auto"
+                                        onClick={() => markAll('present')}
+                                    >
                                         {t('attendance.mark_all_present')}
                                     </Button>
                                     <div className="flex gap-2">
-                                        <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => markAll('absent')}>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="flex-1 sm:flex-none"
+                                            onClick={() => markAll('absent')}
+                                        >
                                             {t('attendance.mark_all_absent')}
                                         </Button>
-                                        <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => markAll(null)}>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="flex-1 sm:flex-none"
+                                            onClick={() => markAll(null)}
+                                        >
                                             {t('attendance.clear_all')}
                                         </Button>
                                     </div>
@@ -139,9 +197,15 @@ return;
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>{t('attendance.student')}</TableHead>
-                                            <TableHead>{t('attendance.status')}</TableHead>
-                                            <TableHead className="hidden sm:table-cell">{t('attendance.notes')}</TableHead>
+                                            <TableHead>
+                                                {t('attendance.student')}
+                                            </TableHead>
+                                            <TableHead>
+                                                {t('attendance.status')}
+                                            </TableHead>
+                                            <TableHead className="hidden sm:table-cell">
+                                                {t('attendance.notes')}
+                                            </TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -154,34 +218,70 @@ return;
                                                     <div className="grid grid-cols-3 gap-1 sm:flex sm:flex-wrap sm:gap-1">
                                                         <Button
                                                             size="sm"
-                                                            variant={student.status === 'present' ? 'default' : 'outline'}
+                                                            variant={
+                                                                student.status ===
+                                                                'present'
+                                                                    ? 'default'
+                                                                    : 'outline'
+                                                            }
                                                             className="w-full sm:w-auto"
-                                                            onClick={() => updateStatus(student.id, 'present')}
+                                                            onClick={() =>
+                                                                updateStatus(
+                                                                    student.id,
+                                                                    'present',
+                                                                )
+                                                            }
                                                         >
                                                             P
                                                         </Button>
                                                         <Button
                                                             size="sm"
-                                                            variant={student.status === 'absent' ? 'destructive' : 'outline'}
+                                                            variant={
+                                                                student.status ===
+                                                                'absent'
+                                                                    ? 'destructive'
+                                                                    : 'outline'
+                                                            }
                                                             className="w-full sm:w-auto"
-                                                            onClick={() => updateStatus(student.id, 'absent')}
+                                                            onClick={() =>
+                                                                updateStatus(
+                                                                    student.id,
+                                                                    'absent',
+                                                                )
+                                                            }
                                                         >
                                                             A
                                                         </Button>
                                                         <Button
                                                             size="sm"
-                                                            variant={student.status === 'late' ? 'secondary' : 'outline'}
+                                                            variant={
+                                                                student.status ===
+                                                                'late'
+                                                                    ? 'secondary'
+                                                                    : 'outline'
+                                                            }
                                                             className="w-full sm:w-auto"
-                                                            onClick={() => updateStatus(student.id, 'late')}
+                                                            onClick={() =>
+                                                                updateStatus(
+                                                                    student.id,
+                                                                    'late',
+                                                                )
+                                                            }
                                                         >
                                                             L
                                                         </Button>
-                                                        {student.status !== null && (
+                                                        {student.status !==
+                                                            null && (
                                                             <Button
                                                                 size="sm"
                                                                 variant="ghost"
                                                                 className="col-span-3 w-full px-2 sm:col-span-1 sm:w-auto"
-                                                                onClick={() => updateStatus(student.id, null)}
+                                                                onClick={() =>
+                                                                    updateStatus(
+                                                                        student.id,
+                                                                        null,
+                                                                    )
+                                                                }
                                                             >
                                                                 ✕
                                                             </Button>
@@ -192,7 +292,12 @@ return;
                                                     <Input
                                                         placeholder="Optional notes..."
                                                         value={student.notes}
-                                                        onChange={(e) => updateNotes(student.id, e.target.value)}
+                                                        onChange={(e) =>
+                                                            updateNotes(
+                                                                student.id,
+                                                                e.target.value,
+                                                            )
+                                                        }
                                                         className="w-full sm:w-[250px]"
                                                     />
                                                 </TableCell>
@@ -202,7 +307,10 @@ return;
                                 </Table>
 
                                 <div className="mt-4 flex justify-end gap-2">
-                                    <Button variant="outline" onClick={() => window.history.back()}>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => window.history.back()}
+                                    >
                                         {t('actions.cancel')}
                                     </Button>
                                     <Button onClick={handleSubmit}>
@@ -211,9 +319,13 @@ return;
                                 </div>
                             </>
                         ) : batchId ? (
-                            <p className="text-sm text-muted-foreground">No enrolled students found for this batch.</p>
+                            <p className="text-sm text-muted-foreground">
+                                No enrolled students found for this batch.
+                            </p>
                         ) : (
-                            <p className="text-sm text-muted-foreground">Select a batch and date to mark attendance.</p>
+                            <p className="text-sm text-muted-foreground">
+                                Select a batch and date to mark attendance.
+                            </p>
                         )}
                     </CardContent>
                 </Card>

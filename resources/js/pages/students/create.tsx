@@ -37,7 +37,10 @@ export default function StudentsCreate({ coachingClasses }: PageProps) {
                             {t('actions.back')}
                         </Button>
                     </Link>
-                    <Heading title={t('students.create')} description={t('students.create')} />
+                    <Heading
+                        title={t('students.create')}
+                        description={t('students.create')}
+                    />
                 </div>
 
                 <Card>

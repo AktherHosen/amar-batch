@@ -8,7 +8,7 @@ const translations: Record<Locale, Record<string, string>> = {
         // Common
         'app.name': 'Karnaphuli Alpha Academy',
         'app.tagline': 'Coaching Center Management',
-        
+
         // Navigation
         'nav.dashboard': 'Dashboard',
         'nav.students': 'Students',
@@ -18,7 +18,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'nav.fees': 'Fees',
         'nav.coaching_classes': 'Classes',
         'nav.settings': 'Settings',
-        
+
         // Dashboard
         'dashboard.title': 'Dashboard',
         'dashboard.total_students': 'Total Students',
@@ -26,7 +26,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'dashboard.total_collected': 'Total Collected',
         'dashboard.recent_payments': 'Recent Payments',
         'dashboard.recent_students': 'Recent Students',
-        
+
         // Students
         'students.title': 'Students',
         'students.create': 'Add Student',
@@ -48,7 +48,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'students.other': 'Other',
         'students.active': 'Active',
         'students.inactive': 'Inactive',
-        
+
         // Batches
         'batches.title': 'Batches',
         'batches.create': 'Add Batch',
@@ -57,14 +57,14 @@ const translations: Record<Locale, Record<string, string>> = {
         'batches.schedule': 'Schedule',
         'batches.capacity': 'Capacity',
         'batches.enrolled': 'Enrolled',
-        
+
         // Teachers
         'teachers.title': 'Teachers',
         'teachers.create': 'Add Teacher',
         'teachers.name': 'Name',
         'teachers.email': 'Email',
         'teachers.phone': 'Phone',
-        
+
         // Attendance
         'attendance.title': 'Attendance',
         'attendance.mark': 'Mark Attendance',
@@ -80,7 +80,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'attendance.mark_all_absent': 'Mark All Absent',
         'attendance.clear_all': 'Clear All',
         'attendance.save': 'Save Attendance',
-        
+
         // Fees
         'fees.title': 'Fee Management',
         'fees.create': 'Add Fee Record',
@@ -92,13 +92,13 @@ const translations: Record<Locale, Record<string, string>> = {
         'fees.total_paid': 'Total Paid',
         'fees.export': 'Export to Excel',
         'fees.payment_history': 'Payment History',
-        
+
         // Classes
         'classes.title': 'Coaching Classes',
         'classes.create': 'Add Class',
         'classes.name': 'Name',
         'classes.default_fee': 'Default Fee',
-        
+
         // Actions
         'actions.save': 'Save',
         'actions.cancel': 'Cancel',
@@ -108,7 +108,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'actions.view_all': 'View all',
         'actions.search': 'Search',
         'actions.back': 'Back',
-        
+
         // Months
         'month.january': 'January',
         'month.february': 'February',
@@ -127,7 +127,7 @@ const translations: Record<Locale, Record<string, string>> = {
         // Common
         'app.name': 'কর্ণফুলী আলফা একাডেমি',
         'app.tagline': 'কোচিং সেন্টার ম্যানেজমেন্ট',
-        
+
         // Navigation
         'nav.dashboard': 'ড্যাশবোর্ড',
         'nav.students': 'ছাত্রছাত্রী',
@@ -137,7 +137,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'nav.fees': 'বেতন',
         'nav.coaching_classes': 'ক্লাস',
         'nav.settings': 'সেটিংস',
-        
+
         // Dashboard
         'dashboard.title': 'ড্যাশবোর্ড',
         'dashboard.total_students': 'মোট ছাত্রছাত্রী',
@@ -145,7 +145,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'dashboard.total_collected': 'মোট সংগৃহীত',
         'dashboard.recent_payments': 'সাম্প্রতিক বেতন',
         'dashboard.recent_students': 'সাম্প্রতিক ছাত্রছাত্রী',
-        
+
         // Students
         'students.title': 'ছাত্রছাত্রী',
         'students.create': 'ছাত্র যোগ করুন',
@@ -167,7 +167,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'students.other': 'অন্যান্য',
         'students.active': 'সক্রিয়',
         'students.inactive': 'নিষ্ক্রিয়',
-        
+
         // Batches
         'batches.title': 'ব্যাচ',
         'batches.create': 'ব্যাচ যোগ করুন',
@@ -176,14 +176,14 @@ const translations: Record<Locale, Record<string, string>> = {
         'batches.schedule': 'সময়সূচী',
         'batches.capacity': 'ক্ষমতা',
         'batches.enrolled': 'ভর্তি',
-        
+
         // Teachers
         'teachers.title': 'শিক্ষক',
         'teachers.create': 'শিক্ষক যোগ করুন',
         'teachers.name': 'নাম',
         'teachers.email': 'ইমেইল',
         'teachers.phone': 'ফোন',
-        
+
         // Attendance
         'attendance.title': 'উপস্থিতি',
         'attendance.mark': 'উপস্থিতি নির্ধারণ',
@@ -199,7 +199,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'attendance.mark_all_absent': 'সকল অনুপস্থিত',
         'attendance.clear_all': 'সব মুছুন',
         'attendance.save': 'উপস্থিতি সংরক্ষণ',
-        
+
         // Fees
         'fees.title': 'বেতন ব্যবস্থাপনা',
         'fees.create': 'বেতন রেকর্ড যোগ করুন',
@@ -211,13 +211,13 @@ const translations: Record<Locale, Record<string, string>> = {
         'fees.total_paid': 'মোট পরিশোধিত',
         'fees.export': 'এক্সেলে রপ্তানি',
         'fees.payment_history': 'বেতনের ইতিহাস',
-        
+
         // Classes
         'classes.title': 'কোচিং ক্লাস',
         'classes.create': 'ক্লাস যোগ করুন',
         'classes.name': 'নাম',
         'classes.default_fee': 'ডিফল্ট বেতন',
-        
+
         // Actions
         'actions.save': 'সংরক্ষণ',
         'actions.cancel': 'বাতিল',
@@ -227,7 +227,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'actions.view_all': 'সব দেখুন',
         'actions.search': 'অনুসন্ধান',
         'actions.back': 'পিছনে',
-        
+
         // Months
         'month.january': 'জানুয়ারি',
         'month.february': 'ফেব্রুয়ারি',
@@ -271,7 +271,9 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <LocaleContext.Provider value={{ locale, setLocale: handleSetLocale, t }}>
+        <LocaleContext.Provider
+            value={{ locale, setLocale: handleSetLocale, t }}
+        >
             {children}
         </LocaleContext.Provider>
     );

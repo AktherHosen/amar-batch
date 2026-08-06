@@ -1,9 +1,15 @@
 import { useForm } from '@inertiajs/react';
-import type {Student} from '@/types';
+import type { Student } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import InputError from '@/components/input-error';
 
 type CoachingClass = {
@@ -20,14 +26,24 @@ type StudentFormProps = {
     errors: Record<string, string>;
 };
 
-export default function StudentForm({ student, coachingClasses, onSubmit, processing, errors }: StudentFormProps) {
+export default function StudentForm({
+    student,
+    coachingClasses,
+    onSubmit,
+    processing,
+    errors,
+}: StudentFormProps) {
     const { data, setData } = useForm({
         name: student?.name || '',
         phone: student?.phone || '',
-        coaching_class_id: student?.coaching_class_id ? String(student.coaching_class_id) : '',
+        coaching_class_id: student?.coaching_class_id
+            ? String(student.coaching_class_id)
+            : '',
         section: student?.section || '',
         address: student?.address || '',
-        date_of_birth: student?.date_of_birth ? student.date_of_birth.split('T')[0] : '',
+        date_of_birth: student?.date_of_birth
+            ? student.date_of_birth.split('T')[0]
+            : '',
         gender: student?.gender || '',
         guardian_name: student?.guardian_name || '',
         guardian_phone: student?.guardian_phone || '',
@@ -70,7 +86,9 @@ export default function StudentForm({ student, coachingClasses, onSubmit, proces
                     <Label htmlFor="coaching_class_id">Class</Label>
                     <Select
                         value={data.coaching_class_id}
-                        onValueChange={(value) => setData('coaching_class_id', value)}
+                        onValueChange={(value) =>
+                            setData('coaching_class_id', value)
+                        }
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select class" />
@@ -130,14 +148,19 @@ export default function StudentForm({ student, coachingClasses, onSubmit, proces
                         type="date"
                         lang="en-GB"
                         value={data.date_of_birth}
-                        onChange={(e) => setData('date_of_birth', e.target.value)}
+                        onChange={(e) =>
+                            setData('date_of_birth', e.target.value)
+                        }
                     />
                     <InputError message={errors.date_of_birth} />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
-                    <Select value={data.gender} onValueChange={(value) => setData('gender', value)}>
+                    <Select
+                        value={data.gender}
+                        onValueChange={(value) => setData('gender', value)}
+                    >
                         <SelectTrigger>
                             <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
@@ -152,7 +175,12 @@ export default function StudentForm({ student, coachingClasses, onSubmit, proces
 
                 <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
-                    <Select value={data.status} onValueChange={(value) => setData('status', value as 'active' | 'inactive')}>
+                    <Select
+                        value={data.status}
+                        onValueChange={(value) =>
+                            setData('status', value as 'active' | 'inactive')
+                        }
+                    >
                         <SelectTrigger>
                             <SelectValue placeholder="Select status" />
                         </SelectTrigger>
@@ -182,7 +210,9 @@ export default function StudentForm({ student, coachingClasses, onSubmit, proces
                     <Input
                         id="guardian_name"
                         value={data.guardian_name}
-                        onChange={(e) => setData('guardian_name', e.target.value)}
+                        onChange={(e) =>
+                            setData('guardian_name', e.target.value)
+                        }
                         placeholder="Enter guardian name"
                     />
                     <InputError message={errors.guardian_name} />
@@ -193,7 +223,9 @@ export default function StudentForm({ student, coachingClasses, onSubmit, proces
                     <Input
                         id="guardian_phone"
                         value={data.guardian_phone}
-                        onChange={(e) => setData('guardian_phone', e.target.value)}
+                        onChange={(e) =>
+                            setData('guardian_phone', e.target.value)
+                        }
                         placeholder="Enter guardian phone"
                     />
                     <InputError message={errors.guardian_phone} />
@@ -202,7 +234,11 @@ export default function StudentForm({ student, coachingClasses, onSubmit, proces
 
             <div className="flex justify-end gap-2">
                 <Button type="submit" disabled={processing}>
-                    {processing ? 'Saving...' : student ? 'Update Student' : 'Create Student'}
+                    {processing
+                        ? 'Saving...'
+                        : student
+                          ? 'Update Student'
+                          : 'Create Student'}
                 </Button>
             </div>
         </form>

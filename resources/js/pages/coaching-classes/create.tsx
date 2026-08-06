@@ -33,7 +33,10 @@ export default function CoachingClassCreate() {
                             {t('actions.back')}
                         </Button>
                     </Link>
-                    <Heading title={t('classes.create')} description={t('classes.create')} />
+                    <Heading
+                        title={t('classes.create')}
+                        description={t('classes.create')}
+                    />
                 </div>
 
                 <Card className="max-w-xl">
@@ -43,23 +46,31 @@ export default function CoachingClassCreate() {
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <Label htmlFor="name">{t('classes.name')} *</Label>
+                                <Label htmlFor="name">
+                                    {t('classes.name')} *
+                                </Label>
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     placeholder="e.g. Nursery, KG, Class 1"
                                 />
                                 <InputError message={errors.name} />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="default_fee">{t('classes.default_fee')} *</Label>
+                                <Label htmlFor="default_fee">
+                                    {t('classes.default_fee')} *
+                                </Label>
                                 <Input
                                     id="default_fee"
                                     type="number"
                                     value={data.default_fee}
-                                    onChange={(e) => setData('default_fee', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('default_fee', e.target.value)
+                                    }
                                     placeholder="e.g. 500"
                                     min="0"
                                 />
@@ -68,7 +79,9 @@ export default function CoachingClassCreate() {
 
                             <div className="flex justify-end gap-2">
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? t('actions.save') + '...' : t('classes.create')}
+                                    {processing
+                                        ? t('actions.save') + '...'
+                                        : t('classes.create')}
                                 </Button>
                             </div>
                         </form>

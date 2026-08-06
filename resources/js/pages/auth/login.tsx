@@ -30,7 +30,10 @@ export default function Login({ status, canResetPassword }: Props) {
                     <>
                         <div className="grid gap-5">
                             <div className="grid gap-2">
-                                <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <Label
+                                    htmlFor="email"
+                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                >
                                     Email address
                                 </Label>
                                 <Input
@@ -49,7 +52,10 @@ export default function Login({ status, canResetPassword }: Props) {
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <Label
+                                        htmlFor="password"
+                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                    >
                                         Password
                                     </Label>
                                     {canResetPassword && (
@@ -81,7 +87,10 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={3}
                                     className="rounded-md"
                                 />
-                                <Label htmlFor="remember" className="text-sm text-gray-600 dark:text-gray-400">
+                                <Label
+                                    htmlFor="remember"
+                                    className="text-sm text-gray-600 dark:text-gray-400"
+                                >
                                     Remember me for 30 days
                                 </Label>
                             </div>

@@ -1,5 +1,13 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Layers, GraduationCap, DollarSign, CheckSquare, School } from 'lucide-react';
+import {
+    LayoutGrid,
+    Users,
+    Layers,
+    GraduationCap,
+    DollarSign,
+    CheckSquare,
+    School,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -26,7 +34,7 @@ export function AppSidebar() {
     const { t } = useLocale();
     const { auth } = usePage().props;
     const isAdmin = auth.user?.role === 'admin';
-    
+
     const allNavItems: NavItem[] = [
         {
             title: t('nav.dashboard'),

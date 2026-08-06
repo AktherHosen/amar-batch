@@ -35,12 +35,20 @@ export default function TeachersEdit({ teacher }: TeachersEditProps) {
                             Back
                         </Button>
                     </Link>
-                    <Heading title={`Edit ${teacher.name}`} description="Update teacher information" />
+                    <Heading
+                        title={`Edit ${teacher.name}`}
+                        description="Update teacher information"
+                    />
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <TeacherForm teacher={teacher} onSubmit={handleSubmit} processing={false} errors={{}} />
+                        <TeacherForm
+                            teacher={teacher}
+                            onSubmit={handleSubmit}
+                            processing={false}
+                            errors={{}}
+                        />
                     </CardContent>
                 </Card>
             </div>

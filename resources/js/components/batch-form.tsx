@@ -2,7 +2,13 @@ import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import InputError from '@/components/input-error';
 
 type Batch = {
@@ -25,13 +31,30 @@ type BatchFormProps = {
 };
 
 const DAY_OPTIONS = [
-    'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu',
-    'Sat-Sun', 'Sun-Tue', 'Mon-Wed', 'Tue-Thu',
-    'Sat-Mon', 'Sun-Wed', 'Mon-Thu',
-    'Sat-Thu', 'Sat-Wed', 'Sun-Thu',
+    'Sat',
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Sat-Sun',
+    'Sun-Tue',
+    'Mon-Wed',
+    'Tue-Thu',
+    'Sat-Mon',
+    'Sun-Wed',
+    'Mon-Thu',
+    'Sat-Thu',
+    'Sat-Wed',
+    'Sun-Thu',
 ];
 
-export default function BatchForm({ batch, onSubmit, processing, errors }: BatchFormProps) {
+export default function BatchForm({
+    batch,
+    onSubmit,
+    processing,
+    errors,
+}: BatchFormProps) {
     const { data, setData } = useForm({
         name: batch?.name || '',
         subject: batch?.subject || '',
@@ -75,7 +98,10 @@ export default function BatchForm({ batch, onSubmit, processing, errors }: Batch
 
                 <div className="space-y-2">
                     <Label htmlFor="days">Days</Label>
-                    <Select value={data.days || ''} onValueChange={(value) => setData('days', value)}>
+                    <Select
+                        value={data.days || ''}
+                        onValueChange={(value) => setData('days', value)}
+                    >
                         <SelectTrigger>
                             <SelectValue placeholder="Select days" />
                         </SelectTrigger>
@@ -107,7 +133,9 @@ export default function BatchForm({ batch, onSubmit, processing, errors }: Batch
                         id="capacity"
                         type="number"
                         value={data.capacity}
-                        onChange={(e) => setData('capacity', parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                            setData('capacity', parseInt(e.target.value) || 0)
+                        }
                         min="1"
                     />
                     <InputError message={errors.capacity} />
@@ -137,7 +165,10 @@ export default function BatchForm({ batch, onSubmit, processing, errors }: Batch
 
                 <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
-                    <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                    <Select
+                        value={data.status}
+                        onValueChange={(value) => setData('status', value)}
+                    >
                         <SelectTrigger>
                             <SelectValue placeholder="Select status" />
                         </SelectTrigger>
@@ -153,7 +184,11 @@ export default function BatchForm({ batch, onSubmit, processing, errors }: Batch
 
             <div className="flex justify-end gap-2">
                 <Button type="submit" disabled={processing}>
-                    {processing ? 'Saving...' : batch ? 'Update Batch' : 'Create Batch'}
+                    {processing
+                        ? 'Saving...'
+                        : batch
+                          ? 'Update Batch'
+                          : 'Create Batch'}
                 </Button>
             </div>
         </form>

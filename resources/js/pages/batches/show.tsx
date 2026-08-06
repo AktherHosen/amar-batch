@@ -5,8 +5,21 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -54,7 +67,12 @@ type BatchesShowProps = {
     enrolledStudentIds: number[];
 };
 
-export default function BatchesShow({ batch, teachers, students, enrolledStudentIds }: BatchesShowProps) {
+export default function BatchesShow({
+    batch,
+    teachers,
+    students,
+    enrolledStudentIds,
+}: BatchesShowProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
@@ -71,13 +89,17 @@ export default function BatchesShow({ batch, teachers, students, enrolledStudent
 
     const handleAssignTeacher = () => {
         if (!selectedTeacher) {
-return;
-}
+            return;
+        }
 
-        router.post(batches.assignTeacher(batch.id), { teacher_id: parseInt(selectedTeacher) }, {
-            preserveScroll: true,
-            onSuccess: () => setSelectedTeacher(''),
-        });
+        router.post(
+            batches.assignTeacher(batch.id),
+            { teacher_id: parseInt(selectedTeacher) },
+            {
+                preserveScroll: true,
+                onSuccess: () => setSelectedTeacher(''),
+            },
+        );
     };
 
     const handleRemoveTeacher = (teacherId: number) => {
@@ -91,19 +113,30 @@ return;
 
     const handleEnrollStudent = () => {
         if (!selectedStudent) {
-return;
-}
+            return;
+        }
 
-        router.post(`/batches/${batch.id}/enroll`, { student_id: parseInt(selectedStudent) }, {
-            preserveScroll: true,
-            onSuccess: () => setSelectedStudent(''),
-        });
+        router.post(
+            `/batches/${batch.id}/enroll`,
+            { student_id: parseInt(selectedStudent) },
+            {
+                preserveScroll: true,
+                onSuccess: () => setSelectedStudent(''),
+            },
+        );
     };
 
-    const handleUpdateEnrollmentStatus = (enrollmentId: number, status: string) => {
-        router.put(`/enrollments/${enrollmentId}`, { status }, {
-            preserveScroll: true,
-        });
+    const handleUpdateEnrollmentStatus = (
+        enrollmentId: number,
+        status: string,
+    ) => {
+        router.put(
+            `/enrollments/${enrollmentId}`,
+            { status },
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     const handleUnenroll = (enrollmentId: number) => {
@@ -115,7 +148,10 @@ return;
     };
 
     const getStatusBadge = (status: string) => {
-        const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
+        const variants: Record<
+            string,
+            'default' | 'secondary' | 'destructive'
+        > = {
             active: 'default',
             completed: 'secondary',
             dropped: 'destructive',
@@ -128,7 +164,7 @@ return;
         (t) =>
             !batch.teachers.some((bt) => bt.id === t.id) &&
             (t.name.toLowerCase().includes(teacherSearch.toLowerCase()) ||
-                t.email.toLowerCase().includes(teacherSearch.toLowerCase()))
+                t.email.toLowerCase().includes(teacherSearch.toLowerCase())),
     );
 
     return (
@@ -144,7 +180,10 @@ return;
                                 {t('actions.back')}
                             </Button>
                         </Link>
-                        <Heading title={batch.name} description={t('batches.title')} />
+                        <Heading
+                            title={batch.name}
+                            description={t('batches.title')}
+                        />
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
@@ -154,7 +193,10 @@ return;
                                     {t('actions.edit')}
                                 </Button>
                             </Link>
-                            <Button variant="destructive" onClick={handleDelete}>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                            >
                                 <Trash2 className="mr-2 size-4" />
                                 {t('actions.delete')}
                             </Button>
@@ -169,24 +211,40 @@ return;
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('batches.name')}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('batches.name')}
+                                </p>
                                 <p className="font-medium">{batch.name}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('batches.subject')}</p>
-                                <p className="font-medium">{batch.subject || '-'}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('batches.subject')}
+                                </p>
+                                <p className="font-medium">
+                                    {batch.subject || '-'}
+                                </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('batches.capacity')}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('batches.capacity')}
+                                </p>
                                 <p className="font-medium">{batch.capacity}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('batches.enrolled')}</p>
-                                <p className="font-medium">{batch.enrollments.length}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('batches.enrolled')}
+                                </p>
+                                <p className="font-medium">
+                                    {batch.enrollments.length}
+                                </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('students.status')}</p>
-                                <Badge variant={getStatusBadge(batch.status)}>{batch.status}</Badge>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('students.status')}
+                                </p>
+                                <Badge variant={getStatusBadge(batch.status)}>
+                                    {batch.status}
+                                </Badge>
                             </div>
                         </CardContent>
                     </Card>
@@ -197,24 +255,44 @@ return;
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('students.joined_at')}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('students.joined_at')}
+                                </p>
                                 <p className="font-medium">
-                                    {batch.start_date ? new Date(batch.start_date).toLocaleDateString() : '-'}
+                                    {batch.start_date
+                                        ? new Date(
+                                              batch.start_date,
+                                          ).toLocaleDateString()
+                                        : '-'}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('students.left_at')}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('students.left_at')}
+                                </p>
                                 <p className="font-medium">
-                                    {batch.end_date ? new Date(batch.end_date).toLocaleDateString() : '-'}
+                                    {batch.end_date
+                                        ? new Date(
+                                              batch.end_date,
+                                          ).toLocaleDateString()
+                                        : '-'}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('batches.schedule')}</p>
-                                <p className="font-medium">{batch.days || '-'}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('batches.schedule')}
+                                </p>
+                                <p className="font-medium">
+                                    {batch.days || '-'}
+                                </p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('batches.schedule')}</p>
-                                <p className="font-medium">{batch.time || '-'}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('batches.schedule')}
+                                </p>
+                                <p className="font-medium">
+                                    {batch.time || '-'}
+                                </p>
                             </div>
                         </CardContent>
                     </Card>
@@ -230,21 +308,35 @@ return;
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>{t('teachers.name')}</TableHead>
-                                            <TableHead>{t('teachers.email')}</TableHead>
-                                            <TableHead className="text-right">{t('actions.view')}</TableHead>
+                                            <TableHead>
+                                                {t('teachers.name')}
+                                            </TableHead>
+                                            <TableHead>
+                                                {t('teachers.email')}
+                                            </TableHead>
+                                            <TableHead className="text-right">
+                                                {t('actions.view')}
+                                            </TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {batch.teachers.map((teacher) => (
                                             <TableRow key={teacher.id}>
-                                                <TableCell className="font-medium">{teacher.name}</TableCell>
-                                                <TableCell>{teacher.email}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    {teacher.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {teacher.email}
+                                                </TableCell>
                                                 <TableCell className="text-right">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleRemoveTeacher(teacher.id)}
+                                                        onClick={() =>
+                                                            handleRemoveTeacher(
+                                                                teacher.id,
+                                                            )
+                                                        }
                                                     >
                                                         <UserMinus className="size-4" />
                                                     </Button>
@@ -254,7 +346,9 @@ return;
                                     </TableBody>
                                 </Table>
                             ) : (
-                                <p className="text-sm text-muted-foreground">{t('teachers.title')}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('teachers.title')}
+                                </p>
                             )}
 
                             {availableTeachers.length > 0 || teacherSearch ? (
@@ -263,29 +357,47 @@ return;
                                         type="text"
                                         placeholder="Search teachers by name or email..."
                                         value={teacherSearch}
-                                        onChange={(e) => setTeacherSearch(e.target.value)}
-                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        onChange={(e) =>
+                                            setTeacherSearch(e.target.value)
+                                        }
+                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none"
                                     />
                                     {availableTeachers.length > 0 ? (
                                         <div className="flex gap-2">
-                                            <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+                                            <Select
+                                                value={selectedTeacher}
+                                                onValueChange={
+                                                    setSelectedTeacher
+                                                }
+                                            >
                                                 <SelectTrigger className="flex-1">
                                                     <SelectValue placeholder="Select a teacher" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {availableTeachers.map((teacher) => (
-                                                        <SelectItem key={teacher.id} value={teacher.id.toString()}>
-                                                            {teacher.name} ({teacher.email})
-                                                        </SelectItem>
-                                                    ))}
+                                                    {availableTeachers.map(
+                                                        (teacher) => (
+                                                            <SelectItem
+                                                                key={teacher.id}
+                                                                value={teacher.id.toString()}
+                                                            >
+                                                                {teacher.name} (
+                                                                {teacher.email})
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
                                                 </SelectContent>
                                             </Select>
-                                            <Button onClick={handleAssignTeacher} disabled={!selectedTeacher}>
+                                            <Button
+                                                onClick={handleAssignTeacher}
+                                                disabled={!selectedTeacher}
+                                            >
                                                 Assign
                                             </Button>
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-muted-foreground">No teachers found.</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            No teachers found.
+                                        </p>
                                     )}
                                 </div>
                             ) : null}
@@ -296,49 +408,86 @@ return;
                 {(isAdmin || auth.user.role === 'teacher') && (
                     <Card>
                         <CardHeader>
-                                    <CardTitle>{t('students.title')}</CardTitle>
+                            <CardTitle>{t('students.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {(() => {
                                 const availableStudents = students.filter(
                                     (s) =>
                                         !enrolledStudentIds.includes(s.id) &&
-                                        s.name.toLowerCase().includes(studentSearch.toLowerCase())
+                                        s.name
+                                            .toLowerCase()
+                                            .includes(
+                                                studentSearch.toLowerCase(),
+                                            ),
                                 );
 
-                                return availableStudents.length > 0 || studentSearch ? (
+                                return availableStudents.length > 0 ||
+                                    studentSearch ? (
                                     <div className="space-y-2">
                                         <input
                                             type="text"
                                             placeholder="Search students by name..."
                                             value={studentSearch}
-                                            onChange={(e) => setStudentSearch(e.target.value)}
-                                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                            onChange={(e) =>
+                                                setStudentSearch(e.target.value)
+                                            }
+                                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none"
                                         />
                                         {availableStudents.length > 0 ? (
                                             <div className="flex gap-2">
-                                                <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                                                <Select
+                                                    value={selectedStudent}
+                                                    onValueChange={
+                                                        setSelectedStudent
+                                                    }
+                                                >
                                                     <SelectTrigger className="flex-1">
                                                         <SelectValue placeholder="Select a student" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        {availableStudents.map((student) => (
-                                                            <SelectItem key={student.id} value={student.id.toString()}>
-                                                                {student.name} ({student.coaching_class?.name || 'No Class'})
-                                                            </SelectItem>
-                                                        ))}
+                                                        {availableStudents.map(
+                                                            (student) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        student.id
+                                                                    }
+                                                                    value={student.id.toString()}
+                                                                >
+                                                                    {
+                                                                        student.name
+                                                                    }{' '}
+                                                                    (
+                                                                    {student
+                                                                        .coaching_class
+                                                                        ?.name ||
+                                                                        'No Class'}
+                                                                    )
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectContent>
                                                 </Select>
-                                                <Button onClick={handleEnrollStudent} disabled={!selectedStudent}>
+                                                <Button
+                                                    onClick={
+                                                        handleEnrollStudent
+                                                    }
+                                                    disabled={!selectedStudent}
+                                                >
                                                     Enroll
                                                 </Button>
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-muted-foreground">{t('students.title')} {t('actions.search')}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {t('students.title')}{' '}
+                                                {t('actions.search')}
+                                            </p>
                                         )}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">{t('batches.enrolled')}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {t('batches.enrolled')}
+                                    </p>
                                 );
                             })()}
                         </CardContent>
@@ -347,49 +496,89 @@ return;
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t('batches.enrolled')} ({batch.enrollments.length})</CardTitle>
+                        <CardTitle>
+                            {t('batches.enrolled')} ({batch.enrollments.length})
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         {batch.enrollments.length > 0 ? (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>{t('students.name')}</TableHead>
-                                        <TableHead>{t('students.class')}</TableHead>
-                                        <TableHead>{t('students.joined_at')}</TableHead>
-                                        <TableHead>{t('students.status')}</TableHead>
-                                        {(isAdmin || auth.user.role === 'teacher') && (
-                                            <TableHead className="text-right">{t('actions.view')}</TableHead>
+                                        <TableHead>
+                                            {t('students.name')}
+                                        </TableHead>
+                                        <TableHead>
+                                            {t('students.class')}
+                                        </TableHead>
+                                        <TableHead>
+                                            {t('students.joined_at')}
+                                        </TableHead>
+                                        <TableHead>
+                                            {t('students.status')}
+                                        </TableHead>
+                                        {(isAdmin ||
+                                            auth.user.role === 'teacher') && (
+                                            <TableHead className="text-right">
+                                                {t('actions.view')}
+                                            </TableHead>
                                         )}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {batch.enrollments.map((enrollment) => (
                                         <TableRow key={enrollment.id}>
-                                            <TableCell className="font-medium">{enrollment.student.name}</TableCell>
-                                            <TableCell>{enrollment.student.coaching_class?.name || '-'}</TableCell>
-                                            <TableCell>{new Date(enrollment.enrolled_at).toLocaleDateString()}</TableCell>
+                                            <TableCell className="font-medium">
+                                                {enrollment.student.name}
+                                            </TableCell>
                                             <TableCell>
-                                                <Badge variant={getStatusBadge(enrollment.status)}>
+                                                {enrollment.student
+                                                    .coaching_class?.name ||
+                                                    '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {new Date(
+                                                    enrollment.enrolled_at,
+                                                ).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant={getStatusBadge(
+                                                        enrollment.status,
+                                                    )}
+                                                >
                                                     {enrollment.status}
                                                 </Badge>
                                             </TableCell>
-                                            {(isAdmin || auth.user.role === 'teacher') && (
+                                            {(isAdmin ||
+                                                auth.user.role ===
+                                                    'teacher') && (
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
-                                                        {enrollment.status === 'active' && (
+                                                        {enrollment.status ===
+                                                            'active' && (
                                                             <>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
-                                                                    onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'completed')}
+                                                                    onClick={() =>
+                                                                        handleUpdateEnrollmentStatus(
+                                                                            enrollment.id,
+                                                                            'completed',
+                                                                        )
+                                                                    }
                                                                 >
                                                                     Complete
                                                                 </Button>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
-                                                                    onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'dropped')}
+                                                                    onClick={() =>
+                                                                        handleUpdateEnrollmentStatus(
+                                                                            enrollment.id,
+                                                                            'dropped',
+                                                                        )
+                                                                    }
                                                                 >
                                                                     Drop
                                                                 </Button>
@@ -398,7 +587,11 @@ return;
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            onClick={() => handleUnenroll(enrollment.id)}
+                                                            onClick={() =>
+                                                                handleUnenroll(
+                                                                    enrollment.id,
+                                                                )
+                                                            }
                                                         >
                                                             <UserMinus className="size-4" />
                                                         </Button>
@@ -410,7 +603,9 @@ return;
                                 </TableBody>
                             </Table>
                         ) : (
-                                    <p className="text-sm text-muted-foreground">{t('batches.enrolled')}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t('batches.enrolled')}
+                            </p>
                         )}
                     </CardContent>
                 </Card>

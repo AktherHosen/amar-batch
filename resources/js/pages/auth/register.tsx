@@ -27,7 +27,10 @@ export default function Register({ passwordRules }: Props) {
                     <>
                         <div className="grid gap-5">
                             <div className="grid gap-2">
-                                <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <Label
+                                    htmlFor="name"
+                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                >
                                     Full name
                                 </Label>
                                 <Input
@@ -48,7 +51,10 @@ export default function Register({ passwordRules }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <Label
+                                    htmlFor="email"
+                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                >
                                     Email address
                                 </Label>
                                 <Input
@@ -65,7 +71,10 @@ export default function Register({ passwordRules }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <Label
+                                    htmlFor="password"
+                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                >
                                     Password
                                 </Label>
                                 <PasswordInput
@@ -82,7 +91,10 @@ export default function Register({ passwordRules }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <Label
+                                    htmlFor="password_confirmation"
+                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                >
                                     Confirm password
                                 </Label>
                                 <PasswordInput

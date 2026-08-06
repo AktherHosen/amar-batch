@@ -37,20 +37,34 @@ type PageProps = {
     enrollments: Enrollment[];
 };
 
-export default function FeesEdit({ fee, students, batches, enrollments }: PageProps) {
+export default function FeesEdit({
+    fee,
+    students,
+    batches,
+    enrollments,
+}: PageProps) {
     return (
         <>
             <Head title="Edit Fee Record" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title="Edit Fee Record" description="Update fee payment details" />
+                <Heading
+                    title="Edit Fee Record"
+                    description="Update fee payment details"
+                />
 
                 <Card>
                     <CardHeader>
                         <CardTitle>Fee Details</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <FeeForm fee={fee} students={students} batches={batches} enrollments={enrollments} isEdit />
+                        <FeeForm
+                            fee={fee}
+                            students={students}
+                            batches={batches}
+                            enrollments={enrollments}
+                            isEdit
+                        />
                     </CardContent>
                 </Card>
             </div>
