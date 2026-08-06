@@ -87,9 +87,9 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
 
                 <Card>
                     <CardHeader>
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                             <Select value={batchId || 'all'} onValueChange={(v) => setBatchId(v === 'all' ? '' : v)}>
-                                <SelectTrigger className="w-full">
+                                <SelectTrigger className="w-full sm:w-[180px]">
                                     <SelectValue placeholder="All Batches" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -101,7 +101,7 @@ export default function AttendanceIndex({ attendances: pagination, batches, filt
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <div className="flex gap-3">
+                            <div className="flex gap-3 sm:gap-4">
                                 <div className="relative flex-1">
                                     <Input
                                         type="date"

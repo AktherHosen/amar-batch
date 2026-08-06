@@ -34,6 +34,13 @@
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+        {{-- PWA --}}
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#18181b">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Karnaphuli Alpha Academy') }}">
+
         @fonts
 
         @viteReactRefresh
@@ -44,5 +51,15 @@
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />
+
+        @if(app()->environment('production'))
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js');
+                });
+            }
+        </script>
+        @endif
     </body>
 </html>
