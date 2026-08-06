@@ -71,7 +71,7 @@ class StudentController extends Controller
     {
         $this->authorize('view', $student);
 
-        $student->load(['coachingClass', 'enrollments.batch', 'feeStatuses.batch', 'attendances']);
+        $student->load(['coachingClass', 'enrollments.batch', 'feeStatuses.batch']);
 
         $attendanceSummary = \App\Models\Attendance::where('student_id', $student->id)
             ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')

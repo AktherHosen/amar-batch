@@ -13,7 +13,7 @@ import attendance from '@/routes/attendance';
 
 type Stats = {
     total_students: number;
-    total_teachers: number;
+    total_teachers: number | null;
     active_batches: number;
     total_enrollments: number;
 };
@@ -96,7 +96,7 @@ export default function Dashboard({ stats, feeStats, recentEnrollments, recentFe
                             <GraduationCap className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.total_teachers}</div>
+                            <div className="text-2xl font-bold">{stats.total_teachers ?? '-'}</div>
                         </CardContent>
                     </Card>
 
