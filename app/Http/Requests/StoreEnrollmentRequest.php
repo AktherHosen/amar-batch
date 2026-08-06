@@ -16,6 +16,7 @@ class StoreEnrollmentRequest extends FormRequest
     {
         return [
             'student_id' => 'required|exists:students,id',
+            'enrolled_at' => 'nullable|date',
         ];
     }
 }

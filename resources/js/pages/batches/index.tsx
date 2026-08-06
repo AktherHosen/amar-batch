@@ -92,21 +92,15 @@ export default function BatchesIndex({
     const getStatusBadge = (status: string) => {
         const variants: Record<
             string,
-            'default' | 'secondary' | 'destructive'
+            'default' | 'secondary' | 'destructive' | 'success' | 'danger'
         > = {
             active: 'default',
-            inactive: 'secondary',
-            completed: 'default',
+            inactive: 'danger',
+            completed: 'success',
             archived: 'destructive',
         };
 
         return variants[status] || 'secondary';
-    };
-
-    const getStatusClass = (status: string) => {
-        if (status === 'completed') return 'bg-green-600 text-white';
-        if (status === 'inactive') return 'bg-red-600 text-white';
-        return '';
     };
 
     return (
@@ -247,7 +241,6 @@ export default function BatchesIndex({
                                                     variant={getStatusBadge(
                                                         batch.status,
                                                     )}
-                                                    className={getStatusClass(batch.status)}
                                                 >
                                                     {batch.status}
                                                 </Badge>

@@ -37,6 +37,7 @@ type Student = {
     id: number;
     name: string;
     coaching_class: { id: number; name: string } | null;
+    joined_at: string | null;
 };
 
 type Enrollment = {
@@ -51,6 +52,7 @@ type BatchHistory = {
     student: Student | null;
     user: { name: string } | null;
     action: string;
+    action_date: string | null;
     notes: string | null;
     created_at: string;
 };
@@ -90,6 +92,7 @@ export default function BatchesShow({
     const [selectedStudent, setSelectedStudent] = useState('');
     const [teacherSearch, setTeacherSearch] = useState('');
     const [studentSearch, setStudentSearch] = useState('');
+    const [enrollmentDate, setEnrollmentDate] = useState(new Date().toISOString().split('T')[0]);
 
     const handleDelete = () => {
         if (confirm(`Are you sure you want to delete ${batch.name}?`)) {
@@ -128,11 +131,14 @@ export default function BatchesShow({
 
         router.post(
             `/batches/${batch.id}/enroll`,
-            { student_id: parseInt(selectedStudent) },
+            { student_id: parseInt(selectedStudent), enrolled_at: enrollmentDate },
             {
                 preserveScroll: true,
                 only: ['batch', 'enrolledStudentIds'],
-                onSuccess: () => setSelectedStudent(''),
+                onSuccess: () => {
+                    setSelectedStudent('');
+                    setEnrollmentDate(new Date().toISOString().split('T')[0]);
+                },
             },
         );
     };
@@ -161,20 +167,14 @@ export default function BatchesShow({
     const getStatusBadge = (status: string) => {
         const variants: Record<
             string,
-            'default' | 'secondary' | 'destructive'
+            'default' | 'secondary' | 'destructive' | 'success' | 'danger'
         > = {
             active: 'default',
-            completed: 'default',
-            dropped: 'destructive',
+            completed: 'success',
+            dropped: 'danger',
         };
 
         return variants[status] || 'secondary';
-    };
-
-    const getStatusClass = (status: string) => {
-        if (status === 'completed') return 'bg-green-600 text-white';
-        if (status === 'inactive') return 'bg-red-600 text-white';
-        return '';
     };
 
     const availableTeachers = teachers.filter(
@@ -256,7 +256,7 @@ export default function BatchesShow({
                                     <p className="text-xs text-muted-foreground">
                                         {t('students.status')}
                                     </p>
-                                    <Badge variant={getStatusBadge(batch.status)} className={getStatusClass(batch.status)}>
+                                    <Badge variant={getStatusBadge(batch.status)}>
                                         {batch.status}
                                     </Badge>
                                 </div>
@@ -288,7 +288,7 @@ export default function BatchesShow({
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">
-                                        {t('students.joined_at')}
+                                        Start Date
                                     </p>
                                     <p className="text-sm font-medium">
                                         {batch.start_date
@@ -300,7 +300,7 @@ export default function BatchesShow({
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">
-                                        {t('students.left_at')}
+                                        End Date
                                     </p>
                                     <p className="text-sm font-medium">
                                         {batch.end_date
@@ -452,7 +452,7 @@ export default function BatchesShow({
                                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none"
                                         />
                                         {availableStudents.length > 0 ? (
-                                            <div className="flex gap-2">
+                                            <div className="flex flex-col gap-2 sm:flex-row">
                                                 <Select
                                                     value={selectedStudent}
                                                     onValueChange={
@@ -485,6 +485,12 @@ export default function BatchesShow({
                                                         )}
                                                     </SelectContent>
                                                 </Select>
+                                                <input
+                                                    type="date"
+                                                    value={enrollmentDate}
+                                                    onChange={(e) => setEnrollmentDate(e.target.value)}
+                                                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                                />
                                                 <Button
                                                     onClick={
                                                         handleEnrollStudent
@@ -529,6 +535,9 @@ export default function BatchesShow({
                                             {t('students.class')}
                                         </TableHead>
                                         <TableHead>
+                                            Enrolled At
+                                        </TableHead>
+                                        <TableHead>
                                             {t('students.joined_at')}
                                         </TableHead>
                                         <TableHead>
@@ -559,11 +568,17 @@ export default function BatchesShow({
                                                 ).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell>
+                                                {enrollment.student.joined_at
+                                                    ? new Date(
+                                                          enrollment.student.joined_at,
+                                                      ).toLocaleDateString()
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell>
                                                 <Badge
                                                     variant={getStatusBadge(
                                                         enrollment.status,
                                                     )}
-                                                    className={getStatusClass(enrollment.status)}
                                                 >
                                                     {enrollment.status}
                                                 </Badge>
@@ -647,7 +662,9 @@ export default function BatchesShow({
                                     {batch.history.map((item) => (
                                         <TableRow key={item.id}>
                                             <TableCell>
-                                                {new Date(item.created_at).toLocaleDateString()}
+                                                {item.action_date
+                                                    ? new Date(item.action_date).toLocaleDateString()
+                                                    : new Date(item.created_at).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 {item.student?.name}
@@ -656,13 +673,8 @@ export default function BatchesShow({
                                                 <Badge
                                                     variant={
                                                         item.action === 'enrolled' ? 'default' :
-                                                        item.action === 'completed' ? 'default' :
-                                                        'destructive'
-                                                    }
-                                                    className={
-                                                        item.action === 'completed' ? 'bg-green-600 text-white' :
-                                                        item.action === 'dropped' || item.action === 'removed' ? 'bg-red-600 text-white' :
-                                                        ''
+                                                        item.action === 'completed' ? 'success' :
+                                                        'danger'
                                                     }
                                                 >
                                                     {item.action}

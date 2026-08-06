@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBatchRequest;
 use App\Http\Requests\UpdateBatchRequest;
 use App\Models\Batch;
+use App\Models\BatchHistory;
 use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\User;
@@ -161,6 +162,7 @@ class BatchController extends Controller
                 'batch_id' => $batch->id,
                 'student_id' => $enrollment->student_id,
                 'action' => 'completed',
+                'action_date' => now()->toDateString(),
                 'user_id' => request()->user()->id,
                 'notes' => 'Batch completed',
             ]);

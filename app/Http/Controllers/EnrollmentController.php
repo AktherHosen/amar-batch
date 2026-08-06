@@ -27,7 +27,7 @@ class EnrollmentController extends Controller
         $enrollment = Enrollment::create([
             'student_id' => $request->student_id,
             'batch_id' => $batch->id,
-            'enrolled_at' => $student?->joined_at ?? now(),
+            'enrolled_at' => $request->input('enrolled_at') ?? now()->toDateString(),
             'status' => 'active',
         ]);
 
@@ -35,6 +35,7 @@ class EnrollmentController extends Controller
             'batch_id' => $batch->id,
             'student_id' => $request->student_id,
             'action' => 'enrolled',
+            'action_date' => $enrollment->enrolled_at,
             'user_id' => $request->user()->id,
         ]);
 
@@ -53,6 +54,7 @@ class EnrollmentController extends Controller
             'batch_id' => $enrollment->batch_id,
             'student_id' => $enrollment->student_id,
             'action' => $request->status,
+            'action_date' => now()->toDateString(),
             'user_id' => $request->user()->id,
         ]);
 
@@ -65,6 +67,7 @@ class EnrollmentController extends Controller
             'batch_id' => $enrollment->batch_id,
             'student_id' => $enrollment->student_id,
             'action' => 'removed',
+            'action_date' => now()->toDateString(),
             'user_id' => $request->user()->id,
         ]);
 
