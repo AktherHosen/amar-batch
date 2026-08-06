@@ -1,5 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import type { Student } from '@/types';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -61,10 +64,20 @@ export default function StudentsShow({
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleDelete = () => {
-        if (confirm(`Are you sure you want to delete ${student.name}?`)) {
-            router.delete(students.destroy(student.id));
+        setDeleteDialog({ open: true, item: student });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(students.destroy(deleteDialog.item.id));
+            toast.success('Student deleted successfully');
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -434,6 +447,18 @@ export default function StudentsShow({
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Delete Student"
+                description={`Are you sure you want to delete ${deleteDialog.item?.name}?`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

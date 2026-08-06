@@ -1,6 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,14 +45,24 @@ export default function TeachersIndex({
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleSearch = () => {
         router.get(teachers.index(), { search }, { preserveState: true });
     };
 
     const handleDelete = (teacher: { id: number; name: string }) => {
-        if (confirm(`Are you sure you want to deactivate ${teacher.name}?`)) {
-            router.delete(teachers.destroy(teacher.id));
+        setDeleteDialog({ open: true, item: teacher });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(teachers.destroy(deleteDialog.item.id));
+            toast.success('Teacher deactivated successfully');
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -231,6 +243,18 @@ export default function TeachersIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Deactivate Teacher"
+                description={`Are you sure you want to deactivate ${deleteDialog.item?.name}?`}
+                confirmText="Deactivate"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

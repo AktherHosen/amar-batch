@@ -8,6 +8,8 @@ import {
     Download,
     X,
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -201,6 +203,10 @@ export default function FeesIndex({
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
     const [selectedYear, setSelectedYear] = useState(year);
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: { studentId: number; batchId: number } | null;
+    }>({ open: false, item: null });
 
     const isMonthDisabled = (
         enrolledAt: string | null,
@@ -227,23 +233,25 @@ export default function FeesIndex({
     };
 
     const handleDeleteRow = (studentId: number, batchId: number) => {
-        if (
-            !confirm(
-                'Delete all fee records for this student in this batch for the year?',
-            )
-        ) {
-            return;
-        }
+        setDeleteDialog({ open: true, item: { studentId, batchId } });
+    };
 
-        const feeIds = feeGrid
-            .filter(
-                (item) =>
-                    item.student.id === studentId && item.batch.id === batchId,
-            )
-            .flatMap((item) => Object.values(item.months).map((f) => f.id));
-        feeIds.forEach((id) => {
-            router.delete(fees.destroy.url(id), { preserveState: true });
-        });
+    const confirmDeleteRow = () => {
+        if (deleteDialog.item) {
+            const { studentId, batchId } = deleteDialog.item;
+            const feeIds = feeGrid
+                .filter(
+                    (item) =>
+                        item.student.id === studentId &&
+                        item.batch.id === batchId,
+                )
+                .flatMap((item) => Object.values(item.months).map((f) => f.id));
+            feeIds.forEach((id) => {
+                router.delete(fees.destroy.url(id), { preserveState: true });
+            });
+            toast.success('Fee records deleted successfully');
+            setDeleteDialog({ open: false, item: null });
+        }
     };
 
     const handleSearch = () => {
@@ -503,6 +511,18 @@ export default function FeesIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Delete Fee Records"
+                description="Delete all fee records for this student in this batch for the year?"
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDeleteRow}
+            />
         </>
     );
 }

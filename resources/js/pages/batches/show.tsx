@@ -1,7 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { ArrowLeft, Pencil, Trash2, UserMinus } from 'lucide-react';
 import Heading from '@/components/heading';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -93,11 +95,19 @@ export default function BatchesShow({
     const [teacherSearch, setTeacherSearch] = useState('');
     const [studentSearch, setStudentSearch] = useState('');
     const [enrollmentDate, setEnrollmentDate] = useState(new Date().toISOString().split('T')[0]);
+    const [deleteDialog, setDeleteDialog] = useState(false);
+    const [removeTeacherDialog, setRemoveTeacherDialog] = useState<{ open: boolean; teacherId: number | null }>({ open: false, teacherId: null });
+    const [unenrollDialog, setUnenrollDialog] = useState<{ open: boolean; enrollmentId: number | null }>({ open: false, enrollmentId: null });
 
     const handleDelete = () => {
-        if (confirm(`Are you sure you want to delete ${batch.name}?`)) {
-            router.delete(batches.destroy(batch.id));
-        }
+        setDeleteDialog(true);
+    };
+
+    const confirmDelete = () => {
+        router.delete(batches.destroy(batch.id), {
+            onSuccess: () => toast.success('Batch deleted successfully'),
+        });
+        setDeleteDialog(false);
     };
 
     const handleAssignTeacher = () => {
@@ -116,12 +126,18 @@ export default function BatchesShow({
     };
 
     const handleRemoveTeacher = (teacherId: number) => {
-        if (confirm('Are you sure you want to remove this teacher?')) {
+        setRemoveTeacherDialog({ open: true, teacherId });
+    };
+
+    const confirmRemoveTeacher = () => {
+        if (removeTeacherDialog.teacherId) {
             router.delete(batches.removeTeacher(batch.id), {
-                data: { teacher_id: teacherId },
+                data: { teacher_id: removeTeacherDialog.teacherId },
                 preserveScroll: true,
+                onSuccess: () => toast.success('Teacher removed successfully'),
             });
         }
+        setRemoveTeacherDialog({ open: false, teacherId: null });
     };
 
     const handleEnrollStudent = () => {
@@ -157,11 +173,17 @@ export default function BatchesShow({
     };
 
     const handleUnenroll = (enrollmentId: number) => {
-        if (confirm('Are you sure you want to unenroll this student?')) {
-            router.delete(`/enrollments/${enrollmentId}`, {
+        setUnenrollDialog({ open: true, enrollmentId });
+    };
+
+    const confirmUnenroll = () => {
+        if (unenrollDialog.enrollmentId) {
+            router.delete(`/enrollments/${unenrollDialog.enrollmentId}`, {
                 preserveScroll: true,
+                onSuccess: () => toast.success('Student unenrolled successfully'),
             });
         }
+        setUnenrollDialog({ open: false, enrollmentId: null });
     };
 
     const getStatusBadge = (status: string) => {
@@ -691,6 +713,36 @@ export default function BatchesShow({
                     </Card>
                 )}
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog}
+                onOpenChange={setDeleteDialog}
+                title="Delete Batch"
+                description={`Are you sure you want to delete "${batch.name}"? This action cannot be undone.`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
+
+            <ConfirmDialog
+                open={removeTeacherDialog.open}
+                onOpenChange={(open) => setRemoveTeacherDialog({ open, teacherId: null })}
+                title="Remove Teacher"
+                description="Are you sure you want to remove this teacher from the batch?"
+                confirmText="Remove"
+                variant="destructive"
+                onConfirm={confirmRemoveTeacher}
+            />
+
+            <ConfirmDialog
+                open={unenrollDialog.open}
+                onOpenChange={(open) => setUnenrollDialog({ open, enrollmentId: null })}
+                title="Unenroll Student"
+                description="Are you sure you want to unenroll this student from the batch?"
+                confirmText="Unenroll"
+                variant="destructive"
+                onConfirm={confirmUnenroll}
+            />
         </>
     );
 }

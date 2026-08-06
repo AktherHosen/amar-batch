@@ -1,6 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Plus, Search, Eye, Pencil, Trash2, X, CheckCircle } from 'lucide-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +59,8 @@ export default function BatchesIndex({
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
+    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
+    const [completeDialog, setCompleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
 
     const handleSearch = () => {
         router.get(
@@ -76,15 +80,32 @@ export default function BatchesIndex({
     };
 
     const handleDelete = (batch: { id: number; name: string }) => {
-        if (confirm(`Are you sure you want to delete ${batch.name}?`)) {
-            router.delete(batches.destroy(batch.id));
+        setDeleteDialog({ open: true, batch });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.batch) {
+            router.delete(batches.destroy(deleteDialog.batch.id), {
+                onSuccess: () => {
+                    toast.success('Batch deleted successfully');
+                    setDeleteDialog({ open: false, batch: null });
+                },
+            });
         }
     };
 
     const handleComplete = (batch: { id: number; name: string }) => {
-        if (confirm(`⚠️ Are you sure you want to complete "${batch.name}"?\n\nThis action cannot be undone. Once completed:\n- No new students can be enrolled\n- No teachers can be assigned\n- The batch cannot be reopened\n\nOnly deletion will be available.`)) {
-            router.put(`/batches/${batch.id}/complete`, {}, {
+        setCompleteDialog({ open: true, batch });
+    };
+
+    const confirmComplete = () => {
+        if (completeDialog.batch) {
+            router.put(`/batches/${completeDialog.batch.id}/complete`, {}, {
                 only: ['batches'],
+                onSuccess: () => {
+                    toast.success('Batch completed successfully');
+                    setCompleteDialog({ open: false, batch: null });
+                },
             });
         }
     };
@@ -363,6 +384,25 @@ export default function BatchesIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) => setDeleteDialog({ open, batch: null })}
+                title="Delete Batch"
+                description={`Are you sure you want to delete "${deleteDialog.batch?.name}"? This action cannot be undone.`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
+
+            <ConfirmDialog
+                open={completeDialog.open}
+                onOpenChange={(open) => setCompleteDialog({ open, batch: null })}
+                title="Complete Batch"
+                description={`Are you sure you want to complete "${completeDialog.batch?.name}"? This action cannot be undone. Once completed, no new students can be enrolled and no teachers can be assigned.`}
+                confirmText="Complete"
+                onConfirm={confirmComplete}
+            />
         </>
     );
 }

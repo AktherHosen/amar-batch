@@ -1,6 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Plus, Search, Trash2, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,6 +67,10 @@ export default function AttendanceIndex({
     const isTeacher = auth.user.role === 'teacher';
     const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [date, setDate] = useState(filters.date || '');
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleFilter = () => {
         router.get(
@@ -75,10 +81,14 @@ export default function AttendanceIndex({
     };
 
     const handleDelete = (record: AttendanceRecord) => {
-        if (
-            confirm('Are you sure you want to delete this attendance record?')
-        ) {
-            router.delete(attendance.destroy(record.id));
+        setDeleteDialog({ open: true, item: record });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(attendance.destroy(deleteDialog.item.id));
+            toast.success('Attendance record deleted successfully');
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -320,6 +330,18 @@ export default function AttendanceIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Delete Attendance Record"
+                description="Are you sure you want to delete this attendance record?"
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

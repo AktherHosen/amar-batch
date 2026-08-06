@@ -24,6 +24,8 @@ import type { Student } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Eye, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 
 function formatDate(dateStr: string | null): string {
     if (!dateStr) {
@@ -62,6 +64,10 @@ export default function StudentsIndex({
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleSearch = () => {
         router.get(
@@ -81,8 +87,14 @@ export default function StudentsIndex({
     };
 
     const handleDelete = (student: Student) => {
-        if (confirm(`Are you sure you want to delete ${student.name}?`)) {
-            router.delete(students.destroy(student.id));
+        setDeleteDialog({ open: true, item: student });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(students.destroy(deleteDialog.item.id));
+            toast.success('Student deleted successfully');
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -337,6 +349,18 @@ export default function StudentsIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Delete Student"
+                description={`Are you sure you want to delete ${deleteDialog.item?.name}?`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }
