@@ -6,7 +6,17 @@ export default function AuthSimpleLayout({
     children,
     title,
     description,
+    stats,
 }: AuthLayoutProps) {
+    const safeStats = stats || { total_students: 0, active_batches: 0, attendance_rate: 0, fee_collection_rate: 0 };
+
+    const displayStats = [
+        { number: `${safeStats.total_students}+`, label: 'Students' },
+        { number: `${safeStats.active_batches}+`, label: 'Batches' },
+        { number: `${safeStats.attendance_rate}%`, label: 'Attendance' },
+        { number: `${safeStats.fee_collection_rate}%`, label: 'Fee Collection' },
+    ];
+
     return (
         <div className="flex min-h-svh">
             {/* Left side - Branding */}
@@ -22,22 +32,12 @@ export default function AuthSimpleLayout({
                         Complete Coaching Center Management System
                     </p>
                     <div className="mt-12 grid grid-cols-2 gap-6 text-left">
-                        <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm">
-                            <div className="text-2xl font-bold text-white">500+</div>
-                            <div className="text-sm text-blue-100">Students</div>
-                        </div>
-                        <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm">
-                            <div className="text-2xl font-bold text-white">50+</div>
-                            <div className="text-sm text-blue-100">Batches</div>
-                        </div>
-                        <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm">
-                            <div className="text-2xl font-bold text-white">98%</div>
-                            <div className="text-sm text-blue-100">Attendance</div>
-                        </div>
-                        <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm">
-                            <div className="text-2xl font-bold text-white">100%</div>
-                            <div className="text-sm text-blue-100">Fee Collection</div>
-                        </div>
+                        {displayStats.map((stat) => (
+                            <div key={stat.label} className="rounded-xl bg-white/10 p-4 backdrop-blur-sm">
+                                <div className="text-2xl font-bold text-white">{stat.number}</div>
+                                <div className="text-sm text-blue-100">{stat.label}</div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
