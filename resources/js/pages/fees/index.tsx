@@ -248,8 +248,8 @@ export default function FeesIndex({
 
     const handleSearch = () => {
         router.get(
-            fees.index.url({ search, year: selectedYear }),
-            {},
+            fees.index.url(),
+            { search, year: selectedYear },
             { preserveState: true },
         );
     };
@@ -257,8 +257,8 @@ export default function FeesIndex({
     const handleYearChange = (newYear: number) => {
         setSelectedYear(newYear);
         router.get(
-            fees.index.url({ search, year: newYear }),
-            {},
+            fees.index.url(),
+            { search, year: newYear },
             { preserveState: true },
         );
     };
@@ -361,11 +361,11 @@ export default function FeesIndex({
                                         onClick={() => {
                                             setSearch('');
                                             router.get(
-                                                fees.index.url({
+                                                fees.index.url(),
+                                                {
                                                     search: '',
                                                     year: selectedYear,
-                                                }),
-                                                {},
+                                                },
                                                 { preserveState: true },
                                             );
                                         }}

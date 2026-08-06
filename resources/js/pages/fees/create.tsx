@@ -8,6 +8,7 @@ import { useLocale } from '@/contexts/locale-context';
 type Student = {
     id: number;
     name: string;
+    coaching_class: { id: number; name: string } | null;
 };
 
 type Batch = {
