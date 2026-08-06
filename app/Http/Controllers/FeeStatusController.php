@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreFeeStatusRequest;
 use App\Http\Requests\UpdateFeeStatusRequest;
 use App\Models\Batch;
+use App\Models\Enrollment;
 use App\Models\FeeStatus;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
@@ -17,9 +18,10 @@ class FeeStatusController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (!$request->user()->isAdmin()) {
+            if (! $request->user()->isAdmin()) {
                 abort(403);
             }
+
             return $next($request);
         });
     }
@@ -53,8 +55,8 @@ class FeeStatusController extends Controller
         $grid = [];
         foreach ($feeStatuses as $fee) {
             $key = "{$fee->student_id}_{$fee->batch_id}";
-            if (!isset($grid[$key])) {
-                $enrollment = \App\Models\Enrollment::where('student_id', $fee->student_id)
+            if (! isset($grid[$key])) {
+                $enrollment = Enrollment::where('student_id', $fee->student_id)
                     ->where('batch_id', $fee->batch_id)
                     ->where('status', 'active')
                     ->first();
@@ -88,10 +90,10 @@ class FeeStatusController extends Controller
     {
         $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::orderBy('name')->get();
-        $enrollments = \App\Models\Enrollment::where('status', 'active')
+        $enrollments = Enrollment::where('status', 'active')
             ->with('student', 'batch')
             ->get()
-            ->map(fn($e) => [
+            ->map(fn ($e) => [
                 'student' => $e->student,
                 'batch' => $e->batch,
                 'enrolled_at' => $e->student->joined_at
@@ -129,10 +131,10 @@ class FeeStatusController extends Controller
         $fee->load(['student', 'batch']);
         $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::orderBy('name')->get();
-        $enrollments = \App\Models\Enrollment::where('status', 'active')
+        $enrollments = Enrollment::where('status', 'active')
             ->with('student', 'batch')
             ->get()
-            ->map(fn($e) => [
+            ->map(fn ($e) => [
                 'student' => $e->student,
                 'batch' => $e->batch,
                 'enrolled_at' => $e->student->joined_at

@@ -3,9 +3,8 @@
 namespace Tests\Unit;
 
 use App\Models\Batch;
-use App\Models\Enrollment;
-use App\Models\Student;
-use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,30 +15,30 @@ class BatchModelTest extends TestCase
     public function test_batch_has_teachers()
     {
         $batch = Batch::factory()->create();
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class, $batch->teachers());
+        $this->assertInstanceOf(BelongsToMany::class, $batch->teachers());
     }
 
     public function test_batch_has_enrollments()
     {
         $batch = Batch::factory()->create();
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $batch->enrollments());
+        $this->assertInstanceOf(HasMany::class, $batch->enrollments());
     }
 
     public function test_batch_has_students()
     {
         $batch = Batch::factory()->create();
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class, $batch->students());
+        $this->assertInstanceOf(BelongsToMany::class, $batch->students());
     }
 
     public function test_batch_has_fee_statuses()
     {
         $batch = Batch::factory()->create();
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $batch->feeStatuses());
+        $this->assertInstanceOf(HasMany::class, $batch->feeStatuses());
     }
 
     public function test_batch_has_attendances()
     {
         $batch = Batch::factory()->create();
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $batch->attendances());
+        $this->assertInstanceOf(HasMany::class, $batch->attendances());
     }
 }

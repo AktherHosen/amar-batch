@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
+use App\Models\Attendance;
 use App\Models\CoachingClass;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +32,7 @@ class StudentController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -73,7 +74,7 @@ class StudentController extends Controller
 
         $student->load(['coachingClass', 'enrollments.batch', 'feeStatuses.batch']);
 
-        $attendanceSummary = \App\Models\Attendance::where('student_id', $student->id)
+        $attendanceSummary = Attendance::where('student_id', $student->id)
             ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')
             ->groupBy('year', 'month', 'status')
             ->get()

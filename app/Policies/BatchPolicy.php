@@ -14,10 +14,13 @@ class BatchPolicy
 
     public function view(User $user, Batch $batch): bool
     {
-        if ($user->isAdmin()) return true;
+        if ($user->isAdmin()) {
+            return true;
+        }
         if ($user->isTeacher()) {
             return $batch->teachers()->where('users.id', $user->id)->exists();
         }
+
         return $batch->students()->where('students.id', $user->student_id)->exists();
     }
 
@@ -38,10 +41,13 @@ class BatchPolicy
 
     public function manageStudents(User $user, Batch $batch): bool
     {
-        if ($user->isAdmin()) return true;
+        if ($user->isAdmin()) {
+            return true;
+        }
         if ($user->isTeacher()) {
             return $batch->teachers()->where('users.id', $user->id)->exists();
         }
+
         return false;
     }
 }

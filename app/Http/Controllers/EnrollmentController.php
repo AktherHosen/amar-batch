@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEnrollmentRequest;
 use App\Models\Batch;
 use App\Models\Enrollment;
-use App\Models\Student;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class EnrollmentController extends Controller
 {

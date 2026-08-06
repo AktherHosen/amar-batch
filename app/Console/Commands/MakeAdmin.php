@@ -22,13 +22,13 @@ class MakeAdmin extends Command
             return $this->createAdmin();
         }
 
-        if (!$email) {
+        if (! $email) {
             $email = $this->ask('What is the email address of the user?');
         }
 
         $user = User::where('email', $email)->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error("User with email {$email} not found.");
 
             if ($this->confirm('Would you like to create a new admin with this email?')) {
@@ -40,6 +40,7 @@ class MakeAdmin extends Command
 
         $user->update(['role' => 'admin']);
         $this->info("User {$user->name} ({$user->email}) has been promoted to admin.");
+
         return Command::SUCCESS;
     }
 
@@ -51,6 +52,7 @@ class MakeAdmin extends Command
 
         if (strlen($password) < 8) {
             $this->error('Password must be at least 8 characters.');
+
             return Command::FAILURE;
         }
 
@@ -58,6 +60,7 @@ class MakeAdmin extends Command
 
         if ($password !== $confirmPassword) {
             $this->error('Passwords do not match.');
+
             return Command::FAILURE;
         }
 
@@ -69,7 +72,7 @@ class MakeAdmin extends Command
             'email_verified_at' => now(),
         ]);
 
-        $this->info("Admin user created successfully:");
+        $this->info('Admin user created successfully:');
         $this->table(['Field', 'Value'], [
             ['Name', $user->name],
             ['Email', $user->email],

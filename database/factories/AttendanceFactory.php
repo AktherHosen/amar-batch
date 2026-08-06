@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Attendance;
-use App\Models\Student;
 use App\Models\Batch;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

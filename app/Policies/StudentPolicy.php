@@ -14,12 +14,15 @@ class StudentPolicy
 
     public function view(User $user, Student $student): bool
     {
-        if ($user->isAdmin()) return true;
+        if ($user->isAdmin()) {
+            return true;
+        }
         if ($user->isTeacher()) {
             return $user->assignedBatches()
                 ->whereHas('enrollments', fn ($q) => $q->where('student_id', $student->id))
                 ->exists();
         }
+
         return $user->student_id === $student->id;
     }
 

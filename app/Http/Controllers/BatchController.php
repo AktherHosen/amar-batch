@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBatchRequest;
 use App\Http\Requests\UpdateBatchRequest;
 use App\Models\Batch;
+use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +32,7 @@ class BatchController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%");
+                    ->orWhere('subject', 'like', "%{$search}%");
             });
         }
 
@@ -72,7 +73,7 @@ class BatchController extends Controller
         $teachers = User::where('role', 'teacher')->get();
         $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
 
-        $enrolledStudentIds = \App\Models\Enrollment::where('status', 'active')
+        $enrolledStudentIds = Enrollment::where('status', 'active')
             ->pluck('student_id')
             ->unique()
             ->toArray();

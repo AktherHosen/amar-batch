@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
     {
         if (App::environment('production')) {
             $this->command->error('Seeding is not allowed in production!');
+
             return;
         }
 

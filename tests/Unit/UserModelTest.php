@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -45,6 +46,6 @@ class UserModelTest extends TestCase
     public function test_user_has_assigned_batches_relationship()
     {
         $user = User::factory()->create(['role' => 'teacher']);
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class, $user->assignedBatches());
+        $this->assertInstanceOf(BelongsToMany::class, $user->assignedBatches());
     }
 }

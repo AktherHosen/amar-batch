@@ -15,7 +15,7 @@ class TeacherController extends Controller
 {
     public function index(Request $request): Response
     {
-        if (!$request->user()->isAdmin()) {
+        if (! $request->user()->isAdmin()) {
             abort(403);
         }
 
@@ -24,7 +24,7 @@ class TeacherController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -38,7 +38,7 @@ class TeacherController extends Controller
 
     public function create(Request $request): Response
     {
-        if (!$request->user()->isAdmin()) {
+        if (! $request->user()->isAdmin()) {
             abort(403);
         }
 
@@ -47,7 +47,7 @@ class TeacherController extends Controller
 
     public function store(StoreTeacherRequest $request): RedirectResponse
     {
-        if (!$request->user()->isAdmin()) {
+        if (! $request->user()->isAdmin()) {
             abort(403);
         }
 
@@ -63,7 +63,7 @@ class TeacherController extends Controller
 
     public function show(User $teacher): Response
     {
-        if (!$teacher->isTeacher()) {
+        if (! $teacher->isTeacher()) {
             abort(404);
         }
 
@@ -77,7 +77,7 @@ class TeacherController extends Controller
 
     public function edit(User $teacher): Response
     {
-        if (!$teacher->isTeacher()) {
+        if (! $teacher->isTeacher()) {
             abort(404);
         }
 
@@ -88,7 +88,7 @@ class TeacherController extends Controller
 
     public function update(UpdateTeacherRequest $request, User $teacher): RedirectResponse
     {
-        if (!$request->user()->isAdmin() || !$teacher->isTeacher()) {
+        if (! $request->user()->isAdmin() || ! $teacher->isTeacher()) {
             abort(403);
         }
 
@@ -107,7 +107,7 @@ class TeacherController extends Controller
 
     public function destroy(Request $request, User $teacher): RedirectResponse
     {
-        if (!$request->user()->isAdmin() || !$teacher->isTeacher()) {
+        if (! $request->user()->isAdmin() || ! $teacher->isTeacher()) {
             abort(403);
         }
 

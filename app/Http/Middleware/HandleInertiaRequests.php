@@ -3,9 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Batch;
-use App\Models\Enrollment;
 use App\Models\Student;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 

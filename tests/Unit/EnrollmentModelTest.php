@@ -2,12 +2,9 @@
 
 namespace Tests\Unit;
 
-use App\Models\Attendance;
 use App\Models\Batch;
 use App\Models\Enrollment;
-use App\Models\FeeStatus;
 use App\Models\Student;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

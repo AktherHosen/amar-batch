@@ -120,7 +120,7 @@ class DashboardController extends Controller
         ];
 
         $recentStudents = collect();
-        if (!empty($enrolledStudentIds)) {
+        if (! empty($enrolledStudentIds)) {
             $recentStudents = Student::with('coachingClass')
                 ->whereIn('id', $enrolledStudentIds)
                 ->latest()

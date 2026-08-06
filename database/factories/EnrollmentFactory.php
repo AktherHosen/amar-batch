@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Batch;
 use App\Models\Enrollment;
 use App\Models\Student;
-use App\Models\Batch;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class EnrollmentFactory extends Factory
