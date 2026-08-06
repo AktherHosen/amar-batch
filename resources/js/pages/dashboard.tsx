@@ -7,6 +7,7 @@ import {
     CheckCircle,
 } from 'lucide-react';
 import Heading from '@/components/heading';
+import Clock from '@/components/clock';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -119,18 +120,25 @@ export default function Dashboard({
             <Head title={t('dashboard.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading
-                    title={
-                        isTeacher
-                            ? `Welcome, ${auth.user?.name}`
-                            : t('dashboard.title')
-                    }
-                    description={
-                        isTeacher
-                            ? 'Your assigned batches and students'
-                            : t('app.tagline')
-                    }
-                />
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="order-2 sm:order-1">
+                        <Heading
+                            title={
+                                isTeacher
+                                    ? `Welcome, ${auth.user?.name}`
+                                    : t('dashboard.title')
+                            }
+                            description={
+                                isTeacher
+                                    ? 'Your assigned batches and students'
+                                    : t('app.tagline')
+                            }
+                        />
+                    </div>
+                    <div className="order-1 sm:order-2 shrink-0">
+                        <Clock />
+                    </div>
+                </div>
 
                 <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
                     <Card className="py-3">
