@@ -15,6 +15,7 @@ class AdminSeeder extends Seeder
             'email' => 'admin@academia.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'is_approved' => true,
             'email_verified_at' => now(),
         ]);
 

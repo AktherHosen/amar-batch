@@ -10,11 +10,11 @@ return new class extends Migration
     {
         if (DB::getDriverName() === 'mysql') {
             Schema::table('users', function ($table) {
-                $table->string('role')->default('admin')->change();
+                $table->string('role')->default('teacher')->change();
             });
         } else {
             DB::statement('ALTER TABLE users RENAME COLUMN role TO role_old');
-            DB::statement('ALTER TABLE users ADD COLUMN role VARCHAR NOT NULL DEFAULT \'admin\'');
+            DB::statement('ALTER TABLE users ADD COLUMN role VARCHAR NOT NULL DEFAULT \'teacher\'');
             DB::statement('UPDATE users SET role = role_old');
             DB::statement('ALTER TABLE users DROP COLUMN role_old');
         }
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function ($table) {
-            $table->enum('role', ['admin', 'teacher', 'student'])->default('admin')->change();
+            $table->enum('role', ['admin', 'teacher', 'student'])->default('teacher')->change();
         });
     }
 };

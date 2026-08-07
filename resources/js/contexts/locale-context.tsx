@@ -3,130 +3,47 @@ import { createContext, useContext, useState } from 'react';
 
 type Locale = 'en' | 'bn';
 
+const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+function toBanglaDigits(num: string | number): string {
+    return String(num).replace(/[0-9]/g, (d) => banglaDigits[parseInt(d)]);
+}
+
+function formatBanglaNumber(num: number): string {
+    return num.toLocaleString('bn-BD');
+}
+
+function formatCurrency(amount: number, locale: Locale): string {
+    if (locale === 'bn') {
+        return `৳${formatBanglaNumber(amount)}`;
+    }
+    return `৳${amount.toLocaleString('en-BD')}`;
+}
+
+function formatDate(date: string | Date, locale: Locale): string {
+    const d = new Date(date);
+    if (locale === 'bn') {
+        const day = toBanglaDigits(d.getDate());
+        const month = d.toLocaleDateString('bn-BD', { month: 'long' });
+        const year = toBanglaDigits(d.getFullYear());
+        return `${day} ${month}, ${year}`;
+    }
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function formatTime(date: string | Date, locale: Locale): string {
+    const d = new Date(date);
+    if (locale === 'bn') {
+        return d.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
 const translations: Record<Locale, Record<string, string>> = {
-    en: {
-        // Common
-        'app.name': 'Karnaphuli Alpha Academy',
-        'app.tagline': 'Coaching Center Management',
-
-        // Navigation
-        'nav.dashboard': 'Dashboard',
-        'nav.students': 'Students',
-        'nav.batches': 'Batches',
-        'nav.teachers': 'Teachers',
-        'nav.attendance': 'Attendance',
-        'nav.fees': 'Fees',
-        'nav.coaching_classes': 'Classes',
-        'nav.settings': 'Settings',
-
-        // Dashboard
-        'dashboard.title': 'Dashboard',
-        'dashboard.total_students': 'Total Students',
-        'dashboard.active_batches': 'Active Batches',
-        'dashboard.total_collected': 'Total Collected',
-        'dashboard.recent_payments': 'Recent Payments',
-        'dashboard.recent_students': 'Recent Students',
-
-        // Students
-        'students.title': 'Students',
-        'students.create': 'Add Student',
-        'students.edit': 'Edit Student',
-        'students.name': 'Name',
-        'students.phone': 'Phone',
-        'students.class': 'Class',
-        'students.section': 'Section',
-        'students.joined_at': 'Joined At',
-        'students.left_at': 'Left At',
-        'students.date_of_birth': 'Date of Birth',
-        'students.gender': 'Gender',
-        'students.status': 'Status',
-        'students.address': 'Address',
-        'students.guardian_name': 'Guardian Name',
-        'students.guardian_phone': 'Guardian Phone',
-        'students.male': 'Male',
-        'students.female': 'Female',
-        'students.other': 'Other',
-        'students.active': 'Active',
-        'students.inactive': 'Inactive',
-
-        // Batches
-        'batches.title': 'Batches',
-        'batches.create': 'Add Batch',
-        'batches.name': 'Name',
-        'batches.subject': 'Subject',
-        'batches.schedule': 'Schedule',
-        'batches.capacity': 'Capacity',
-        'batches.enrolled': 'Enrolled',
-
-        // Teachers
-        'teachers.title': 'Teachers',
-        'teachers.create': 'Add Teacher',
-        'teachers.name': 'Name',
-        'teachers.email': 'Email',
-        'teachers.phone': 'Phone',
-
-        // Attendance
-        'attendance.title': 'Attendance',
-        'attendance.mark': 'Mark Attendance',
-        'attendance.batch': 'Batch',
-        'attendance.date': 'Date',
-        'attendance.student': 'Student',
-        'attendance.status': 'Status',
-        'attendance.present': 'Present',
-        'attendance.absent': 'Absent',
-        'attendance.late': 'Late',
-        'attendance.notes': 'Notes',
-        'attendance.mark_all_present': 'Mark All Present',
-        'attendance.mark_all_absent': 'Mark All Absent',
-        'attendance.clear_all': 'Clear All',
-        'attendance.save': 'Save Attendance',
-
-        // Fees
-        'fees.title': 'Fee Management',
-        'fees.create': 'Add Fee Record',
-        'fees.student': 'Student',
-        'fees.batch': 'Batch',
-        'fees.month': 'Month',
-        'fees.year': 'Year',
-        'fees.amount_paid': 'Amount Paid',
-        'fees.total_paid': 'Total Paid',
-        'fees.export': 'Export to Excel',
-        'fees.payment_history': 'Payment History',
-
-        // Classes
-        'classes.title': 'Coaching Classes',
-        'classes.create': 'Add Class',
-        'classes.name': 'Name',
-        'classes.default_fee': 'Default Fee',
-
-        // Actions
-        'actions.save': 'Save',
-        'actions.cancel': 'Cancel',
-        'actions.edit': 'Edit',
-        'actions.delete': 'Delete',
-        'actions.view': 'View',
-        'actions.view_all': 'View all',
-        'actions.search': 'Search',
-        'actions.back': 'Back',
-
-        // Months
-        'month.january': 'January',
-        'month.february': 'February',
-        'month.march': 'March',
-        'month.april': 'April',
-        'month.may': 'May',
-        'month.june': 'June',
-        'month.july': 'July',
-        'month.august': 'August',
-        'month.september': 'September',
-        'month.october': 'October',
-        'month.november': 'November',
-        'month.december': 'December',
-    },
     bn: {
         // Common
         'app.name': 'কর্ণফুলী আলফা একাডেমি',
-        'app.tagline': 'কোচিং সেন্টার ম্যানেজমেন্ট',
+        'app.tagline': 'কোচিং সেন্টার ব্যবস্থাপনা',
 
         // Navigation
         'nav.dashboard': 'ড্যাশবোর্ড',
@@ -145,6 +62,26 @@ const translations: Record<Locale, Record<string, string>> = {
         'dashboard.total_collected': 'মোট সংগৃহীত',
         'dashboard.recent_payments': 'সাম্প্রতিক বেতন',
         'dashboard.recent_students': 'সাম্প্রতিক ছাত্রছাত্রী',
+        'dashboard.payment_records': 'পেমেন্ট রেকর্ড',
+        'dashboard.today_attendance': 'আজকের উপস্থিতি',
+        'dashboard.enrollment_trend': 'ভর্তি প্রবণতা (৬ মাস)',
+        'dashboard.fee_collection': 'বেতন সংগ্রহ (৬ মাস)',
+        'dashboard.enrollments': 'ভর্তি',
+        'dashboard.collected': 'সংগৃহীত',
+        'dashboard.my_assigned_batches': 'আমার নির্ধারিত ব্যাচ',
+        'dashboard.batch_history': 'ব্যাচ ইতিহাস',
+        'dashboard.completed': 'সম্পন্ন',
+        'dashboard.ongoing': 'চলমান',
+        'dashboard.pending_approval': 'অনুমোদন অপেক্ষমাণ',
+        'dashboard.welcome': 'স্বাগতম',
+        'dashboard.pending_message': 'আপনার শিক্ষক অ্যাকাউন্ট অ্যাডমিন অনুমোদন অপেক্ষমাণ।',
+        'dashboard.pending_submessage': 'একজন প্রশাসক আপনার অ্যাকাউন্ট অনুমোদন করলে আপনি সিস্টেমে প্রবেশ পাবেন। অনুগ্রহ করে পরে আবার দেখুন।',
+        'dashboard.email': 'ইমেইল',
+        'dashboard.no_students': 'এখনো কোনো ছাত্র নেই।',
+        'dashboard.no_batches': 'এখনো কোনো ব্যাচ নির্ধারিত হয়নি। অ্যাডমিনের সাথে যোগাযোগ করুন।',
+        'dashboard.no_payments': 'সাম্প্রতিক কোনো পেমেন্ট নেই।',
+        'dashboard.no_students_in_batches': 'আপনার ব্যাচে এখনো কোনো ছাত্র নেই।',
+        'dashboard.assigned_batches_desc': 'আপনার নির্ধারিত ব্যাচ এবং ছাত্ররা',
 
         // Students
         'students.title': 'ছাত্রছাত্রী',
@@ -167,6 +104,12 @@ const translations: Record<Locale, Record<string, string>> = {
         'students.other': 'অন্যান্য',
         'students.active': 'সক্রিয়',
         'students.inactive': 'নিষ্ক্রিয়',
+        'students.all_status': 'সব অবস্থা',
+        'students.deleted': 'ছাত্র সফলভাবে মুছে ফেলা হয়েছে',
+        'students.delete_confirm': 'আপনি কি নিশ্চিত এই ছাত্রকে মুছে ফেলতে চান?',
+        'students.no_attendance': 'এখনো কোনো উপস্থিতির রেকর্ড নেই।',
+        'students.total_paid': 'মোট পরিশোধিত:',
+        'students.no_payments': 'এখনো কোনো পেমেন্ট রেকর্ড নেই।',
 
         // Batches
         'batches.title': 'ব্যাচ',
@@ -176,6 +119,35 @@ const translations: Record<Locale, Record<string, string>> = {
         'batches.schedule': 'সময়সূচী',
         'batches.capacity': 'ক্ষমতা',
         'batches.enrolled': 'ভর্তি',
+        'batches.all_status': 'সব অবস্থা',
+        'batches.archived': 'সংরক্ষিত',
+        'batches.deleted': 'ব্যাচ সফলভাবে মুছে ফেলা হয়েছে',
+        'batches.completed_msg': 'ব্যাচ সফলভাবে সম্পন্ন হয়েছে',
+        'batches.delete_confirm': 'আপনি কি নিশ্চিত "{name}" মুছে ফেলতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।',
+        'batches.complete_confirm': 'আপনি কি নিশ্চিত "{name}" সম্পন্ন করতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না। সম্পন্ন হলে আর নতুন ছাত্র ভর্তি করানো যাবে না।',
+        'batches.time': 'সময়',
+        'batches.start_date': 'শুরুর তারিখ',
+        'batches.end_date': 'শেষের তারিখ',
+        'batches.remove': 'সরান',
+        'batches.search_teachers': 'শিক্ষক খুঁজুন (নাম বা ইমেইল)...',
+        'batches.select_teacher': 'একজন শিক্ষক নির্বাচন করুন',
+        'batches.assign': 'নির্ধারণ করুন',
+        'batches.no_teachers': 'কোনো শিক্ষক পাওয়া যায়নি।',
+        'batches.search_students': 'ছাত্র খুঁজুন (নাম)...',
+        'batches.select_student': 'একজন ছাত্র নির্বাচন করুন',
+        'batches.no_class': 'কোনো ক্লাস নেই',
+        'batches.enroll': 'ভর্তি করুন',
+        'batches.enrolled_at': 'ভর্তির তারিখ',
+        'batches.teacher_removed': 'শিক্ষক সফলভাবে সরানো হয়েছে',
+        'batches.student_unenrolled': 'ছাত্র সফলভাবে ভর্তি বাতিল করা হয়েছে',
+        'batches.unenroll': 'ভর্তি বাতিল',
+        'batches.history': 'ইতিহাস',
+        'batches.date': 'তারিখ',
+        'batches.student': 'ছাত্র',
+        'batches.action': 'কার্যক্রম',
+        'batches.by': 'কর্তৃক',
+        'batches.remove_teacher_confirm': 'আপনি কি নিশ্চিত এই শিক্ষককে ব্যাচ থেকে সরাতে চান?',
+        'batches.unenroll_confirm': 'আপনি কি নিশ্চিত এই ছাত্রকে ব্যাচ থেকে ভর্তি বাতিল করতে চান?',
 
         // Teachers
         'teachers.title': 'শিক্ষক',
@@ -183,6 +155,19 @@ const translations: Record<Locale, Record<string, string>> = {
         'teachers.name': 'নাম',
         'teachers.email': 'ইমেইল',
         'teachers.phone': 'ফোন',
+        'teachers.status': 'অবস্থা',
+        'teachers.approved': 'অনুমোদিত',
+        'teachers.pending': 'অপেক্ষমাণ',
+        'teachers.approve': 'অনুমোদন করুন',
+        'teachers.revoke_approval': 'অনুমোদন বাতিল করুন',
+        'teachers.deactivated': 'শিক্ষক সফলভাবে নিষ্ক্রিয় করা হয়েছে',
+        'teachers.approved_msg': '{name} সফলভাবে অনুমোদিত হয়েছে',
+        'teachers.revoked_msg': '{name}\'র অনুমোদন বাতিল করা হয়েছে',
+        'teachers.deactivate_confirm': 'আপনি কি নিশ্চিত {name}কে নিষ্ক্রিয় করতে চান?',
+        'teachers.search': 'অনুসন্ধান',
+        'teachers.add_new': 'নতুন শিক্ষক যোগ করুন',
+        'teachers.add_desc': 'সিস্টেমে একজন নতুন শিক্ষক যোগ করুন',
+        'teachers.update_info': 'শিক্ষকের তথ্য আপডেট করুন',
 
         // Attendance
         'attendance.title': 'উপস্থিতি',
@@ -199,6 +184,16 @@ const translations: Record<Locale, Record<string, string>> = {
         'attendance.mark_all_absent': 'সকল অনুপস্থিত',
         'attendance.clear_all': 'সব মুছুন',
         'attendance.save': 'উপস্থিতি সংরক্ষণ',
+        'attendance.all_batches': 'সব ব্যাচ',
+        'attendance.deleted': 'উপস্থিতির রেকর্ড সফলভাবে মুছে ফেলা হয়েছে',
+        'attendance.edit': 'উপস্থিতি সম্পাদনা',
+        'attendance.select_batch': 'একটি ব্যাচ নির্বাচন করুন',
+        'attendance.notes_placeholder': 'মন্তব্য...',
+        'attendance.no_enrolled': 'এই ব্যাচে কোনো ভর্তি ছাত্র পাওয়া যায়নি।',
+        'attendance.select_batch_date': 'উপস্থিতি নির্ধারণ করতে একটি ব্যাচ এবং তারিখ নির্বাচন করুন।',
+        'attendance.delete_confirm': 'আপনি কি নিশ্চিত এই উপস্থিতির রেকর্ড মুছে ফেলতে চান?',
+        'attendance.cancel': 'বাতিল',
+        'attendance.update': 'আপডেট',
 
         // Fees
         'fees.title': 'বেতন ব্যবস্থাপনা',
@@ -211,12 +206,95 @@ const translations: Record<Locale, Record<string, string>> = {
         'fees.total_paid': 'মোট পরিশোধিত',
         'fees.export': 'এক্সেলে রপ্তানি',
         'fees.payment_history': 'বেতনের ইতিহাস',
+        'fees.deleted': 'বেতন রেকর্ড সফলভাবে মুছে ফেলা হয়েছে',
+        'fees.delete_confirm': 'এই ছাত্রের এই ব্যাচের সব বেতন রেকর্ড মুছে ফেলবেন?',
+        'fees.edit': 'বেতন রেকর্ড সম্পাদনা',
+        'fees.update_details': 'বেতন পেমেন্টের বিবরণ আপডেট করুন',
+        'fees.fee_details': 'বেতনের বিবরণ',
 
         // Classes
         'classes.title': 'কোচিং ক্লাস',
         'classes.create': 'ক্লাস যোগ করুন',
         'classes.name': 'নাম',
         'classes.default_fee': 'ডিফল্ট বেতন',
+        'classes.deleted': 'কোচিং ক্লাস সফলভাবে মুছে ফেলা হয়েছে',
+        'classes.delete_confirm': 'আপনি কি নিশ্চিত {name} মুছে ফেলতে চান?',
+        'classes.name_placeholder': 'যেমন: নার্সারি, কেজি, ক্লাস ১',
+        'classes.fee_placeholder': 'যেমন: ৫০০',
+        'classes.update_details': 'ক্লাসের বিবরণ আপডেট করুন',
+        'classes.class_details': 'ক্লাসের বিবরণ',
+        'classes.class_name': 'ক্লাসের নাম *',
+        'classes.default_fee_label': 'ডিফল্ট বেতন *',
+        'classes.saving': 'সংরক্ষণ হচ্ছে...',
+        'classes.update_class': 'ক্লাস আপডেট করুন',
+
+        // Settings
+        'settings.profile': 'প্রোফাইল সেটিংস',
+        'settings.profile_desc': 'আপনার নাম এবং ইমেইল আপডেট করুন',
+        'settings.name': 'নাম',
+        'settings.name_placeholder': 'পূর্ণ নাম',
+        'settings.email': 'ইমেইল ঠিকানা',
+        'settings.email_placeholder': 'ইমেইল ঠিকানা',
+        'settings.unverified': 'আপনার ইমেইল ঠিকানা যাচাইকৃত নয়।',
+        'settings.resend_verification': 'যাচাইকরণ ইমেইল আবার পাঠাতে এখানে ক্লিক করুন।',
+        'settings.verification_sent': 'একটি নতুন যাচাইকরণ লিঙ্ক আপনার ইমেইলে পাঠানো হয়েছে।',
+        'settings.security': 'নিরাপত্তা সেটিংস',
+        'settings.update_password': 'পাসওয়ার্ড আপডেট করুন',
+        'settings.password_desc': 'নিরাপদ থাকতে দীর্ঘ, এলোমেলো পাসওয়ার্ড ব্যবহার করুন',
+        'settings.current_password': 'বর্তমান পাসওয়ার্ড',
+        'settings.new_password': 'নতুন পাসওয়ার্ড',
+        'settings.confirm_password': 'পাসওয়ার্ড নিশ্চিত করুন',
+        'settings.appearance': 'চেহারা সেটিংস',
+        'settings.appearance_desc': 'আপনার অ্যাকাউন্টের চেহারা সেটিংস আপডেট করুন',
+
+        // Auth
+        'auth.login': 'লগ ইন',
+        'auth.register': 'নিবন্ধন',
+        'auth.welcome_back': 'স্বাগতম',
+        'auth.sign_in_continue': 'চালিয়ে যেতে আপনার অ্যাকাউন্টে সাইন ইন করুন',
+        'auth.email': 'ইমেইল ঠিকানা',
+        'auth.password': 'পাসওয়ার্ড',
+        'auth.forgot_password': 'পাসওয়ার্ড ভুলে গেছেন?',
+        'auth.remember_me': '৩০ দিনের জন্য মনে রাখুন',
+        'auth.no_account': 'অ্যাকাউন্ট নেই?',
+        'auth.sign_up_free': 'বিনামূল্যে নিবন্ধন করুন',
+        'auth.create_account': 'আপনার অ্যাকাডেমি তৈরি করুন',
+        'auth.get_started': 'কর্ণফুলী আলফা একাডেমি দিয়ে শুরু করুন',
+        'auth.full_name': 'পূর্ণ নাম',
+        'auth.name_placeholder': 'আপনার পূর্ণ নাম লিখুন',
+        'auth.email_placeholder': 'you@example.com',
+        'auth.password_placeholder': 'একটি পাসওয়ার্ড তৈরি করুন',
+        'auth.confirm_password_placeholder': 'আপনার পাসওয়ার্ড নিশ্চিত করুন',
+        'auth.password_placeholder2': 'পাসওয়ার্ড',
+        'auth.has_account': 'ইতিমধ্যে অ্যাকাউন্ট আছে?',
+        'auth.forgot_title': 'পাসওয়ার্ড ভুলে গেছেন',
+        'auth.forgot_desc': 'পাসওয়ার্ড রিসেট লিঙ্ক পেতে আপনার ইমেইল লিখুন',
+        'auth.send_reset_link': 'পাসওয়ার্ড রিসেট লিঙ্ক পাঠান',
+        'auth.or_return': 'অথবা, ফিরে যান',
+        'auth.log_in': 'লগ ইন',
+        'auth.reset_title': 'পাসওয়ার্ড রিসেট',
+        'auth.reset_desc': 'অনুগ্রহ করে নিচে আপনার নতুন পাসওয়ার্ড লিখুন',
+        'auth.reset_button': 'পাসওয়ার্ড রিসেট',
+        'auth.confirm_title': 'পাসওয়ার্ড নিশ্চিত করুন',
+        'auth.confirm_desc': 'এটি অ্যাপ্লিকেশনের একটি নিরাপদ এলাকা। চালিয়ে যেতে আপনার পাসওয়ার্ড নিশ্চিত করুন।',
+        'auth.confirm_with_passkey': 'পাসকিই দিয়ে নিশ্চিত করুন',
+        'auth.confirming': 'নিশ্চিত করা হচ্ছে...',
+        'auth.or_confirm_password': 'অথবা পাসওয়ার্ড দিয়ে নিশ্চিত করুন',
+        'auth.confirm_button': 'পাসওয়ার্ড নিশ্চিত করুন',
+        'auth.verify_title': 'ইমেইল যাচাই',
+        'auth.verify_desc': 'আমরা আপনাকে যাচাইকরণ লিঙ্ক পাঠিয়েছি। অনুগ্রহ করে ইমেইলে ক্লিক করুন।',
+        'auth.verify_message': 'আপনার নিবন্ধনের সময় প্রদত্ত ইমেইল ঠিকানায় একটি নতুন যাচাইকরণ লিঙ্ক পাঠানো হয়েছে।',
+        'auth.resend_verification': 'যাচাইকরণ ইমেইল আবার পাঠান',
+        'auth.logout': 'লগ আউট',
+        'auth.two_factor': 'দুই-ফ্যাক্টর প্রমাণীকরণ',
+        'auth.recovery_code': 'পুনরুদ্ধার কোড',
+        'auth.recovery_desc': 'আপনার অ্যাকাউন্টে প্রবেশ নিশ্চিত করতে আপনার জরুরি পুনরুদ্ধার কোডগুলোর একটি লিখুন।',
+        'auth.use_recovery_code': 'পুনরুদ্ধার কোড দিয়ে লগ ইন',
+        'auth.auth_code': 'প্রমাণীকরণ কোড',
+        'auth.auth_desc': 'আপনার প্রমাণীকরণ অ্যাপ্লিকেশন থেকে প্রাপ্ত কোড লিখুন।',
+        'auth.use_auth_code': 'প্রমাণীকরণ কোড দিয়ে লগ ইন',
+        'auth.continue': 'চালিয়ে যান',
+        'auth.or': 'অথবা',
 
         // Actions
         'actions.save': 'সংরক্ষণ',
@@ -227,6 +305,11 @@ const translations: Record<Locale, Record<string, string>> = {
         'actions.view_all': 'সব দেখুন',
         'actions.search': 'অনুসন্ধান',
         'actions.back': 'পিছনে',
+
+        // Confirm Dialogs
+        'confirm.delete': 'মুছুন',
+        'confirm.are_you_sure': 'আপনি কি নিশ্চিত?',
+        'confirm.cannot_undo': 'এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।',
 
         // Months
         'month.january': 'জানুয়ারি',
@@ -241,6 +324,365 @@ const translations: Record<Locale, Record<string, string>> = {
         'month.october': 'অক্টোবর',
         'month.november': 'নভেম্বর',
         'month.december': 'ডিসেম্বর',
+
+        // Welcome / SEO
+        'welcome.hero_title': 'কর্ণফুলী আলফা একাডেমি',
+        'welcome.hero_subtitle': 'আপনার কোচিং সেন্টারের সম্পূর্ণ ব্যবস্থাপনা সমাধান',
+        'welcome.students_feature': 'ছাত্র ব্যবস্থাপনা',
+        'welcome.students_desc': 'ছাত্রদের তথ্য, যোগদান, ছাড়ার তারিখ সহজেই পরিচালনা করুন',
+        'welcome.attendance_feature': 'উপস্থিতি ট্র্যাকিং',
+        'welcome.attendance_desc': 'দৈনিক উপস্থিতি নির্ধারণ এবং রিপোর্ট তৈরি করুন',
+        'welcome.fees_feature': 'বেতন সংগ্রহ',
+        'welcome.fees_desc': 'মাসিক বেতন ট্র্যাক করুন এবং পেমেন্ট রেকর্ড রাখুন',
+        'welcome.batch_feature': 'ব্যাচ ব্যবস্থাপনা',
+        'welcome.batch_desc': 'ব্যাচ তৈরি করুন, শিক্ষক নিয়োগ করুন এবং সময়সূচী পরিচালনা করুন',
+        'welcome.cta': 'এখনই শুরু করুন',
+        'welcome.contact': 'যোগাযোগ করুন',
+        'welcome.about_title': 'কেন কর্ণফুলী আলফা একাডেমি?',
+        'welcome.about_desc': 'আমরা বাংলাদেশের কোচিং সেন্টারগুলোর জন্য একটি সম্পূর্ণ সমাধান প্রদান করি। ছাত্র ব্যবস্থাপনা থেকে শুরু করে বেতন সংগ্রহ পর্যন্ত সবকিছু এক জায়গায়।',
+        'welcome.trusted_badge': 'বিশ্বস্ত কোচিং সেন্টার সমাধান',
+        'welcome.how_it_works_title': 'মিনিটের মধ্যে শুরু করুন',
+        'welcome.how_it_works_desc': 'আপনার কোচিং সেন্টার অনলাইনে আনতে সহজ সেটআপ প্রক্রিয়া।',
+        'welcome.step1_title': 'অ্যাকাউন্ট তৈরি করুন',
+        'welcome.step1_desc': 'সাইন আপ করুন এবং আপনার কোচিং সেন্টারের প্রোফাইল সেকেন্ডের মধ্যে সেট আপ করুন।',
+        'welcome.step2_title': 'ছাত্র যোগ করুন',
+        'welcome.step2_desc': 'আপনার ছাত্রদের ইম্পোর্ট বা যোগ করুন এবং ব্যাচে সাজান।',
+        'welcome.step3_title': 'পরিচালনা শুরু করুন',
+        'welcome.step3_desc': 'প্রতিদিন উপস্থিতি ট্র্যাক করুন, বেতন সংগ্রহ করুন এবং রিপোর্ট তৈরি করুন।',
+        'welcome.cta_title': 'আপনার কোচিং সেন্টার পরিবর্তন করতে প্রস্তুত?',
+        'welcome.cta_desc': 'ইতিমধ্যে কর্ণফুলী আলফা একাডেমি ব্যবহারকারী শত শত কোচিং সেন্টারের সাথে যোগ দিন।',
+        'welcome.cta_button': 'বিনামূল্যে শুরু করুন',
+        'welcome.copyright': 'সর্বস্বত্ব সংরক্ষিত।',
+        'welcome.reports_feature': 'রিপোর্ট ও অ্যানালিটিক্স',
+        'welcome.reports_desc': 'উপস্থিতি সারসংক্ষেপ, বেতন সংগ্রহ রিপোর্ট এবং ছাত্র বিশ্লেষণ দেখুন',
+        'welcome.role_feature': 'ভূমিকা-ভিত্তিক প্রবেশাধিকার',
+        'welcome.role_desc': 'অ্যাডমিন এবং শিক্ষক ভূমিকা বিভিন্ন অনুমতি সহ। নিরাপদ এবং নিয়ন্ত্রিত প্রবেশ।',
+        'welcome.stat_students': 'ছাত্র পরিচালিত',
+        'welcome.stat_batches': 'সক্রিয় ব্যাচ',
+        'welcome.stat_enrollments': 'সক্রিয় ভর্তি',
+        'welcome.stat_fees': 'বেতন সংগ্রহ',
+    },
+    en: {
+        // Common
+        'app.name': 'Karnaphuli Alpha Academy',
+        'app.tagline': 'Coaching Center Management',
+
+        // Navigation
+        'nav.dashboard': 'Dashboard',
+        'nav.students': 'Students',
+        'nav.batches': 'Batches',
+        'nav.teachers': 'Teachers',
+        'nav.attendance': 'Attendance',
+        'nav.fees': 'Fees',
+        'nav.coaching_classes': 'Classes',
+        'nav.settings': 'Settings',
+
+        // Dashboard
+        'dashboard.title': 'Dashboard',
+        'dashboard.total_students': 'Total Students',
+        'dashboard.active_batches': 'Active Batches',
+        'dashboard.total_collected': 'Total Collected',
+        'dashboard.recent_payments': 'Recent Payments',
+        'dashboard.recent_students': 'Recent Students',
+        'dashboard.payment_records': 'payment records',
+        'dashboard.today_attendance': "Today's Attendance",
+        'dashboard.enrollment_trend': 'Enrollment Trend (6 months)',
+        'dashboard.fee_collection': 'Fee Collection (6 months)',
+        'dashboard.enrollments': 'Enrollments',
+        'dashboard.collected': 'Collected',
+        'dashboard.my_assigned_batches': 'My Assigned Batches',
+        'dashboard.batch_history': 'Batch History',
+        'dashboard.completed': 'Completed',
+        'dashboard.ongoing': 'Ongoing',
+        'dashboard.pending_approval': 'Account Pending Approval',
+        'dashboard.welcome': 'Welcome',
+        'dashboard.pending_message': 'Your teacher account is pending admin approval.',
+        'dashboard.pending_submessage': 'You will receive access to the system once an administrator approves your account. Please check back later.',
+        'dashboard.email': 'Email',
+        'dashboard.no_students': 'No students yet.',
+        'dashboard.no_batches': 'No batches assigned yet. Contact admin.',
+        'dashboard.no_payments': 'No recent payments.',
+        'dashboard.no_students_in_batches': 'No students in your batches yet.',
+        'dashboard.assigned_batches_desc': 'Your assigned batches and students',
+
+        // Students
+        'students.title': 'Students',
+        'students.create': 'Add Student',
+        'students.edit': 'Edit Student',
+        'students.name': 'Name',
+        'students.phone': 'Phone',
+        'students.class': 'Class',
+        'students.section': 'Section',
+        'students.joined_at': 'Joined At',
+        'students.left_at': 'Left At',
+        'students.date_of_birth': 'Date of Birth',
+        'students.gender': 'Gender',
+        'students.status': 'Status',
+        'students.address': 'Address',
+        'students.guardian_name': 'Guardian Name',
+        'students.guardian_phone': 'Guardian Phone',
+        'students.male': 'Male',
+        'students.female': 'Female',
+        'students.other': 'Other',
+        'students.active': 'Active',
+        'students.inactive': 'Inactive',
+        'students.all_status': 'All Status',
+        'students.deleted': 'Student deleted successfully',
+        'students.delete_confirm': 'Are you sure you want to delete this student?',
+        'students.no_attendance': 'No attendance records yet.',
+        'students.total_paid': 'Total Paid:',
+        'students.no_payments': 'No payment records yet.',
+
+        // Batches
+        'batches.title': 'Batches',
+        'batches.create': 'Add Batch',
+        'batches.name': 'Name',
+        'batches.subject': 'Subject',
+        'batches.schedule': 'Schedule',
+        'batches.capacity': 'Capacity',
+        'batches.enrolled': 'Enrolled',
+        'batches.all_status': 'All Status',
+        'batches.archived': 'Archived',
+        'batches.deleted': 'Batch deleted successfully',
+        'batches.completed_msg': 'Batch completed successfully',
+        'batches.delete_confirm': 'Are you sure you want to delete "{name}"? This action cannot be undone.',
+        'batches.complete_confirm': 'Are you sure you want to complete "{name}"? This action cannot be undone. Once completed, no new students can be enrolled.',
+        'batches.time': 'Time',
+        'batches.start_date': 'Start Date',
+        'batches.end_date': 'End Date',
+        'batches.remove': 'Remove',
+        'batches.search_teachers': 'Search teachers by name or email...',
+        'batches.select_teacher': 'Select a teacher',
+        'batches.assign': 'Assign',
+        'batches.no_teachers': 'No teachers found.',
+        'batches.search_students': 'Search students by name...',
+        'batches.select_student': 'Select a student',
+        'batches.no_class': 'No Class',
+        'batches.enroll': 'Enroll',
+        'batches.enrolled_at': 'Enrolled At',
+        'batches.teacher_removed': 'Teacher removed successfully',
+        'batches.student_unenrolled': 'Student unenrolled successfully',
+        'batches.unenroll': 'Unenroll',
+        'batches.history': 'History',
+        'batches.date': 'Date',
+        'batches.student': 'Student',
+        'batches.action': 'Action',
+        'batches.by': 'By',
+        'batches.remove_teacher_confirm': 'Are you sure you want to remove this teacher from the batch?',
+        'batches.unenroll_confirm': 'Are you sure you want to unenroll this student from the batch?',
+
+        // Teachers
+        'teachers.title': 'Teachers',
+        'teachers.create': 'Add Teacher',
+        'teachers.name': 'Name',
+        'teachers.email': 'Email',
+        'teachers.phone': 'Phone',
+        'teachers.status': 'Status',
+        'teachers.approved': 'Approved',
+        'teachers.pending': 'Pending',
+        'teachers.approve': 'Approve',
+        'teachers.revoke_approval': 'Revoke Approval',
+        'teachers.deactivated': 'Teacher deactivated successfully',
+        'teachers.approved_msg': '{name} has been approved',
+        'teachers.revoked_msg': "{name}'s approval has been revoked",
+        'teachers.deactivate_confirm': 'Are you sure you want to deactivate {name}?',
+        'teachers.search': 'Search',
+        'teachers.add_new': 'Add a new teacher',
+        'teachers.add_desc': 'Add a new teacher to the system',
+        'teachers.update_info': 'Update teacher information',
+
+        // Attendance
+        'attendance.title': 'Attendance',
+        'attendance.mark': 'Mark Attendance',
+        'attendance.batch': 'Batch',
+        'attendance.date': 'Date',
+        'attendance.student': 'Student',
+        'attendance.status': 'Status',
+        'attendance.present': 'Present',
+        'attendance.absent': 'Absent',
+        'attendance.late': 'Late',
+        'attendance.notes': 'Notes',
+        'attendance.mark_all_present': 'Mark All Present',
+        'attendance.mark_all_absent': 'Mark All Absent',
+        'attendance.clear_all': 'Clear All',
+        'attendance.save': 'Save Attendance',
+        'attendance.all_batches': 'All Batches',
+        'attendance.deleted': 'Attendance record deleted successfully',
+        'attendance.edit': 'Edit Attendance',
+        'attendance.select_batch': 'Select a batch',
+        'attendance.notes_placeholder': 'Notes...',
+        'attendance.no_enrolled': 'No enrolled students found for this batch.',
+        'attendance.select_batch_date': 'Select a batch and date to mark attendance.',
+        'attendance.delete_confirm': 'Are you sure you want to delete this attendance record?',
+        'attendance.cancel': 'Cancel',
+        'attendance.update': 'Update',
+
+        // Fees
+        'fees.title': 'Fee Management',
+        'fees.create': 'Add Fee Record',
+        'fees.student': 'Student',
+        'fees.batch': 'Batch',
+        'fees.month': 'Month',
+        'fees.year': 'Year',
+        'fees.amount_paid': 'Amount Paid',
+        'fees.total_paid': 'Total Paid',
+        'fees.export': 'Export to Excel',
+        'fees.payment_history': 'Payment History',
+        'fees.deleted': 'Fee records deleted successfully',
+        'fees.delete_confirm': 'Delete all fee records for this student in this batch for the year?',
+        'fees.edit': 'Edit Fee Record',
+        'fees.update_details': 'Update fee payment details',
+        'fees.fee_details': 'Fee Details',
+
+        // Classes
+        'classes.title': 'Coaching Classes',
+        'classes.create': 'Add Class',
+        'classes.name': 'Name',
+        'classes.default_fee': 'Default Fee',
+        'classes.deleted': 'Coaching class deleted successfully',
+        'classes.delete_confirm': 'Are you sure you want to delete {name}?',
+        'classes.name_placeholder': 'e.g. Nursery, KG, Class 1',
+        'classes.fee_placeholder': 'e.g. 500',
+        'classes.update_details': 'Update class details',
+        'classes.class_details': 'Class Details',
+        'classes.class_name': 'Class Name *',
+        'classes.default_fee_label': 'Default Fee *',
+        'classes.saving': 'Saving...',
+        'classes.update_class': 'Update Class',
+
+        // Settings
+        'settings.profile': 'Profile settings',
+        'settings.profile_desc': 'Update your name and email address',
+        'settings.name': 'Name',
+        'settings.name_placeholder': 'Full name',
+        'settings.email': 'Email address',
+        'settings.email_placeholder': 'Email address',
+        'settings.unverified': 'Your email address is unverified.',
+        'settings.resend_verification': 'Click here to re-send the verification email.',
+        'settings.verification_sent': 'A new verification link has been sent to your email address.',
+        'settings.security': 'Security settings',
+        'settings.update_password': 'Update password',
+        'settings.password_desc': 'Ensure your account is using a long, random password to stay secure',
+        'settings.current_password': 'Current password',
+        'settings.new_password': 'New password',
+        'settings.confirm_password': 'Confirm password',
+        'settings.appearance': 'Appearance settings',
+        'settings.appearance_desc': 'Update the appearance settings for your account',
+
+        // Auth
+        'auth.login': 'Log in',
+        'auth.register': 'Register',
+        'auth.welcome_back': 'Welcome back',
+        'auth.sign_in_continue': 'Sign in to your account to continue',
+        'auth.email': 'Email address',
+        'auth.password': 'Password',
+        'auth.forgot_password': 'Forgot password?',
+        'auth.remember_me': 'Remember me for 30 days',
+        'auth.no_account': "Don't have an account?",
+        'auth.sign_up_free': 'Sign up for free',
+        'auth.create_account': 'Create your account',
+        'auth.get_started': 'Get started with Karnaphuli Alpha Academy',
+        'auth.full_name': 'Full name',
+        'auth.name_placeholder': 'Enter your full name',
+        'auth.email_placeholder': 'you@example.com',
+        'auth.password_placeholder': 'Create a password',
+        'auth.confirm_password_placeholder': 'Confirm your password',
+        'auth.password_placeholder2': 'Password',
+        'auth.has_account': 'Already have an account?',
+        'auth.forgot_title': 'Forgot password',
+        'auth.forgot_desc': 'Enter your email to receive a password reset link',
+        'auth.send_reset_link': 'Email password reset link',
+        'auth.or_return': 'Or, return to',
+        'auth.log_in': 'log in',
+        'auth.reset_title': 'Reset password',
+        'auth.reset_desc': 'Please enter your new password below',
+        'auth.reset_button': 'Reset password',
+        'auth.confirm_title': 'Confirm password',
+        'auth.confirm_desc': 'This is a secure area of the application. Please confirm your password before continuing.',
+        'auth.confirm_with_passkey': 'Confirm with passkey',
+        'auth.confirming': 'Confirming...',
+        'auth.or_confirm_password': 'Or confirm with password',
+        'auth.confirm_button': 'Confirm password',
+        'auth.verify_title': 'Email verification',
+        'auth.verify_desc': 'Please verify your email address by clicking on the link we just emailed to you.',
+        'auth.verify_message': 'A new verification link has been sent to the email address you provided during registration.',
+        'auth.resend_verification': 'Resend verification email',
+        'auth.logout': 'Log out',
+        'auth.two_factor': 'Two-factor authentication',
+        'auth.recovery_code': 'Recovery code',
+        'auth.recovery_desc': 'Please confirm access to your account by entering one of your emergency recovery codes.',
+        'auth.use_recovery_code': 'login using a recovery code',
+        'auth.auth_code': 'Authentication code',
+        'auth.auth_desc': 'Enter the authentication code provided by your authenticator application.',
+        'auth.use_auth_code': 'login using an authentication code',
+        'auth.continue': 'Continue',
+        'auth.or': 'or',
+
+        // Actions
+        'actions.save': 'Save',
+        'actions.cancel': 'Cancel',
+        'actions.edit': 'Edit',
+        'actions.delete': 'Delete',
+        'actions.view': 'View',
+        'actions.view_all': 'View all',
+        'actions.search': 'Search',
+        'actions.back': 'Back',
+
+        // Confirm Dialogs
+        'confirm.delete': 'Delete',
+        'confirm.are_you_sure': 'Are you sure?',
+        'confirm.cannot_undo': 'This action cannot be undone.',
+
+        // Months
+        'month.january': 'January',
+        'month.february': 'February',
+        'month.march': 'March',
+        'month.april': 'April',
+        'month.may': 'May',
+        'month.june': 'June',
+        'month.july': 'July',
+        'month.august': 'August',
+        'month.september': 'September',
+        'month.october': 'October',
+        'month.november': 'November',
+        'month.december': 'December',
+
+        // Welcome / SEO
+        'welcome.hero_title': 'Karnaphuli Alpha Academy',
+        'welcome.hero_subtitle': 'Complete Management Solution for Your Coaching Center',
+        'welcome.students_feature': 'Student Management',
+        'welcome.students_desc': 'Manage student information, enrollment, and departure dates with ease',
+        'welcome.attendance_feature': 'Attendance Tracking',
+        'welcome.attendance_desc': 'Mark daily attendance and generate reports',
+        'welcome.fees_feature': 'Fee Collection',
+        'welcome.fees_desc': 'Track monthly fees and maintain payment records',
+        'welcome.batch_feature': 'Batch Management',
+        'welcome.batch_desc': 'Create batches, assign teachers, and manage schedules',
+        'welcome.cta': 'Get Started Now',
+        'welcome.contact': 'Contact Us',
+        'welcome.about_title': 'Why Karnaphuli Alpha Academy?',
+        'welcome.about_desc': 'We provide a complete solution for coaching centers in Bangladesh. From student management to fee collection, everything in one place.',
+        'welcome.trusted_badge': 'Trusted Coaching Center Solution',
+        'welcome.how_it_works_title': 'Get Started in Minutes',
+        'welcome.how_it_works_desc': 'Simple setup process to bring your coaching center online.',
+        'welcome.step1_title': 'Create Account',
+        'welcome.step1_desc': 'Sign up and set up your coaching center profile in seconds.',
+        'welcome.step2_title': 'Add Students',
+        'welcome.step2_desc': 'Import or add your students and organize them into batches.',
+        'welcome.step3_title': 'Start Managing',
+        'welcome.step3_desc': 'Track daily attendance, collect fees, and generate reports.',
+        'welcome.cta_title': 'Ready to Transform Your Coaching Center?',
+        'welcome.cta_desc': 'Join hundreds of coaching centers already using Karnaphuli Alpha Academy.',
+        'welcome.cta_button': 'Start for Free',
+        'welcome.copyright': 'All rights reserved.',
+        'welcome.reports_feature': 'Reports & Analytics',
+        'welcome.reports_desc': 'View attendance summaries, fee collection reports, and student analytics',
+        'welcome.role_feature': 'Role-based Access',
+        'welcome.role_desc': 'Admin and teacher roles with different permissions. Secure and controlled access.',
+        'welcome.stat_students': 'Students Managed',
+        'welcome.stat_batches': 'Active Batches',
+        'welcome.stat_enrollments': 'Active Enrollments',
+        'welcome.stat_fees': 'Fee Collection',
     },
 };
 
@@ -248,6 +690,10 @@ type LocaleContextType = {
     locale: Locale;
     setLocale: (locale: Locale) => void;
     t: (key: string) => string;
+    formatDate: (date: string | Date) => string;
+    formatTime: (date: string | Date) => string;
+    formatCurrency: (amount: number) => string;
+    formatNumber: (num: number) => string;
 };
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
@@ -255,7 +701,7 @@ const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 export function LocaleProvider({ children }: { children: ReactNode }) {
     const [locale, setLocale] = useState<Locale>(() => {
         if (typeof window !== 'undefined') {
-            return (localStorage.getItem('locale') as Locale) || 'en';
+            return (document.documentElement.getAttribute('data-locale') as Locale) || 'en';
         }
 
         return 'en';
@@ -264,15 +710,30 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     const handleSetLocale = (newLocale: Locale) => {
         setLocale(newLocale);
         localStorage.setItem('locale', newLocale);
+        document.documentElement.setAttribute('data-locale', newLocale);
+        document.documentElement.setAttribute('lang', newLocale);
     };
 
     const t = (key: string): string => {
-        return translations[locale][key] || translations.en[key] || key;
+        return translations[locale][key] || translations.bn[key] || key;
     };
+
+    const formatDateFn = (date: string | Date) => formatDate(date, locale);
+    const formatTimeFn = (date: string | Date) => formatTime(date, locale);
+    const formatCurrencyFn = (amount: number) => formatCurrency(amount, locale);
+    const formatNumberFn = (num: number) => locale === 'bn' ? formatBanglaNumber(num) : num.toLocaleString('en-US');
 
     return (
         <LocaleContext.Provider
-            value={{ locale, setLocale: handleSetLocale, t }}
+            value={{
+                locale,
+                setLocale: handleSetLocale,
+                t,
+                formatDate: formatDateFn,
+                formatTime: formatTimeFn,
+                formatCurrency: formatCurrencyFn,
+                formatNumber: formatNumberFn,
+            }}
         >
             {children}
         </LocaleContext.Provider>

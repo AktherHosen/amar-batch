@@ -1,11 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
+import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,6 +33,7 @@ type PageProps = {
             id: number;
             name: string;
             email: string;
+            is_approved: boolean;
             assigned_batches_count: number;
         }>;
         current_page: number;
@@ -72,6 +74,24 @@ export default function TeachersIndex({
             toast.success('Teacher deactivated successfully');
             setDeleteDialog({ open: false, item: null });
         }
+    };
+
+    const handleApprove = (teacher: { id: number; name: string }) => {
+        router.post(teachers.approve(teacher.id).url, {}, {
+            onSuccess: () => {
+                toast.success(`${teacher.name} has been approved`);
+                router.reload({ only: ['teachers'] });
+            },
+        });
+    };
+
+    const handleReject = (teacher: { id: number; name: string }) => {
+        router.post(teachers.reject(teacher.id).url, {}, {
+            onSuccess: () => {
+                toast.success(`${teacher.name}'s approval has been revoked`);
+                router.reload({ only: ['teachers'] });
+            },
+        });
     };
 
     return (
@@ -152,15 +172,16 @@ export default function TeachersIndex({
                                         {t('teachers.name')}
                                     </TableHead>
                                     <TableHead>{t('teachers.email')}</TableHead>
+                                    <TableHead>Status</TableHead>
                                     <TableHead>{t('batches.title')}</TableHead>
-                                    <TableHead className="w-[50px]"></TableHead>
+                                    <TableHead className="w-[100px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={4}
+                                            colSpan={5}
                                             className="text-center"
                                         >
                                             {t('teachers.title')}{' '}
@@ -175,6 +196,13 @@ export default function TeachersIndex({
                                             </TableCell>
                                             <TableCell>
                                                 {teacher.email}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant={teacher.is_approved ? 'success' : 'danger'}
+                                                >
+                                                    {teacher.is_approved ? 'Approved' : 'Pending'}
+                                                </Badge>
                                             </TableCell>
                                             <TableCell>
                                                 {teacher.assigned_batches_count}
@@ -195,6 +223,18 @@ export default function TeachersIndex({
                                                         </DropdownMenuItem>
                                                         {isAdmin && (
                                                             <>
+                                                                {!teacher.is_approved && (
+                                                                    <DropdownMenuItem onClick={() => handleApprove(teacher)}>
+                                                                        <CheckCircle className="mr-2 size-4 text-green-600" />
+                                                                        Approve
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                {teacher.is_approved && (
+                                                                    <DropdownMenuItem onClick={() => handleReject(teacher)}>
+                                                                        <XCircle className="mr-2 size-4 text-yellow-600" />
+                                                                        Revoke Approval
+                                                                    </DropdownMenuItem>
+                                                                )}
                                                                 <DropdownMenuItem asChild>
                                                                     <Link href={teachers.edit(teacher.id)}>
                                                                         <Pencil className="mr-2 size-4" />
