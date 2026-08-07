@@ -194,7 +194,7 @@ export default function AttendanceIndex({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
                                         {t('attendance.student')}
                                     </TableHead>
                                     <TableHead>
@@ -210,9 +210,7 @@ export default function AttendanceIndex({
                                         {t('attendance.notes')}
                                     </TableHead>
                                     {(isAdmin || isTeacher) && (
-                                        <TableHead className="text-right">
-                                            {t('actions.view')}
-                                        </TableHead>
+                                        <TableHead className="w-[50px]"></TableHead>
                                     )}
                                 </TableRow>
                             </TableHeader>
@@ -232,7 +230,7 @@ export default function AttendanceIndex({
                                 ) : (
                                     pagination.data.map((record) => (
                                         <TableRow key={record.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {record.student.name}
                                             </TableCell>
                                             <TableCell>
@@ -256,13 +254,12 @@ export default function AttendanceIndex({
                                                 {record.notes || '-'}
                                             </TableCell>
                                             {(isAdmin || isTeacher) && (
-                                                <TableCell className="text-right">
+                                                <TableCell className="p-1 text-center">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() =>
-                                                            handleDelete(record)
-                                                        }
+                                                        className="size-8 p-0 text-destructive hover:text-destructive"
+                                                        onClick={() => handleDelete(record)}
                                                     >
                                                         <Trash2 className="size-4" />
                                                     </Button>

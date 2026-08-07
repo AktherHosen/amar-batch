@@ -1,10 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -109,12 +115,12 @@ export default function TeachersIndex({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>{t('teachers.name')}</TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                        {t('teachers.name')}
+                                    </TableHead>
                                     <TableHead>{t('teachers.email')}</TableHead>
                                     <TableHead>{t('batches.title')}</TableHead>
-                                    <TableHead className="text-right">
-                                        {t('actions.view')}
-                                    </TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -131,7 +137,7 @@ export default function TeachersIndex({
                                 ) : (
                                     pagination.data.map((teacher) => (
                                         <TableRow key={teacher.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {teacher.name}
                                             </TableCell>
                                             <TableCell>
@@ -140,48 +146,36 @@ export default function TeachersIndex({
                                             <TableCell>
                                                 {teacher.assigned_batches_count}
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Link
-                                                        href={teachers.show(
-                                                            teacher.id,
-                                                        )}
-                                                    >
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                        >
-                                                            <Eye className="size-4" />
+                                            <TableCell className="p-1 text-center">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                            <EllipsisVertical className="size-4" />
                                                         </Button>
-                                                    </Link>
-                                                    {isAdmin && (
-                                                        <>
-                                                            <Link
-                                                                href={teachers.edit(
-                                                                    teacher.id,
-                                                                )}
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                >
-                                                                    <Pencil className="size-4" />
-                                                                </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={teachers.show(teacher.id)}>
+                                                                <Eye className="mr-2 size-4" />
+                                                                {t('actions.view')}
                                                             </Link>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    handleDelete(
-                                                                        teacher,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Trash2 className="size-4" />
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                </div>
+                                                        </DropdownMenuItem>
+                                                        {isAdmin && (
+                                                            <>
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={teachers.edit(teacher.id)}>
+                                                                        <Pencil className="mr-2 size-4" />
+                                                                        {t('actions.edit')}
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleDelete(teacher)} className="text-destructive">
+                                                                    <Trash2 className="mr-2 size-4" />
+                                                                    {t('actions.delete')}
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
                                     ))

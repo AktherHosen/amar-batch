@@ -1,10 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -150,9 +156,7 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                         <TableHead>
                                             {t('students.status')}
                                         </TableHead>
-                                        <TableHead className="text-right">
-                                            {t('actions.view')}
-                                        </TableHead>
+                                        <TableHead className="w-[50px]"></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -182,19 +186,21 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                                     {batch.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <Link
-                                                    href={batches.show(
-                                                        batch.id,
-                                                    )}
-                                                >
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                    >
-                                                        {t('actions.view')}
-                                                    </Button>
-                                                </Link>
+                                            <TableCell className="p-1 text-center">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                            <EllipsisVertical className="size-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={batches.show(batch.id)}>
+                                                                {t('actions.view')}
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
                                     ))}

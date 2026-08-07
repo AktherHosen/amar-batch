@@ -4,7 +4,6 @@ import {
     Plus,
     Search,
     Trash2,
-    MoreHorizontal,
     Download,
     X,
 } from 'lucide-react';
@@ -328,7 +327,7 @@ export default function FeesIndex({
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="icon">
-                                <MoreHorizontal className="size-4" />
+                                <EllipsisVertical className="size-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -489,14 +488,7 @@ export default function FeesIndex({
                                                             variant="ghost"
                                                             size="sm"
                                                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                            onClick={() =>
-                                                                handleDeleteRow(
-                                                                    item.student
-                                                                        .id,
-                                                                    item.batch
-                                                                        .id,
-                                                                )
-                                                            }
+                                                            onClick={() => handleDeleteRow(item.student.id, item.batch.id)}
                                                         >
                                                             <Trash2 className="size-4" />
                                                         </Button>

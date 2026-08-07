@@ -1,10 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ArrowLeft, Pencil, Trash2, UserMinus } from 'lucide-react';
+import { ArrowLeft, EllipsisVertical, Pencil, Trash2, UserMinus } from 'lucide-react';
 import Heading from '@/components/heading';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -353,9 +359,7 @@ export default function BatchesShow({
                                             <TableHead>
                                                 {t('teachers.email')}
                                             </TableHead>
-                                            <TableHead className="text-right">
-                                                {t('actions.view')}
-                                            </TableHead>
+                                            <TableHead className="w-[50px]"></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -367,18 +371,20 @@ export default function BatchesShow({
                                                 <TableCell>
                                                     {teacher.email}
                                                 </TableCell>
-                                                <TableCell className="text-right">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleRemoveTeacher(
-                                                                teacher.id,
-                                                            )
-                                                        }
-                                                    >
-                                                        <UserMinus className="size-4" />
-                                                    </Button>
+                                                <TableCell className="p-1 text-center">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                                <EllipsisVertical className="size-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => handleRemoveTeacher(teacher.id)} className="text-destructive">
+                                                                <UserMinus className="mr-2 size-4" />
+                                                                Remove
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -567,9 +573,7 @@ export default function BatchesShow({
                                         </TableHead>
                                         {(isAdmin ||
                                             auth.user.role === 'teacher') && (
-                                            <TableHead className="text-right">
-                                                {t('actions.view')}
-                                            </TableHead>
+                                            <TableHead className="w-[50px]"></TableHead>
                                         )}
                                     </TableRow>
                                 </TableHeader>
@@ -608,49 +612,30 @@ export default function BatchesShow({
                                             {(isAdmin ||
                                                 auth.user.role ===
                                                     'teacher') && (
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        {enrollment.status ===
-                                                            'active' && (
-                                                            <>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleUpdateEnrollmentStatus(
-                                                                            enrollment.id,
-                                                                            'completed',
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Complete
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleUpdateEnrollmentStatus(
-                                                                            enrollment.id,
-                                                                            'dropped',
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Drop
-                                                                </Button>
-                                                            </>
-                                                        )}
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleUnenroll(
-                                                                    enrollment.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            <UserMinus className="size-4" />
-                                                        </Button>
-                                                    </div>
+                                                <TableCell className="p-1 text-center">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                                <EllipsisVertical className="size-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            {enrollment.status === 'active' && (
+                                                                <>
+                                                                    <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'completed')}>
+                                                                        Complete
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'dropped')}>
+                                                                        Drop
+                                                                    </DropdownMenuItem>
+                                                                </>
+                                                            )}
+                                                            <DropdownMenuItem onClick={() => handleUnenroll(enrollment.id)} className="text-destructive">
+                                                                <UserMinus className="mr-2 size-4" />
+                                                                Unenroll
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </TableCell>
                                             )}
                                         </TableRow>

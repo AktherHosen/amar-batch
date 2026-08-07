@@ -87,17 +87,13 @@ export default function StudentsShow({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                         <Link href={students.index()}>
-                            <Button variant="ghost" size="sm">
-                                <ArrowLeft className="mr-2 size-4" />
-                                {t('actions.back')}
+                            <Button variant="ghost" size="icon" className="size-9">
+                                <ArrowLeft className="size-4" />
                             </Button>
                         </Link>
-                        <Heading
-                            title={student.name}
-                            description={t('students.title')}
-                        />
+                        <h1 className="text-lg font-bold tracking-tight sm:text-2xl">{student.name}</h1>
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
@@ -121,80 +117,82 @@ export default function StudentsShow({
                 <div className="grid gap-4 md:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t('students.name')}</CardTitle>
+                            <CardTitle>{t('students.title')}</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.name')}
-                                </p>
-                                <p className="font-medium">{student.name}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.phone')}
-                                </p>
-                                <p className="font-medium">
-                                    {student.phone || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.class')}
-                                </p>
-                                <p className="font-medium">
-                                    {student.coaching_class
-                                        ? `${student.coaching_class.name}${student.section ? ` - ${student.section}` : ''}`
-                                        : student.section || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.joined_at')}
-                                </p>
-                                <p className="font-medium">
-                                    {formatDate(student.joined_at)}
-                                </p>
-                            </div>
-                            {student.left_at && (
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">
-                                        {t('students.left_at')}
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.name')}
                                     </p>
-                                    <p className="font-medium">
-                                        {formatDate(student.left_at)}
+                                    <p className="text-sm font-medium">{student.name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.phone')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {student.phone || '-'}
                                     </p>
                                 </div>
-                            )}
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.date_of_birth')}
-                                </p>
-                                <p className="font-medium">
-                                    {formatDate(student.date_of_birth)}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.gender')}
-                                </p>
-                                <p className="font-medium capitalize">
-                                    {student.gender || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.status')}
-                                </p>
-                                <Badge
-                                    variant={
-                                        student.status === 'active'
-                                            ? 'default'
-                                            : 'warning'
-                                    }
-                                >
-                                    {student.status}
-                                </Badge>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.class')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {student.coaching_class
+                                            ? `${student.coaching_class.name}${student.section ? ` - ${student.section}` : ''}`
+                                            : student.section || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.joined_at')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {formatDate(student.joined_at)}
+                                    </p>
+                                </div>
+                                {student.left_at && (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('students.left_at')}
+                                        </p>
+                                        <p className="text-sm font-medium">
+                                            {formatDate(student.left_at)}
+                                        </p>
+                                    </div>
+                                )}
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.date_of_birth')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {formatDate(student.date_of_birth)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.gender')}
+                                    </p>
+                                    <p className="text-sm font-medium capitalize">
+                                        {student.gender || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.status')}
+                                    </p>
+                                    <Badge
+                                        variant={
+                                            student.status === 'active'
+                                                ? 'default'
+                                                : 'warning'
+                                        }
+                                    >
+                                        {student.status}
+                                    </Badge>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -206,30 +204,32 @@ export default function StudentsShow({
                                 {t('students.address')}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.address')}
-                                </p>
-                                <p className="font-medium">
-                                    {student.address || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.guardian_name')}
-                                </p>
-                                <p className="font-medium">
-                                    {student.guardian_name || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.guardian_phone')}
-                                </p>
-                                <p className="font-medium">
-                                    {student.guardian_phone || '-'}
-                                </p>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="col-span-2">
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.address')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {student.address || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.guardian_name')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {student.guardian_name || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.guardian_phone')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {student.guardian_phone || '-'}
+                                    </p>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

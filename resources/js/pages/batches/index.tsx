@@ -1,10 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Search, Eye, Pencil, Trash2, X, CheckCircle } from 'lucide-react';
+import { Plus, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle } from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -213,7 +219,9 @@ export default function BatchesIndex({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>{t('batches.name')}</TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                        {t('batches.name')}
+                                    </TableHead>
                                     <TableHead>
                                         {t('batches.subject')}
                                     </TableHead>
@@ -226,9 +234,7 @@ export default function BatchesIndex({
                                     <TableHead>
                                         {t('students.status')}
                                     </TableHead>
-                                    <TableHead className="text-right">
-                                        {t('actions.view')}
-                                    </TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -245,7 +251,7 @@ export default function BatchesIndex({
                                 ) : (
                                     pagination.data.map((batch) => (
                                         <TableRow key={batch.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {batch.name}
                                             </TableCell>
                                             <TableCell>
@@ -266,61 +272,42 @@ export default function BatchesIndex({
                                                     {batch.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Link
-                                                        href={batches.show(
-                                                            batch.id,
-                                                        )}
-                                                    >
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                        >
-                                                            <Eye className="size-4" />
+                                            <TableCell className="p-1 text-center">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                            <EllipsisVertical className="size-4" />
                                                         </Button>
-                                                    </Link>
-                                                    {isAdmin && (
-                                                        <>
-                                                            <Link
-                                                                href={batches.edit(
-                                                                    batch.id,
-                                                                )}
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                >
-                                                                    <Pencil className="size-4" />
-                                                                </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={batches.show(batch.id)}>
+                                                                <Eye className="mr-2 size-4" />
+                                                                {t('actions.view')}
                                                             </Link>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    handleDelete(
-                                                                        batch,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Trash2 className="size-4" />
-                                                            </Button>
-                                                            {batch.status !== 'completed' && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleComplete(
-                                                                            batch,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <CheckCircle className="size-4" />
-                                                                </Button>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </div>
+                                                        </DropdownMenuItem>
+                                                        {isAdmin && (
+                                                            <>
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={batches.edit(batch.id)}>
+                                                                        <Pencil className="mr-2 size-4" />
+                                                                        {t('actions.edit')}
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleDelete(batch)} className="text-destructive">
+                                                                    <Trash2 className="mr-2 size-4" />
+                                                                    {t('actions.delete')}
+                                                                </DropdownMenuItem>
+                                                                {batch.status !== 'completed' && (
+                                                                    <DropdownMenuItem onClick={() => handleComplete(batch)}>
+                                                                        <CheckCircle className="mr-2 size-4" />
+                                                                        Complete
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
                                     ))

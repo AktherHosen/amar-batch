@@ -1,10 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -115,7 +121,9 @@ export default function CoachingClassesIndex({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>{t('classes.name')}</TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                        {t('classes.name')}
+                                    </TableHead>
                                     <TableHead>
                                         {t('classes.default_fee')}
                                     </TableHead>
@@ -123,9 +131,7 @@ export default function CoachingClassesIndex({
                                         {t('batches.enrolled')}
                                     </TableHead>
                                     {isAdmin && (
-                                        <TableHead className="text-right">
-                                            {t('actions.view')}
-                                        </TableHead>
+                                        <TableHead className="w-[50px]"></TableHead>
                                     )}
                                 </TableRow>
                             </TableHeader>
@@ -143,7 +149,7 @@ export default function CoachingClassesIndex({
                                 ) : (
                                     pagination.data.map((cls) => (
                                         <TableRow key={cls.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {cls.name}
                                             </TableCell>
                                             <TableCell>
@@ -155,32 +161,26 @@ export default function CoachingClassesIndex({
                                                 {cls.students_count}
                                             </TableCell>
                                             {isAdmin && (
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Link
-                                                            href={coachingClasses.edit(
-                                                                cls.id,
-                                                            )}
-                                                        >
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                            >
-                                                                <Pencil className="size-4" />
+                                                <TableCell className="p-1 text-center">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                                <EllipsisVertical className="size-4" />
                                                             </Button>
-                                                        </Link>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    cls,
-                                                                )
-                                                            }
-                                                        >
-                                                            <Trash2 className="size-4" />
-                                                        </Button>
-                                                    </div>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={coachingClasses.edit(cls.id)}>
+                                                                    <Pencil className="mr-2 size-4" />
+                                                                    {t('actions.edit')}
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleDelete(cls)} className="text-destructive">
+                                                                <Trash2 className="mr-2 size-4" />
+                                                                {t('actions.delete')}
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </TableCell>
                                             )}
                                         </TableRow>
