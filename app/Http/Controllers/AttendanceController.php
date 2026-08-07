@@ -25,8 +25,8 @@ class AttendanceController extends Controller
             $query->whereDate('date', $request->date);
         }
 
-        $attendances = $query->orderBy('date', 'desc')->paginate(15);
-        $batches = Batch::orderBy('name')->get();
+        $attendances = $query->orderBy('date', 'desc')->paginate(10);
+        $batches = Batch::where('status', '!=', 'completed')->orderBy('name')->get();
 
         return Inertia::render('attendance/index', [
             'attendances' => $attendances,
@@ -37,7 +37,7 @@ class AttendanceController extends Controller
 
     public function create(Request $request): Response
     {
-        $batches = Batch::orderBy('name')->get();
+        $batches = Batch::where('status', '!=', 'completed')->orderBy('name')->get();
         $selectedBatch = $request->batch_id;
         $selectedDate = $request->date ?? now()->toDateString();
 
@@ -99,6 +99,27 @@ class AttendanceController extends Controller
         }
 
         return to_route('attendance.index')->with('toast', ['type' => 'success', 'message' => 'Attendance marked successfully.']);
+    }
+
+    public function edit(Attendance $attendance): Response
+    {
+        $attendance->load(['student', 'batch']);
+
+        return Inertia::render('attendance/edit', [
+            'attendance' => $attendance,
+        ]);
+    }
+
+    public function update(Request $request, Attendance $attendance): RedirectResponse
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:present,absent,late',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $attendance->update($validated);
+
+        return to_route('attendance.index')->with('toast', ['type' => 'success', 'message' => 'Attendance updated successfully.']);
     }
 
     public function destroy(Attendance $attendance): RedirectResponse

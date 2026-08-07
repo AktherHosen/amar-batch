@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEnrollmentRequest;
 use App\Models\Batch;
+use App\Models\BatchHistory;
 use App\Models\Enrollment;
+use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -20,11 +22,21 @@ class EnrollmentController extends Controller
             return back()->withErrors(['student_id' => 'This student is already enrolled in this batch.']);
         }
 
-        Enrollment::create([
+        $student = Student::find($request->student_id);
+
+        $enrollment = Enrollment::create([
             'student_id' => $request->student_id,
             'batch_id' => $batch->id,
-            'enrolled_at' => now(),
+            'enrolled_at' => $request->input('enrolled_at') ?? now()->toDateString(),
             'status' => 'active',
+        ]);
+
+        BatchHistory::create([
+            'batch_id' => $batch->id,
+            'student_id' => $request->student_id,
+            'action' => 'enrolled',
+            'action_date' => $enrollment->enrolled_at,
+            'user_id' => $request->user()->id,
         ]);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Student enrolled successfully.']);
@@ -38,11 +50,27 @@ class EnrollmentController extends Controller
 
         $enrollment->update(['status' => $request->status]);
 
+        BatchHistory::create([
+            'batch_id' => $enrollment->batch_id,
+            'student_id' => $enrollment->student_id,
+            'action' => $request->status,
+            'action_date' => now()->toDateString(),
+            'user_id' => $request->user()->id,
+        ]);
+
         return back()->with('toast', ['type' => 'success', 'message' => 'Enrollment status updated.']);
     }
 
-    public function destroy(Enrollment $enrollment): RedirectResponse
+    public function destroy(Enrollment $enrollment, Request $request): RedirectResponse
     {
+        BatchHistory::create([
+            'batch_id' => $enrollment->batch_id,
+            'student_id' => $enrollment->student_id,
+            'action' => 'removed',
+            'action_date' => now()->toDateString(),
+            'user_id' => $request->user()->id,
+        ]);
+
         $enrollment->delete();
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Student unenrolled successfully.']);

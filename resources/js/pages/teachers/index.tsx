@@ -1,8 +1,17 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
+import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -43,14 +52,25 @@ export default function TeachersIndex({
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
+    const [refreshing, setRefreshing] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleSearch = () => {
         router.get(teachers.index(), { search }, { preserveState: true });
     };
 
     const handleDelete = (teacher: { id: number; name: string }) => {
-        if (confirm(`Are you sure you want to deactivate ${teacher.name}?`)) {
-            router.delete(teachers.destroy(teacher.id));
+        setDeleteDialog({ open: true, item: teacher });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(teachers.destroy(deleteDialog.item.id));
+            toast.success('Teacher deactivated successfully');
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -86,23 +106,54 @@ export default function TeachersIndex({
                                     onKeyDown={(e) =>
                                         e.key === 'Enter' && handleSearch()
                                     }
-                                    className="pl-9"
+                                    className="pr-9 pl-9"
                                 />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSearch('');
+                                            router.get(
+                                                teachers.index(),
+                                                {},
+                                                { preserveState: true },
+                                            );
+                                        }}
+                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )}
                             </div>
                             <Button variant="secondary" onClick={handleSearch}>
-                                Search
+                                <Search className="size-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Search</span>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={refreshing}
+                                onClick={() => {
+                                    setRefreshing(true);
+                                    router.reload({
+                                        only: ['teachers'],
+                                        onFinish: () => setRefreshing(false),
+                                    });
+                                }}
+                            >
+                                <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                             </Button>
                         </div>
 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>{t('teachers.name')}</TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                        {t('teachers.name')}
+                                    </TableHead>
                                     <TableHead>{t('teachers.email')}</TableHead>
                                     <TableHead>{t('batches.title')}</TableHead>
-                                    <TableHead className="text-right">
-                                        {t('actions.view')}
-                                    </TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -119,7 +170,7 @@ export default function TeachersIndex({
                                 ) : (
                                     pagination.data.map((teacher) => (
                                         <TableRow key={teacher.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {teacher.name}
                                             </TableCell>
                                             <TableCell>
@@ -128,48 +179,36 @@ export default function TeachersIndex({
                                             <TableCell>
                                                 {teacher.assigned_batches_count}
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Link
-                                                        href={teachers.show(
-                                                            teacher.id,
-                                                        )}
-                                                    >
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                        >
-                                                            <Eye className="size-4" />
+                                            <TableCell className="p-1 text-center">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                            <EllipsisVertical className="size-4" />
                                                         </Button>
-                                                    </Link>
-                                                    {isAdmin && (
-                                                        <>
-                                                            <Link
-                                                                href={teachers.edit(
-                                                                    teacher.id,
-                                                                )}
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                >
-                                                                    <Pencil className="size-4" />
-                                                                </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={teachers.show(teacher.id)}>
+                                                                <Eye className="mr-2 size-4" />
+                                                                {t('actions.view')}
                                                             </Link>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    handleDelete(
-                                                                        teacher,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Trash2 className="size-4" />
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                </div>
+                                                        </DropdownMenuItem>
+                                                        {isAdmin && (
+                                                            <>
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={teachers.edit(teacher.id)}>
+                                                                        <Pencil className="mr-2 size-4" />
+                                                                        {t('actions.edit')}
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleDelete(teacher)} className="text-destructive">
+                                                                    <Trash2 className="mr-2 size-4" />
+                                                                    {t('actions.delete')}
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -177,60 +216,30 @@ export default function TeachersIndex({
                             </TableBody>
                         </Table>
 
-                        {pagination.last_page > 1 && (
-                            <div className="mt-4 flex items-center justify-between">
-                                <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of{' '}
-                                    {pagination.total} {t('teachers.title')}
-                                </p>
-                                <div className="flex gap-2">
-                                    {pagination.current_page > 1 && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    teachers.index(),
-                                                    {
-                                                        page:
-                                                            pagination.current_page -
-                                                            1,
-                                                        search,
-                                                    },
-                                                    { preserveState: true },
-                                                )
-                                            }
-                                        >
-                                            {t('actions.back')}
-                                        </Button>
-                                    )}
-                                    {pagination.current_page <
-                                        pagination.last_page && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    teachers.index(),
-                                                    {
-                                                        page:
-                                                            pagination.current_page +
-                                                            1,
-                                                        search,
-                                                    },
-                                                    { preserveState: true },
-                                                )
-                                            }
-                                        >
-                                            Next
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                        <Pagination
+                            currentPage={pagination.current_page}
+                            lastPage={pagination.last_page}
+                            total={pagination.total}
+                            perPage={pagination.per_page}
+                            itemName={t('teachers.title').toLowerCase() + 's'}
+                            baseUrl={teachers.index()}
+                            preserveParams={{ search }}
+                        />
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Deactivate Teacher"
+                description={`Are you sure you want to deactivate ${deleteDialog.item?.name}?`}
+                confirmText="Deactivate"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

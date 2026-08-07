@@ -1,9 +1,14 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { Plus, Search, Eye, Pencil, Trash2, X } from 'lucide-react';
-import type { Student } from '@/types';
 import Heading from '@/components/heading';
+import Pagination from '@/components/pagination';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -12,8 +17,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
     TableBody,
@@ -22,8 +25,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import students from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
+import students from '@/routes/students';
+import type { Student } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { EllipsisVertical, Eye, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 
 function formatDate(dateStr: string | null): string {
     if (!dateStr) {
@@ -62,6 +71,11 @@ export default function StudentsIndex({
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
+    const [refreshing, setRefreshing] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleSearch = () => {
         router.get(
@@ -81,8 +95,14 @@ export default function StudentsIndex({
     };
 
     const handleDelete = (student: Student) => {
-        if (confirm(`Are you sure you want to delete ${student.name}?`)) {
-            router.delete(students.destroy(student.id));
+        setDeleteDialog({ open: true, item: student });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(students.destroy(deleteDialog.item.id));
+            toast.success('Student deleted successfully');
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -166,13 +186,29 @@ export default function StudentsIndex({
                                         {t('actions.search')}
                                     </span>
                                 </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={refreshing}
+                                    onClick={() => {
+                                        setRefreshing(true);
+                                        router.reload({
+                                            only: ['students'],
+                                            onFinish: () => setRefreshing(false),
+                                        });
+                                    }}
+                                >
+                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
+                                </Button>
                             </div>
                         </div>
 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>{t('students.name')}</TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                        {t('students.name')}
+                                    </TableHead>
                                     <TableHead>{t('students.class')}</TableHead>
                                     <TableHead>{t('students.phone')}</TableHead>
                                     <TableHead>
@@ -184,9 +220,7 @@ export default function StudentsIndex({
                                     <TableHead>
                                         {t('students.status')}
                                     </TableHead>
-                                    <TableHead className="text-right">
-                                        {t('actions.view')}
-                                    </TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -203,7 +237,7 @@ export default function StudentsIndex({
                                 ) : (
                                     pagination.data.map((student) => (
                                         <TableRow key={student.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {student.name}
                                             </TableCell>
                                             <TableCell>
@@ -232,48 +266,36 @@ export default function StudentsIndex({
                                                     {student.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Link
-                                                        href={students.show(
-                                                            student.id,
-                                                        )}
-                                                    >
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                        >
-                                                            <Eye className="size-4" />
+                                            <TableCell className="p-1 text-center">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                            <EllipsisVertical className="size-4" />
                                                         </Button>
-                                                    </Link>
-                                                    {isAdmin && (
-                                                        <>
-                                                            <Link
-                                                                href={students.edit(
-                                                                    student.id,
-                                                                )}
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                >
-                                                                    <Pencil className="size-4" />
-                                                                </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={students.show(student.id)}>
+                                                                <Eye className="mr-2 size-4" />
+                                                                {t('actions.view')}
                                                             </Link>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    handleDelete(
-                                                                        student,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Trash2 className="size-4" />
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                </div>
+                                                        </DropdownMenuItem>
+                                                        {isAdmin && (
+                                                            <>
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={students.edit(student.id)}>
+                                                                        <Pencil className="mr-2 size-4" />
+                                                                        {t('actions.edit')}
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleDelete(student)} className="text-destructive">
+                                                                    <Trash2 className="mr-2 size-4" />
+                                                                    {t('actions.delete')}
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -281,62 +303,30 @@ export default function StudentsIndex({
                             </TableBody>
                         </Table>
 
-                        {pagination.last_page > 1 && (
-                            <div className="mt-4 flex items-center justify-between">
-                                <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of{' '}
-                                    {pagination.total} {t('students.title')}
-                                </p>
-                                <div className="flex gap-2">
-                                    {pagination.current_page > 1 && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    students.index(),
-                                                    {
-                                                        page:
-                                                            pagination.current_page -
-                                                            1,
-                                                        search,
-                                                        status,
-                                                    },
-                                                    { preserveState: true },
-                                                )
-                                            }
-                                        >
-                                            {t('actions.back')}
-                                        </Button>
-                                    )}
-                                    {pagination.current_page <
-                                        pagination.last_page && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    students.index(),
-                                                    {
-                                                        page:
-                                                            pagination.current_page +
-                                                            1,
-                                                        search,
-                                                        status,
-                                                    },
-                                                    { preserveState: true },
-                                                )
-                                            }
-                                        >
-                                            Next
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                        <Pagination
+                            currentPage={pagination.current_page}
+                            lastPage={pagination.last_page}
+                            total={pagination.total}
+                            perPage={pagination.per_page}
+                            itemName={t('students.title').toLowerCase() + 's'}
+                            baseUrl={students.index()}
+                            preserveParams={{ search, status }}
+                        />
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Delete Student"
+                description={`Are you sure you want to delete ${deleteDialog.item?.name}?`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

@@ -64,7 +64,7 @@ export default function AttendanceCreate({
             router.get(
                 attendance.create(),
                 { batch_id: value, date },
-                { preserveState: true, replace: true },
+                { preserveState: false, replace: true },
             );
         }
     };
@@ -76,7 +76,7 @@ export default function AttendanceCreate({
             router.get(
                 attendance.create(),
                 { batch_id: batchId, date: value },
-                { preserveState: true, replace: true },
+                { preserveState: false, replace: true },
             );
         }
     };
@@ -128,8 +128,8 @@ export default function AttendanceCreate({
 
                 <Card>
                     <CardHeader>
-                        <div className="flex flex-col gap-4">
-                            <div className="w-full space-y-2">
+                        <div className="flex flex-col gap-4 sm:flex-row">
+                            <div className="flex-1 space-y-2">
                                 <Label>{t('attendance.batch')}</Label>
                                 <Select
                                     value={batchId}
@@ -166,145 +166,145 @@ export default function AttendanceCreate({
                     <CardContent>
                         {batchId && studentList.length > 0 ? (
                             <>
-                                <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+                                <div className="mb-4 flex flex-wrap gap-2">
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        className="w-full sm:w-auto"
+                                        className="flex-1 sm:flex-none"
                                         onClick={() => markAll('present')}
                                     >
                                         {t('attendance.mark_all_present')}
                                     </Button>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="flex-1 sm:flex-none"
-                                            onClick={() => markAll('absent')}
-                                        >
-                                            {t('attendance.mark_all_absent')}
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="flex-1 sm:flex-none"
-                                            onClick={() => markAll(null)}
-                                        >
-                                            {t('attendance.clear_all')}
-                                        </Button>
-                                    </div>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none"
+                                        onClick={() => markAll('absent')}
+                                    >
+                                        {t('attendance.mark_all_absent')}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none"
+                                        onClick={() => markAll(null)}
+                                    >
+                                        {t('attendance.clear_all')}
+                                    </Button>
                                 </div>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>
-                                                {t('attendance.student')}
-                                            </TableHead>
-                                            <TableHead>
-                                                {t('attendance.status')}
-                                            </TableHead>
-                                            <TableHead className="hidden sm:table-cell">
-                                                {t('attendance.notes')}
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {studentList.map((student) => (
-                                            <TableRow key={student.id}>
-                                                <TableCell className="font-medium">
-                                                    {student.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="grid grid-cols-3 gap-1 sm:flex sm:flex-wrap sm:gap-1">
-                                                        <Button
-                                                            size="sm"
-                                                            variant={
-                                                                student.status ===
-                                                                'present'
-                                                                    ? 'default'
-                                                                    : 'outline'
-                                                            }
-                                                            className="w-full sm:w-auto"
-                                                            onClick={() =>
-                                                                updateStatus(
-                                                                    student.id,
-                                                                    'present',
-                                                                )
-                                                            }
-                                                        >
-                                                            P
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant={
-                                                                student.status ===
-                                                                'absent'
-                                                                    ? 'destructive'
-                                                                    : 'outline'
-                                                            }
-                                                            className="w-full sm:w-auto"
-                                                            onClick={() =>
-                                                                updateStatus(
-                                                                    student.id,
-                                                                    'absent',
-                                                                )
-                                                            }
-                                                        >
-                                                            A
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant={
-                                                                student.status ===
-                                                                'late'
-                                                                    ? 'secondary'
-                                                                    : 'outline'
-                                                            }
-                                                            className="w-full sm:w-auto"
-                                                            onClick={() =>
-                                                                updateStatus(
-                                                                    student.id,
-                                                                    'late',
-                                                                )
-                                                            }
-                                                        >
-                                                            L
-                                                        </Button>
-                                                        {student.status !==
-                                                            null && (
+                                <div className="overflow-x-auto">
+                                    <Table className="min-w-[400px]">
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="sticky left-0 bg-background z-10">
+                                                    {t('attendance.student')}
+                                                </TableHead>
+                                                <TableHead>
+                                                    {t('attendance.status')}
+                                                </TableHead>
+                                                <TableHead>
+                                                    {t('attendance.notes')}
+                                                </TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {studentList.map((student) => (
+                                                <TableRow key={student.id}>
+                                                    <TableCell className="sticky left-0 bg-background font-medium z-10">
+                                                        {student.name}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-1">
                                                             <Button
                                                                 size="sm"
-                                                                variant="ghost"
-                                                                className="col-span-3 w-full px-2 sm:col-span-1 sm:w-auto"
+                                                                variant={
+                                                                    student.status ===
+                                                                    'present'
+                                                                        ? 'default'
+                                                                        : 'outline'
+                                                                }
+                                                                className="w-full sm:w-auto"
                                                                 onClick={() =>
                                                                     updateStatus(
                                                                         student.id,
-                                                                        null,
+                                                                        'present',
                                                                     )
                                                                 }
                                                             >
-                                                                ✕
+                                                                P
                                                             </Button>
-                                                        )}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="hidden sm:table-cell">
-                                                    <Input
-                                                        placeholder="Optional notes..."
-                                                        value={student.notes}
-                                                        onChange={(e) =>
-                                                            updateNotes(
-                                                                student.id,
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        className="w-full sm:w-[250px]"
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                                            <Button
+                                                                size="sm"
+                                                                variant={
+                                                                    student.status ===
+                                                                    'absent'
+                                                                        ? 'destructive'
+                                                                        : 'outline'
+                                                                }
+                                                                className="w-full sm:w-auto"
+                                                                onClick={() =>
+                                                                    updateStatus(
+                                                                        student.id,
+                                                                        'absent',
+                                                                    )
+                                                                }
+                                                            >
+                                                                A
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant={
+                                                                    student.status ===
+                                                                    'late'
+                                                                        ? 'secondary'
+                                                                        : 'outline'
+                                                                }
+                                                                className="w-full sm:w-auto"
+                                                                onClick={() =>
+                                                                    updateStatus(
+                                                                        student.id,
+                                                                        'late',
+                                                                    )
+                                                                }
+                                                            >
+                                                                L
+                                                            </Button>
+                                                            {student.status !==
+                                                                null && (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    className="px-2"
+                                                                    onClick={() =>
+                                                                        updateStatus(
+                                                                            student.id,
+                                                                            null,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    ✕
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Input
+                                                            placeholder="Notes..."
+                                                            value={student.notes}
+                                                            onChange={(e) =>
+                                                                updateNotes(
+                                                                    student.id,
+                                                                    e.target.value,
+                                                                )
+                                                            }
+                                                            className="w-full"
+                                                        />
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
 
                                 <div className="mt-4 flex justify-end gap-2">
                                     <Button

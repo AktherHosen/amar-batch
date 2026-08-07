@@ -3,6 +3,8 @@
 @import 'tw-animate-css';
 
 @source '../views';
+@source '../components/ui/badge.tsx';
+@source '../components/ui/button.tsx';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
 @custom-variant dark (&:is(.dark *));

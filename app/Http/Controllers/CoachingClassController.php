@@ -22,7 +22,7 @@ class CoachingClassController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
-        $classes = $query->orderBy('name')->paginate(15)->withQueryString();
+        $classes = $query->orderBy('name')->paginate(10)->withQueryString();
 
         return Inertia::render('coaching-classes/index', [
             'classes' => $classes,

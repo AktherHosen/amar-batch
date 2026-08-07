@@ -1,7 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -44,10 +53,20 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleDelete = () => {
-        if (confirm(`Are you sure you want to deactivate ${teacher.name}?`)) {
-            router.delete(teachers.destroy(teacher.id));
+        setDeleteDialog({ open: true, item: teacher });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(teachers.destroy(deleteDialog.item.id));
+            toast.success('Teacher deactivated successfully');
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -137,9 +156,7 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                         <TableHead>
                                             {t('students.status')}
                                         </TableHead>
-                                        <TableHead className="text-right">
-                                            {t('actions.view')}
-                                        </TableHead>
+                                        <TableHead className="w-[50px]"></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -169,19 +186,21 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                                     {batch.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <Link
-                                                    href={batches.show(
-                                                        batch.id,
-                                                    )}
-                                                >
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                    >
-                                                        {t('actions.view')}
-                                                    </Button>
-                                                </Link>
+                                            <TableCell className="p-1 text-center">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                            <EllipsisVertical className="size-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={batches.show(batch.id)}>
+                                                                {t('actions.view')}
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -195,6 +214,18 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Deactivate Teacher"
+                description={`Are you sure you want to deactivate ${deleteDialog.item?.name}?`}
+                confirmText="Deactivate"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

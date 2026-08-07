@@ -22,7 +22,7 @@ class UpdateBatchRequest extends FormRequest
             'capacity' => ['required', 'integer', 'min:1'],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'status' => ['sometimes', 'in:active,inactive,archived'],
+            'status' => ['sometimes', 'in:active,inactive,archived,completed'],
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBatchRequest;
 use App\Http\Requests\UpdateBatchRequest;
 use App\Models\Batch;
+use App\Models\BatchHistory;
 use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\User;
@@ -40,7 +41,7 @@ class BatchController extends Controller
             $query->where('status', $status);
         }
 
-        $batches = $query->latest()->paginate(15)->withQueryString();
+        $batches = $query->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('batches/index', [
             'batches' => $batches,
@@ -68,7 +69,7 @@ class BatchController extends Controller
     {
         $this->authorize('view', $batch);
 
-        $batch->load(['enrollments.student.coachingClass', 'teachers']);
+        $batch->load(['enrollments.student.coachingClass', 'teachers', 'history.student', 'history.user']);
 
         $teachers = User::where('role', 'teacher')->get();
         $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
@@ -146,5 +147,27 @@ class BatchController extends Controller
         $batch->teachers()->detach($request->teacher_id);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Teacher removed from batch.']);
+    }
+
+    public function complete(Batch $batch): RedirectResponse
+    {
+        $this->authorize('update', $batch);
+
+        $batch->update(['status' => 'completed']);
+
+        $activeEnrollments = $batch->enrollments()->where('status', 'active')->get();
+        foreach ($activeEnrollments as $enrollment) {
+            $enrollment->update(['status' => 'completed']);
+            BatchHistory::create([
+                'batch_id' => $batch->id,
+                'student_id' => $enrollment->student_id,
+                'action' => 'completed',
+                'action_date' => now()->toDateString(),
+                'user_id' => request()->user()->id,
+                'notes' => 'Batch completed',
+            ]);
+        }
+
+        return back()->with('toast', ['type' => 'success', 'message' => 'Batch completed successfully.']);
     }
 }

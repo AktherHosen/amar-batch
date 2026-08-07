@@ -1,7 +1,10 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, Search, Trash2, X } from 'lucide-react';
+import { EllipsisVertical, PenLine, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
+import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,6 +16,12 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Table,
     TableBody,
@@ -65,6 +74,11 @@ export default function AttendanceIndex({
     const isTeacher = auth.user.role === 'teacher';
     const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [date, setDate] = useState(filters.date || '');
+    const [refreshing, setRefreshing] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleFilter = () => {
         router.get(
@@ -75,10 +89,14 @@ export default function AttendanceIndex({
     };
 
     const handleDelete = (record: AttendanceRecord) => {
-        if (
-            confirm('Are you sure you want to delete this attendance record?')
-        ) {
-            router.delete(attendance.destroy(record.id));
+        setDeleteDialog({ open: true, item: record });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(attendance.destroy(deleteDialog.item.id));
+            toast.success('Attendance record deleted successfully');
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -177,6 +195,20 @@ export default function AttendanceIndex({
                                         {t('actions.search')}
                                     </span>
                                 </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={refreshing}
+                                    onClick={() => {
+                                        setRefreshing(true);
+                                        router.reload({
+                                            only: ['records'],
+                                            onFinish: () => setRefreshing(false),
+                                        });
+                                    }}
+                                >
+                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
+                                </Button>
                             </div>
                         </div>
                     </CardHeader>
@@ -184,7 +216,7 @@ export default function AttendanceIndex({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
                                         {t('attendance.student')}
                                     </TableHead>
                                     <TableHead>
@@ -200,9 +232,7 @@ export default function AttendanceIndex({
                                         {t('attendance.notes')}
                                     </TableHead>
                                     {(isAdmin || isTeacher) && (
-                                        <TableHead className="text-right">
-                                            {t('actions.view')}
-                                        </TableHead>
+                                        <TableHead className="w-[50px]"></TableHead>
                                     )}
                                 </TableRow>
                             </TableHeader>
@@ -222,7 +252,7 @@ export default function AttendanceIndex({
                                 ) : (
                                     pagination.data.map((record) => (
                                         <TableRow key={record.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {record.student.name}
                                             </TableCell>
                                             <TableCell>
@@ -246,16 +276,24 @@ export default function AttendanceIndex({
                                                 {record.notes || '-'}
                                             </TableCell>
                                             {(isAdmin || isTeacher) && (
-                                                <TableCell className="text-right">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleDelete(record)
-                                                        }
-                                                    >
-                                                        <Trash2 className="size-4" />
-                                                    </Button>
+                                                <TableCell className="p-1 text-center">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                                <EllipsisVertical className="size-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => router.get(attendance.edit(record.id))}>
+                                                                <PenLine className="mr-2 size-4" />
+                                                                Edit
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(record)}>
+                                                                <Trash2 className="mr-2 size-4" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </TableCell>
                                             )}
                                         </TableRow>
@@ -264,62 +302,30 @@ export default function AttendanceIndex({
                             </TableBody>
                         </Table>
 
-                        {pagination.last_page > 1 && (
-                            <div className="mt-4 flex items-center justify-between">
-                                <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of{' '}
-                                    {pagination.total} {t('attendance.title')}
-                                </p>
-                                <div className="flex gap-2">
-                                    {pagination.current_page > 1 && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    attendance.index(),
-                                                    {
-                                                        page:
-                                                            pagination.current_page -
-                                                            1,
-                                                        batch_id: batchId,
-                                                        date,
-                                                    },
-                                                    { preserveState: true },
-                                                )
-                                            }
-                                        >
-                                            {t('actions.back')}
-                                        </Button>
-                                    )}
-                                    {pagination.current_page <
-                                        pagination.last_page && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    attendance.index(),
-                                                    {
-                                                        page:
-                                                            pagination.current_page +
-                                                            1,
-                                                        batch_id: batchId,
-                                                        date,
-                                                    },
-                                                    { preserveState: true },
-                                                )
-                                            }
-                                        >
-                                            Next
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                        <Pagination
+                            currentPage={pagination.current_page}
+                            lastPage={pagination.last_page}
+                            total={pagination.total}
+                            perPage={pagination.per_page}
+                            itemName={t('attendance.title').toLowerCase() + 's'}
+                            baseUrl={attendance.index()}
+                            preserveParams={{ batch_id: batchId, date }}
+                        />
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Delete Attendance Record"
+                description="Are you sure you want to delete this attendance record?"
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

@@ -1,8 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { ArrowLeft, Pencil, Trash2, UserMinus } from 'lucide-react';
+import { toast } from 'sonner';
+import { ArrowLeft, EllipsisVertical, Pencil, Trash2, UserMinus } from 'lucide-react';
 import Heading from '@/components/heading';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -37,6 +45,7 @@ type Student = {
     id: number;
     name: string;
     coaching_class: { id: number; name: string } | null;
+    joined_at: string | null;
 };
 
 type Enrollment = {
@@ -44,6 +53,16 @@ type Enrollment = {
     student: Student;
     status: string;
     enrolled_at: string;
+};
+
+type BatchHistory = {
+    id: number;
+    student: Student | null;
+    user: { name: string } | null;
+    action: string;
+    action_date: string | null;
+    notes: string | null;
+    created_at: string;
 };
 
 type Batch = {
@@ -58,6 +77,7 @@ type Batch = {
     status: string;
     enrollments: Enrollment[];
     teachers: Teacher[];
+    history: BatchHistory[];
 };
 
 type BatchesShowProps = {
@@ -80,11 +100,20 @@ export default function BatchesShow({
     const [selectedStudent, setSelectedStudent] = useState('');
     const [teacherSearch, setTeacherSearch] = useState('');
     const [studentSearch, setStudentSearch] = useState('');
+    const [enrollmentDate, setEnrollmentDate] = useState(new Date().toISOString().split('T')[0]);
+    const [deleteDialog, setDeleteDialog] = useState(false);
+    const [removeTeacherDialog, setRemoveTeacherDialog] = useState<{ open: boolean; teacherId: number | null }>({ open: false, teacherId: null });
+    const [unenrollDialog, setUnenrollDialog] = useState<{ open: boolean; enrollmentId: number | null }>({ open: false, enrollmentId: null });
 
     const handleDelete = () => {
-        if (confirm(`Are you sure you want to delete ${batch.name}?`)) {
-            router.delete(batches.destroy(batch.id));
-        }
+        setDeleteDialog(true);
+    };
+
+    const confirmDelete = () => {
+        router.delete(batches.destroy(batch.id), {
+            onSuccess: () => toast.success('Batch deleted successfully'),
+        });
+        setDeleteDialog(false);
     };
 
     const handleAssignTeacher = () => {
@@ -103,12 +132,18 @@ export default function BatchesShow({
     };
 
     const handleRemoveTeacher = (teacherId: number) => {
-        if (confirm('Are you sure you want to remove this teacher?')) {
+        setRemoveTeacherDialog({ open: true, teacherId });
+    };
+
+    const confirmRemoveTeacher = () => {
+        if (removeTeacherDialog.teacherId) {
             router.delete(batches.removeTeacher(batch.id), {
-                data: { teacher_id: teacherId },
+                data: { teacher_id: removeTeacherDialog.teacherId },
                 preserveScroll: true,
+                onSuccess: () => toast.success('Teacher removed successfully'),
             });
         }
+        setRemoveTeacherDialog({ open: false, teacherId: null });
     };
 
     const handleEnrollStudent = () => {
@@ -118,10 +153,14 @@ export default function BatchesShow({
 
         router.post(
             `/batches/${batch.id}/enroll`,
-            { student_id: parseInt(selectedStudent) },
+            { student_id: parseInt(selectedStudent), enrolled_at: enrollmentDate },
             {
                 preserveScroll: true,
-                onSuccess: () => setSelectedStudent(''),
+                only: ['batch', 'enrolledStudentIds'],
+                onSuccess: () => {
+                    setSelectedStudent('');
+                    setEnrollmentDate(new Date().toISOString().split('T')[0]);
+                },
             },
         );
     };
@@ -140,21 +179,27 @@ export default function BatchesShow({
     };
 
     const handleUnenroll = (enrollmentId: number) => {
-        if (confirm('Are you sure you want to unenroll this student?')) {
-            router.delete(`/enrollments/${enrollmentId}`, {
+        setUnenrollDialog({ open: true, enrollmentId });
+    };
+
+    const confirmUnenroll = () => {
+        if (unenrollDialog.enrollmentId) {
+            router.delete(`/enrollments/${unenrollDialog.enrollmentId}`, {
                 preserveScroll: true,
+                onSuccess: () => toast.success('Student unenrolled successfully'),
             });
         }
+        setUnenrollDialog({ open: false, enrollmentId: null });
     };
 
     const getStatusBadge = (status: string) => {
         const variants: Record<
             string,
-            'default' | 'secondary' | 'destructive'
+            'default' | 'secondary' | 'destructive' | 'success' | 'danger'
         > = {
             active: 'default',
-            completed: 'secondary',
-            dropped: 'destructive',
+            completed: 'success',
+            dropped: 'danger',
         };
 
         return variants[status] || 'secondary';
@@ -173,19 +218,15 @@ export default function BatchesShow({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                         <Link href={batches.index()}>
-                            <Button variant="ghost" size="sm">
-                                <ArrowLeft className="mr-2 size-4" />
-                                {t('actions.back')}
+                            <Button variant="ghost" size="icon" className="size-9">
+                                <ArrowLeft className="size-4" />
                             </Button>
                         </Link>
-                        <Heading
-                            title={batch.name}
-                            description={t('batches.title')}
-                        />
+                        <h1 className="text-lg font-bold tracking-tight sm:text-2xl">{batch.name}</h1>
                     </div>
-                    {isAdmin && (
+                    {isAdmin && batch.status !== 'completed' && (
                         <div className="flex gap-2">
                             <Link href={batches.edit(batch.id)}>
                                 <Button variant="outline">
@@ -209,42 +250,44 @@ export default function BatchesShow({
                         <CardHeader>
                             <CardTitle>{t('batches.title')}</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.name')}
-                                </p>
-                                <p className="font-medium">{batch.name}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.subject')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.subject || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.capacity')}
-                                </p>
-                                <p className="font-medium">{batch.capacity}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.enrolled')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.enrollments.length}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.status')}
-                                </p>
-                                <Badge variant={getStatusBadge(batch.status)}>
-                                    {batch.status}
-                                </Badge>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.name')}
+                                    </p>
+                                    <p className="text-sm font-medium">{batch.name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.subject')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.subject || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.capacity')}
+                                    </p>
+                                    <p className="text-sm font-medium">{batch.capacity}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.enrolled')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.enrollments.length}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('students.status')}
+                                    </p>
+                                    <Badge variant={getStatusBadge(batch.status)}>
+                                        {batch.status}
+                                    </Badge>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -253,52 +296,54 @@ export default function BatchesShow({
                         <CardHeader>
                             <CardTitle>{t('batches.schedule')}</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.joined_at')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.start_date
-                                        ? new Date(
-                                              batch.start_date,
-                                          ).toLocaleDateString()
-                                        : '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('students.left_at')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.end_date
-                                        ? new Date(
-                                              batch.end_date,
-                                          ).toLocaleDateString()
-                                        : '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.schedule')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.days || '-'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.schedule')}
-                                </p>
-                                <p className="font-medium">
-                                    {batch.time || '-'}
-                                </p>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.schedule')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.days || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Time
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.time || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Start Date
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.start_date
+                                            ? new Date(
+                                                  batch.start_date,
+                                              ).toLocaleDateString()
+                                            : '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        End Date
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {batch.end_date
+                                            ? new Date(
+                                                  batch.end_date,
+                                              ).toLocaleDateString()
+                                            : '-'}
+                                    </p>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {isAdmin && (
+                {isAdmin && batch.status !== 'completed' && (
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('teachers.title')}</CardTitle>
@@ -314,9 +359,7 @@ export default function BatchesShow({
                                             <TableHead>
                                                 {t('teachers.email')}
                                             </TableHead>
-                                            <TableHead className="text-right">
-                                                {t('actions.view')}
-                                            </TableHead>
+                                            <TableHead className="w-[50px]"></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -328,18 +371,20 @@ export default function BatchesShow({
                                                 <TableCell>
                                                     {teacher.email}
                                                 </TableCell>
-                                                <TableCell className="text-right">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleRemoveTeacher(
-                                                                teacher.id,
-                                                            )
-                                                        }
-                                                    >
-                                                        <UserMinus className="size-4" />
-                                                    </Button>
+                                                <TableCell className="p-1 text-center">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                                <EllipsisVertical className="size-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => handleRemoveTeacher(teacher.id)} className="text-destructive">
+                                                                <UserMinus className="mr-2 size-4" />
+                                                                Remove
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -405,7 +450,7 @@ export default function BatchesShow({
                     </Card>
                 )}
 
-                {(isAdmin || auth.user.role === 'teacher') && (
+                {(isAdmin || auth.user.role === 'teacher') && batch.status !== 'completed' && (
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('students.title')}</CardTitle>
@@ -435,7 +480,7 @@ export default function BatchesShow({
                                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none"
                                         />
                                         {availableStudents.length > 0 ? (
-                                            <div className="flex gap-2">
+                                            <div className="flex flex-col gap-2 sm:flex-row">
                                                 <Select
                                                     value={selectedStudent}
                                                     onValueChange={
@@ -468,6 +513,12 @@ export default function BatchesShow({
                                                         )}
                                                     </SelectContent>
                                                 </Select>
+                                                <input
+                                                    type="date"
+                                                    value={enrollmentDate}
+                                                    onChange={(e) => setEnrollmentDate(e.target.value)}
+                                                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                                />
                                                 <Button
                                                     onClick={
                                                         handleEnrollStudent
@@ -512,6 +563,9 @@ export default function BatchesShow({
                                             {t('students.class')}
                                         </TableHead>
                                         <TableHead>
+                                            Enrolled At
+                                        </TableHead>
+                                        <TableHead>
                                             {t('students.joined_at')}
                                         </TableHead>
                                         <TableHead>
@@ -519,9 +573,7 @@ export default function BatchesShow({
                                         </TableHead>
                                         {(isAdmin ||
                                             auth.user.role === 'teacher') && (
-                                            <TableHead className="text-right">
-                                                {t('actions.view')}
-                                            </TableHead>
+                                            <TableHead className="w-[50px]"></TableHead>
                                         )}
                                     </TableRow>
                                 </TableHeader>
@@ -542,6 +594,13 @@ export default function BatchesShow({
                                                 ).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell>
+                                                {enrollment.student.joined_at
+                                                    ? new Date(
+                                                          enrollment.student.joined_at,
+                                                      ).toLocaleDateString()
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell>
                                                 <Badge
                                                     variant={getStatusBadge(
                                                         enrollment.status,
@@ -553,49 +612,30 @@ export default function BatchesShow({
                                             {(isAdmin ||
                                                 auth.user.role ===
                                                     'teacher') && (
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        {enrollment.status ===
-                                                            'active' && (
-                                                            <>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleUpdateEnrollmentStatus(
-                                                                            enrollment.id,
-                                                                            'completed',
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Complete
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleUpdateEnrollmentStatus(
-                                                                            enrollment.id,
-                                                                            'dropped',
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Drop
-                                                                </Button>
-                                                            </>
-                                                        )}
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleUnenroll(
-                                                                    enrollment.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            <UserMinus className="size-4" />
-                                                        </Button>
-                                                    </div>
+                                                <TableCell className="p-1 text-center">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                                <EllipsisVertical className="size-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            {enrollment.status === 'active' && (
+                                                                <>
+                                                                    <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'completed')}>
+                                                                        Complete
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'dropped')}>
+                                                                        Drop
+                                                                    </DropdownMenuItem>
+                                                                </>
+                                                            )}
+                                                            <DropdownMenuItem onClick={() => handleUnenroll(enrollment.id)} className="text-destructive">
+                                                                <UserMinus className="mr-2 size-4" />
+                                                                Unenroll
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </TableCell>
                                             )}
                                         </TableRow>
@@ -609,7 +649,85 @@ export default function BatchesShow({
                         )}
                     </CardContent>
                 </Card>
+
+                {batch.history && batch.history.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>History</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Student</TableHead>
+                                        <TableHead>Action</TableHead>
+                                        <TableHead>By</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {batch.history.map((item) => (
+                                        <TableRow key={item.id}>
+                                            <TableCell>
+                                                {item.action_date
+                                                    ? new Date(item.action_date).toLocaleDateString()
+                                                    : new Date(item.created_at).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {item.student?.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant={
+                                                        item.action === 'enrolled' ? 'default' :
+                                                        item.action === 'completed' ? 'success' :
+                                                        'danger'
+                                                    }
+                                                >
+                                                    {item.action}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {item.user?.name}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog}
+                onOpenChange={setDeleteDialog}
+                title="Delete Batch"
+                description={`Are you sure you want to delete "${batch.name}"? This action cannot be undone.`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
+
+            <ConfirmDialog
+                open={removeTeacherDialog.open}
+                onOpenChange={(open) => setRemoveTeacherDialog({ open, teacherId: null })}
+                title="Remove Teacher"
+                description="Are you sure you want to remove this teacher from the batch?"
+                confirmText="Remove"
+                variant="destructive"
+                onConfirm={confirmRemoveTeacher}
+            />
+
+            <ConfirmDialog
+                open={unenrollDialog.open}
+                onOpenChange={(open) => setUnenrollDialog({ open, enrollmentId: null })}
+                title="Unenroll Student"
+                description="Are you sure you want to unenroll this student from the batch?"
+                confirmText="Unenroll"
+                variant="destructive"
+                onConfirm={confirmUnenroll}
+            />
         </>
     );
 }

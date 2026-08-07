@@ -57,6 +57,39 @@ class DashboardController extends Controller
 
         $recentStudents = Student::with('coachingClass')->latest()->take(5)->get();
 
+        $batchHistory = [
+            'completed' => Batch::where('status', 'completed')->count(),
+            'active' => Batch::where('status', 'active')->count(),
+        ];
+
+        $attendanceTrend = collect(range(5, 0))->map(function ($i) {
+            $date = now()->subMonths($i);
+            return [
+                'month' => $date->format('M Y'),
+                'present' => Attendance::whereDate('date', $date)->where('status', 'present')->count(),
+                'absent' => Attendance::whereDate('date', $date)->where('status', 'absent')->count(),
+                'late' => Attendance::whereDate('date', $date)->where('status', 'late')->count(),
+            ];
+        });
+
+        $enrollmentTrend = collect(range(5, 0))->map(function ($i) {
+            $date = now()->subMonths($i);
+            return [
+                'month' => $date->format('M Y'),
+                'enrollments' => Enrollment::whereMonth('created_at', $date->month)
+                    ->whereYear('created_at', $date->year)->count(),
+            ];
+        });
+
+        $feeTrend = collect(range(5, 0))->map(function ($i) {
+            $date = now()->subMonths($i);
+            return [
+                'month' => $date->format('M Y'),
+                'collected' => (float) FeeStatus::whereMonth('created_at', $date->month)
+                    ->whereYear('created_at', $date->year)->sum('amount_paid'),
+            ];
+        });
+
         return Inertia::render('dashboard', [
             'stats' => $stats,
             'feeStats' => $feeStats,
@@ -64,6 +97,10 @@ class DashboardController extends Controller
             'recentFeePayments' => $recentFeePayments,
             'todayAttendance' => $todayAttendance,
             'recentStudents' => $recentStudents,
+            'batchHistory' => $batchHistory,
+            'attendanceTrend' => $attendanceTrend,
+            'enrollmentTrend' => $enrollmentTrend,
+            'feeTrend' => $feeTrend,
         ]);
     }
 
@@ -128,6 +165,44 @@ class DashboardController extends Controller
                 ->get();
         }
 
+        $batchHistory = [
+            'completed' => Batch::whereIn('id', $assignedBatchIds)->where('status', 'completed')->count(),
+            'active' => Batch::whereIn('id', $assignedBatchIds)->where('status', 'active')->count(),
+        ];
+
+        $attendanceTrend = collect(range(5, 0))->map(function ($i) use ($assignedBatchIds) {
+            $date = now()->subMonths($i);
+            return [
+                'month' => $date->format('M Y'),
+                'present' => Attendance::whereDate('date', $date)->where('status', 'present')
+                    ->whereIn('batch_id', $assignedBatchIds)->count(),
+                'absent' => Attendance::whereDate('date', $date)->where('status', 'absent')
+                    ->whereIn('batch_id', $assignedBatchIds)->count(),
+                'late' => Attendance::whereDate('date', $date)->where('status', 'late')
+                    ->whereIn('batch_id', $assignedBatchIds)->count(),
+            ];
+        });
+
+        $enrollmentTrend = collect(range(5, 0))->map(function ($i) use ($assignedBatchIds) {
+            $date = now()->subMonths($i);
+            return [
+                'month' => $date->format('M Y'),
+                'enrollments' => Enrollment::whereIn('batch_id', $assignedBatchIds)
+                    ->whereMonth('created_at', $date->month)
+                    ->whereYear('created_at', $date->year)->count(),
+            ];
+        });
+
+        $feeTrend = collect(range(5, 0))->map(function ($i) use ($assignedBatchIds) {
+            $date = now()->subMonths($i);
+            return [
+                'month' => $date->format('M Y'),
+                'collected' => (float) FeeStatus::whereIn('batch_id', $assignedBatchIds)
+                    ->whereMonth('created_at', $date->month)
+                    ->whereYear('created_at', $date->year)->sum('amount_paid'),
+            ];
+        });
+
         return Inertia::render('dashboard', [
             'stats' => $stats,
             'feeStats' => $feeStats,
@@ -136,6 +211,10 @@ class DashboardController extends Controller
             'todayAttendance' => $todayAttendance,
             'recentStudents' => $recentStudents,
             'assignedBatches' => $assignedBatches,
+            'batchHistory' => $batchHistory,
+            'attendanceTrend' => $attendanceTrend,
+            'enrollmentTrend' => $enrollmentTrend,
+            'feeTrend' => $feeTrend,
         ]);
     }
 }

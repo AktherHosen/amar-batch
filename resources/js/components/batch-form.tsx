@@ -168,6 +168,7 @@ export default function BatchForm({
                     <Select
                         value={data.status}
                         onValueChange={(value) => setData('status', value)}
+                        disabled={batch?.status === 'completed'}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select status" />
@@ -178,6 +179,9 @@ export default function BatchForm({
                             <SelectItem value="archived">Archived</SelectItem>
                         </SelectContent>
                     </Select>
+                    {batch?.status === 'completed' && (
+                        <p className="text-xs text-muted-foreground">Completed batches cannot be reopened.</p>
+                    )}
                     <InputError message={errors.status} />
                 </div>
             </div>
