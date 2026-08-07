@@ -18,7 +18,7 @@ class User extends Authenticatable implements PasskeyUser
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'student_id',
+        'name', 'email', 'password', 'role', 'student_id', 'is_approved',
     ];
 
     protected $hidden = [
@@ -31,6 +31,7 @@ class User extends Authenticatable implements PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'is_approved' => 'boolean',
         ];
     }
 
@@ -61,5 +62,10 @@ class User extends Authenticatable implements PasskeyUser
     public function isStudent(): bool
     {
         return $this->role === 'student';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->is_approved;
     }
 }

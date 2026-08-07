@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('batch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
             $table->string('action'); // enrolled, dropped, completed, moved
+            $table->date('action_date')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->text('notes')->nullable();
             $table->timestamps();

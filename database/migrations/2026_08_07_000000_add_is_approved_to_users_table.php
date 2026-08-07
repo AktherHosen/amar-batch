@@ -6,20 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'teacher', 'student'])->default('teacher')->after('email');
-            $table->foreignId('student_id')->nullable()->after('role')->constrained()->nullOnDelete();
+            $table->boolean('is_approved')->default(false)->after('role');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-            $table->dropForeign(['student_id']);
-            $table->dropColumn('student_id');
+            $table->dropColumn('is_approved');
         });
     }
 };
