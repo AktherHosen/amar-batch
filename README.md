@@ -9,6 +9,7 @@ A Laravel + Inertia.js application for managing coaching centers with role-based
 | Backend | Laravel 13 + PHP 8.3 |
 | Frontend | React 19 + TypeScript 5.7 + Inertia.js 3 |
 | UI | Tailwind CSS 4 + shadcn/ui (New York variant) |
+| Charts | Chart.js + react-chartjs-2 |
 | Auth | Laravel Fortify (passkeys, 2FA, password reset) |
 | Routing | Wayfinder (auto-generated typed routes) |
 | DB | MySQL |
@@ -17,18 +18,73 @@ A Laravel + Inertia.js application for managing coaching centers with role-based
 
 ## Features
 
-- **Student Management** — Full CRUD with coaching class assignment, joined/left dates
-- **Batch Management** — Create batches with days/time schedule, capacity tracking
-- **Teacher Management** — Admin CRUD, assign teachers to batches
-- **Coaching Classes** — Define class names with default fees
-- **Enrollment System** — Connect students to batches with capacity checks
-- **Fee Tracking** — Monthly tracking (month/year), payment recording
-- **Attendance** — Daily marking, history, student reports
-- **Dashboard** — Role-based stats (admin sees all, teacher sees assigned)
-- **CSV Export** — Export students and attendance data
-- **PWA** — Service worker, manifest, offline support
-- **Localization** — Bangla language switcher
-- **Responsive Landing Page** — Modern design with dynamic stats
+### Dashboard
+- Role-based stat cards (admin sees all, teacher sees assigned)
+- Live clock with time and date (hidden on mobile, right-aligned)
+- Interactive charts: Today's Attendance (doughnut), Enrollment Trend (bar), Fee Collection (line)
+- Batch history card with recent activity
+- Refresh button with spin animation
+
+### Student Management
+- Full CRUD with coaching class assignment
+- Joined/left dates tracking
+- Detail page with batch info cards (matching batch detail style)
+- Dropdown actions (view/edit/delete)
+- Sticky first column on index table
+- Pagination with page numbers (10 per page)
+
+### Batch Management
+- Create batches with days/time schedule, capacity tracking
+- Complete batch status (auto-completes enrollments)
+- Batch history logging (enrollment/completion/removal actions)
+- Status badges: active (default), inactive (danger), archived (secondary), completed (success/green)
+- Dropdown actions on index and show pages
+- Show page: responsive grid cards for info, batch name in heading
+
+### Teacher Management
+- Admin CRUD, assign teachers to batches
+- Detail page with assigned batches
+- Dropdown actions (view/edit/delete)
+- Sticky first column on index table
+
+### Coaching Classes
+- Define class names with default fees
+- Dropdown actions (edit/delete)
+- Pagination with page numbers
+
+### Enrollment System
+- Connect students to batches with capacity checks
+- Selectable enrollment date
+- History logging with action dates
+
+### Fee Tracking
+- Monthly tracking (month/year), payment recording
+- Sticky first column on wide fee grid table
+- Dropdown for header menu, direct delete button
+
+### Attendance
+- Bulk marking via create page (batch select + date in flex row)
+- Single record edit (status + notes)
+- Dropdown actions (edit/delete) on index
+- Sticky first column on index table
+- Completed batches filtered from dropdown
+
+### UI/UX
+- ConfirmDialog + sonner toast across all pages
+- Tables: sticky first column, whitespace-nowrap on headers/cells
+- EllipsisVertical (vertical three dots) for multi-action dropdowns
+- Search bars: X icon to reset, RefreshCw icon with spin animation on click
+- Pagination: shadcn-style with page numbers, 10 records per page
+- Badge variants: success (green-600), danger (red-600)
+- Button destructive variant: bg-red-600 text-white
+
+### Other
+- CSV Export — Export students and attendance data
+- PWA — Service worker, manifest, offline support
+- Localization — Bangla language switcher
+- Responsive Landing Page — Modern design with dynamic stats, hero section min-h-screen
+- Favicon — Properly configured with manifest.json
+- Auth Layout — Logo on top, form in bordered container
 
 ## RBAC Roles
 
@@ -120,7 +176,7 @@ app/
 │   ├── Controllers/          # Backend controllers
 │   ├── Middleware/            # Custom middleware (RoleMiddleware)
 │   └── Requests/             # Form request validation
-├── Models/                   # Eloquent models (7 models)
+├── Models/                   # Eloquent models (8 models)
 ├── Policies/                 # Authorization policies
 database/
 ├── migrations/               # Database migrations
@@ -139,7 +195,13 @@ resources/
 ├── js/
 │   ├── pages/                # Inertia.js pages
 │   ├── components/           # React components
+│   │   ├── ui/               # shadcn/ui components
+│   │   ├── confirm-dialog.tsx
+│   │   ├── clock.tsx
+│   │   ├── heading.tsx
+│   │   └── pagination.tsx
 │   ├── layouts/              # Layout components
+│   ├── routes/               # Wayfinder typed routes
 │   └── types/                # TypeScript types
 public/
 ├── build/                    # Compiled assets
@@ -158,6 +220,7 @@ public/
 | Enrollment | Student-batch relationships |
 | FeeStatus | Monthly fee tracking records |
 | Attendance | Daily attendance records |
+| BatchHistory | Batch action history (enrollment/completion/removal) |
 
 ## Testing
 

@@ -7,6 +7,7 @@ import {
     CheckCircle,
 } from 'lucide-react';
 import Heading from '@/components/heading';
+import Clock from '@/components/clock';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -23,6 +24,33 @@ import students from '@/routes/students';
 import batches from '@/routes/batches';
 import fees from '@/routes/fees';
 import attendance from '@/routes/attendance';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler,
+} from 'chart.js';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler,
+);
 
 type Stats = {
     total_students: number;
@@ -81,6 +109,10 @@ type PageProps = {
     todayAttendance: AttendanceStat;
     recentStudents: RecentStudent[];
     assignedBatches?: AssignedBatch[];
+    batchHistory?: { completed: number; active: number };
+    attendanceTrend?: { month: string; present: number; absent: number; late: number }[];
+    enrollmentTrend?: { month: string; enrollments: number }[];
+    feeTrend?: { month: string; collected: number }[];
 };
 
 const MONTH_NAMES = [
@@ -106,6 +138,10 @@ export default function Dashboard({
     todayAttendance,
     recentStudents,
     assignedBatches,
+    batchHistory,
+    attendanceTrend = [],
+    enrollmentTrend = [],
+    feeTrend = [],
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage().props;
@@ -117,28 +153,31 @@ export default function Dashboard({
             <Head title={t('dashboard.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading
-                    title={
-                        isTeacher
-                            ? `Welcome, ${auth.user?.name}`
-                            : t('dashboard.title')
-                    }
-                    description={
-                        isTeacher
-                            ? 'Your assigned batches and students'
-                            : t('app.tagline')
-                    }
-                />
+                <div className="flex items-start justify-between">
+                    <Heading
+                        title={
+                            isTeacher
+                                ? `Welcome, ${auth.user?.name}`
+                                : t('dashboard.title')
+                        }
+                        description={
+                            isTeacher
+                                ? 'Your assigned batches and students'
+                                : t('app.tagline')
+                        }
+                    />
+                    <Clock />
+                </div>
 
-                <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                    <Card className="py-3">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                             <CardTitle className="text-sm font-medium">
                                 {t('dashboard.total_students')}
                             </CardTitle>
                             <Users className="size-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="px-3 pb-2 pt-0">
                             <div className="text-2xl font-bold">
                                 {stats.total_students}
                             </div>
@@ -152,14 +191,14 @@ export default function Dashboard({
                     </Card>
 
                     {isAdmin && (
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <Card className="py-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                                 <CardTitle className="text-sm font-medium">
                                     {t('nav.teachers')}
                                 </CardTitle>
                                 <GraduationCap className="size-4 text-muted-foreground" />
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="px-3 pb-2 pt-0">
                                 <div className="text-2xl font-bold">
                                     {stats.total_teachers ?? '-'}
                                 </div>
@@ -167,14 +206,14 @@ export default function Dashboard({
                         </Card>
                     )}
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <Card className="py-3">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                             <CardTitle className="text-sm font-medium">
                                 {t('dashboard.active_batches')}
                             </CardTitle>
                             <Layers className="size-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="px-3 pb-2 pt-0">
                             <div className="text-2xl font-bold">
                                 {stats.active_batches}
                             </div>
@@ -188,14 +227,14 @@ export default function Dashboard({
                     </Card>
 
                     {isAdmin && (
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <Card className="py-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                                 <CardTitle className="text-sm font-medium">
                                     {t('dashboard.total_collected')}
                                 </CardTitle>
                                 <DollarSign className="size-4 text-muted-foreground" />
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="px-3 pb-2 pt-0">
                                 <div className="text-2xl font-bold">
                                     {Number(feeStats.total_collected).toFixed(
                                         0,
@@ -206,7 +245,7 @@ export default function Dashboard({
                                 </p>
                                 <Link
                                     href={fees.index().url}
-                                    className="mt-2 block text-xs text-muted-foreground hover:underline"
+                                    className="mt-1 block text-xs text-muted-foreground hover:underline"
                                 >
                                     {t('actions.view_all')}
                                 </Link>
@@ -215,14 +254,14 @@ export default function Dashboard({
                     )}
 
                     {isTeacher && (
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <Card className="py-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                                 <CardTitle className="text-sm font-medium">
                                     {t('dashboard.total_collected')}
                                 </CardTitle>
                                 <DollarSign className="size-4 text-muted-foreground" />
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="px-3 pb-2 pt-0">
                                 <div className="text-2xl font-bold">
                                     {Number(feeStats.total_collected).toFixed(
                                         0,
@@ -234,6 +273,97 @@ export default function Dashboard({
                             </CardContent>
                         </Card>
                     )}
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Today's Attendance</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="h-[200px]">
+                                <Doughnut
+                                    data={{
+                                        labels: ['Present', 'Absent', 'Late'],
+                                        datasets: [{
+                                            data: [todayAttendance.present, todayAttendance.absent, todayAttendance.late],
+                                            backgroundColor: ['#16a34a', '#dc2626', '#eab308'],
+                                            borderWidth: 0,
+                                        }],
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        cutout: '60%',
+                                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
+                                    }}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Enrollment Trend (6 months)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="h-[200px]">
+                                <Bar
+                                    data={{
+                                        labels: enrollmentTrend.map(d => d.month),
+                                        datasets: [{
+                                            label: 'Enrollments',
+                                            data: enrollmentTrend.map(d => d.enrollments),
+                                            backgroundColor: '#2563eb',
+                                            borderRadius: 4,
+                                        }],
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: { legend: { display: false } },
+                                        scales: {
+                                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                            y: { grid: { color: '#e5e7eb' }, ticks: { font: { size: 10 } }, beginAtZero: true },
+                                        },
+                                    }}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Fee Collection (6 months)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="h-[200px]">
+                                <Line
+                                    data={{
+                                        labels: feeTrend.map(d => d.month),
+                                        datasets: [{
+                                            label: 'Collected',
+                                            data: feeTrend.map(d => d.collected),
+                                            borderColor: '#16a34a',
+                                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                                            fill: true,
+                                            tension: 0.3,
+                                            pointRadius: 0,
+                                        }],
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: { legend: { display: false } },
+                                        scales: {
+                                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                            y: { grid: { color: '#e5e7eb' }, ticks: { font: { size: 10 } }, beginAtZero: true },
+                                        },
+                                    }}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
@@ -387,6 +517,34 @@ export default function Dashboard({
                                         No batches assigned yet. Contact admin.
                                     </p>
                                 )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {batchHistory && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Batch History</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="rounded-lg border p-4">
+                                        <div className="text-2xl font-bold text-green-600">
+                                            {batchHistory.completed}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            Completed
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border p-4">
+                                        <div className="text-2xl font-bold text-blue-600">
+                                            {batchHistory.active}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            Ongoing
+                                        </div>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     )}

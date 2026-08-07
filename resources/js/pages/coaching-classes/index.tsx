@@ -1,8 +1,17 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Search, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
+import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -45,6 +54,11 @@ export default function CoachingClassesIndex({
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
+    const [refreshing, setRefreshing] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleSearch = () => {
         router.get(
@@ -55,8 +69,14 @@ export default function CoachingClassesIndex({
     };
 
     const handleDelete = (cls: CoachingClass) => {
-        if (confirm(`Are you sure you want to delete ${cls.name}?`)) {
-            router.delete(coachingClasses.destroy(cls.id));
+        setDeleteDialog({ open: true, item: cls });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(coachingClasses.destroy(deleteDialog.item.id));
+            toast.success('Coaching class deleted successfully');
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -92,18 +112,51 @@ export default function CoachingClassesIndex({
                                     onKeyDown={(e) =>
                                         e.key === 'Enter' && handleSearch()
                                     }
-                                    className="pl-9"
+                                    className="pr-9 pl-9"
                                 />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSearch('');
+                                            router.get(
+                                                coachingClasses.index(),
+                                                {},
+                                                { preserveState: true },
+                                            );
+                                        }}
+                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )}
                             </div>
                             <Button variant="secondary" onClick={handleSearch}>
-                                {t('actions.search')}
+                                <Search className="size-4 sm:mr-2" />
+                                <span className="hidden sm:inline">{t('actions.search')}</span>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={refreshing}
+                                onClick={() => {
+                                    setRefreshing(true);
+                                    router.reload({
+                                        only: ['classes'],
+                                        onFinish: () => setRefreshing(false),
+                                    });
+                                }}
+                            >
+                                <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                             </Button>
                         </div>
 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>{t('classes.name')}</TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                        {t('classes.name')}
+                                    </TableHead>
                                     <TableHead>
                                         {t('classes.default_fee')}
                                     </TableHead>
@@ -111,9 +164,7 @@ export default function CoachingClassesIndex({
                                         {t('batches.enrolled')}
                                     </TableHead>
                                     {isAdmin && (
-                                        <TableHead className="text-right">
-                                            {t('actions.view')}
-                                        </TableHead>
+                                        <TableHead className="w-[50px]"></TableHead>
                                     )}
                                 </TableRow>
                             </TableHeader>
@@ -131,7 +182,7 @@ export default function CoachingClassesIndex({
                                 ) : (
                                     pagination.data.map((cls) => (
                                         <TableRow key={cls.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {cls.name}
                                             </TableCell>
                                             <TableCell>
@@ -143,32 +194,26 @@ export default function CoachingClassesIndex({
                                                 {cls.students_count}
                                             </TableCell>
                                             {isAdmin && (
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Link
-                                                            href={coachingClasses.edit(
-                                                                cls.id,
-                                                            )}
-                                                        >
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                            >
-                                                                <Pencil className="size-4" />
+                                                <TableCell className="p-1 text-center">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                                                <EllipsisVertical className="size-4" />
                                                             </Button>
-                                                        </Link>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    cls,
-                                                                )
-                                                            }
-                                                        >
-                                                            <Trash2 className="size-4" />
-                                                        </Button>
-                                                    </div>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={coachingClasses.edit(cls.id)}>
+                                                                    <Pencil className="mr-2 size-4" />
+                                                                    {t('actions.edit')}
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleDelete(cls)} className="text-destructive">
+                                                                <Trash2 className="mr-2 size-4" />
+                                                                {t('actions.delete')}
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </TableCell>
                                             )}
                                         </TableRow>
@@ -177,60 +222,30 @@ export default function CoachingClassesIndex({
                             </TableBody>
                         </Table>
 
-                        {pagination.last_page > 1 && (
-                            <div className="mt-4 flex items-center justify-between">
-                                <p className="text-sm text-muted-foreground">
-                                    Showing {pagination.data.length} of{' '}
-                                    {pagination.total} {t('classes.title')}
-                                </p>
-                                <div className="flex gap-2">
-                                    {pagination.current_page > 1 && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    coachingClasses.index(),
-                                                    {
-                                                        page:
-                                                            pagination.current_page -
-                                                            1,
-                                                        search,
-                                                    },
-                                                    { preserveState: true },
-                                                )
-                                            }
-                                        >
-                                            {t('actions.back')}
-                                        </Button>
-                                    )}
-                                    {pagination.current_page <
-                                        pagination.last_page && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.get(
-                                                    coachingClasses.index(),
-                                                    {
-                                                        page:
-                                                            pagination.current_page +
-                                                            1,
-                                                        search,
-                                                    },
-                                                    { preserveState: true },
-                                                )
-                                            }
-                                        >
-                                            Next
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                        <Pagination
+                            currentPage={pagination.current_page}
+                            lastPage={pagination.last_page}
+                            total={pagination.total}
+                            perPage={pagination.per_page}
+                            itemName={t('classes.title').toLowerCase() + 's'}
+                            baseUrl={coachingClasses.index()}
+                            preserveParams={{ search }}
+                        />
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
+                title="Delete Coaching Class"
+                description={`Are you sure you want to delete ${deleteDialog.item?.name}?`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

@@ -40,7 +40,7 @@ class StudentController extends Controller
             $query->where('status', $status);
         }
 
-        $students = $query->latest()->paginate(15)->withQueryString();
+        $students = $query->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('students/index', [
             'students' => $students,

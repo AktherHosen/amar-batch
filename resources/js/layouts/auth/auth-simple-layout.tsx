@@ -34,11 +34,7 @@ export default function AuthSimpleLayout({
                         href={home()}
                         className="flex flex-col items-center gap-4"
                     >
-                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                            <span className="text-3xl font-bold text-white">
-                                K
-                            </span>
-                        </div>
+                        <img src="/logo.png" alt="Karnaphuli Alpha Academy" className="h-12 w-12 rounded-xl object-cover" />
                         <h1 className="text-3xl font-bold text-white">
                             Karnaphuli Alpha Academy
                         </h1>
@@ -69,28 +65,26 @@ export default function AuthSimpleLayout({
                 <div className="w-full max-w-md">
                     {/* Mobile Logo */}
                     <div className="mb-8 flex flex-col items-center lg:hidden">
-                        <Link href={home()} className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600">
-                                <span className="text-lg font-bold text-white">
-                                    K
-                                </span>
-                            </div>
+                        <Link href={home()} className="flex flex-col items-center gap-3">
+                            <img src="/logo.png" alt="Karnaphuli Alpha Academy" className="h-12 w-12 rounded-md object-cover" />
                             <span className="text-xl font-bold text-gray-900 dark:text-white">
                                 Karnaphuli Alpha Academy
                             </span>
                         </Link>
                     </div>
 
-                    <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                            {title}
-                        </h2>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            {description}
-                        </p>
-                    </div>
+                    <div className="rounded-md border border-gray-200 p-6 dark:border-gray-700 lg:border-0 lg:p-0">
+                        <div className="mb-8">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                {title}
+                            </h2>
+                            <p className="mt-2 text-gray-600 dark:text-gray-400">
+                                {description}
+                            </p>
+                        </div>
 
-                    {children}
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>
