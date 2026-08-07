@@ -24,6 +24,33 @@ import students from '@/routes/students';
 import batches from '@/routes/batches';
 import fees from '@/routes/fees';
 import attendance from '@/routes/attendance';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler,
+} from 'chart.js';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler,
+);
 
 type Stats = {
     total_students: number;
@@ -83,6 +110,9 @@ type PageProps = {
     recentStudents: RecentStudent[];
     assignedBatches?: AssignedBatch[];
     batchHistory?: { completed: number; active: number };
+    attendanceTrend?: { month: string; present: number; absent: number; late: number }[];
+    enrollmentTrend?: { month: string; enrollments: number }[];
+    feeTrend?: { month: string; collected: number }[];
 };
 
 const MONTH_NAMES = [
@@ -109,6 +139,9 @@ export default function Dashboard({
     recentStudents,
     assignedBatches,
     batchHistory,
+    attendanceTrend = [],
+    enrollmentTrend = [],
+    feeTrend = [],
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage().props;
@@ -120,24 +153,20 @@ export default function Dashboard({
             <Head title={t('dashboard.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="order-2 sm:order-1">
-                        <Heading
-                            title={
-                                isTeacher
-                                    ? `Welcome, ${auth.user?.name}`
-                                    : t('dashboard.title')
-                            }
-                            description={
-                                isTeacher
-                                    ? 'Your assigned batches and students'
-                                    : t('app.tagline')
-                            }
-                        />
-                    </div>
-                    <div className="order-1 sm:order-2 shrink-0">
-                        <Clock />
-                    </div>
+                <div className="flex items-start justify-between">
+                    <Heading
+                        title={
+                            isTeacher
+                                ? `Welcome, ${auth.user?.name}`
+                                : t('dashboard.title')
+                        }
+                        description={
+                            isTeacher
+                                ? 'Your assigned batches and students'
+                                : t('app.tagline')
+                        }
+                    />
+                    <Clock />
                 </div>
 
                 <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
@@ -244,6 +273,97 @@ export default function Dashboard({
                             </CardContent>
                         </Card>
                     )}
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Today's Attendance</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="h-[200px]">
+                                <Doughnut
+                                    data={{
+                                        labels: ['Present', 'Absent', 'Late'],
+                                        datasets: [{
+                                            data: [todayAttendance.present, todayAttendance.absent, todayAttendance.late],
+                                            backgroundColor: ['#16a34a', '#dc2626', '#eab308'],
+                                            borderWidth: 0,
+                                        }],
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        cutout: '60%',
+                                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
+                                    }}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Enrollment Trend (6 months)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="h-[200px]">
+                                <Bar
+                                    data={{
+                                        labels: enrollmentTrend.map(d => d.month),
+                                        datasets: [{
+                                            label: 'Enrollments',
+                                            data: enrollmentTrend.map(d => d.enrollments),
+                                            backgroundColor: '#2563eb',
+                                            borderRadius: 4,
+                                        }],
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: { legend: { display: false } },
+                                        scales: {
+                                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                            y: { grid: { color: '#e5e7eb' }, ticks: { font: { size: 10 } }, beginAtZero: true },
+                                        },
+                                    }}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Fee Collection (6 months)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="h-[200px]">
+                                <Line
+                                    data={{
+                                        labels: feeTrend.map(d => d.month),
+                                        datasets: [{
+                                            label: 'Collected',
+                                            data: feeTrend.map(d => d.collected),
+                                            borderColor: '#16a34a',
+                                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                                            fill: true,
+                                            tension: 0.3,
+                                            pointRadius: 0,
+                                        }],
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: { legend: { display: false } },
+                                        scales: {
+                                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                            y: { grid: { color: '#e5e7eb' }, ticks: { font: { size: 10 } }, beginAtZero: true },
+                                        },
+                                    }}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
