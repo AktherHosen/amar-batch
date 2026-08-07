@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, Search, Trash2, X } from 'lucide-react';
+import { Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
@@ -67,6 +67,7 @@ export default function AttendanceIndex({
     const isTeacher = auth.user.role === 'teacher';
     const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [date, setDate] = useState(filters.date || '');
+    const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: any | null;
@@ -186,6 +187,20 @@ export default function AttendanceIndex({
                                     <span className="hidden sm:inline">
                                         {t('actions.search')}
                                     </span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={refreshing}
+                                    onClick={() => {
+                                        setRefreshing(true);
+                                        router.reload({
+                                            only: ['records'],
+                                            onFinish: () => setRefreshing(false),
+                                        });
+                                    }}
+                                >
+                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                                 </Button>
                             </div>
                         </div>

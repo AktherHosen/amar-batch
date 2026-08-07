@@ -1,7 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle } from 'lucide-react';
+import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle } from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,7 @@ export default function BatchesIndex({
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
+    const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
     const [completeDialog, setCompleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
 
@@ -212,6 +213,20 @@ export default function BatchesIndex({
                                     <span className="hidden sm:inline">
                                         {t('actions.search')}
                                     </span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={refreshing}
+                                    onClick={() => {
+                                        setRefreshing(true);
+                                        router.reload({
+                                            only: ['batches'],
+                                            onFinish: () => setRefreshing(false),
+                                        });
+                                    }}
+                                >
+                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                                 </Button>
                             </div>
                         </div>

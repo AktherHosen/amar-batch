@@ -2,8 +2,10 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useRef } from 'react';
 import {
     Plus,
+    RefreshCw,
     Search,
     Trash2,
+    EllipsisVertical,
     Download,
     X,
 } from 'lucide-react';
@@ -202,6 +204,7 @@ export default function FeesIndex({
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
     const [selectedYear, setSelectedYear] = useState(year);
+    const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: { studentId: number; batchId: number } | null;
@@ -404,6 +407,20 @@ export default function FeesIndex({
                                     <span className="hidden sm:inline">
                                         {t('actions.search')}
                                     </span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={refreshing}
+                                    onClick={() => {
+                                        setRefreshing(true);
+                                        router.reload({
+                                            only: ['feeGrid'],
+                                            onFinish: () => setRefreshing(false),
+                                        });
+                                    }}
+                                >
+                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                                 </Button>
                             </div>
                         </div>

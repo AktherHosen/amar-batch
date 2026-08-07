@@ -28,7 +28,7 @@ import { useLocale } from '@/contexts/locale-context';
 import students from '@/routes/students';
 import type { Student } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { EllipsisVertical, Eye, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -70,6 +70,7 @@ export default function StudentsIndex({
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
+    const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: any | null;
@@ -183,6 +184,20 @@ export default function StudentsIndex({
                                     <span className="hidden sm:inline">
                                         {t('actions.search')}
                                     </span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={refreshing}
+                                    onClick={() => {
+                                        setRefreshing(true);
+                                        router.reload({
+                                            only: ['students'],
+                                            onFinish: () => setRefreshing(false),
+                                        });
+                                    }}
+                                >
+                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                                 </Button>
                             </div>
                         </div>

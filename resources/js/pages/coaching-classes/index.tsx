@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, Search, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Search, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
@@ -53,6 +53,7 @@ export default function CoachingClassesIndex({
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
     const [search, setSearch] = useState(filters.search || '');
+    const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: any | null;
@@ -110,11 +111,41 @@ export default function CoachingClassesIndex({
                                     onKeyDown={(e) =>
                                         e.key === 'Enter' && handleSearch()
                                     }
-                                    className="pl-9"
+                                    className="pr-9 pl-9"
                                 />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSearch('');
+                                            router.get(
+                                                coachingClasses.index(),
+                                                {},
+                                                { preserveState: true },
+                                            );
+                                        }}
+                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )}
                             </div>
                             <Button variant="secondary" onClick={handleSearch}>
                                 {t('actions.search')}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={refreshing}
+                                onClick={() => {
+                                    setRefreshing(true);
+                                    router.reload({
+                                        only: ['classes'],
+                                        onFinish: () => setRefreshing(false),
+                                    });
+                                }}
+                            >
+                                <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                             </Button>
                         </div>
 
