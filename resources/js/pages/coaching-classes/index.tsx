@@ -131,7 +131,8 @@ export default function CoachingClassesIndex({
                                 )}
                             </div>
                             <Button variant="secondary" onClick={handleSearch}>
-                                {t('actions.search')}
+                                <Search className="size-4 sm:mr-2" />
+                                <span className="hidden sm:inline">{t('actions.search')}</span>
                             </Button>
                             <Button
                                 variant="ghost"

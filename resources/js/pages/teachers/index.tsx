@@ -125,7 +125,8 @@ export default function TeachersIndex({
                                 )}
                             </div>
                             <Button variant="secondary" onClick={handleSearch}>
-                                Search
+                                <Search className="size-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Search</span>
                             </Button>
                             <Button
                                 variant="ghost"
