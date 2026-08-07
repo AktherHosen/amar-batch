@@ -102,6 +102,8 @@ type AssignedBatch = {
 };
 
 type PageProps = {
+    isPendingApproval?: boolean;
+    pendingTeacher?: { name: string; email: string };
     stats: Stats;
     feeStats: FeeStats;
     recentEnrollments: Enrollment[];
@@ -132,6 +134,8 @@ const MONTH_NAMES = [
 ];
 
 export default function Dashboard({
+    isPendingApproval,
+    pendingTeacher,
     stats,
     feeStats,
     recentFeePayments,
@@ -147,6 +151,34 @@ export default function Dashboard({
     const { auth } = usePage().props;
     const isAdmin = auth.user?.role === 'admin';
     const isTeacher = auth.user?.role === 'teacher';
+
+    if (isPendingApproval) {
+        return (
+            <>
+                <Head title="Pending Approval" />
+                <div className="flex h-full flex-1 flex-col items-center justify-center gap-4 rounded-xl p-4">
+                    <Card className="w-full max-w-md text-center">
+                        <CardHeader>
+                            <CardTitle className="text-xl">Account Pending Approval</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-muted-foreground">
+                                Welcome, <strong>{pendingTeacher?.name}</strong>! Your teacher account is pending admin approval.
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                You will receive access to the system once an administrator approves your account. Please check back later.
+                            </p>
+                            <div className="rounded-lg border bg-muted/50 p-4">
+                                <p className="text-sm text-muted-foreground">
+                                    <strong>Email:</strong> {pendingTeacher?.email}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>

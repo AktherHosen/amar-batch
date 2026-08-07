@@ -116,4 +116,26 @@ class TeacherController extends Controller
 
         return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Teacher deactivated successfully.']);
     }
+
+    public function approve(Request $request, User $teacher): RedirectResponse
+    {
+        if (! $request->user()->isAdmin() || ! $teacher->isTeacher()) {
+            abort(403);
+        }
+
+        $teacher->update(['is_approved' => true]);
+
+        return back()->with('toast', ['type' => 'success', 'message' => 'Teacher approved successfully.']);
+    }
+
+    public function reject(Request $request, User $teacher): RedirectResponse
+    {
+        if (! $request->user()->isAdmin() || ! $teacher->isTeacher()) {
+            abort(403);
+        }
+
+        $teacher->update(['is_approved' => false]);
+
+        return back()->with('toast', ['type' => 'success', 'message' => 'Teacher approval revoked.']);
+    }
 }

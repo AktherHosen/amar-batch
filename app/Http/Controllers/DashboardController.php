@@ -22,6 +22,16 @@ class DashboardController extends Controller
             return $this->adminDashboard($request);
         }
 
+        if ($user->isTeacher() && !$user->is_approved) {
+            return Inertia::render('dashboard', [
+                'isPendingApproval' => true,
+                'pendingTeacher' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+            ]);
+        }
+
         return $this->teacherDashboard($request);
     }
 
