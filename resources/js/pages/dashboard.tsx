@@ -117,22 +117,6 @@ type PageProps = {
     feeTrend?: { month: string; collected: number }[];
 };
 
-const MONTH_NAMES = [
-    '',
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-];
-
 export default function Dashboard({
     isPendingApproval,
     pendingTeacher,
@@ -152,25 +136,30 @@ export default function Dashboard({
     const isAdmin = auth.user?.role === 'admin';
     const isTeacher = auth.user?.role === 'teacher';
 
+    const getMonthName = (monthIndex: number) => {
+        const months = ['', 'month.january', 'month.february', 'month.march', 'month.april', 'month.may', 'month.june', 'month.july', 'month.august', 'month.september', 'month.october', 'month.november', 'month.december'];
+        return t(months[monthIndex]);
+    };
+
     if (isPendingApproval) {
         return (
             <>
-                <Head title="Pending Approval" />
+                <Head title={t('dashboard.pending_approval')} />
                 <div className="flex h-full flex-1 flex-col items-center justify-center gap-4 rounded-xl p-4">
                     <Card className="w-full max-w-md text-center">
                         <CardHeader>
-                            <CardTitle className="text-xl">Account Pending Approval</CardTitle>
+                            <CardTitle className="text-xl">{t('dashboard.pending_approval')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <p className="text-muted-foreground">
-                                Welcome, <strong>{pendingTeacher?.name}</strong>! Your teacher account is pending admin approval.
+                                {t('dashboard.welcome')}, <strong>{pendingTeacher?.name}</strong>! {t('dashboard.pending_message')}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                                You will receive access to the system once an administrator approves your account. Please check back later.
+                                {t('dashboard.pending_submessage')}
                             </p>
                             <div className="rounded-lg border bg-muted/50 p-4">
                                 <p className="text-sm text-muted-foreground">
-                                    <strong>Email:</strong> {pendingTeacher?.email}
+                                    <strong>{t('dashboard.email')}:</strong> {pendingTeacher?.email}
                                 </p>
                             </div>
                         </CardContent>
@@ -189,12 +178,12 @@ export default function Dashboard({
                     <Heading
                         title={
                             isTeacher
-                                ? `Welcome, ${auth.user?.name}`
+                                ? `${t('dashboard.welcome')}, ${auth.user?.name}`
                                 : t('dashboard.title')
                         }
                         description={
                             isTeacher
-                                ? 'Your assigned batches and students'
+                                ? t('dashboard.assigned_batches_desc')
                                 : t('app.tagline')
                         }
                     />
@@ -273,7 +262,7 @@ export default function Dashboard({
                                     )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    {feeStats.total_records} payment records
+                                    {feeStats.total_records} {t('dashboard.payment_records')}
                                 </p>
                                 <Link
                                     href={fees.index().url}
@@ -300,7 +289,7 @@ export default function Dashboard({
                                     )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    {feeStats.total_records} payment records
+                                    {feeStats.total_records} {t('dashboard.payment_records')}
                                 </p>
                             </CardContent>
                         </Card>
@@ -310,13 +299,13 @@ export default function Dashboard({
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Today's Attendance</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('dashboard.today_attendance')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[200px]">
                                 <Doughnut
                                     data={{
-                                        labels: ['Present', 'Absent', 'Late'],
+                                        labels: [t('attendance.present'), t('attendance.absent'), t('attendance.late')],
                                         datasets: [{
                                             data: [todayAttendance.present, todayAttendance.absent, todayAttendance.late],
                                             backgroundColor: ['#16a34a', '#dc2626', '#eab308'],
@@ -336,7 +325,7 @@ export default function Dashboard({
 
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Enrollment Trend (6 months)</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('dashboard.enrollment_trend')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[200px]">
@@ -344,7 +333,7 @@ export default function Dashboard({
                                     data={{
                                         labels: enrollmentTrend.map(d => d.month),
                                         datasets: [{
-                                            label: 'Enrollments',
+                                            label: t('dashboard.enrollments'),
                                             data: enrollmentTrend.map(d => d.enrollments),
                                             backgroundColor: '#2563eb',
                                             borderRadius: 4,
@@ -366,7 +355,7 @@ export default function Dashboard({
 
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Fee Collection (6 months)</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('dashboard.fee_collection')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[200px]">
@@ -374,7 +363,7 @@ export default function Dashboard({
                                     data={{
                                         labels: feeTrend.map(d => d.month),
                                         datasets: [{
-                                            label: 'Collected',
+                                            label: t('dashboard.collected'),
                                             data: feeTrend.map(d => d.collected),
                                             borderColor: '#16a34a',
                                             backgroundColor: 'rgba(22, 163, 74, 0.1)',
@@ -500,7 +489,7 @@ export default function Dashboard({
                                     </Table>
                                 ) : (
                                     <p className="text-sm text-muted-foreground">
-                                        No students yet.
+                                        {t('dashboard.no_students')}
                                     </p>
                                 )}
                             </CardContent>
@@ -510,7 +499,7 @@ export default function Dashboard({
                     {isTeacher && assignedBatches && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>My Assigned Batches</CardTitle>
+                                <CardTitle>{t('dashboard.my_assigned_batches')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {assignedBatches.length > 0 ? (
@@ -523,7 +512,7 @@ export default function Dashboard({
                                                 <TableHead>
                                                     {t('batches.subject')}
                                                 </TableHead>
-                                                <TableHead>Students</TableHead>
+                                                <TableHead>{t('dashboard.students')}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -546,7 +535,7 @@ export default function Dashboard({
                                     </Table>
                                 ) : (
                                     <p className="text-sm text-muted-foreground">
-                                        No batches assigned yet. Contact admin.
+                                        {t('dashboard.no_batches')}
                                     </p>
                                 )}
                             </CardContent>
@@ -556,7 +545,7 @@ export default function Dashboard({
                     {batchHistory && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Batch History</CardTitle>
+                                <CardTitle>{t('dashboard.batch_history')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-2 gap-4">
@@ -565,7 +554,7 @@ export default function Dashboard({
                                             {batchHistory.completed}
                                         </div>
                                         <div className="text-sm text-muted-foreground">
-                                            Completed
+                                            {t('dashboard.completed')}
                                         </div>
                                     </div>
                                     <div className="rounded-lg border p-4">
@@ -573,7 +562,7 @@ export default function Dashboard({
                                             {batchHistory.active}
                                         </div>
                                         <div className="text-sm text-muted-foreground">
-                                            Ongoing
+                                            {t('dashboard.ongoing')}
                                         </div>
                                     </div>
                                 </div>
@@ -616,10 +605,10 @@ export default function Dashboard({
                                                         </TableCell>
                                                         <TableCell>
                                                             {
-                                                                MONTH_NAMES[
+                                                                getMonthName(
                                                                     payment
                                                                         .month
-                                                                ]
+                                                                )
                                                             }{' '}
                                                             {payment.year}
                                                         </TableCell>
@@ -635,7 +624,7 @@ export default function Dashboard({
                                     </Table>
                                 ) : (
                                     <p className="text-sm text-muted-foreground">
-                                        No recent payments.
+                                        {t('dashboard.no_payments')}
                                     </p>
                                 )}
                             </CardContent>
@@ -700,7 +689,7 @@ export default function Dashboard({
                                     </Table>
                                 ) : (
                                     <p className="text-sm text-muted-foreground">
-                                        No students in your batches yet.
+                                        {t('dashboard.no_students_in_batches')}
                                     </p>
                                 )}
                             </CardContent>
