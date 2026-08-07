@@ -28,7 +28,7 @@ class TeacherController extends Controller
             });
         }
 
-        $teachers = $query->withCount('assignedBatches')->latest()->paginate(15)->withQueryString();
+        $teachers = $query->withCount('assignedBatches')->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('teachers/index', [
             'teachers' => $teachers,
