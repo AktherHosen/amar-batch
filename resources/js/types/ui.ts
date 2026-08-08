@@ -13,9 +13,17 @@ export type FlashToast = {
     message: string;
 };
 
+export type AppStats = {
+    total_students: number;
+    active_batches: number;
+    attendance_rate: number;
+    fee_collection_rate: number;
+};
+
 export type AuthLayoutProps = {
     children?: ReactNode;
     name?: string;
     title?: string;
     description?: string;
+    stats?: AppStats;
 };
