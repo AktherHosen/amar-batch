@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import {
     Users,
     Calendar,
@@ -12,11 +13,13 @@ import {
     Zap,
     Globe,
     Clock,
+    Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import {
     Accordion,
     AccordionContent,
@@ -54,6 +57,7 @@ type Props = {
 export default function Welcome({ stats, plans }: Props) {
     const { auth } = usePage().props;
     const { t, formatNumber, formatCurrency } = useLocale();
+    const [annual, setAnnual] = useState(true);
 
     const safeStats = stats || {
         total_students: 0,
@@ -311,46 +315,60 @@ export default function Welcome({ stats, plans }: Props) {
                                 <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
                                     {t('welcome.pricing_desc')}
                                 </p>
+                                <div className="mt-8 flex items-center justify-center gap-3">
+                                    <span className={`text-sm ${!annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{t('plan.monthly')}</span>
+                                    <Switch checked={annual} onCheckedChange={setAnnual} />
+                                    <span className={`text-sm ${annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{t('plan.yearly')}</span>
+                                    {annual && <Badge variant="secondary" className="ml-1 text-green-600 dark:text-green-400">Save 17%</Badge>}
+                                </div>
                             </div>
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                                {safePlans.map((plan) => (
-                                    <Card
-                                        key={plan.id}
-                                        className={`relative flex flex-col ${
-                                            plan.is_default
-                                                ? 'border-primary shadow-lg shadow-primary/10'
-                                                : ''
-                                        }`}
-                                    >
-                                        {plan.is_default && (
-                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                                <Badge>{t('plan.free_trial')}</Badge>
-                                            </div>
-                                        )}
-                                        <CardHeader>
-                                            <CardTitle className="text-xl">{plan.name}</CardTitle>
-                                            {plan.description && (
-                                                <p className="text-sm text-muted-foreground">{plan.description}</p>
+                                {safePlans.map((plan) => {
+                                    const isPopular = plan.slug === 'pro';
+                                    const price = annual ? plan.price_yearly : plan.price_monthly;
+                                    const period = annual ? t('plan.year') : t('plan.month');
+
+                                    return (
+                                        <Card
+                                            key={plan.id}
+                                            className={`relative flex flex-col ${
+                                                isPopular
+                                                    ? 'border-primary shadow-lg shadow-primary/10 scale-[1.02]'
+                                                    : plan.is_default
+                                                        ? 'border-muted'
+                                                        : ''
+                                            }`}
+                                        >
+                                            {isPopular && (
+                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                                    <Badge className="bg-primary text-primary-foreground">
+                                                        <Sparkles className="mr-1 h-3 w-3" />
+                                                        {t('plan.popular')}
+                                                    </Badge>
+                                                </div>
                                             )}
-                                        </CardHeader>
-                                        <CardContent className="flex flex-1 flex-col">
-                                            <div className="mb-6">
-                                                {plan.price_monthly === 0 ? (
-                                                    <div className="text-4xl font-bold">{t('plan.free')}</div>
-                                                ) : (
-                                                    <>
-                                                        <div className="text-4xl font-bold">
-                                                            {formatCurrency(plan.price_monthly)}
-                                                            <span className="text-sm font-normal text-muted-foreground">/{t('plan.month')}</span>
-                                                        </div>
-                                                        {plan.price_yearly > 0 && (
-                                                            <p className="mt-1 text-sm text-green-600 dark:text-green-400">
-                                                                {t('plan.yearly')}: {formatCurrency(plan.price_yearly)}/{t('plan.year')}
-                                                            </p>
-                                                        )}
-                                                    </>
+                                            {plan.is_default && !isPopular && (
+                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                                    <Badge variant="secondary">{t('plan.free_trial')}</Badge>
+                                                </div>
+                                            )}
+                                            <CardHeader>
+                                                <CardTitle className="text-xl">{plan.name}</CardTitle>
+                                                {plan.description && (
+                                                    <p className="text-sm text-muted-foreground">{plan.description}</p>
                                                 )}
-                                            </div>
+                                            </CardHeader>
+                                            <CardContent className="flex flex-1 flex-col">
+                                                <div className="mb-6">
+                                                    {price === 0 ? (
+                                                        <div className="text-4xl font-bold">{t('plan.free')}</div>
+                                                    ) : (
+                                                        <div className="text-4xl font-bold">
+                                                            {formatCurrency(price)}
+                                                            <span className="text-sm font-normal text-muted-foreground">/{period}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
 
                                             <Separator className="mb-6" />
 
@@ -386,7 +404,7 @@ export default function Welcome({ stats, plans }: Props) {
 
                                             <Button
                                                 className="w-full"
-                                                variant={plan.is_default ? 'default' : 'outline'}
+                                                variant={isPopular ? 'default' : 'outline'}
                                                 asChild
                                             >
                                                 <Link href={register()}>
@@ -396,7 +414,8 @@ export default function Welcome({ stats, plans }: Props) {
                                             </Button>
                                         </CardContent>
                                     </Card>
-                                ))}
+                                );
+                                })}
                             </div>
                         </div>
                     </section>

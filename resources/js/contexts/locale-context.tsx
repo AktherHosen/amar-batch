@@ -212,6 +212,23 @@ const translations: Record<Locale, Record<string, string>> = {
         'fees.update_details': 'বেতন পেমেন্টের বিবরণ আপডেট করুন',
         'fees.fee_details': 'বেতনের বিবরণ',
 
+        // Plan
+        'plan.popular': 'সর্বাধিক জনপ্রিয়',
+        'plan.free_trial': 'বিনামূল্যে ট্রায়াল',
+        'plan.free': 'বিনামূল্যে',
+        'plan.month': 'মাস',
+        'plan.monthly': 'মাসিক',
+        'plan.year': 'বছর',
+        'plan.yearly': 'বার্ষিক',
+        'plan.limits': 'সীমা',
+        'plan.includes': 'অন্তর্ভুক্ত',
+        'plan.students': 'জন ছাত্র',
+        'plan.staff': 'জন স্টাফ',
+        'plan.batches': 'টি ব্যাচ',
+        'plan.unlimited_students': 'অসীম ছাত্র',
+        'plan.unlimited_staff': 'অসীম স্টাফ',
+        'plan.unlimited_batches': 'অসীম ব্যাচ',
+
         // Classes
         'classes.title': 'কোচিং ক্লাস',
         'classes.create': 'ক্লাস যোগ করুন',
@@ -691,9 +708,11 @@ const translations: Record<Locale, Record<string, string>> = {
         // Pricing
         'welcome.pricing_title': 'Simple, Transparent Pricing',
         'welcome.pricing_desc': 'Choose the plan that fits your coaching center. Start free, upgrade when you need to.',
+        'plan.popular': 'Most Popular',
         'plan.free_trial': 'Free Trial',
         'plan.free': 'Free',
         'plan.month': 'mo',
+        'plan.monthly': 'Monthly',
         'plan.year': 'yr',
         'plan.yearly': 'Yearly',
         'plan.limits': 'Limits',
