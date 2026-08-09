@@ -28,7 +28,7 @@ class DashboardController extends Controller
             return $this->adminDashboard($request);
         }
 
-        if ($user->isTeacher() && !$user->is_approved) {
+        if ($user->isTeacher() && ! $user->is_approved) {
             return Inertia::render('dashboard', [
                 'isPendingApproval' => true,
                 'pendingTeacher' => [
@@ -84,6 +84,7 @@ class DashboardController extends Controller
 
         $attendanceTrend = collect(range(5, 0))->map(function ($i) use ($tenantId) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
                 'present' => Attendance::where('tenant_id', $tenantId)->whereDate('date', $date)->where('status', 'present')->count(),
@@ -94,6 +95,7 @@ class DashboardController extends Controller
 
         $enrollmentTrend = collect(range(5, 0))->map(function ($i) use ($tenantId) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
                 'enrollments' => Enrollment::where('tenant_id', $tenantId)->whereMonth('created_at', $date->month)
@@ -103,6 +105,7 @@ class DashboardController extends Controller
 
         $feeTrend = collect(range(5, 0))->map(function ($i) use ($tenantId) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
                 'collected' => (float) FeeStatus::where('tenant_id', $tenantId)->whereMonth('created_at', $date->month)
@@ -192,6 +195,7 @@ class DashboardController extends Controller
 
         $attendanceTrend = collect(range(5, 0))->map(function ($i) use ($assignedBatchIds) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
                 'present' => Attendance::whereDate('date', $date)->where('status', 'present')
@@ -205,6 +209,7 @@ class DashboardController extends Controller
 
         $enrollmentTrend = collect(range(5, 0))->map(function ($i) use ($assignedBatchIds) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
                 'enrollments' => Enrollment::whereIn('batch_id', $assignedBatchIds)
@@ -215,6 +220,7 @@ class DashboardController extends Controller
 
         $feeTrend = collect(range(5, 0))->map(function ($i) use ($assignedBatchIds) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
                 'collected' => (float) FeeStatus::whereIn('batch_id', $assignedBatchIds)

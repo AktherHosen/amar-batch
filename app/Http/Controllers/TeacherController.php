@@ -43,8 +43,8 @@ class TeacherController extends Controller
             abort(403);
         }
 
-        $planLimits = new PlanLimitsPolicy();
-        if (!$planLimits->createStaff($request->user())) {
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createStaff($request->user())) {
             return to_route('subscription.index')->with('toast', [
                 'type' => 'warning',
                 'message' => 'You have reached the staff limit for your current plan. Please upgrade to add more staff.',
@@ -69,8 +69,8 @@ class TeacherController extends Controller
             abort(403);
         }
 
-        $planLimits = new PlanLimitsPolicy();
-        if (!$planLimits->createStaff($request->user())) {
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createStaff($request->user())) {
             return to_route('subscription.index')->with('toast', [
                 'type' => 'warning',
                 'message' => 'You have reached the staff limit for your current plan. Please upgrade to add more staff.',

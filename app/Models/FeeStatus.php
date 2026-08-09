@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FeeStatus extends Model
 {
     /** @use HasFactory<FeeStatusFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'tenant_id', 'student_id', 'batch_id', 'month', 'year', 'amount_paid', 'notes',

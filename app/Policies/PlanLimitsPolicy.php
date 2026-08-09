@@ -43,12 +43,12 @@ class PlanLimitsPolicy
             default => null,
         };
 
-        if (!$limitField) {
+        if (! $limitField) {
             return null;
         }
 
         $tenant = $user->tenant;
-        if (!$tenant || !$tenant->subscription || !$tenant->subscription->plan) {
+        if (! $tenant || ! $tenant->subscription || ! $tenant->subscription->plan) {
             return 0;
         }
 
@@ -77,12 +77,12 @@ class PlanLimitsPolicy
             default => null,
         };
 
-        if (!$limitField) {
+        if (! $limitField) {
             return null;
         }
 
         $tenant = $user->tenant;
-        if (!$tenant || !$tenant->subscription || !$tenant->subscription->plan) {
+        if (! $tenant || ! $tenant->subscription || ! $tenant->subscription->plan) {
             return 0;
         }
 
@@ -97,7 +97,7 @@ class PlanLimitsPolicy
     public function getCurrentCount(User $user, string $type): int
     {
         $tenant = $user->tenant;
-        if (!$tenant) {
+        if (! $tenant) {
             return 0;
         }
 
@@ -112,12 +112,12 @@ class PlanLimitsPolicy
     private function checkLimit(User $user, string $type, string $limitField): bool
     {
         $tenant = $user->tenant;
-        if (!$tenant) {
+        if (! $tenant) {
             return false;
         }
 
         // No subscription or plan = block
-        if (!$tenant->subscription || !$tenant->subscription->plan) {
+        if (! $tenant->subscription || ! $tenant->subscription->plan) {
             return false;
         }
 

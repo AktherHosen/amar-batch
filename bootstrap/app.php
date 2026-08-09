@@ -27,6 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'payment/*',
+        ]);
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'tenant' => TenantMiddleware::class,

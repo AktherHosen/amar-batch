@@ -2,9 +2,8 @@ import { Head, Link } from '@inertiajs/react';
 import { CheckCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
 import { useLocale } from '@/contexts/locale-context';
-import subscription from '@/routes/subscription';
+import { index as subscriptionIndex } from '@/routes/subscription';
 
 type Props = {
     payment: {
@@ -19,7 +18,7 @@ export default function PaymentSuccess({ payment }: Props) {
     const { t, formatCurrency } = useLocale();
 
     return (
-        <AppLayout>
+        <>
             <Head title={t('payment.success_title')} />
 
             <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
@@ -42,7 +41,7 @@ export default function PaymentSuccess({ payment }: Props) {
                             </div>
                         </div>
                         <Button asChild className="w-full">
-                            <Link href={subscription()}>
+                            <Link href={subscriptionIndex()}>
                                 {t('payment.go_to_subscription')}
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Link>
@@ -50,6 +49,6 @@ export default function PaymentSuccess({ payment }: Props) {
                     </CardContent>
                 </Card>
             </div>
-        </AppLayout>
+        </>
     );
 }

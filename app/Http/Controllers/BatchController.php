@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Policies\PlanLimitsPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -54,8 +55,8 @@ class BatchController extends Controller
     {
         $this->authorize('create', Batch::class);
 
-        $planLimits = new PlanLimitsPolicy();
-        if (!$planLimits->createBatch($request->user())) {
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createBatch($request->user())) {
             return to_route('subscription.index')->with('toast', [
                 'type' => 'warning',
                 'message' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.',
@@ -78,8 +79,8 @@ class BatchController extends Controller
     {
         $this->authorize('create', Batch::class);
 
-        $planLimits = new PlanLimitsPolicy();
-        if (!$planLimits->createBatch($request->user())) {
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createBatch($request->user())) {
             return to_route('subscription.index')->with('toast', [
                 'type' => 'warning',
                 'message' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.',
@@ -148,7 +149,7 @@ class BatchController extends Controller
 
         $tenantId = $request->user()->tenant_id;
         $request->validate([
-            'teacher_id' => ['required', \Illuminate\Validation\Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
+            'teacher_id' => ['required', Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
         ]);
 
         /** @var User $teacher */
@@ -171,7 +172,7 @@ class BatchController extends Controller
 
         $tenantId = $request->user()->tenant_id;
         $request->validate([
-            'teacher_id' => ['required', \Illuminate\Validation\Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
+            'teacher_id' => ['required', Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
         ]);
 
         $batch->teachers()->detach($request->teacher_id);

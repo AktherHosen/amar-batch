@@ -31,6 +31,11 @@ export function SuperAdminSidebar() {
             href: '/super-admin/plans',
             icon: CreditCard,
         },
+        {
+            title: 'Payments',
+            href: '/super-admin/payments',
+            icon: CreditCard,
+        },
     ];
 
     return (

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Batch extends Model
 {
     /** @use HasFactory<BatchFactory> */
-    use HasFactory, SoftDeletes, BelongsToTenant;
+    use BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'tenant_id', 'name', 'subject', 'days', 'time', 'capacity', 'start_date',

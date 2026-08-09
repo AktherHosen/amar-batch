@@ -73,12 +73,17 @@ const featureLabels: Record<string, string> = {
 
 export default function SubscriptionPage({ subscription, plans, currentUsage, recentPayments }: PageProps) {
     const { t, formatCurrency } = useLocale();
+    const { flash } = usePage<{ flash: { error?: string; success?: string } }>().props;
     const [annual, setAnnual] = useState(true);
     const [upgradeDialog, setUpgradeDialog] = useState<{ open: boolean; plan: Plan | null; billing: string }>({
         open: false,
         plan: null,
         billing: 'yearly',
     });
+
+    if (flash?.error) {
+        toast.error(flash.error);
+    }
 
     const currentPlan = subscription?.plan;
     const isTrial = subscription?.status === 'trial';
@@ -93,22 +98,28 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
     };
 
     const handleUpgrade = (plan: Plan) => {
-        const billing = annual ? 'yearly' : 'monthly';
-        setUpgradeDialog({ open: true, plan, billing });
+        if (plan.price_monthly > 0) {
+            const billing = annual ? 'yearly' : 'monthly';
+            window.location.href = `/payment/initiate/${plan.id}?billing=${billing}`;
+        } else {
+            const billing = annual ? 'yearly' : 'monthly';
+            setUpgradeDialog({ open: true, plan, billing });
+        }
     };
 
     const confirmUpgrade = () => {
-        if (upgradeDialog.plan) {
-            if (upgradeDialog.plan.price_monthly > 0) {
-                window.location.href = `/payment/initiate/${upgradeDialog.plan.id}?billing=${upgradeDialog.billing}`;
-            } else {
-                router.post(`/subscription/upgrade/${upgradeDialog.plan.id}`, {}, {
-                    onSuccess: () => {
-                        toast.success(t('toast.upgraded'));
-                        setUpgradeDialog({ open: false, plan: null, billing: 'yearly' });
-                    },
-                });
-            }
+        if (!upgradeDialog.plan) return;
+
+        if (upgradeDialog.plan.price_monthly > 0) {
+            const url = `/payment/initiate/${upgradeDialog.plan.id}?billing=${upgradeDialog.billing}`;
+            window.location.assign(url);
+        } else {
+            router.post(`/subscription/upgrade/${upgradeDialog.plan.id}`, {}, {
+                onSuccess: () => {
+                    toast.success(t('toast.upgraded'));
+                    setUpgradeDialog({ open: false, plan: null, billing: 'yearly' });
+                },
+            });
         }
     };
 

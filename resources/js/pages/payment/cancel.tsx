@@ -2,9 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { XCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
 import { useLocale } from '@/contexts/locale-context';
-
 
 type Props = {
     message?: string;
@@ -14,7 +12,7 @@ export default function PaymentCancel({ message }: Props) {
     const { t } = useLocale();
 
     return (
-        <AppLayout>
+        <>
             <Head title={t('payment.cancel_title')} />
 
             <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
@@ -38,6 +36,6 @@ export default function PaymentCancel({ message }: Props) {
                     </CardContent>
                 </Card>
             </div>
-        </AppLayout>
+        </>
     );
 }

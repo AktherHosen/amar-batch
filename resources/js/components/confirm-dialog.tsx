@@ -1,6 +1,5 @@
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -8,6 +7,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 
 type ConfirmDialogProps = {
     open: boolean;
@@ -39,18 +39,12 @@ export function ConfirmDialog({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>{cancelText}</AlertDialogCancel>
-                    {variant === 'destructive' ? (
-                        <AlertDialogAction
-                            onClick={onConfirm}
-                            className="bg-red-600 text-white hover:bg-red-700"
-                        >
-                            {confirmText}
-                        </AlertDialogAction>
-                    ) : (
-                        <AlertDialogAction onClick={onConfirm}>
-                            {confirmText}
-                        </AlertDialogAction>
-                    )}
+                    <Button
+                        onClick={onConfirm}
+                        variant={variant === 'destructive' ? 'destructive' : 'default'}
+                    >
+                        {confirmText}
+                    </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

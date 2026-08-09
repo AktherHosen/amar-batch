@@ -15,7 +15,7 @@ class TenantSettingsController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
-        if (!$tenant || !$user->isOwner()) {
+        if (! $tenant || ! $user->isOwner()) {
             return to_route('dashboard');
         }
 
@@ -38,7 +38,7 @@ class TenantSettingsController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
-        if (!$tenant || !$user->isOwner()) {
+        if (! $tenant || ! $user->isOwner()) {
             return to_route('dashboard');
         }
 

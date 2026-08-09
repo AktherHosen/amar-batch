@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "90edde4313745ad8fcdec092e05c6787",
+    "content-hash": "ade022d125cc64039612c024268996a1",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -4121,86 +4121,6 @@
                 "source": "https://github.com/ramsey/uuid/tree/4.9.3"
             },
             "time": "2026-06-18T03:57:49+00:00"
-        },
-        {
-            "name": "raziul/sslcommerz-laravel",
-            "version": "v1.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/iRaziul/sslcommerz-laravel.git",
-                "reference": "74df23de7da3a097f5aa57d761db0a8a7da507c4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/iRaziul/sslcommerz-laravel/zipball/74df23de7da3a097f5aa57d761db0a8a7da507c4",
-                "reference": "74df23de7da3a097f5aa57d761db0a8a7da507c4",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/guzzle": "^7.10",
-                "illuminate/contracts": "^10.0||^11.0||^12.0||^13.0",
-                "php": "^8.2||^8.3||^8.4||^8.5"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.14",
-                "nunomaduro/collision": "^8.1.1||^7.10.0||^8.6",
-                "orchestra/testbench": "^11.0||^10.0||^9.0||^8.22",
-                "pestphp/pest": "^2.36||^3.8||^4.0",
-                "pestphp/pest-plugin-arch": "^2.7||^3.0||^4.0",
-                "pestphp/pest-plugin-laravel": "^2.4||^3.2||^4.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "Sslcommerz": "Raziul\\Sslcommerz\\Facades\\Sslcommerz"
-                    },
-                    "providers": [
-                        "Raziul\\Sslcommerz\\SslcommerzServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Raziul\\Sslcommerz\\": "src/",
-                    "Raziul\\Sslcommerz\\Database\\Factories\\": "database/factories/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Raziul Islam",
-                    "email": "raziul.dev@gmail.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "SSLCommerz Laravel is a super easy package to integrate SSLCommerz on Laravel websites.",
-            "homepage": "https://github.com/iraziul/sslcommerz-laravel",
-            "keywords": [
-                "laravel",
-                "laravel-sslcommerz",
-                "sslcommerz",
-                "sslcommerz-laravel",
-                "sslcommerz-payment-gateway"
-            ],
-            "support": {
-                "issues": "https://github.com/iRaziul/sslcommerz-laravel/issues",
-                "source": "https://github.com/iRaziul/sslcommerz-laravel/tree/v1.2.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/iraziul",
-                    "type": "github"
-                },
-                {
-                    "url": "https://www.patreon.com/raziul",
-                    "type": "patreon"
-                }
-            ],
-            "time": "2026-04-20T08:13:04+00:00"
         },
         {
             "name": "spomky-labs/cbor-php",

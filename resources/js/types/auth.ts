@@ -54,7 +54,6 @@ export type Passkey = {
 };
 /* @end-chisel-passkeys */
 
-/* @chisel-2fa */
 export type TwoFactorSetupData = {
     svg: string;
     url: string;
@@ -63,4 +62,3 @@ export type TwoFactorSetupData = {
 export type TwoFactorSecretKey = {
     secretKey: string;
 };
-/* @end-chisel-2fa */

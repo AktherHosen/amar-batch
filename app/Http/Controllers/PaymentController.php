@@ -5,15 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Services\SslcommerzService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Raziul\Sslcommerz\Facades\Sslcommerz;
 
 class PaymentController extends Controller
 {
+    private SslcommerzService $sslcommerz;
+
+    public function __construct(SslcommerzService $sslcommerz)
+    {
+        $this->sslcommerz = $sslcommerz;
+    }
+
     public function initiate(Request $request, Plan $plan): RedirectResponse
     {
         $user = $request->user();
@@ -30,7 +37,7 @@ class PaymentController extends Controller
             return back()->withErrors(['error' => 'This plan does not require payment.']);
         }
 
-        $invoiceId = 'AB-' . Str::upper(Str::random(8)) . '-' . time();
+        $invoiceId = 'AB-'.Str::upper(Str::random(8)).'-'.time();
 
         $payment = Payment::create([
             'tenant_id' => $tenant->id,
@@ -40,35 +47,46 @@ class PaymentController extends Controller
             'status' => 'pending',
         ]);
 
-        $response = Sslcommerz::setOrder($amount, $invoiceId, "{$plan->name} ({$billingType})")
-            ->setCustomer(
-                $tenant->name ?? $user->name,
-                $user->email,
-                $user->phone ?? ' ',
-                $tenant->address ?? ' ',
-                'Dhaka',
-                ' ',
-                ' ',
-                'Bangladesh'
-            )
-            ->setShippingInfo(1, $tenant->address ?? 'Dhaka')
-            ->makePayment();
+        $baseUrl = $request->getSchemeAndHttpHost();
 
-        if (! $response->success()) {
+        $result = $this->sslcommerz->initiatePayment(
+            amount: $amount,
+            tranId: $invoiceId,
+            productName: "{$plan->name} ({$billingType})",
+            customerName: $tenant->name ?? $user->name,
+            customerEmail: $user->email,
+            customerPhone: $user->phone ?? '',
+            customerAddress: $tenant->address ?? '',
+            successUrl: "{$baseUrl}/payment/success",
+            failUrl: "{$baseUrl}/payment/failure",
+            cancelUrl: "{$baseUrl}/payment/cancel",
+            ipnUrl: "{$baseUrl}/payment/ipn",
+        );
+
+        if (isset($result['status']) && $result['status'] === 'FAILED') {
             $payment->update([
                 'status' => 'failed',
-                'gateway_response' => $response->toArray(),
+                'gateway_response' => $result,
             ]);
 
-            return back()->withErrors(['error' => 'Failed to initiate payment. Please try again.']);
+            return to_route('subscription.index')->with('error', $result['failedreason'] ?? 'Failed to initiate payment. Please try again.');
+        }
+
+        if (! isset($result['GatewayPageURL']) || empty($result['GatewayPageURL'])) {
+            $payment->update([
+                'status' => 'failed',
+                'gateway_response' => $result,
+            ]);
+
+            return to_route('subscription.index')->with('error', 'Failed to get payment gateway URL. Please try again.');
         }
 
         $payment->update([
             'txid' => $invoiceId,
-            'gateway_response' => $response->toArray(),
+            'gateway_response' => $result,
         ]);
 
-        return redirect($response->gatewayPageURL());
+        return redirect($result['GatewayPageURL']);
     }
 
     public function success(Request $request): Response
@@ -83,9 +101,20 @@ class PaymentController extends Controller
             ]);
         }
 
-        $isValid = Sslcommerz::validatePayment($data, $payment->txid, $payment->amount);
+        if (! isset($data['val_id']) || empty($data['val_id'])) {
+            $payment->update([
+                'status' => 'failed',
+                'gateway_response' => $data,
+            ]);
 
-        if (! $isValid) {
+            return Inertia::render('payment/failure', [
+                'message' => 'Payment validation failed: no validation ID.',
+            ]);
+        }
+
+        $validation = $this->sslcommerz->validatePayment($data['val_id']);
+
+        if (! isset($validation['status']) || strtolower($validation['status']) !== 'valid') {
             $payment->update([
                 'status' => 'failed',
                 'gateway_response' => $data,
@@ -98,8 +127,8 @@ class PaymentController extends Controller
 
         $payment->update([
             'status' => 'success',
-            'payment_method' => $data['card_type'] ?? $data['store_amount'] ?? null,
-            'gateway_response' => $data,
+            'payment_method' => $data['card_type'] ?? null,
+            'gateway_response' => array_merge($data, ['validation' => $validation]),
             'paid_at' => now(),
         ]);
 
@@ -161,13 +190,17 @@ class PaymentController extends Controller
             return response('Payment not found', 404);
         }
 
-        $isValid = Sslcommerz::validatePayment($data, $payment->txid, $payment->amount);
+        if (! isset($data['val_id']) || empty($data['val_id'])) {
+            return response('No validation ID', 400);
+        }
 
-        if ($isValid && ($data['status'] ?? '') === 'VALID') {
+        $validation = $this->sslcommerz->validatePayment($data['val_id']);
+
+        if (isset($validation['status']) && strtolower($validation['status']) === 'valid' && ($data['status'] ?? '') === 'VALID') {
             $payment->update([
                 'status' => 'success',
                 'payment_method' => $data['card_type'] ?? null,
-                'gateway_response' => $data,
+                'gateway_response' => array_merge($data, ['validation' => $validation]),
                 'paid_at' => now(),
             ]);
 

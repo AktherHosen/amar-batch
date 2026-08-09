@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Student extends Model
 {
     /** @use HasFactory<StudentFactory> */
-    use HasFactory, SoftDeletes, BelongsToTenant;
+    use BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'tenant_id', 'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',

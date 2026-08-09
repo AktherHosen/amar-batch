@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Enrollment extends Model
 {
     /** @use HasFactory<EnrollmentFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = ['tenant_id', 'student_id', 'batch_id', 'enrolled_at', 'status'];
 

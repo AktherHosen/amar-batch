@@ -53,8 +53,8 @@ class StudentController extends Controller
     {
         $this->authorize('create', Student::class);
 
-        $planLimits = new PlanLimitsPolicy();
-        if (!$planLimits->createStudent($request->user())) {
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createStudent($request->user())) {
             return to_route('subscription.index')->with('toast', [
                 'type' => 'warning',
                 'message' => 'You have reached the student limit for your current plan. Please upgrade to add more students.',
@@ -80,8 +80,8 @@ class StudentController extends Controller
     {
         $this->authorize('create', Student::class);
 
-        $planLimits = new PlanLimitsPolicy();
-        if (!$planLimits->createStudent($request->user())) {
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createStudent($request->user())) {
             return to_route('subscription.index')->with('toast', [
                 'type' => 'warning',
                 'message' => 'You have reached the student limit for your current plan. Please upgrade to add more students.',
