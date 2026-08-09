@@ -53,6 +53,9 @@ const translations: Record<Locale, Record<string, string>> = {
         'nav.attendance': 'উপস্থিতি',
         'nav.fees': 'বেতন',
         'nav.coaching_classes': 'ক্লাস',
+        'nav.subscription': 'সাবস্ক্রিপশন',
+        'nav.settings': 'সেটিংস',
+        'nav.coaching_classes': 'ক্লাস',
         'nav.settings': 'সেটিংস',
 
         // Dashboard
@@ -429,6 +432,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'nav.attendance': 'Attendance',
         'nav.fees': 'Fees',
         'nav.coaching_classes': 'Classes',
+        'nav.subscription': 'Subscription',
         'nav.settings': 'Settings',
 
         // Dashboard

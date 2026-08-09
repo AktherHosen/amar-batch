@@ -1,4 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import Heading from '@/components/heading';
+import PlanBadge from '@/components/plan-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -122,11 +124,14 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
 
     return (
         <>
-            <Head title={t('nav.settings')} />
+            <Head title={t('subscription.title')} />
 
-            <h1 className="sr-only">Subscription</h1>
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+                <Heading
+                    title={t('subscription.title')}
+                    description={t('subscription.desc')}
+                />
 
-            <div className="space-y-6">
                 {/* Current Plan Status */}
                 {subscription && (
                     <Card>
@@ -238,7 +243,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                             <span className={`text-sm ${annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{t('plan.yearly')}</span>
                         </div>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {plans.map((plan) => {
                             const isCurrent = currentPlan?.id === plan.id;
                             const price = annual ? plan.price_yearly : plan.price_monthly;
@@ -246,11 +251,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
 
                             return (
                                 <Card key={plan.id} className={`relative flex flex-col ${isCurrent ? 'border-primary' : ''}`}>
-                                    {isCurrent && (
-                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                            <Badge>{t('subscription.current_plan')}</Badge>
-                                        </div>
-                                    )}
+                                    <PlanBadge isCurrent={isCurrent} label={t('subscription.current_plan')} />
                                     <CardContent className="flex flex-1 flex-col pt-6">
                                         <h3 className="text-xl font-bold">{plan.name}</h3>
                                         {plan.description && (
@@ -258,14 +259,16 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                         )}
 
                                         <div className="mt-4">
-                                            <div className="text-3xl font-bold">
-                                                {price === 0 ? t('plan.free') : formatCurrency(price)}
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-3xl font-bold">
+                                                    {price === 0 ? t('plan.free') : formatCurrency(price)}
+                                                </span>
+                                                {price > 0 && (
+                                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                                        /{period}
+                                                    </span>
+                                                )}
                                             </div>
-                                            {price > 0 && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    /{period}
-                                                </p>
-                                            )}
                                         </div>
 
                                         <Separator className="my-4" />

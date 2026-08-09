@@ -44,7 +44,7 @@ class SubscriptionController extends Controller
                 'paid_at' => $p->paid_at,
             ]);
 
-        return Inertia::render('settings/subscription', [
+        return Inertia::render('subscription', [
             'subscription' => $subscription ? [
                 'id' => $subscription->id,
                 'status' => $subscription->status,

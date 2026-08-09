@@ -13,8 +13,8 @@ import {
     Zap,
     Globe,
     Clock,
-    Sparkles,
 } from 'lucide-react';
+import PlanBadge from '@/components/plan-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -339,19 +339,12 @@ export default function Welcome({ stats, plans }: Props) {
                                                         : ''
                                             }`}
                                         >
-                                            {isPopular && (
-                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                                    <Badge className="bg-primary text-primary-foreground">
-                                                        <Sparkles className="mr-1 h-3 w-3" />
-                                                        {t('plan.popular')}
-                                                    </Badge>
-                                                </div>
-                                            )}
-                                            {plan.is_default && !isPopular && (
-                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                                    <Badge variant="secondary">{t('plan.free_trial')}</Badge>
-                                                </div>
-                                            )}
+                                            <PlanBadge
+                                                isPopular={isPopular}
+                                                isDefault={plan.is_default && !isPopular}
+                                                popularLabel={t('plan.popular')}
+                                                defaultLabel={t('plan.free_trial')}
+                                            />
                                             <CardHeader>
                                                 <CardTitle className="text-xl">{plan.name}</CardTitle>
                                                 {plan.description && (

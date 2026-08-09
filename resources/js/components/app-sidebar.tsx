@@ -7,6 +7,7 @@ import {
     DollarSign,
     CheckSquare,
     School,
+    CreditCard,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -29,6 +30,7 @@ import teachers from '@/routes/teachers';
 import fees from '@/routes/fees';
 import attendance from '@/routes/attendance';
 import coachingClasses from '@/routes/coaching-classes';
+import subscription from '@/routes/subscription';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
@@ -73,6 +75,12 @@ export function AppSidebar() {
             title: t('nav.attendance'),
             href: attendance.index(),
             icon: CheckSquare,
+        },
+        {
+            title: t('nav.subscription'),
+            href: subscription.index(),
+            icon: CreditCard,
+            ownerOnly: true,
         },
     ];
 

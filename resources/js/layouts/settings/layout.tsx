@@ -9,7 +9,6 @@ import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import settings from '@/routes/settings';
-import { index as subscriptionIndex } from '@/routes/subscription';
 import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
@@ -31,11 +30,6 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Coaching Center',
         href: settings.tenant.edit(),
-        icon: null,
-    },
-    {
-        title: 'Subscription',
-        href: subscriptionIndex(),
         icon: null,
     },
 ];
