@@ -22,7 +22,7 @@ trait BelongsToTenant
         static::addGlobalScope('tenant', function (Builder $builder) {
             $tenantId = app()->bound('tenant_id') ? app('tenant_id') : null;
             if ($tenantId) {
-                $builder->where('tenant_id', $tenantId);
+                $builder->where($builder->getModel()->getTable() . '.tenant_id', $tenantId);
             }
         });
     }
@@ -31,11 +31,11 @@ trait BelongsToTenant
     {
         $tenantId = app()->bound('tenant_id') ? app('tenant_id') : null;
 
-        return $query->where('tenant_id', $tenantId);
+        return $query->where($query->getModel()->getTable() . '.tenant_id', $tenantId);
     }
 
     public function scopeForTenant(Builder $query, int $tenantId): Builder
     {
-        return $query->where('tenant_id', $tenantId);
+        return $query->where($query->getModel()->getTable() . '.tenant_id', $tenantId);
     }
 }

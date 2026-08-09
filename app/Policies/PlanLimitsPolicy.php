@@ -60,7 +60,7 @@ class PlanLimitsPolicy
             return null;
         }
 
-        $current = $this->getCurrentCount($tenant, $type);
+        $current = $this->getCurrentCount($user, $type);
 
         return max(0, $max - $current);
     }

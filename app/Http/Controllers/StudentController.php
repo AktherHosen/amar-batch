@@ -49,12 +49,18 @@ class StudentController extends Controller
         ]);
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
         $this->authorize('create', Student::class);
 
         $planLimits = new PlanLimitsPolicy();
-        $canCreate = $planLimits->createStudent($request->user());
+        if (!$planLimits->createStudent($request->user())) {
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the student limit for your current plan. Please upgrade to add more students.',
+            ]);
+        }
+
         $remaining = $planLimits->remaining($request->user(), 'students');
         $limit = $planLimits->getLimit($request->user(), 'students');
 
@@ -63,7 +69,7 @@ class StudentController extends Controller
         return Inertia::render('students/create', [
             'coachingClasses' => $coachingClasses,
             'planLimits' => [
-                'can_create' => $canCreate,
+                'can_create' => true,
                 'remaining' => $remaining,
                 'limit' => $limit,
             ],
@@ -76,7 +82,10 @@ class StudentController extends Controller
 
         $planLimits = new PlanLimitsPolicy();
         if (!$planLimits->createStudent($request->user())) {
-            return back()->withErrors(['coaching_class_id' => 'You have reached the student limit for your current plan. Please upgrade to add more students.']);
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the student limit for your current plan. Please upgrade to add more students.',
+            ]);
         }
 
         Student::create($request->validated());

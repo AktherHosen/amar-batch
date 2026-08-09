@@ -20,7 +20,7 @@ class TeacherController extends Controller
             abort(403);
         }
 
-        $query = User::where('role', 'staff')->where('tenant_id', $request->user()->tenant_id);
+        $query = User::where('role', 'staff');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -37,20 +37,26 @@ class TeacherController extends Controller
         ]);
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
         if (! $request->user()->isAdmin()) {
             abort(403);
         }
 
         $planLimits = new PlanLimitsPolicy();
-        $canCreate = $planLimits->createStaff($request->user());
+        if (!$planLimits->createStaff($request->user())) {
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the staff limit for your current plan. Please upgrade to add more staff.',
+            ]);
+        }
+
         $remaining = $planLimits->remaining($request->user(), 'staff');
         $limit = $planLimits->getLimit($request->user(), 'staff');
 
         return Inertia::render('teachers/create', [
             'planLimits' => [
-                'can_create' => $canCreate,
+                'can_create' => true,
                 'remaining' => $remaining,
                 'limit' => $limit,
             ],
@@ -65,7 +71,10 @@ class TeacherController extends Controller
 
         $planLimits = new PlanLimitsPolicy();
         if (!$planLimits->createStaff($request->user())) {
-            return back()->withErrors(['email' => 'You have reached the staff limit for your current plan. Please upgrade to add more staff.']);
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the staff limit for your current plan. Please upgrade to add more staff.',
+            ]);
         }
 
         User::create([

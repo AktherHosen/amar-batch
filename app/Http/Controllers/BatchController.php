@@ -50,18 +50,24 @@ class BatchController extends Controller
         ]);
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
         $this->authorize('create', Batch::class);
 
         $planLimits = new PlanLimitsPolicy();
-        $canCreate = $planLimits->createBatch($request->user());
+        if (!$planLimits->createBatch($request->user())) {
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.',
+            ]);
+        }
+
         $remaining = $planLimits->remaining($request->user(), 'batches');
         $limit = $planLimits->getLimit($request->user(), 'batches');
 
         return Inertia::render('batches/create', [
             'planLimits' => [
-                'can_create' => $canCreate,
+                'can_create' => true,
                 'remaining' => $remaining,
                 'limit' => $limit,
             ],
@@ -74,7 +80,10 @@ class BatchController extends Controller
 
         $planLimits = new PlanLimitsPolicy();
         if (!$planLimits->createBatch($request->user())) {
-            return back()->withErrors(['name' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.']);
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.',
+            ]);
         }
 
         Batch::create($request->validated());
