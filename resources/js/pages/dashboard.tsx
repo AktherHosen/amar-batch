@@ -133,7 +133,7 @@ export default function Dashboard({
     feeTrend = [],
 }: PageProps) {
     const { t } = useLocale();
-    const { auth } = usePage().props;
+    const { auth, tenant } = usePage().props;
     const isAdmin = isOwner(auth.user);
     const isTeacher = isStaff(auth.user);
 
@@ -180,12 +180,14 @@ export default function Dashboard({
                         title={
                             isTeacher
                                 ? `${t('dashboard.welcome')}, ${auth.user?.name}`
-                                : t('dashboard.title')
+                                : tenant?.name || t('dashboard.title')
                         }
                         description={
                             isTeacher
                                 ? t('dashboard.assigned_batches_desc')
-                                : t('app.tagline')
+                                : tenant?.subscription?.plan
+                                    ? `Plan: ${tenant.subscription.plan.name}${tenant.subscription.status === 'trial' ? ' (Trial)' : ''}`
+                                    : t('app.tagline')
                         }
                     />
                     <Clock />

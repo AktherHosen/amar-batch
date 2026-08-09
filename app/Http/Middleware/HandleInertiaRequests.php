@@ -53,6 +53,18 @@ class HandleInertiaRequests extends Middleware
                 'logo' => $tenant->logo,
                 'currency' => $tenant->currency,
                 'timezone' => $tenant->timezone,
+                'subscription' => $tenant->subscription ? [
+                    'id' => $tenant->subscription->id,
+                    'status' => $tenant->subscription->status,
+                    'plan' => $tenant->subscription->plan ? [
+                        'id' => $tenant->subscription->plan->id,
+                        'name' => $tenant->subscription->plan->name,
+                        'max_students' => $tenant->subscription->plan->max_students,
+                        'max_staff' => $tenant->subscription->plan->max_staff,
+                        'max_batches' => $tenant->subscription->plan->max_batches,
+                    ] : null,
+                    'trial_ends_at' => $tenant->subscription->trial_ends_at,
+                ] : null,
             ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'appStats' => $tenant ? [
