@@ -23,7 +23,7 @@ type Props = {
 
 export default function Welcome({ stats }: Props) {
     const { auth } = usePage().props;
-    const { t, formatNumber } = useLocale();
+    const { t, formatNumber, locale } = useLocale();
 
     const safeStats = stats || {
         total_students: 0,
@@ -68,7 +68,7 @@ export default function Welcome({ stats }: Props) {
         { number: `${formatNumber(safeStats.total_students)}+`, label: t('welcome.stat_students') },
         { number: `${formatNumber(safeStats.active_batches)}+`, label: t('welcome.stat_batches') },
         { number: `${formatNumber(safeStats.total_enrollments)}+`, label: t('welcome.stat_enrollments') },
-        { number: '১০০%', label: t('welcome.stat_fees') },
+        { number: `${formatNumber(100)}%`, label: t('welcome.stat_fees') },
     ];
 
     return (
@@ -86,7 +86,7 @@ export default function Welcome({ stats }: Props) {
                     <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center gap-2">
                             <img src="/logo.png" alt={t('app.name')} className="h-10 w-10 shrink-0 rounded-md object-cover" />
-                            <span className="text-xl font-bold whitespace-nowrap text-gray-900 dark:text-white">
+                            <span className="hidden text-xl font-bold whitespace-nowrap text-gray-900 sm:inline dark:text-white">
                                 {t('app.name')}
                             </span>
                         </div>
@@ -99,20 +99,12 @@ export default function Welcome({ stats }: Props) {
                                     {t('nav.dashboard')}
                                 </Link>
                             ) : (
-                                <>
-                                    <Link
-                                        href={login()}
-                                        className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                                    >
-                                        {t('auth.login')}
-                                    </Link>
-                                    <Link
-                                        href={register()}
-                                        className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 sm:px-5 sm:py-2.5 dark:bg-blue-500 dark:hover:bg-blue-600"
-                                    >
-                                        {t('welcome.cta')}
-                                    </Link>
-                                </>
+                                <Link
+                                    href={login()}
+                                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 sm:px-5 sm:py-2.5 dark:bg-blue-500 dark:hover:bg-blue-600"
+                                >
+                                    {t('auth.login')}
+                                </Link>
                             )}
                         </div>
                     </nav>
@@ -230,7 +222,7 @@ export default function Welcome({ stats }: Props) {
                         <div className="grid gap-8 sm:gap-8 md:grid-cols-3">
                             <div className="text-center">
                                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white sm:h-16 sm:w-16 sm:text-2xl">
-                                    ১
+                                    {formatNumber(1)}
                                 </div>
                                 <h3 className="mb-2 text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
                                     {t('welcome.step1_title')}
@@ -241,7 +233,7 @@ export default function Welcome({ stats }: Props) {
                             </div>
                             <div className="text-center">
                                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white sm:h-16 sm:w-16 sm:text-2xl">
-                                    ২
+                                    {formatNumber(2)}
                                 </div>
                                 <h3 className="mb-2 text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
                                     {t('welcome.step2_title')}
@@ -252,7 +244,7 @@ export default function Welcome({ stats }: Props) {
                             </div>
                             <div className="text-center">
                                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white sm:h-16 sm:w-16 sm:text-2xl">
-                                    ৩
+                                    {formatNumber(3)}
                                 </div>
                                 <h3 className="mb-2 text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
                                     {t('welcome.step3_title')}
@@ -302,7 +294,7 @@ export default function Welcome({ stats }: Props) {
                                 </span>
                             </div>
                             <p className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
-                                © ২০২৬ {t('app.name')}. {t('welcome.copyright')}
+                                © {formatNumber(new Date().getFullYear())} {t('app.name')}. {t('welcome.copyright')}
                             </p>
                         </div>
                     </div>

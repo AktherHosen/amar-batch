@@ -57,14 +57,20 @@
     <body class="font-sans antialiased">
         <x-inertia::app />
 
-        @if(app()->environment('production'))
         <script>
             if ('serviceWorker' in navigator) {
+                @if(app()->environment('production'))
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('/sw.js');
                 });
+                @else
+                navigator.serviceWorker.getRegistrations().then((registrations) => {
+                    for (const registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+                @endif
             }
         </script>
-        @endif
     </body>
 </html>
