@@ -26,6 +26,91 @@ export default function Register({ passwordRules }: Props) {
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-5">
+                            {/* Coaching Center Section */}
+                            <div className="rounded-lg border bg-muted/30 p-4">
+                                <h3 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
+                                    Coaching Center Details
+                                </h3>
+                                <div className="grid gap-4">
+                                    <div className="grid gap-2">
+                                        <Label
+                                            htmlFor="coaching_name"
+                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                        >
+                                            Coaching Center Name *
+                                        </Label>
+                                        <Input
+                                            id="coaching_name"
+                                            type="text"
+                                            required
+                                            autoFocus
+                                            tabIndex={1}
+                                            autoComplete="organization"
+                                            name="coaching_name"
+                                            placeholder="e.g., Bright Minds Academy"
+                                            className="h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
+                                        />
+                                        <InputError
+                                            message={errors.coaching_name}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label
+                                                htmlFor="coaching_email"
+                                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Center Email
+                                            </Label>
+                                            <Input
+                                                id="coaching_email"
+                                                type="email"
+                                                tabIndex={2}
+                                                autoComplete="email"
+                                                name="coaching_email"
+                                                placeholder="center@example.com"
+                                                className="h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
+                                            />
+                                            <InputError
+                                                message={errors.coaching_email}
+                                                className="mt-2"
+                                            />
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label
+                                                htmlFor="coaching_phone"
+                                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Center Phone
+                                            </Label>
+                                            <Input
+                                                id="coaching_phone"
+                                                type="tel"
+                                                tabIndex={3}
+                                                autoComplete="tel"
+                                                name="coaching_phone"
+                                                placeholder="+880 1XXX-XXXXXX"
+                                                className="h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
+                                            />
+                                            <InputError
+                                                message={errors.coaching_phone}
+                                                className="mt-2"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Owner Account Section */}
+                            <div>
+                                <h3 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
+                                    Your Account (Owner)
+                                </h3>
+                            </div>
+
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor="name"
@@ -37,8 +122,7 @@ export default function Register({ passwordRules }: Props) {
                                     id="name"
                                     type="text"
                                     required
-                                    autoFocus
-                                    tabIndex={1}
+                                    tabIndex={4}
                                     autoComplete="name"
                                     name="name"
                                     placeholder="Enter your full name"
@@ -61,7 +145,7 @@ export default function Register({ passwordRules }: Props) {
                                     id="email"
                                     type="email"
                                     required
-                                    tabIndex={2}
+                                    tabIndex={5}
                                     autoComplete="email"
                                     name="email"
                                     placeholder="you@example.com"
@@ -80,7 +164,7 @@ export default function Register({ passwordRules }: Props) {
                                 <PasswordInput
                                     id="password"
                                     required
-                                    tabIndex={3}
+                                    tabIndex={6}
                                     autoComplete="new-password"
                                     name="password"
                                     placeholder="Create a password"
@@ -100,7 +184,7 @@ export default function Register({ passwordRules }: Props) {
                                 <PasswordInput
                                     id="password_confirmation"
                                     required
-                                    tabIndex={4}
+                                    tabIndex={7}
                                     autoComplete="new-password"
                                     name="password_confirmation"
                                     placeholder="Confirm your password"
@@ -115,11 +199,11 @@ export default function Register({ passwordRules }: Props) {
                             <Button
                                 type="submit"
                                 className="mt-2 h-12 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-base font-semibold shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700"
-                                tabIndex={5}
+                                tabIndex={8}
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
-                                Create account
+                                Create Coaching Center
                             </Button>
                         </div>
 
@@ -127,7 +211,7 @@ export default function Register({ passwordRules }: Props) {
                             Already have an account?{' '}
                             <TextLink
                                 href={login()}
-                                tabIndex={6}
+                                tabIndex={9}
                                 className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400"
                             >
                                 Log in
@@ -141,6 +225,6 @@ export default function Register({ passwordRules }: Props) {
 }
 
 Register.layout = {
-    title: 'Create your account',
+    title: 'Create your coaching center',
     description: 'Get started with Karnaphuli Alpha Academy',
 };

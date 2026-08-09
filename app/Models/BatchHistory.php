@@ -2,18 +2,16 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BatchHistory extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = [
-        'batch_id',
-        'student_id',
-        'action',
-        'action_date',
-        'user_id',
-        'notes',
+        'tenant_id', 'batch_id', 'student_id', 'action', 'action_date', 'user_id', 'notes',
     ];
 
     public function batch(): BelongsTo

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToTenant;
 use Database\Factories\FeeStatusFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,10 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FeeStatus extends Model
 {
     /** @use HasFactory<FeeStatusFactory> */
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
-        'student_id', 'batch_id', 'month', 'year', 'amount_paid', 'notes',
+        'tenant_id', 'student_id', 'batch_id', 'month', 'year', 'amount_paid', 'notes',
     ];
 
     protected function casts(): array

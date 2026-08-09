@@ -39,7 +39,7 @@ class DashboardController extends Controller
     {
         $stats = [
             'total_students' => Student::where('status', 'active')->count(),
-            'total_teachers' => User::where('role', 'teacher')->count(),
+            'total_teachers' => User::where('role', 'staff')->count(),
             'active_batches' => Batch::where('status', 'active')->count(),
             'total_enrollments' => Enrollment::where('status', 'active')->count(),
         ];

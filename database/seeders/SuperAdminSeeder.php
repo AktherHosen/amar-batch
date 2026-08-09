@@ -2,28 +2,30 @@
 
 namespace Database\Seeders;
 
+use App\Models\Plan;
+use App\Models\Subscription;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class AdminSeeder extends Seeder
+class SuperAdminSeeder extends Seeder
 {
     public function run(): void
     {
-        // For backward compatibility: create an admin within a demo tenant
-        // In production, owners are created via registration
+        // Create super admin (no tenant)
         User::updateOrCreate(
-            ['email' => 'admin@academia.com'],
+            ['email' => 'superadmin@academia.com'],
             [
-                'name' => 'Admin',
+                'name' => 'Super Admin',
                 'password' => Hash::make('password'),
-                'role' => 'owner',
+                'role' => 'super_admin',
                 'tenant_id' => null,
                 'is_approved' => true,
                 'email_verified_at' => now(),
             ]
         );
 
-        $this->command->info('Admin user created: admin@academia.com (password: password)');
+        $this->command->info('Super Admin created: superadmin@academia.com (password: password)');
     }
 }

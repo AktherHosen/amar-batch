@@ -20,13 +20,13 @@ class TeacherSeeder extends Seeder
                 'name' => $teacher['name'],
                 'email' => $teacher['email'],
                 'password' => Hash::make('password'),
-                'role' => 'teacher',
+                'role' => 'staff',
                 'is_approved' => true,
                 'email_verified_at' => now(),
             ]);
         }
 
-        $this->command->info('Teacher users created:');
+        $this->command->info('Staff users created:');
         $this->command->table(['Name', 'Email'], [
             ['Salma Chy', 'salmachy4000@gmail.com'],
             ['Md Akther Hosen', 'mdaktherhosen16@gmail.com'],

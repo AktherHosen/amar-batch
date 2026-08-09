@@ -19,7 +19,7 @@ class TeacherController extends Controller
             abort(403);
         }
 
-        $query = User::where('role', 'teacher');
+        $query = User::where('role', 'staff');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -55,10 +55,11 @@ class TeacherController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'teacher',
+            'role' => 'staff',
+            'tenant_id' => $request->user()->tenant_id,
         ]);
 
-        return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Teacher created successfully.']);
+        return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Staff member created successfully.']);
     }
 
     public function show(User $teacher): Response
@@ -102,7 +103,7 @@ class TeacherController extends Controller
 
         $teacher->update($data);
 
-        return to_route('teachers.show', $teacher)->with('toast', ['type' => 'success', 'message' => 'Teacher updated successfully.']);
+        return to_route('teachers.show', $teacher)->with('toast', ['type' => 'success', 'message' => 'Staff member updated successfully.']);
     }
 
     public function destroy(Request $request, User $teacher): RedirectResponse
@@ -114,7 +115,7 @@ class TeacherController extends Controller
         $teacher->update(['role' => 'inactive']);
         $teacher->assignedBatches()->detach();
 
-        return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Teacher deactivated successfully.']);
+        return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Staff member deactivated successfully.']);
     }
 
     public function approve(Request $request, User $teacher): RedirectResponse
@@ -125,7 +126,7 @@ class TeacherController extends Controller
 
         $teacher->update(['is_approved' => true]);
 
-        return back()->with('toast', ['type' => 'success', 'message' => 'Teacher approved successfully.']);
+        return back()->with('toast', ['type' => 'success', 'message' => 'Staff member approved successfully.']);
     }
 
     public function reject(Request $request, User $teacher): RedirectResponse
@@ -136,6 +137,6 @@ class TeacherController extends Controller
 
         $teacher->update(['is_approved' => false]);
 
-        return back()->with('toast', ['type' => 'success', 'message' => 'Teacher approval revoked.']);
+        return back()->with('toast', ['type' => 'success', 'message' => 'Staff member approval revoked.']);
     }
 }

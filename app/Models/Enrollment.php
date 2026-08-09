@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToTenant;
 use Database\Factories\EnrollmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Enrollment extends Model
 {
     /** @use HasFactory<EnrollmentFactory> */
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = ['student_id', 'batch_id', 'enrolled_at', 'status'];
+    protected $fillable = ['tenant_id', 'student_id', 'batch_id', 'enrolled_at', 'status'];
 
     protected function casts(): array
     {

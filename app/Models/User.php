@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToTenant;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,10 +16,11 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 class User extends Authenticatable implements PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable, BelongsToTenant;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'student_id', 'is_approved',
+        'name', 'email', 'password', 'role', 'tenant_id', 'phone', 'avatar',
+        'student_id', 'is_approved',
     ];
 
     protected $hidden = [
@@ -35,6 +37,12 @@ class User extends Authenticatable implements PasskeyUser
         ];
     }
 
+    /** @return BelongsTo<Tenant, $this> */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
     /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
@@ -49,19 +57,39 @@ class User extends Authenticatable implements PasskeyUser
             ->withTimestamps();
     }
 
-    public function isAdmin(): bool
+    public function isSuperAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'super_admin';
     }
 
-    public function isTeacher(): bool
+    public function isOwner(): bool
     {
-        return $this->role === 'teacher';
+        return $this->role === 'owner';
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role === 'staff';
     }
 
     public function isStudent(): bool
     {
         return $this->role === 'student';
+    }
+
+    public function isParent(): bool
+    {
+        return $this->role === 'parent';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'super_admin' || $this->role === 'owner';
+    }
+
+    public function isTeacher(): bool
+    {
+        return $this->role === 'staff';
     }
 
     public function isApproved(): bool

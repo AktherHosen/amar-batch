@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
+class Tenant extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'name', 'slug', 'email', 'phone', 'address', 'logo',
+        'timezone', 'currency', 'is_active',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
+    /** @return HasOne<Subscription, $this> */
+    public function subscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class);
+    }
+
+    /** @return HasMany<User, $this> */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
+    /** @return HasMany<Student, $this> */
+    public function students(): HasMany
+    {
+        return $this->hasMany(Student::class);
+    }
+
+    /** @return HasMany<Batch, $this> */
+    public function batches(): HasMany
+    {
+        return $this->hasMany(Batch::class);
+    }
+
+    /** @return HasMany<CoachingClass, $this> */
+    public function coachingClasses(): HasMany
+    {
+        return $this->hasMany(CoachingClass::class);
+    }
+
+    public function isActive(): bool
+    {
+        return $this->is_active;
+    }
+}

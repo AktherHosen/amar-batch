@@ -71,7 +71,7 @@ class BatchController extends Controller
 
         $batch->load(['enrollments.student.coachingClass', 'teachers', 'history.student', 'history.user']);
 
-        $teachers = User::where('role', 'teacher')->get();
+        $teachers = User::where('role', 'staff')->get();
         $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
 
         $enrolledStudentIds = Enrollment::where('status', 'active')
@@ -125,8 +125,8 @@ class BatchController extends Controller
         /** @var User $teacher */
         $teacher = User::findOrFail($request->teacher_id);
 
-        if ($teacher->role !== 'teacher') {
-            abort(422, 'Selected user is not a teacher.');
+        if ($teacher->role !== 'staff') {
+            abort(422, 'Selected user is not a staff member.');
         }
 
         $batch->teachers()->syncWithoutDetaching([

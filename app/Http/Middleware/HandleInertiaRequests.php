@@ -37,18 +37,34 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $tenant = $user?->tenant;
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
+            'tenant' => $tenant ? [
+                'id' => $tenant->id,
+                'name' => $tenant->name,
+                'slug' => $tenant->slug,
+                'logo' => $tenant->logo,
+                'currency' => $tenant->currency,
+                'timezone' => $tenant->timezone,
+            ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'appStats' => [
-                'total_students' => Student::count(),
-                'active_batches' => Batch::where('status', 'active')->count(),
+            'appStats' => $tenant ? [
+                'total_students' => Student::where('tenant_id', $tenant->id)->count(),
+                'active_batches' => Batch::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
                 'attendance_rate' => 98,
                 'fee_collection_rate' => 100,
+            ] : [
+                'total_students' => 0,
+                'active_batches' => 0,
+                'attendance_rate' => 0,
+                'fee_collection_rate' => 0,
             ],
         ];
     }

@@ -6,11 +6,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// Super admin routes (no tenant required)
+require __DIR__.'/super-admin.php';
+
+// Tenant routes (tenant required)
+Route::middleware(['auth', 'verified', 'tenant', 'teacher.approved'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 });
 
-Route::middleware(['auth', 'verified', 'teacher.approved'])->group(function () {
+Route::middleware(['auth', 'verified', 'tenant', 'teacher.approved'])->group(function () {
     require __DIR__.'/students.php';
     require __DIR__.'/batches.php';
     require __DIR__.'/teachers.php';
