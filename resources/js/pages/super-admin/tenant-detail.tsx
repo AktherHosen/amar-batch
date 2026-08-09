@@ -2,11 +2,10 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, CreditCard, Users, GraduationCap, Layers } from 'lucide-react';
+import { ArrowLeft, CreditCard, Users, GraduationCap, Layers, CalendarClock, Clock, AlertTriangle } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import Pagination from '@/components/pagination';
-import { router } from '@inertiajs/react';
 
 type Plan = {
     id: number;
@@ -19,7 +18,6 @@ type PaymentRecord = {
     txid: string | null;
     amount: number;
     status: string;
-    payment_method: string | null;
     billing_type: string | null;
     paid_at: string | null;
     created_at: string;
@@ -50,9 +48,6 @@ type Tenant = {
         ends_at: string | null;
         plan: Plan | null;
     } | null;
-    users_count?: number;
-    students_count?: number;
-    batches_count?: number;
 };
 
 type PaginatedPayments = {
@@ -71,7 +66,14 @@ type PageProps = {
     stats: {
         total_payments: number;
         successful_payments: number;
+        pending_payments: number;
         total_spent: number;
+        students_count: number;
+        active_students_count: number;
+        batches_count: number;
+        active_batches_count: number;
+        users_count: number;
+        total_enrollments: number;
     };
 };
 
@@ -99,6 +101,11 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
         }
     };
 
+    const subscription = tenant.subscription;
+    const isExpiringSoon = subscription?.ends_at && new Date(subscription.ends_at) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const isTrial = subscription?.status === 'trial';
+    const isExpired = subscription?.status === 'expired' || (subscription?.ends_at && new Date(subscription.ends_at) < new Date());
+
     return (
         <>
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
@@ -112,45 +119,66 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                     />
                 </div>
 
-                <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+                {/* Subscription Status Card */}
+                <Card>
+                    <CardContent className="py-4">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
+                                    <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-lg font-semibold">
+                                            {subscription?.plan?.name ?? 'No Plan'}
+                                        </h3>
+                                        {getStatusBadge(subscription?.status ?? 'none')}
+                                    </div>
+                                    <p className="text-sm text-muted-foreground capitalize">
+                                        {subscription?.billing_type ?? 'N/A'} billing
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-6">
+                                {subscription?.ends_at && (
+                                    <div className="text-right">
+                                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                            <CalendarClock className="size-3.5" />
+                                            {isExpired ? 'Expired' : 'Expires'}
+                                        </div>
+                                        <div className={`font-semibold ${isExpiringSoon || isExpired ? 'text-red-600' : ''}`}>
+                                            {new Date(subscription.ends_at).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                )}
+                                {subscription?.trial_ends_at && (
+                                    <div className="text-right">
+                                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                            <Clock className="size-3.5" />
+                                            Trial Ends
+                                        </div>
+                                        <div className="font-semibold">
+                                            {new Date(subscription.trial_ends_at).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Stats Grid */}
+                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
                     <Card className="py-3">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
+                            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
                             <CreditCard className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent className="px-3 pb-2 pt-0">
                             <div className="text-2xl font-bold">{formatCurrency(stats.total_spent)}</div>
-                            <p className="text-xs text-muted-foreground">{stats.successful_payments} successful</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Current Plan</CardTitle>
-                            <CreditCard className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-lg font-bold">
-                                {tenant.subscription?.plan?.name ?? 'None'}
-                            </div>
-                            {getStatusBadge(tenant.subscription?.status ?? 'none')}
-                        </CardContent>
-                    </Card>
-
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Billing</CardTitle>
-                            <CreditCard className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-lg font-bold capitalize">
-                                {tenant.subscription?.billing_type ?? '—'}
-                            </div>
-                            {tenant.subscription?.ends_at && (
-                                <p className="text-xs text-muted-foreground">
-                                    Expires {new Date(tenant.subscription.ends_at).toLocaleDateString()}
-                                </p>
-                            )}
+                            <p className="text-xs text-muted-foreground">
+                                {stats.successful_payments} paid, {stats.pending_payments} pending
+                            </p>
                         </CardContent>
                     </Card>
 
@@ -160,7 +188,10 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                             <GraduationCap className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{tenant.students_count ?? 0}</div>
+                            <div className="text-2xl font-bold">{stats.students_count}</div>
+                            <p className="text-xs text-muted-foreground">
+                                {stats.active_students_count} active
+                            </p>
                         </CardContent>
                     </Card>
 
@@ -170,11 +201,28 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                             <Layers className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{tenant.batches_count ?? 0}</div>
+                            <div className="text-2xl font-bold">{stats.batches_count}</div>
+                            <p className="text-xs text-muted-foreground">
+                                {stats.active_batches_count} active
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="py-3">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
+                            <CardTitle className="text-sm font-medium">Staff</CardTitle>
+                            <Users className="size-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent className="px-3 pb-2 pt-0">
+                            <div className="text-2xl font-bold">{stats.users_count}</div>
+                            <p className="text-xs text-muted-foreground">
+                                {stats.total_enrollments} total enrollments
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
 
+                {/* Payment & Subscription History */}
                 <div className="grid gap-3 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
@@ -187,7 +235,6 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                                         <TableRow>
                                             <TableHead className="whitespace-nowrap">Date</TableHead>
                                             <TableHead className="whitespace-nowrap">Plan</TableHead>
-                                            <TableHead className="whitespace-nowrap">TX ID</TableHead>
                                             <TableHead className="whitespace-nowrap text-right">Amount</TableHead>
                                             <TableHead className="whitespace-nowrap">Billing</TableHead>
                                             <TableHead className="whitespace-nowrap">Status</TableHead>
@@ -200,7 +247,6 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                                                     {new Date(payment.created_at).toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell className="whitespace-nowrap">{payment.plan?.name ?? '—'}</TableCell>
-                                                <TableCell className="whitespace-nowrap font-mono text-xs">{payment.txid ?? '—'}</TableCell>
                                                 <TableCell className="text-right whitespace-nowrap font-semibold">
                                                     {formatCurrency(payment.amount)}
                                                 </TableCell>

@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { router } from '@inertiajs/react';
-import { ArrowLeft, Building2, Users, GraduationCap, Layers } from 'lucide-react';
+import { ArrowLeft, Building2, Users, GraduationCap, Layers, CreditCard, Eye } from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useLocale } from '@/contexts/locale-context';
 
 type Tenant = {
     id: number;
@@ -24,33 +25,41 @@ type Tenant = {
     batches_count: number;
     subscription?: {
         status: string;
+        billing_type: string | null;
+        ends_at: string | null;
         plan: { name: string; slug: string } | null;
     } | null;
-    users: { id: number; name: string; email: string; role: string }[];
 };
 
-type Student = {
+type PaymentRecord = {
     id: number;
-    name: string;
-    phone: string | null;
+    amount: number;
     status: string;
-};
-
-type Batch = {
-    id: number;
-    name: string;
-    subject: string | null;
-    status: string;
+    billing_type: string | null;
+    paid_at: string | null;
+    created_at: string;
+    plan: { name: string } | null;
 };
 
 type PageProps = {
     tenant: Tenant;
-    recentStudents: Student[];
-    recentBatches: Batch[];
+    stats: {
+        total_users: number;
+        total_students: number;
+        active_students: number;
+        total_batches: number;
+        active_batches: number;
+        total_payments: number;
+        successful_payments: number;
+        total_spent: number;
+        total_enrollments: number;
+    };
+    recentPayments: PaymentRecord[];
 };
 
-export default function TenantShow({ tenant, recentStudents, recentBatches }: PageProps) {
+export default function TenantShow({ tenant, stats, recentPayments }: PageProps) {
     const [toggleDialog, setToggleDialog] = useState(false);
+    const { formatCurrency } = useLocale();
 
     const handleToggle = () => {
         router.post(`/super-admin/tenants/${tenant.id}/toggle-active`, {}, {
@@ -59,6 +68,19 @@ export default function TenantShow({ tenant, recentStudents, recentBatches }: Pa
             },
         });
         setToggleDialog(false);
+    };
+
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'success':
+                return <Badge className="bg-green-600 text-white whitespace-nowrap">Success</Badge>;
+            case 'pending':
+                return <Badge className="bg-yellow-600 text-white whitespace-nowrap">Pending</Badge>;
+            case 'failed':
+                return <Badge className="bg-red-600 text-white whitespace-nowrap">Failed</Badge>;
+            default:
+                return <Badge variant="secondary" className="whitespace-nowrap">{status}</Badge>;
+        }
     };
 
     return (
@@ -74,42 +96,58 @@ export default function TenantShow({ tenant, recentStudents, recentBatches }: Pa
                             description={tenant.email || 'No email'}
                         />
                     </div>
-                    <Button
-                        variant={tenant.is_active ? 'destructive' : 'default'}
-                        onClick={() => setToggleDialog(true)}
-                    >
-                        {tenant.is_active ? 'Deactivate' : 'Activate'}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.get(`/super-admin/tenants/${tenant.id}/detail`)}
+                        >
+                            <Eye className="mr-2 size-4" />
+                            View Full History
+                        </Button>
+                        <Button
+                            variant={tenant.is_active ? 'destructive' : 'default'}
+                            onClick={() => setToggleDialog(true)}
+                        >
+                            {tenant.is_active ? 'Deactivate' : 'Activate'}
+                        </Button>
+                    </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
                     <Card className="py-3">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Users</CardTitle>
-                            <Users className="size-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+                            <CreditCard className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{tenant.users_count}</div>
+                            <div className="text-2xl font-bold">{formatCurrency(stats.total_spent)}</div>
+                            <p className="text-xs text-muted-foreground">{stats.successful_payments} paid</p>
                         </CardContent>
                     </Card>
+
                     <Card className="py-3">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                             <CardTitle className="text-sm font-medium">Students</CardTitle>
                             <GraduationCap className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{tenant.students_count}</div>
+                            <div className="text-2xl font-bold">{stats.total_students}</div>
+                            <p className="text-xs text-muted-foreground">{stats.active_students} active</p>
                         </CardContent>
                     </Card>
+
                     <Card className="py-3">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                             <CardTitle className="text-sm font-medium">Batches</CardTitle>
                             <Layers className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{tenant.batches_count}</div>
+                            <div className="text-2xl font-bold">{stats.total_batches}</div>
+                            <p className="text-xs text-muted-foreground">{stats.active_batches} active</p>
                         </CardContent>
                     </Card>
+
                     <Card className="py-3">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                             <CardTitle className="text-sm font-medium">Subscription</CardTitle>
@@ -119,80 +157,109 @@ export default function TenantShow({ tenant, recentStudents, recentBatches }: Pa
                             <div className="text-lg font-bold">
                                 {tenant.subscription?.plan?.name || 'No Plan'}
                             </div>
-                            <Badge variant={tenant.subscription?.status === 'active' ? 'default' : 'secondary'}>
-                                {tenant.subscription?.status || 'none'}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                                <Badge variant={tenant.subscription?.status === 'active' ? 'default' : 'secondary'}>
+                                    {tenant.subscription?.status || 'none'}
+                                </Badge>
+                                {tenant.subscription?.ends_at && (
+                                    <span className="text-xs text-muted-foreground">
+                                        until {new Date(tenant.subscription.ends_at).toLocaleDateString()}
+                                    </span>
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Recent Users</CardTitle>
+                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                    <Card className="py-3">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
+                            <CardTitle className="text-sm font-medium">Staff</CardTitle>
+                            <Users className="size-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
-                            {tenant.users.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Email</TableHead>
-                                            <TableHead>Role</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {tenant.users.map((user) => (
-                                            <TableRow key={user.id}>
-                                                <TableCell className="font-medium">{user.name}</TableCell>
-                                                <TableCell>{user.email}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant="secondary">{user.role}</Badge>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No users yet.</p>
-                            )}
+                        <CardContent className="px-3 pb-2 pt-0">
+                            <div className="text-2xl font-bold">{stats.total_users}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Recent Students</CardTitle>
+                    <Card className="py-3">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
+                            <CardTitle className="text-sm font-medium">Enrollments</CardTitle>
+                            <Layers className="size-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
-                            {recentStudents.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Phone</TableHead>
-                                            <TableHead>Status</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {recentStudents.map((student) => (
-                                            <TableRow key={student.id}>
-                                                <TableCell className="font-medium">{student.name}</TableCell>
-                                                <TableCell>{student.phone || '-'}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
-                                                        {student.status}
-                                                    </Badge>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No students yet.</p>
-                            )}
+                        <CardContent className="px-3 pb-2 pt-0">
+                            <div className="text-2xl font-bold">{stats.total_enrollments}</div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="py-3">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
+                            <CardTitle className="text-sm font-medium">Payments</CardTitle>
+                            <CreditCard className="size-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent className="px-3 pb-2 pt-0">
+                            <div className="text-2xl font-bold">{stats.total_payments}</div>
+                            <p className="text-xs text-muted-foreground">{stats.successful_payments} successful</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="py-3">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
+                            <CardTitle className="text-sm font-medium">Billing</CardTitle>
+                            <CreditCard className="size-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent className="px-3 pb-2 pt-0">
+                            <div className="text-lg font-bold capitalize">
+                                {tenant.subscription?.billing_type ?? '—'}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>Recent Payments</CardTitle>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.get(`/super-admin/tenants/${tenant.id}/detail`)}
+                        >
+                            View All
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        {recentPayments.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="whitespace-nowrap">Date</TableHead>
+                                        <TableHead className="whitespace-nowrap">Plan</TableHead>
+                                        <TableHead className="whitespace-nowrap text-right">Amount</TableHead>
+                                        <TableHead className="whitespace-nowrap">Billing</TableHead>
+                                        <TableHead className="whitespace-nowrap">Status</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {recentPayments.map((payment) => (
+                                        <TableRow key={payment.id}>
+                                            <TableCell className="whitespace-nowrap">
+                                                {new Date(payment.created_at).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell className="whitespace-nowrap">{payment.plan?.name ?? '—'}</TableCell>
+                                            <TableCell className="text-right whitespace-nowrap font-semibold">
+                                                {formatCurrency(payment.amount)}
+                                            </TableCell>
+                                            <TableCell className="whitespace-nowrap capitalize">{payment.billing_type ?? '—'}</TableCell>
+                                            <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No payments yet.</p>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             <ConfirmDialog

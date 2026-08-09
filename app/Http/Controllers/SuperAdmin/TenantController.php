@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Batch;
+use App\Models\Payment;
+use App\Models\Student;
+use App\Models\Subscription;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +18,8 @@ class TenantController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Tenant::withCount(['users', 'students', 'batches']);
+        $query = Tenant::withCount(['users', 'students', 'batches'])
+            ->with('subscription.plan');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -38,17 +44,30 @@ class TenantController extends Controller
     public function show(Tenant $tenant): Response
     {
         $tenant->loadCount(['users', 'students', 'batches']);
-        $tenant->load(['subscription.plan', 'users' => function ($q) {
-            $q->latest()->take(10);
-        }]);
+        $tenant->load('subscription.plan');
 
-        $recentStudents = $tenant->students()->latest()->take(10)->get();
-        $recentBatches = $tenant->batches()->latest()->take(10)->get();
+        $stats = [
+            'total_users' => User::where('tenant_id', $tenant->id)->count(),
+            'total_students' => Student::where('tenant_id', $tenant->id)->count(),
+            'active_students' => Student::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
+            'total_batches' => Batch::where('tenant_id', $tenant->id)->count(),
+            'active_batches' => Batch::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
+            'total_payments' => Payment::where('tenant_id', $tenant->id)->count(),
+            'successful_payments' => Payment::where('tenant_id', $tenant->id)->where('status', 'success')->count(),
+            'total_spent' => (float) Payment::where('tenant_id', $tenant->id)->where('status', 'success')->sum('amount'),
+            'total_enrollments' => \App\Models\Enrollment::where('tenant_id', $tenant->id)->count(),
+        ];
+
+        $recentPayments = Payment::where('tenant_id', $tenant->id)
+            ->with('plan')
+            ->latest()
+            ->take(5)
+            ->get();
 
         return Inertia::render('super-admin/tenants/show', [
             'tenant' => $tenant,
-            'recentStudents' => $recentStudents,
-            'recentBatches' => $recentBatches,
+            'stats' => $stats,
+            'recentPayments' => $recentPayments,
         ]);
     }
 

@@ -9,11 +9,11 @@ import {
     Layers,
     CreditCard,
     TrendingUp,
-    Clock,
-    CheckCircle,
+    Eye,
 } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
 
 type Stats = {
     total_tenants: number;
@@ -231,10 +231,9 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
                                     <TableRow>
                                         <TableHead className="whitespace-nowrap sticky left-0 bg-background z-10 min-w-[150px]">Name</TableHead>
                                         <TableHead className="whitespace-nowrap">Plan</TableHead>
-                                        <TableHead className="whitespace-nowrap">Users</TableHead>
-                                        <TableHead className="whitespace-nowrap">Students</TableHead>
                                         <TableHead className="whitespace-nowrap">Batches</TableHead>
                                         <TableHead className="whitespace-nowrap">Status</TableHead>
+                                        <TableHead className="whitespace-nowrap w-[50px]"></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -244,13 +243,21 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
                                                 {tenant.name}
                                             </TableCell>
                                             <TableCell>{getSubscriptionBadge(tenant)}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{tenant.users_count}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{tenant.students_count}</TableCell>
                                             <TableCell className="whitespace-nowrap">{tenant.batches_count}</TableCell>
                                             <TableCell>
                                                 <Badge variant={tenant.is_active ? 'default' : 'destructive'} className="whitespace-nowrap">
                                                     {tenant.is_active ? 'Active' : 'Inactive'}
                                                 </Badge>
+                                            </TableCell>
+                                            <TableCell className="w-[50px]">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="size-8 p-0"
+                                                    onClick={() => router.get(`/super-admin/tenants/${tenant.id}/detail`)}
+                                                >
+                                                    <Eye className="size-4" />
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     ))}

@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Batch;
 use App\Models\Payment;
 use App\Models\Plan;
-use App\Models\Student;
 use App\Models\Subscription;
 use App\Models\Tenant;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,16 +18,14 @@ class SuperAdminController extends Controller
         $stats = [
             'total_tenants' => Tenant::count(),
             'active_tenants' => Tenant::where('is_active', true)->count(),
-            'total_users' => User::count(),
-            'total_students' => Student::count(),
-            'total_batches' => Batch::count(),
-            'active_batches' => Batch::where('status', 'active')->count(),
+            'total_users' => \App\Models\User::count(),
+            'total_students' => \App\Models\Student::count(),
+            'total_batches' => \App\Models\Batch::count(),
+            'active_batches' => \App\Models\Batch::where('status', 'active')->count(),
             'total_revenue' => (float) Payment::where('status', 'success')->sum('amount'),
             'active_subscriptions' => Subscription::where('status', 'active')->count(),
             'trial_subscriptions' => Subscription::where('status', 'trial')->count(),
         ];
-
-        $recentTenants = Tenant::latest()->take(10)->get();
 
         $tenantStats = Tenant::withCount(['users', 'students', 'batches'])
             ->with('subscription.plan')
@@ -135,6 +130,13 @@ class SuperAdminController extends Controller
             'total_payments' => Payment::where('tenant_id', $tenant->id)->count(),
             'successful_payments' => Payment::where('tenant_id', $tenant->id)->where('status', 'success')->count(),
             'total_spent' => (float) Payment::where('tenant_id', $tenant->id)->where('status', 'success')->sum('amount'),
+            'pending_payments' => Payment::where('tenant_id', $tenant->id)->where('status', 'pending')->count(),
+            'students_count' => \App\Models\Student::where('tenant_id', $tenant->id)->count(),
+            'active_students_count' => \App\Models\Student::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
+            'batches_count' => \App\Models\Batch::where('tenant_id', $tenant->id)->count(),
+            'active_batches_count' => \App\Models\Batch::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
+            'users_count' => \App\Models\User::where('tenant_id', $tenant->id)->count(),
+            'total_enrollments' => \App\Models\Enrollment::where('tenant_id', $tenant->id)->count(),
         ];
 
         return Inertia::render('super-admin/tenant-detail', [
