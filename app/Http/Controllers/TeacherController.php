@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTeacherRequest;
 use App\Http\Requests\UpdateTeacherRequest;
 use App\Models\User;
+use App\Policies\PlanLimitsPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -42,13 +43,29 @@ class TeacherController extends Controller
             abort(403);
         }
 
-        return Inertia::render('teachers/create');
+        $planLimits = new PlanLimitsPolicy();
+        $canCreate = $planLimits->createStaff($request->user());
+        $remaining = $planLimits->remaining($request->user(), 'staff');
+        $limit = $planLimits->getLimit($request->user(), 'staff');
+
+        return Inertia::render('teachers/create', [
+            'planLimits' => [
+                'can_create' => $canCreate,
+                'remaining' => $remaining,
+                'limit' => $limit,
+            ],
+        ]);
     }
 
     public function store(StoreTeacherRequest $request): RedirectResponse
     {
         if (! $request->user()->isAdmin()) {
             abort(403);
+        }
+
+        $planLimits = new PlanLimitsPolicy();
+        if (!$planLimits->createStaff($request->user())) {
+            return back()->withErrors(['email' => 'You have reached the staff limit for your current plan. Please upgrade to add more staff.']);
         }
 
         User::create([

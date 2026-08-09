@@ -9,6 +9,7 @@ use App\Models\BatchHistory;
 use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\User;
+use App\Policies\PlanLimitsPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,16 +50,32 @@ class BatchController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->authorize('create', Batch::class);
 
-        return Inertia::render('batches/create');
+        $planLimits = new PlanLimitsPolicy();
+        $canCreate = $planLimits->createBatch($request->user());
+        $remaining = $planLimits->remaining($request->user(), 'batches');
+        $limit = $planLimits->getLimit($request->user(), 'batches');
+
+        return Inertia::render('batches/create', [
+            'planLimits' => [
+                'can_create' => $canCreate,
+                'remaining' => $remaining,
+                'limit' => $limit,
+            ],
+        ]);
     }
 
     public function store(StoreBatchRequest $request): RedirectResponse
     {
         $this->authorize('create', Batch::class);
+
+        $planLimits = new PlanLimitsPolicy();
+        if (!$planLimits->createBatch($request->user())) {
+            return back()->withErrors(['name' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.']);
+        }
 
         Batch::create($request->validated());
 

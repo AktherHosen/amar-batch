@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateStudentRequest;
 use App\Models\Attendance;
 use App\Models\CoachingClass;
 use App\Models\Student;
+use App\Policies\PlanLimitsPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -48,20 +49,35 @@ class StudentController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->authorize('create', Student::class);
+
+        $planLimits = new PlanLimitsPolicy();
+        $canCreate = $planLimits->createStudent($request->user());
+        $remaining = $planLimits->remaining($request->user(), 'students');
+        $limit = $planLimits->getLimit($request->user(), 'students');
 
         $coachingClasses = CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get();
 
         return Inertia::render('students/create', [
             'coachingClasses' => $coachingClasses,
+            'planLimits' => [
+                'can_create' => $canCreate,
+                'remaining' => $remaining,
+                'limit' => $limit,
+            ],
         ]);
     }
 
     public function store(StoreStudentRequest $request): RedirectResponse
     {
         $this->authorize('create', Student::class);
+
+        $planLimits = new PlanLimitsPolicy();
+        if (!$planLimits->createStudent($request->user())) {
+            return back()->withErrors(['coaching_class_id' => 'You have reached the student limit for your current plan. Please upgrade to add more students.']);
+        }
 
         Student::create($request->validated());
 
