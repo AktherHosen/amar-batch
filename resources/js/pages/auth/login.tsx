@@ -3,6 +3,7 @@ import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -30,12 +31,7 @@ export default function Login({ status, canResetPassword }: Props) {
                     <>
                         <div className="grid gap-5">
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="email"
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Email address
-                                </Label>
+                                <Label htmlFor="email">Email address</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -45,23 +41,17 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="you@example.com"
-                                    className="h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label
-                                        htmlFor="password"
-                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >
-                                        Password
-                                    </Label>
+                                    <Label htmlFor="password">Password</Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                                            className="ml-auto text-sm font-medium text-primary hover:text-primary/80"
                                             tabIndex={5}
                                         >
                                             Forgot password?
@@ -75,30 +65,20 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={2}
                                     autoComplete="current-password"
                                     placeholder="Enter your password"
-                                    className="h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="flex items-center space-x-3">
-                                <input
-                                    type="checkbox"
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <Label
-                                    htmlFor="remember"
-                                    className="text-sm text-gray-600 dark:text-gray-400"
-                                >
+                                <Checkbox id="remember" name="remember" tabIndex={3} />
+                                <Label htmlFor="remember" className="text-sm text-muted-foreground">
                                     Remember me for 30 days
                                 </Label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-2 h-12 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-base font-semibold shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700"
+                                className="mt-2 w-full"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
@@ -108,12 +88,12 @@ export default function Login({ status, canResetPassword }: Props) {
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+                        <div className="text-center text-sm text-muted-foreground">
                             Don't have an account?{' '}
                             <TextLink
                                 href={register()}
                                 tabIndex={5}
-                                className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                                className="font-semibold text-primary hover:text-primary/80"
                             >
                                 Sign up for free
                             </TextLink>
@@ -123,7 +103,7 @@ export default function Login({ status, canResetPassword }: Props) {
             </Form>
 
             {status && (
-                <div className="mb-4 rounded-lg bg-green-50 p-4 text-center text-sm font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                <div className="mb-4 rounded-lg bg-primary/10 p-4 text-center text-sm font-medium text-primary">
                     {status}
                 </div>
             )}
