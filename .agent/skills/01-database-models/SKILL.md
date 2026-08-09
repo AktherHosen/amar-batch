@@ -12,7 +12,7 @@ Create the foundational database schema with RBAC support for the entire coachin
 ## Prerequisites
 
 - Laravel project with Fortify auth already set up
-- MySQL database `academia` configured
+- MySQL database `amar_batch` configured
 
 ## Step 1.1: Add Role + Student FK to Users
 

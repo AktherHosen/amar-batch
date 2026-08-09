@@ -34,9 +34,9 @@ export default function AuthSimpleLayout({
                         href={home()}
                         className="flex flex-col items-center gap-4"
                     >
-                        <img src="/logo.png" alt="Karnaphuli Alpha Academy" className="h-12 w-12 rounded-xl object-cover" />
+                        <img src="/logo.png" alt="Amar Batch" className="h-12 w-12 rounded-xl object-cover" />
                         <h1 className="text-3xl font-bold text-white">
-                            Karnaphuli Alpha Academy
+                            Amar Batch
                         </h1>
                     </Link>
                     <p className="mt-4 max-w-md text-lg text-blue-100">
@@ -66,9 +66,9 @@ export default function AuthSimpleLayout({
                     {/* Mobile Logo */}
                     <div className="mb-8 flex flex-col items-center lg:hidden">
                         <Link href={home()} className="flex flex-col items-center gap-3">
-                            <img src="/logo.png" alt="Karnaphuli Alpha Academy" className="h-12 w-12 rounded-md object-cover" />
+                            <img src="/logo.png" alt="Amar Batch" className="h-12 w-12 rounded-md object-cover" />
                             <span className="text-xl font-bold text-gray-900 dark:text-white">
-                                Karnaphuli Alpha Academy
+                                Amar Batch
                             </span>
                         </Link>
                     </div>

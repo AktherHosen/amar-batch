@@ -13,7 +13,7 @@ class PlanSeeder extends Seeder
             [
                 'name' => 'Free Trial',
                 'slug' => 'free-trial',
-                'description' => 'Try Academia for free with limited features.',
+                'description' => 'Try Amar Batch for free with limited features.',
                 'price_monthly' => 0,
                 'price_yearly' => 0,
                 'max_students' => 30,

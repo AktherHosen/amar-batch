@@ -1,11 +1,22 @@
 # Agents - Project Conventions
 
+## Project
+
+**Amar Batch** — Multi-tenant coaching center management SaaS built with Laravel 13 + Inertia.js 3 (React 19).
+
 ## Code Style
 
 - Use `whitespace-nowrap` on all `TableHead` and `TableCell` components
 - Sticky first column on wide tables: `sticky left-0 bg-background z-10`
 - Badge variants: `success` (green-600) for completed, `danger` (red-600) for inactive/dropped
 - Button `destructive` variant: `bg-red-600 text-white`
+
+## Multi-Tenancy
+
+- All tenant models use the `BelongsToTenant` trait (`app/Concerns/BelongsToTenant.php`)
+- The trait auto-scopes queries to the current tenant and auto-fills `tenant_id` on creation
+- Never hardcode `tenant_id` — always rely on the trait
+- Super admin bypasses tenant scoping
 
 ## UI Patterns
 
@@ -81,6 +92,21 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 - Accept `per_page` param but default to 10
 - Use `withQueryString()` on paginated results
 - Attendance batch filtering: `where('status', '!=', 'completed')`
+- Tenant scoping is automatic via `BelongsToTenant` trait on models
+- Owner = admin role for tenant. Staff = teacher role.
+- Use `$this->authorize('action', Model::class)` in controllers (Policies handle tenant scoping)
+
+## User Roles
+
+| Role | Constant | Access |
+|------|----------|--------|
+| Super Admin | `super_admin` | Global — tenants, plans, cross-tenant stats |
+| Owner | `owner` | Tenant admin — full CRUD on all tenant resources |
+| Staff | `staff` | Tenant teacher — view assigned batches, mark attendance (requires approval) |
+
+## Middleware Stack
+
+Tenant routes use this middleware chain: `auth → verified → onboarding → tenant → teacher.approved`
 
 ## Route Generation
 

@@ -143,5 +143,5 @@ export default function Register({ passwordRules }: Props) {
 
 Register.layout = {
     title: 'Create your account',
-    description: 'Get started with Karnaphuli Alpha Academy',
+    description: 'Get started with Amar Batch',
 };

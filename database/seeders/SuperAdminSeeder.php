@@ -15,7 +15,7 @@ class SuperAdminSeeder extends Seeder
     {
         // Create super admin (no tenant)
         User::updateOrCreate(
-            ['email' => 'superadmin@academia.com'],
+            ['email' => 'superadmin@amarbatch.com'],
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('password'),
@@ -26,6 +26,6 @@ class SuperAdminSeeder extends Seeder
             ]
         );
 
-        $this->command->info('Super Admin created: superadmin@academia.com (password: password)');
+        $this->command->info('Super Admin created: superadmin@amarbatch.com (password: password)');
     }
 }

@@ -8,13 +8,17 @@ import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import SuperAdminLayout from '@/layouts/super-admin-layout';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Karnaphuli Alpha Academy';
+const appName = import.meta.env.VITE_APP_NAME || 'Amar Batch';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
             case name === 'welcome':
+            case name === 'docs':
+            case name === 'contact':
+            case name === 'terms':
+            case name === 'privacy':
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;

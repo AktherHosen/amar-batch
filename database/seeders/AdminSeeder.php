@@ -34,7 +34,7 @@ class AdminSeeder extends Seeder
         // Create owner for the demo tenant
         User::create([
             'name' => 'Admin',
-            'email' => 'admin@academia.com',
+            'email' => 'admin@amarbatch.com',
             'password' => Hash::make('password'),
             'role' => 'owner',
             'tenant_id' => $tenant->id,
@@ -43,7 +43,7 @@ class AdminSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        $this->command->info('Admin user created: admin@academia.com (password: password)');
+        $this->command->info('Admin user created: admin@amarbatch.com (password: password)');
         $this->command->info("Assigned to tenant: {$tenant->name}");
     }
 }

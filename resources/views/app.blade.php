@@ -44,14 +44,14 @@
         <meta name="theme-color" content="#18181b">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Karnaphuli Alpha Academy') }}">
+        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Amar Batch') }}">
 
         @fonts
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Karnaphuli Alpha Academy') }}</title>
+            <title>{{ config('app.name', 'Amar Batch') }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">
