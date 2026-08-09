@@ -1,5 +1,4 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +9,7 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { Check, Crown, Users, GraduationCap, Layers, ArrowRight, CreditCard } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
+import { index as subscriptionIndex } from '@/routes/subscription';
 
 type Plan = {
     id: number;
@@ -124,12 +124,9 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
         <>
             <Head title={t('nav.settings')} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading
-                    title={t('subscription.title')}
-                    description={t('subscription.desc')}
-                />
+            <h1 className="sr-only">Subscription</h1>
 
+            <div className="space-y-6">
                 {/* Current Plan Status */}
                 {subscription && (
                     <Card>
@@ -241,7 +238,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                             <span className={`text-sm ${annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{t('plan.yearly')}</span>
                         </div>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-4 md:grid-cols-2">
                         {plans.map((plan) => {
                             const isCurrent = currentPlan?.id === plan.id;
                             const price = annual ? plan.price_yearly : plan.price_monthly;
@@ -367,6 +364,6 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
 
 SubscriptionPage.layout = {
     breadcrumbs: [
-        { title: 'Subscription', href: '/subscription' },
+        { title: 'Subscription', href: subscriptionIndex() },
     ],
 };

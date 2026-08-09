@@ -8,6 +8,8 @@ import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
+import settings from '@/routes/settings';
+import { index as subscriptionIndex } from '@/routes/subscription';
 import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
@@ -26,13 +28,23 @@ const sidebarNavItems: NavItem[] = [
         href: editAppearance(),
         icon: null,
     },
+    {
+        title: 'Coaching Center',
+        href: settings.tenant.edit(),
+        icon: null,
+    },
+    {
+        title: 'Subscription',
+        href: subscriptionIndex(),
+        icon: null,
+    },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
-        <div className="px-4 py-6">
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <Heading
                 title="Settings"
                 description="Manage your profile and account settings"
@@ -68,7 +80,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 <Separator className="my-6 lg:hidden" />
 
                 <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">
+                    <section className="max-w-xl space-y-6">
                         {children}
                     </section>
                 </div>
