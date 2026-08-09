@@ -11,5 +11,5 @@ export type NavItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
-    adminOnly?: boolean;
+    ownerOnly?: boolean;
 };

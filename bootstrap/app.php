@@ -3,6 +3,7 @@
 use App\Http\Middleware\CheckTeacherApproval;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\OnboardingMiddleware;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\TenantMiddleware;
 use Illuminate\Foundation\Application;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'tenant' => TenantMiddleware::class,
             'teacher.approved' => CheckTeacherApproval::class,
+            'onboarding' => OnboardingMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

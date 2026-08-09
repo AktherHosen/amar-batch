@@ -37,65 +37,69 @@ class DashboardController extends Controller
 
     private function adminDashboard(Request $request): Response
     {
+        $tenantId = $request->user()->tenant_id;
+
         $stats = [
-            'total_students' => Student::where('status', 'active')->count(),
-            'total_teachers' => User::where('role', 'staff')->count(),
-            'active_batches' => Batch::where('status', 'active')->count(),
-            'total_enrollments' => Enrollment::where('status', 'active')->count(),
+            'total_students' => Student::where('tenant_id', $tenantId)->where('status', 'active')->count(),
+            'total_teachers' => User::where('tenant_id', $tenantId)->where('role', 'staff')->count(),
+            'active_batches' => Batch::where('tenant_id', $tenantId)->where('status', 'active')->count(),
+            'total_enrollments' => Enrollment::where('tenant_id', $tenantId)->where('status', 'active')->count(),
         ];
 
         $feeStats = [
-            'total_collected' => FeeStatus::sum('amount_paid'),
-            'total_records' => FeeStatus::count(),
+            'total_collected' => FeeStatus::where('tenant_id', $tenantId)->sum('amount_paid'),
+            'total_records' => FeeStatus::where('tenant_id', $tenantId)->count(),
         ];
 
         $recentEnrollments = Enrollment::with(['student', 'batch'])
+            ->where('tenant_id', $tenantId)
             ->latest()
             ->take(5)
             ->get();
 
         $recentFeePayments = FeeStatus::with(['student', 'batch'])
+            ->where('tenant_id', $tenantId)
             ->latest('created_at')
             ->take(5)
             ->get();
 
         $todayAttendance = [
-            'present' => Attendance::whereDate('date', now())->where('status', 'present')->count(),
-            'absent' => Attendance::whereDate('date', now())->where('status', 'absent')->count(),
-            'late' => Attendance::whereDate('date', now())->where('status', 'late')->count(),
+            'present' => Attendance::where('tenant_id', $tenantId)->whereDate('date', now())->where('status', 'present')->count(),
+            'absent' => Attendance::where('tenant_id', $tenantId)->whereDate('date', now())->where('status', 'absent')->count(),
+            'late' => Attendance::where('tenant_id', $tenantId)->whereDate('date', now())->where('status', 'late')->count(),
         ];
 
-        $recentStudents = Student::with('coachingClass')->latest()->take(5)->get();
+        $recentStudents = Student::with('coachingClass')->where('tenant_id', $tenantId)->latest()->take(5)->get();
 
         $batchHistory = [
-            'completed' => Batch::where('status', 'completed')->count(),
-            'active' => Batch::where('status', 'active')->count(),
+            'completed' => Batch::where('tenant_id', $tenantId)->where('status', 'completed')->count(),
+            'active' => Batch::where('tenant_id', $tenantId)->where('status', 'active')->count(),
         ];
 
-        $attendanceTrend = collect(range(5, 0))->map(function ($i) {
+        $attendanceTrend = collect(range(5, 0))->map(function ($i) use ($tenantId) {
             $date = now()->subMonths($i);
             return [
                 'month' => $date->format('M Y'),
-                'present' => Attendance::whereDate('date', $date)->where('status', 'present')->count(),
-                'absent' => Attendance::whereDate('date', $date)->where('status', 'absent')->count(),
-                'late' => Attendance::whereDate('date', $date)->where('status', 'late')->count(),
+                'present' => Attendance::where('tenant_id', $tenantId)->whereDate('date', $date)->where('status', 'present')->count(),
+                'absent' => Attendance::where('tenant_id', $tenantId)->whereDate('date', $date)->where('status', 'absent')->count(),
+                'late' => Attendance::where('tenant_id', $tenantId)->whereDate('date', $date)->where('status', 'late')->count(),
             ];
         });
 
-        $enrollmentTrend = collect(range(5, 0))->map(function ($i) {
+        $enrollmentTrend = collect(range(5, 0))->map(function ($i) use ($tenantId) {
             $date = now()->subMonths($i);
             return [
                 'month' => $date->format('M Y'),
-                'enrollments' => Enrollment::whereMonth('created_at', $date->month)
+                'enrollments' => Enrollment::where('tenant_id', $tenantId)->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)->count(),
             ];
         });
 
-        $feeTrend = collect(range(5, 0))->map(function ($i) {
+        $feeTrend = collect(range(5, 0))->map(function ($i) use ($tenantId) {
             $date = now()->subMonths($i);
             return [
                 'month' => $date->format('M Y'),
-                'collected' => (float) FeeStatus::whereMonth('created_at', $date->month)
+                'collected' => (float) FeeStatus::where('tenant_id', $tenantId)->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)->sum('amount_paid'),
             ];
         });

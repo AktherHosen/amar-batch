@@ -26,7 +26,7 @@ class AttendanceController extends Controller
         }
 
         $attendances = $query->orderBy('date', 'desc')->paginate(10);
-        $batches = Batch::where('status', '!=', 'completed')->orderBy('name')->get();
+        $batches = Batch::where('tenant_id', $request->user()->tenant_id)->where('status', '!=', 'completed')->orderBy('name')->get();
 
         return Inertia::render('attendance/index', [
             'attendances' => $attendances,
@@ -37,15 +37,16 @@ class AttendanceController extends Controller
 
     public function create(Request $request): Response
     {
-        $batches = Batch::where('status', '!=', 'completed')->orderBy('name')->get();
+        $tenantId = $request->user()->tenant_id;
+        $batches = Batch::where('tenant_id', $tenantId)->where('status', '!=', 'completed')->orderBy('name')->get();
         $selectedBatch = $request->batch_id;
         $selectedDate = $request->date ?? now()->toDateString();
 
         $students = [];
         if ($selectedBatch) {
-            $students = Enrollment::where('batch_id', $selectedBatch)
+            $students = Enrollment::where('tenant_id', $tenantId)->where('batch_id', $selectedBatch)
                 ->where('status', 'active')
-                ->whereHas('student', fn ($q) => $q->where('status', 'active'))
+                ->whereHas('student', fn ($q) => $q->where('tenant_id', $tenantId)->where('status', 'active'))
                 ->with('student')
                 ->get()
                 ->map(function ($enrollment) use ($selectedBatch, $selectedDate) {

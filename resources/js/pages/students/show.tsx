@@ -1,4 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { isOwner } from '@/lib/role';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -63,7 +64,7 @@ export default function StudentsShow({
 }: StudentsShowProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
-    const isAdmin = auth.user.role === 'admin';
+    const isAdmin = isOwner(auth.user);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: any | null;

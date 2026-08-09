@@ -43,8 +43,9 @@ class FeeStatusController extends Controller
 
         $feeStatuses = $query->orderBy('month')->get();
 
-        $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
-        $batches = Batch::orderBy('name')->get();
+        $tenantId = $request->user()->tenant_id;
+        $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
+        $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $months = range(1, 12);
         $monthNames = [
@@ -90,9 +91,10 @@ class FeeStatusController extends Controller
 
     public function create(): Response
     {
-        $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
-        $batches = Batch::orderBy('name')->get();
-        $enrollments = Enrollment::where('status', 'active')
+        $tenantId = $request->user()->tenant_id;
+        $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
+        $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $enrollments = Enrollment::where('tenant_id', $tenantId)->where('status', 'active')
             ->with('student', 'batch')
             ->get()
             ->map(fn (Enrollment $e): array => [
@@ -128,12 +130,13 @@ class FeeStatusController extends Controller
         return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee record saved successfully.']);
     }
 
-    public function edit(FeeStatus $fee): Response
+    public function edit(Request $request, FeeStatus $fee): Response
     {
         $fee->load(['student', 'batch']);
-        $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
-        $batches = Batch::orderBy('name')->get();
-        $enrollments = Enrollment::where('status', 'active')
+        $tenantId = $request->user()->tenant_id;
+        $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
+        $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $enrollments = Enrollment::where('tenant_id', $tenantId)->where('status', 'active')
             ->with('student', 'batch')
             ->get()
             ->map(fn (Enrollment $e): array => [

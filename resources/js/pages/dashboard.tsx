@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { isOwner, isStaff } from '@/lib/role';
 import {
     Users,
     GraduationCap,
@@ -133,8 +134,8 @@ export default function Dashboard({
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage().props;
-    const isAdmin = auth.user?.role === 'admin';
-    const isTeacher = auth.user?.role === 'teacher';
+    const isAdmin = isOwner(auth.user);
+    const isTeacher = isStaff(auth.user);
 
     const getMonthName = (monthIndex: number) => {
         const months = ['', 'month.january', 'month.february', 'month.march', 'month.april', 'month.may', 'month.june', 'month.july', 'month.august', 'month.september', 'month.october', 'month.november', 'month.december'];

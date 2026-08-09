@@ -20,7 +20,7 @@ class User extends Authenticatable implements PasskeyUser
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'tenant_id', 'phone', 'avatar',
-        'student_id', 'is_approved',
+        'student_id', 'is_approved', 'onboarding_complete',
     ];
 
     protected $hidden = [
@@ -34,6 +34,7 @@ class User extends Authenticatable implements PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'is_approved' => 'boolean',
+            'onboarding_complete' => 'boolean',
         ];
     }
 

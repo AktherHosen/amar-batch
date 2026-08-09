@@ -71,10 +71,12 @@ class BatchController extends Controller
 
         $batch->load(['enrollments.student.coachingClass', 'teachers', 'history.student', 'history.user']);
 
-        $teachers = User::where('role', 'staff')->get();
-        $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
+        $tenantId = $request->user()->tenant_id;
+        $teachers = User::where('role', 'staff')->where('tenant_id', $tenantId)->get();
+        $students = Student::with('coachingClass')->where('status', 'active')->where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $enrolledStudentIds = Enrollment::where('status', 'active')
+            ->where('tenant_id', $tenantId)
             ->pluck('student_id')
             ->unique()
             ->toArray();
@@ -118,12 +120,13 @@ class BatchController extends Controller
     {
         $this->authorize('update', $batch);
 
+        $tenantId = $request->user()->tenant_id;
         $request->validate([
-            'teacher_id' => 'required|exists:users,id',
+            'teacher_id' => ['required', \Illuminate\Validation\Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
         ]);
 
         /** @var User $teacher */
-        $teacher = User::findOrFail($request->teacher_id);
+        $teacher = User::where('tenant_id', $tenantId)->findOrFail($request->teacher_id);
 
         if ($teacher->role !== 'staff') {
             abort(422, 'Selected user is not a staff member.');
@@ -140,8 +143,9 @@ class BatchController extends Controller
     {
         $this->authorize('update', $batch);
 
+        $tenantId = $request->user()->tenant_id;
         $request->validate([
-            'teacher_id' => 'required|exists:users,id',
+            'teacher_id' => ['required', \Illuminate\Validation\Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
         ]);
 
         $batch->teachers()->detach($request->teacher_id);

@@ -19,7 +19,7 @@ class TeacherController extends Controller
             abort(403);
         }
 
-        $query = User::where('role', 'staff');
+        $query = User::where('role', 'staff')->where('tenant_id', $request->user()->tenant_id);
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {

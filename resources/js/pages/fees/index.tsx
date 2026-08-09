@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useRef } from 'react';
+import { isOwner } from '@/lib/role';
 import {
     Plus,
     RefreshCw,
@@ -201,7 +202,7 @@ export default function FeesIndex({
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
-    const isAdmin = auth.user.role === 'admin';
+    const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
     const [selectedYear, setSelectedYear] = useState(year);
     const [refreshing, setRefreshing] = useState(false);

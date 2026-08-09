@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { EllipsisVertical, PenLine, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { isOwner, isStaff } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
@@ -70,8 +71,8 @@ export default function AttendanceIndex({
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
-    const isAdmin = auth.user.role === 'admin';
-    const isTeacher = auth.user.role === 'teacher';
+    const isAdmin = isOwner(auth.user);
+    const isTeacher = isStaff(auth.user);
     const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [date, setDate] = useState(filters.date || '');
     const [refreshing, setRefreshing] = useState(false);

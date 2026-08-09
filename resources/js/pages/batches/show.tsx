@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { isOwner, isStaff } from '@/lib/role';
 import { ArrowLeft, EllipsisVertical, Pencil, Trash2, UserMinus } from 'lucide-react';
 import Heading from '@/components/heading';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -95,7 +96,7 @@ export default function BatchesShow({
 }: BatchesShowProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
-    const isAdmin = auth.user.role === 'admin';
+    const isAdmin = isOwner(auth.user);
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [selectedStudent, setSelectedStudent] = useState('');
     const [teacherSearch, setTeacherSearch] = useState('');
@@ -450,7 +451,7 @@ export default function BatchesShow({
                     </Card>
                 )}
 
-                {(isAdmin || auth.user.role === 'teacher') && batch.status !== 'completed' && (
+                {(isAdmin || isStaff(auth.user)) && batch.status !== 'completed' && (
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('students.title')}</CardTitle>
@@ -572,7 +573,7 @@ export default function BatchesShow({
                                             {t('students.status')}
                                         </TableHead>
                                         {(isAdmin ||
-                                            auth.user.role === 'teacher') && (
+                                            isStaff(auth.user)) && (
                                             <TableHead className="w-[50px]"></TableHead>
                                         )}
                                     </TableRow>

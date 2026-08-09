@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\CoachingClass;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCoachingClassRequest extends FormRequest
 {
@@ -17,9 +18,10 @@ class UpdateCoachingClassRequest extends FormRequest
     {
         /** @var CoachingClass $coachingClass */
         $coachingClass = $this->route('coaching_class');
+        $tenantId = $this->user()->tenant_id;
 
         return [
-            'name' => ['required', 'string', 'max:255', 'unique:coaching_classes,name,'.$coachingClass->id],
+            'name' => ['required', 'string', 'max:255', Rule::unique('coaching_classes', 'name')->where('tenant_id', $tenantId)->ignore($coachingClass->id)],
             'default_fee' => ['required', 'numeric', 'min:0'],
         ];
     }

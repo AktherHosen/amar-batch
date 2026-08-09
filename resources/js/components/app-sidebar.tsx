@@ -21,6 +21,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
 import { dashboard } from '@/routes';
 import students from '@/routes/students';
 import batches from '@/routes/batches';
@@ -33,7 +34,7 @@ import type { NavItem } from '@/types';
 export function AppSidebar() {
     const { t } = useLocale();
     const { auth } = usePage().props;
-    const isAdmin = auth.user?.role === 'admin';
+    const isUserOwner = isOwner(auth.user);
 
     const allNavItems: NavItem[] = [
         {
@@ -55,7 +56,7 @@ export function AppSidebar() {
             title: t('nav.teachers'),
             href: teachers.index(),
             icon: GraduationCap,
-            adminOnly: true,
+            ownerOnly: true,
         },
         {
             title: t('nav.batches'),
@@ -66,7 +67,7 @@ export function AppSidebar() {
             title: t('nav.fees'),
             href: fees.index(),
             icon: DollarSign,
-            adminOnly: true,
+            ownerOnly: true,
         },
         {
             title: t('nav.attendance'),
@@ -75,9 +76,9 @@ export function AppSidebar() {
         },
     ];
 
-    const mainNavItems = isAdmin
+    const mainNavItems = isUserOwner
         ? allNavItems
-        : allNavItems.filter((item) => !item.adminOnly);
+        : allNavItems.filter((item) => !item.ownerOnly);
 
     return (
         <Sidebar collapsible="icon" variant="inset">

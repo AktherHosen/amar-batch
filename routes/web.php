@@ -9,12 +9,17 @@ Route::get('/', [WelcomeController::class, 'index'])->name('home');
 // Super admin routes (no tenant required)
 require __DIR__.'/super-admin.php';
 
+// Onboarding routes (auth required, no tenant required)
+Route::middleware(['auth', 'verified', 'onboarding'])->group(function () {
+    require __DIR__.'/onboarding.php';
+});
+
 // Tenant routes (tenant required)
-Route::middleware(['auth', 'verified', 'tenant', 'teacher.approved'])->group(function () {
+Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'teacher.approved'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 });
 
-Route::middleware(['auth', 'verified', 'tenant', 'teacher.approved'])->group(function () {
+Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'teacher.approved'])->group(function () {
     require __DIR__.'/students.php';
     require __DIR__.'/batches.php';
     require __DIR__.'/teachers.php';

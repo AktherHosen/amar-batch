@@ -52,7 +52,7 @@ class StudentController extends Controller
     {
         $this->authorize('create', Student::class);
 
-        $coachingClasses = CoachingClass::orderBy('name')->get();
+        $coachingClasses = CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get();
 
         return Inertia::render('students/create', [
             'coachingClasses' => $coachingClasses,
@@ -92,11 +92,11 @@ class StudentController extends Controller
         ]);
     }
 
-    public function edit(Student $student): Response
+    public function edit(Request $request, Student $student): Response
     {
         $this->authorize('update', $student);
 
-        $coachingClasses = CoachingClass::orderBy('name')->get();
+        $coachingClasses = CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get();
 
         return Inertia::render('students/edit', [
             'student' => $student,
