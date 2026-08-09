@@ -34,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'onboarding' => OnboardingMiddleware::class,
         ]);
     })
+    ->withSchedule(function ($schedule) {
+        $schedule->command('subscriptions:check-expiry')->daily();
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),

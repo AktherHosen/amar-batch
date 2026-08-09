@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Subscription;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,7 @@ class SubscriptionController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return to_route('dashboard');
         }
 
@@ -29,10 +30,25 @@ class SubscriptionController extends Controller
             'batches' => $tenant->batches()->count(),
         ];
 
+        $recentPayments = Payment::where('tenant_id', $tenant->id)
+            ->with('plan:id,name')
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(fn (Payment $p) => [
+                'id' => $p->id,
+                'amount' => $p->amount,
+                'status' => $p->status,
+                'billing_type' => $p->billing_type,
+                'plan' => $p->plan?->name,
+                'paid_at' => $p->paid_at,
+            ]);
+
         return Inertia::render('settings/subscription', [
             'subscription' => $subscription ? [
                 'id' => $subscription->id,
                 'status' => $subscription->status,
+                'billing_type' => $subscription->billing_type,
                 'trial_ends_at' => $subscription->trial_ends_at,
                 'ends_at' => $subscription->ends_at,
                 'plan' => $subscription->plan ? [
@@ -50,14 +66,17 @@ class SubscriptionController extends Controller
                 'id' => $plan->id,
                 'name' => $plan->name,
                 'description' => $plan->description,
+                'slug' => $plan->slug,
                 'price_monthly' => $plan->price_monthly,
                 'price_yearly' => $plan->price_yearly,
                 'max_students' => $plan->max_students,
                 'max_staff' => $plan->max_staff,
                 'max_batches' => $plan->max_batches,
                 'features' => $plan->features,
+                'is_default' => $plan->is_default,
             ]),
             'currentUsage' => $currentUsage,
+            'recentPayments' => $recentPayments,
         ]);
     }
 
@@ -66,8 +85,12 @@ class SubscriptionController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return back()->withErrors(['error' => 'No coaching center found.']);
+        }
+
+        if ($plan->price_monthly > 0) {
+            return to_route('payment.initiate', ['plan' => $plan->id, 'billing' => $request->input('billing', 'monthly')]);
         }
 
         $subscription = $tenant->subscription;
@@ -87,6 +110,6 @@ class SubscriptionController extends Controller
             ]);
         }
 
-        return back()->with('toast', ['type' => 'success', 'message' => "Upgraded to {$plan->name} successfully."]);
+        return back()->with('toast', ['type' => 'success', 'message' => "Switched to {$plan->name} successfully."]);
     }
 }

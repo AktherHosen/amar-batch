@@ -229,6 +229,41 @@ const translations: Record<Locale, Record<string, string>> = {
         'plan.unlimited_staff': 'অসীম স্টাফ',
         'plan.unlimited_batches': 'অসীম ব্যাচ',
 
+        // Payment
+        'payment.success_title': 'পেমেন্ট সফল হয়েছে',
+        'payment.success_desc': 'আপনার সাবস্ক্রিপশন সক্রিয় হয়েছে। আপনার পেমেন্টের জন্য ধন্যবাদ!',
+        'payment.failure_title': 'পেমেন্ট ব্যর্থ হয়েছে',
+        'payment.failure_desc': 'আপনার পেমেন্টে কিছু ভুল হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+        'payment.cancel_title': 'পেমেন্ট বাতিল করা হয়েছে',
+        'payment.cancel_desc': 'আপনি পেমেন্ট বাতিল করেছেন। আপনার সাবস্ক্রিপশন পরিবর্তন হয়নি।',
+        'payment.plan': 'প্ল্যান',
+        'payment.amount_paid': 'পরিশোধিত পরিমাণ',
+        'payment.go_to_subscription': 'সাবস্ক্রিপশনে যান',
+        'payment.try_again': 'আবার চেষ্টা করুন',
+        'payment.history': 'পেমেন্ট ইতিহাস',
+        'payment.history_desc': 'আপনার পূর্ববর্তী পেমেন্ট এবং লেনদেন দেখুন।',
+        'payment.no_payments': 'এখনো কোনো পেমেন্ট হয়নি।',
+        'payment.status_success': 'সফল',
+        'payment.status_failed': 'ব্যর্থ',
+        'payment.status_pending': 'অপেক্ষমাণ',
+        'payment.status_cancelled': 'বাতিল',
+        'payment.method': 'পদ্ধতি',
+        'payment.date': 'তারিখ',
+
+        // Subscription
+        'subscription.title': 'সাবস্ক্রিপশন ও প্ল্যান',
+        'subscription.desc': 'আপনার সাবস্ক্রিপশন পরিচালনা করুন এবং প্ল্যানের বিবরণ দেখুন',
+        'subscription.current_plan': 'বর্তমান প্ল্যান',
+        'subscription.available_plans': 'উপলব্ধ প্ল্যান',
+        'subscription.switch_plan': 'প্ল্যান পরিবর্তন করুন',
+        'subscription.get_started': 'শুরু করুন',
+        'subscription.upgrade_title': 'প্ল্যান আপগ্রেড',
+        'subscription.upgrade_desc': 'আপনি কি "{plan}" এ পরিবর্তন করতে চান?',
+        'subscription.proceed_to_payment': 'পেমেন্টে এগিয়ে যান',
+
+        // Toast
+        'toast.upgraded': 'সফলভাবে আপগ্রেড হয়েছে!',
+
         // Classes
         'classes.title': 'কোচিং ক্লাস',
         'classes.create': 'ক্লাস যোগ করুন',
@@ -707,7 +742,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Pricing
         'welcome.pricing_title': 'Simple, Transparent Pricing',
-        'welcome.pricing_desc': 'Choose the plan that fits your coaching center. Start free, upgrade when you need to.',
+        'welcome.pricing_desc': 'Choose the plan that fits your coaching center. Start free, upgrade when you need\u00A0to.',
         'plan.popular': 'Most Popular',
         'plan.free_trial': 'Free Trial',
         'plan.free': 'Free',
@@ -733,6 +768,41 @@ const translations: Record<Locale, Record<string, string>> = {
         'plan.feature_custom_branding': 'Custom Branding',
         'plan.feature_multi_branch': 'Multi-branch Support',
         'plan.feature_api_access': 'API Access',
+
+        // Payment
+        'payment.success_title': 'Payment Successful',
+        'payment.success_desc': 'Your subscription has been activated. Thank you for your payment!',
+        'payment.failure_title': 'Payment Failed',
+        'payment.failure_desc': 'Something went wrong with your payment. Please try again.',
+        'payment.cancel_title': 'Payment Cancelled',
+        'payment.cancel_desc': 'You have cancelled the payment. Your subscription has not been changed.',
+        'payment.plan': 'Plan',
+        'payment.amount_paid': 'Amount Paid',
+        'payment.go_to_subscription': 'Go to Subscription',
+        'payment.try_again': 'Try Again',
+        'payment.history': 'Payment History',
+        'payment.history_desc': 'View your past payments and transactions.',
+        'payment.no_payments': 'No payments yet.',
+        'payment.status_success': 'Success',
+        'payment.status_failed': 'Failed',
+        'payment.status_pending': 'Pending',
+        'payment.status_cancelled': 'Cancelled',
+        'payment.method': 'Method',
+        'payment.date': 'Date',
+
+        // Subscription
+        'subscription.title': 'Subscription & Plans',
+        'subscription.desc': 'Manage your subscription and view plan details',
+        'subscription.current_plan': 'Current Plan',
+        'subscription.available_plans': 'Available Plans',
+        'subscription.switch_plan': 'Switch Plan',
+        'subscription.get_started': 'Get Started',
+        'subscription.upgrade_title': 'Upgrade Plan',
+        'subscription.upgrade_desc': 'Are you sure you want to switch to "{plan}"?',
+        'subscription.proceed_to_payment': 'Proceed to Payment',
+
+        // Toast
+        'toast.upgraded': 'Upgraded successfully!',
 
         // FAQ
         'welcome.faq_title': 'Frequently Asked Questions',

@@ -12,7 +12,7 @@ class OnboardingMiddleware
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect('/login');
         }
 
@@ -27,12 +27,24 @@ class OnboardingMiddleware
         }
 
         // Owner needs onboarding if not complete
-        if ($user->isOwner() && !$user->onboarding_complete) {
+        if ($user->isOwner() && ! $user->onboarding_complete) {
             if ($request->routeIs('onboarding.*')) {
                 return $next($request);
             }
 
             return redirect()->route('onboarding.show');
+        }
+
+        // Check for expired subscriptions (skip for payment/subscription routes)
+        if ($user->isOwner() && $user->tenant && ! $request->routeIs('payment.*') && ! $request->routeIs('subscription.*')) {
+            $subscription = $user->tenant->subscription;
+
+            if ($subscription && $subscription->isExpired()) {
+                return redirect()->route('subscription.index')->with('toast', [
+                    'type' => 'warning',
+                    'message' => 'Your subscription has expired. Please renew to continue.',
+                ]);
+            }
         }
 
         return $next($request);
