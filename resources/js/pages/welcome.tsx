@@ -6,10 +6,23 @@ import {
     GraduationCap,
     BarChart3,
     Shield,
-    CheckCircle,
     Check,
     HelpCircle,
+    ArrowRight,
+    Zap,
+    Globe,
+    Clock,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from '@/components/ui/accordion';
 import { dashboard, login, register } from '@/routes';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -84,29 +97,38 @@ export default function Welcome({ stats, plans }: Props) {
     ];
 
     const displayStats = [
-        { number: `${formatNumber(safeStats.total_students)}+`, label: t('welcome.stat_students') },
-        { number: `${formatNumber(safeStats.active_batches)}+`, label: t('welcome.stat_batches') },
-        { number: `${formatNumber(safeStats.total_enrollments)}+`, label: t('welcome.stat_enrollments') },
-        { number: `${formatNumber(100)}%`, label: t('welcome.stat_fees') },
+        { number: `${formatNumber(safeStats.total_students)}+`, label: t('welcome.stat_students'), icon: Users },
+        { number: `${formatNumber(safeStats.active_batches)}+`, label: t('welcome.stat_batches'), icon: GraduationCap },
+        { number: `${formatNumber(safeStats.total_enrollments)}+`, label: t('welcome.stat_enrollments'), icon: BarChart3 },
+        { number: `${formatNumber(100)}%`, label: t('welcome.stat_fees'), icon: DollarSign },
+    ];
+
+    const steps = [
+        {
+            number: 1,
+            title: t('welcome.step1_title'),
+            description: t('welcome.step1_desc'),
+            icon: Zap,
+        },
+        {
+            number: 2,
+            title: t('welcome.step2_title'),
+            description: t('welcome.step2_desc'),
+            icon: Globe,
+        },
+        {
+            number: 3,
+            title: t('welcome.step3_title'),
+            description: t('welcome.step3_desc'),
+            icon: Clock,
+        },
     ];
 
     const faqs = [
-        {
-            q: t('welcome.faq1_q'),
-            a: t('welcome.faq1_a'),
-        },
-        {
-            q: t('welcome.faq2_q'),
-            a: t('welcome.faq2_a'),
-        },
-        {
-            q: t('welcome.faq3_q'),
-            a: t('welcome.faq3_a'),
-        },
-        {
-            q: t('welcome.faq4_q'),
-            a: t('welcome.faq4_a'),
-        },
+        { q: t('welcome.faq1_q'), a: t('welcome.faq1_a') },
+        { q: t('welcome.faq2_q'), a: t('welcome.faq2_a') },
+        { q: t('welcome.faq3_q'), a: t('welcome.faq3_a') },
+        { q: t('welcome.faq4_q'), a: t('welcome.faq4_a') },
     ];
 
     const featureLabels: Record<string, string> = {
@@ -126,43 +148,35 @@ export default function Welcome({ stats, plans }: Props) {
         <>
             <Head title={t('welcome.hero_title')}>
                 <meta name="description" content={t('welcome.hero_subtitle')} />
-                <meta name="keywords" content="কোচিং সেন্টার, ম্যানেজমেন্ট, ছাত্র ব্যবস্থাপনা, উপস্থিতি, বেতন, বাংলাদেশ, coaching center management, student management, attendance tracking, fee collection" />
-                <meta property="og:title" content={t('welcome.hero_title')} />
-                <meta property="og:description" content={t('welcome.hero_subtitle')} />
-                <meta property="og:type" content="website" />
             </Head>
-            <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+
+            <div className="min-h-screen bg-background">
                 {/* Navigation */}
-                <header className="fixed top-0 right-0 left-0 z-50 border-b border-blue-100 bg-white/80 backdrop-blur-md dark:border-blue-900 dark:bg-[#0a0a0a]/80">
+                <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                     <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center gap-2">
-                            <img src="/logo.png" alt={t('app.name')} className="h-10 w-10 shrink-0 rounded-md object-cover" />
-                            <span className="hidden text-xl font-bold whitespace-nowrap text-gray-900 sm:inline dark:text-white">
-                                {t('app.name')}
-                            </span>
+                            <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-lg object-cover" />
+                            <span className="hidden text-xl font-bold sm:inline-block">{t('app.name')}</span>
                         </div>
-                        <div className="flex items-center gap-2 sm:gap-4">
+                        <div className="flex items-center gap-3">
                             {auth.user ? (
-                                <Link
-                                    href={dashboard()}
-                                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 sm:px-5 sm:py-2.5 dark:bg-blue-500 dark:hover:bg-blue-600"
-                                >
-                                    {t('nav.dashboard')}
-                                </Link>
+                                <Button asChild>
+                                    <Link href={dashboard()}>
+                                        {t('nav.dashboard')}
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
+                                </Button>
                             ) : (
                                 <>
-                                    <Link
-                                        href={login()}
-                                        className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 sm:px-4 sm:py-2 dark:text-gray-300 dark:hover:text-white"
-                                    >
-                                        {t('auth.login')}
-                                    </Link>
-                                    <Link
-                                        href={register()}
-                                        className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 sm:px-5 sm:py-2.5 dark:bg-blue-500 dark:hover:bg-blue-600"
-                                    >
-                                        {t('auth.sign_up_free')}
-                                    </Link>
+                                    <Button variant="ghost" asChild>
+                                        <Link href={login()}>{t('auth.login')}</Link>
+                                    </Button>
+                                    <Button asChild>
+                                        <Link href={register()}>
+                                            {t('auth.sign_up_free')}
+                                            <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
                                 </>
                             )}
                         </div>
@@ -170,65 +184,56 @@ export default function Welcome({ stats, plans }: Props) {
                 </header>
 
                 {/* Hero Section */}
-                <section className="relative flex min-h-screen items-center overflow-x-hidden overflow-y-visible">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800" />
-                    <div className="absolute inset-0 overflow-hidden">
-                        <div className="absolute top-20 left-10 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl" />
-                        <div className="absolute right-10 bottom-10 h-96 w-96 rounded-full bg-indigo-400/20 blur-3xl" />
-                    </div>
-                    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="text-center">
-                            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 sm:mb-6 sm:px-4 sm:py-2 sm:text-sm dark:bg-blue-900/30 dark:text-blue-300">
-                                <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <section className="relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden border-b">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/5" />
+                    <div className="relative mx-auto w-full px-4 sm:px-6 lg:px-8">
+                        <div className="mx-auto max-w-4xl text-center">
+                            <Badge variant="secondary" className="mb-6">
+                                <Check className="mr-1 h-3 w-3" />
                                 {t('welcome.trusted_badge')}
-                            </div>
-                            <h1 className="mb-4 text-2xl font-bold text-transparent sm:mb-6 sm:text-5xl lg:text-7xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text dark:from-blue-400 dark:to-indigo-400 leading-relaxed sm:leading-tight lg:leading-tight py-2">
+                            </Badge>
+                            <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
                                 {t('welcome.hero_title')}
                             </h1>
-                            <p className="mx-auto mb-8 max-w-2xl text-base text-gray-600 sm:mb-10 sm:text-lg dark:text-gray-400">
+                            <p className="mb-4 text-lg text-muted-foreground sm:text-xl">
                                 {t('welcome.hero_subtitle')}
                             </p>
-                            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+                            <p className="mb-10 max-w-2xl mx-auto text-muted-foreground">
+                                {t('welcome.hero_description')}
+                            </p>
+                            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                                 {auth.user ? (
-                                    <Link
-                                        href={dashboard()}
-                                        className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 sm:w-auto sm:px-8 sm:py-4 sm:text-lg"
-                                    >
-                                        {t('nav.dashboard')}
-                                    </Link>
+                                    <Button size="lg" asChild>
+                                        <Link href={dashboard()}>
+                                            {t('nav.dashboard')}
+                                            <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
                                 ) : (
                                     <>
-                                        <Link
-                                            href={register()}
-                                            className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 sm:w-auto sm:px-8 sm:py-4 sm:text-lg"
-                                        >
-                                            {t('welcome.cta')}
-                                        </Link>
-                                        <Link
-                                            href={login()}
-                                            className="w-full rounded-xl border-2 border-gray-200 px-6 py-3 text-base font-semibold text-gray-700 hover:border-gray-300 hover:bg-gray-50 sm:w-auto sm:px-8 sm:py-4 sm:text-lg dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-800"
-                                        >
-                                            {t('welcome.contact')}
-                                        </Link>
+                                        <Button size="lg" asChild>
+                                            <Link href={register()}>
+                                                {t('welcome.cta')}
+                                                <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                        <Button size="lg" variant="outline" asChild>
+                                            <Link href={login()}>{t('welcome.contact')}</Link>
+                                        </Button>
                                     </>
                                 )}
                             </div>
                         </div>
                     </div>
                 </section>
-
-                {/* Stats Section */}
-                <section className="border-y border-blue-100 bg-blue-50/50 py-10 sm:py-16 dark:border-blue-900 dark:bg-blue-950/30">
+                <section className="border-b bg-muted/30 py-12 sm:py-16">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-2 gap-4 sm:gap-8 md:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                             {displayStats.map((stat) => (
                                 <div key={stat.label} className="text-center">
-                                    <div className="text-2xl font-bold text-blue-600 sm:text-4xl dark:text-blue-400">
-                                        {stat.number}
-                                    </div>
-                                    <div className="mt-1 text-xs text-blue-700 sm:text-sm dark:text-blue-300">
-                                        {stat.label}
-                                    </div>
+                                    <stat.icon className="mx-auto mb-2 h-6 w-6 text-primary" />
+                                    <div className="text-3xl font-bold sm:text-4xl">{stat.number}</div>
+                                    <div className="mt-1 text-sm text-muted-foreground">{stat.label}</div>
                                 </div>
                             ))}
                         </div>
@@ -236,202 +241,161 @@ export default function Welcome({ stats, plans }: Props) {
                 </section>
 
                 {/* Features Section */}
-                <section className="py-16 sm:py-24">
+                <section id="features" className="py-20 sm:py-28">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="mb-10 text-center sm:mb-16">
-                            <h2 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl lg:text-4xl dark:text-white">
+                        <div className="mb-16 text-center">
+                            <Badge variant="outline" className="mb-4">Features</Badge>
+                            <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
                                 {t('welcome.about_title')}
                             </h2>
-                            <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg dark:text-gray-400">
+                            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
                                 {t('welcome.about_desc')}
                             </p>
                         </div>
-                        <div className="grid gap-4 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {features.map((feature) => (
-                                <div
-                                    key={feature.title}
-                                    className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:border-blue-200 hover:shadow-lg sm:p-8 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-blue-800"
-                                >
-                                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white sm:mb-4 sm:h-12 sm:w-12 dark:bg-blue-900/30 dark:text-blue-400">
-                                        <feature.icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                                    </div>
-                                    <h3 className="mb-2 text-lg font-semibold text-gray-900 sm:text-xl dark:text-white">
-                                        {feature.title}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 sm:text-base dark:text-gray-400">
-                                        {feature.description}
-                                    </p>
-                                </div>
+                                <Card key={feature.title} className="group transition-all hover:shadow-lg hover:shadow-primary/5">
+                                    <CardHeader>
+                                        <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                                            <feature.icon className="h-6 w-6" />
+                                        </div>
+                                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-muted-foreground">{feature.description}</p>
+                                    </CardContent>
+                                </Card>
                             ))}
                         </div>
                     </div>
                 </section>
 
                 {/* How it Works Section */}
-                <section className="bg-blue-50 py-16 sm:py-24 dark:bg-blue-950/30">
+                <section className="border-y bg-muted/30 py-20 sm:py-28">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="mb-10 text-center sm:mb-16">
-                            <h2 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl lg:text-4xl dark:text-white">
+                        <div className="mb-16 text-center">
+                            <Badge variant="outline" className="mb-4">How it Works</Badge>
+                            <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
                                 {t('welcome.how_it_works_title')}
                             </h2>
-                            <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg dark:text-gray-400">
+                            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
                                 {t('welcome.how_it_works_desc')}
                             </p>
                         </div>
-                        <div className="grid gap-8 sm:gap-8 md:grid-cols-3">
-                            <div className="text-center">
-                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white sm:h-16 sm:w-16 sm:text-2xl">
-                                    {formatNumber(1)}
+                        <div className="grid gap-8 md:grid-cols-3">
+                            {steps.map((step, index) => (
+                                <div key={step.number} className="relative text-center">
+                                    {index < steps.length - 1 && (
+                                        <div className="absolute top-8 left-[calc(50%+40px)] hidden h-[2px] w-[calc(100%-80px)] bg-border md:block" />
+                                    )}
+                                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border-2 border-primary bg-background">
+                                        <step.icon className="h-7 w-7 text-primary" />
+                                    </div>
+                                    <h3 className="mb-2 text-xl font-semibold">{step.title}</h3>
+                                    <p className="text-muted-foreground">{step.description}</p>
                                 </div>
-                                <h3 className="mb-2 text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
-                                    {t('welcome.step1_title')}
-                                </h3>
-                                <p className="text-sm text-gray-600 sm:text-base dark:text-gray-400">
-                                    {t('welcome.step1_desc')}
-                                </p>
-                            </div>
-                            <div className="text-center">
-                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white sm:h-16 sm:w-16 sm:text-2xl">
-                                    {formatNumber(2)}
-                                </div>
-                                <h3 className="mb-2 text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
-                                    {t('welcome.step2_title')}
-                                </h3>
-                                <p className="text-sm text-gray-600 sm:text-base dark:text-gray-400">
-                                    {t('welcome.step2_desc')}
-                                </p>
-                            </div>
-                            <div className="text-center">
-                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white sm:h-16 sm:w-16 sm:text-2xl">
-                                    {formatNumber(3)}
-                                </div>
-                                <h3 className="mb-2 text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
-                                    {t('welcome.step3_title')}
-                                </h3>
-                                <p className="text-sm text-gray-600 sm:text-base dark:text-gray-400">
-                                    {t('welcome.step3_desc')}
-                                </p>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </section>
 
                 {/* Pricing Section */}
                 {safePlans.length > 0 && (
-                    <section className="py-16 sm:py-24">
+                    <section id="pricing" className="py-20 sm:py-28">
                         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                            <div className="mb-10 text-center sm:mb-16">
-                                <h2 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl lg:text-4xl dark:text-white">
+                            <div className="mb-16 text-center">
+                                <Badge variant="outline" className="mb-4">Pricing</Badge>
+                                <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
                                     {t('welcome.pricing_title')}
                                 </h2>
-                                <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg dark:text-gray-400">
+                                <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
                                     {t('welcome.pricing_desc')}
                                 </p>
                             </div>
-                            <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                                 {safePlans.map((plan) => (
-                                    <div
+                                    <Card
                                         key={plan.id}
-                                        className={`relative rounded-2xl border p-6 transition-all sm:p-8 ${
+                                        className={`relative flex flex-col ${
                                             plan.is_default
-                                                ? 'border-blue-600 shadow-lg shadow-blue-500/10 dark:border-blue-500'
-                                                : 'border-gray-200 hover:border-blue-200 hover:shadow-lg dark:border-gray-800 dark:hover:border-blue-800'
+                                                ? 'border-primary shadow-lg shadow-primary/10'
+                                                : ''
                                         }`}
                                     >
                                         {plan.is_default && (
                                             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                                <span className="rounded-full bg-blue-600 px-4 py-1 text-xs font-semibold text-white">
-                                                    {t('plan.free_trial')}
-                                                </span>
+                                                <Badge>{t('plan.free_trial')}</Badge>
                                             </div>
                                         )}
-                                        <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
-                                            {plan.name}
-                                        </h3>
-                                        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {plan.description}
-                                        </p>
-                                        <div className="mb-6">
-                                            {plan.price_monthly === 0 ? (
-                                                <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                                                    {t('plan.free')}
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                                                        {formatCurrency(plan.price_monthly)}
-                                                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/{t('plan.month')}</span>
-                                                    </div>
-                                                    {plan.price_yearly > 0 && (
-                                                        <div className="mt-1 text-sm text-green-600 dark:text-green-400">
-                                                            {t('plan.yearly')}: {formatCurrency(plan.price_yearly)}/{t('plan.year')}
+                                        <CardHeader>
+                                            <CardTitle className="text-xl">{plan.name}</CardTitle>
+                                            {plan.description && (
+                                                <p className="text-sm text-muted-foreground">{plan.description}</p>
+                                            )}
+                                        </CardHeader>
+                                        <CardContent className="flex flex-1 flex-col">
+                                            <div className="mb-6">
+                                                {plan.price_monthly === 0 ? (
+                                                    <div className="text-4xl font-bold">{t('plan.free')}</div>
+                                                ) : (
+                                                    <>
+                                                        <div className="text-4xl font-bold">
+                                                            {formatCurrency(plan.price_monthly)}
+                                                            <span className="text-sm font-normal text-muted-foreground">/{t('plan.month')}</span>
                                                         </div>
-                                                    )}
-                                                </>
-                                            )}
-                                        </div>
-                                        <div className="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                                            {t('plan.limits')}
-                                        </div>
-                                        <ul className="mb-6 space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                                            {plan.max_students === -1 ? (
+                                                        {plan.price_yearly > 0 && (
+                                                            <p className="mt-1 text-sm text-green-600 dark:text-green-400">
+                                                                {t('plan.yearly')}: {formatCurrency(plan.price_yearly)}/{t('plan.year')}
+                                                            </p>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            <Separator className="mb-6" />
+
+                                            <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                                {t('plan.limits')}
+                                            </div>
+                                            <ul className="mb-6 space-y-3 text-sm">
                                                 <li className="flex items-center gap-2">
                                                     <Check className="h-4 w-4 text-green-500" />
-                                                    {t('plan.unlimited_students')}
+                                                    {plan.max_students === -1 ? t('plan.unlimited_students') : `${plan.max_students} ${t('plan.students')}`}
                                                 </li>
-                                            ) : (
                                                 <li className="flex items-center gap-2">
                                                     <Check className="h-4 w-4 text-green-500" />
-                                                    {formatNumber(plan.max_students)} {t('plan.students')}
+                                                    {plan.max_staff === -1 ? t('plan.unlimited_staff') : `${plan.max_staff} ${t('plan.staff')}`}
                                                 </li>
-                                            )}
-                                            {plan.max_staff === -1 ? (
                                                 <li className="flex items-center gap-2">
                                                     <Check className="h-4 w-4 text-green-500" />
-                                                    {t('plan.unlimited_staff')}
+                                                    {plan.max_batches === -1 ? t('plan.unlimited_batches') : `${plan.max_batches} ${t('plan.batches')}`}
                                                 </li>
-                                            ) : (
-                                                <li className="flex items-center gap-2">
-                                                    <Check className="h-4 w-4 text-green-500" />
-                                                    {formatNumber(plan.max_staff)} {t('plan.staff')}
-                                                </li>
-                                            )}
-                                            {plan.max_batches === -1 ? (
-                                                <li className="flex items-center gap-2">
-                                                    <Check className="h-4 w-4 text-green-500" />
-                                                    {t('plan.unlimited_batches')}
-                                                </li>
-                                            ) : (
-                                                <li className="flex items-center gap-2">
-                                                    <Check className="h-4 w-4 text-green-500" />
-                                                    {formatNumber(plan.max_batches)} {t('plan.batches')}
-                                                </li>
-                                            )}
-                                        </ul>
-                                        <div className="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                                            {t('plan.includes')}
-                                        </div>
-                                        <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                                            {plan.features.map((feature) => (
-                                                <li key={feature} className="flex items-center gap-2">
-                                                    <Check className="h-4 w-4 text-green-500" />
-                                                    {featureLabels[feature] || feature}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <div className="mt-6">
-                                            <Link
-                                                href={register()}
-                                                className={`block w-full rounded-xl py-3 text-center text-sm font-semibold transition-colors ${
-                                                    plan.is_default
-                                                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                                        : 'border border-gray-200 text-gray-700 hover:border-blue-200 hover:bg-blue-50 dark:border-gray-700 dark:text-gray-300 dark:hover:border-blue-800 dark:hover:bg-blue-950/30'
-                                                }`}
+                                            </ul>
+
+                                            <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                                {t('plan.includes')}
+                                            </div>
+                                            <ul className="mb-6 flex-1 space-y-3 text-sm">
+                                                {plan.features.map((feature) => (
+                                                    <li key={feature} className="flex items-center gap-2">
+                                                        <Check className="h-4 w-4 text-green-500" />
+                                                        {featureLabels[feature] || feature}
+                                                    </li>
+                                                ))}
+                                            </ul>
+
+                                            <Button
+                                                className="w-full"
+                                                variant={plan.is_default ? 'default' : 'outline'}
+                                                asChild
                                             >
-                                                {t('welcome.cta')}
-                                            </Link>
-                                        </div>
-                                    </div>
+                                                <Link href={register()}>
+                                                    {t('welcome.cta')}
+                                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
                                 ))}
                             </div>
                         </div>
@@ -439,146 +403,94 @@ export default function Welcome({ stats, plans }: Props) {
                 )}
 
                 {/* FAQ Section */}
-                <section className="bg-blue-50 py-16 sm:py-24 dark:bg-blue-950/30">
+                <section id="faq" className="border-t bg-muted/30 py-20 sm:py-28">
                     <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                        <div className="mb-10 text-center sm:mb-16">
-                            <h2 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl lg:text-4xl dark:text-white">
+                        <div className="mb-16 text-center">
+                            <Badge variant="outline" className="mb-4">FAQ</Badge>
+                            <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
                                 {t('welcome.faq_title')}
                             </h2>
-                            <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg dark:text-gray-400">
+                            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
                                 {t('welcome.faq_desc')}
                             </p>
                         </div>
-                        <div className="space-y-4">
+                        <Accordion type="single" collapsible className="w-full">
                             {faqs.map((faq, i) => (
-                                <details
-                                    key={i}
-                                    className="group rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-gray-900"
-                                >
-                                    <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
-                                        {faq.q}
-                                        <HelpCircle className="h-5 w-5 shrink-0 text-gray-400 group-open:text-blue-600 dark:group-open:text-blue-400" />
-                                    </summary>
-                                    <p className="mt-3 text-sm text-gray-600 sm:text-base dark:text-gray-400">
+                                <AccordionItem key={i} value={`item-${i}`}>
+                                    <AccordionTrigger className="text-left">{faq.q}</AccordionTrigger>
+                                    <AccordionContent className="text-muted-foreground">
                                         {faq.a}
-                                    </p>
-                                </details>
+                                    </AccordionContent>
+                                </AccordionItem>
                             ))}
-                        </div>
+                        </Accordion>
                     </div>
                 </section>
 
                 {/* CTA Section */}
-                <section className="py-16 sm:py-24">
+                <section className="py-20 sm:py-28">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-10 text-center shadow-2xl sm:rounded-3xl sm:px-8 sm:py-16 lg:px-16">
-                            <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-                                {t('welcome.cta_title')}
-                            </h2>
-                            <p className="mx-auto mb-6 max-w-xl text-base text-blue-100 sm:mb-8 sm:text-lg">
-                                {t('welcome.cta_desc')}
-                            </p>
-                            {!auth.user && (
-                                <Link
-                                    href={register()}
-                                    className="inline-block rounded-xl bg-white px-6 py-3 text-base font-semibold text-gray-900 shadow-lg hover:bg-gray-100 sm:px-8 sm:py-4 sm:text-lg"
-                                >
-                                    {t('welcome.cta_button')}
-                                </Link>
-                            )}
-                        </div>
+                        <Card className="overflow-hidden border-primary bg-primary text-primary-foreground">
+                            <CardContent className="px-6 py-12 text-center sm:px-12 sm:py-16">
+                                <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
+                                    {t('welcome.cta_title')}
+                                </h2>
+                                <p className="mx-auto mb-8 max-w-xl text-lg text-primary-foreground/80">
+                                    {t('welcome.cta_desc')}
+                                </p>
+                                {!auth.user && (
+                                    <Button size="lg" variant="secondary" asChild>
+                                        <Link href={register()}>
+                                            {t('welcome.cta_button')}
+                                            <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
                 </section>
 
                 {/* Footer */}
-                <footer className="border-t border-gray-100 bg-gray-50 py-12 sm:py-16 dark:border-gray-800 dark:bg-gray-900/50">
+                <footer className="border-t bg-muted/30 py-12 sm:py-16">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="grid gap-8 sm:gap-12 md:grid-cols-4">
-                            {/* Brand */}
-                            <div className="md:col-span-1">
+                        <div className="grid gap-8 md:grid-cols-4">
+                            <div>
                                 <div className="flex items-center gap-2">
-                                    <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-md object-cover" />
-                                    <span className="font-bold text-gray-900 dark:text-white">
-                                        {t('app.name')}
-                                    </span>
+                                    <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-lg object-cover" />
+                                    <span className="font-bold">{t('app.name')}</span>
                                 </div>
-                                <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                                <p className="mt-3 text-sm text-muted-foreground">
                                     {t('welcome.hero_subtitle')}
                                 </p>
                             </div>
-
-                            {/* Product */}
                             <div>
-                                <h4 className="mb-3 text-sm font-semibold text-gray-900 uppercase tracking-wider dark:text-white">
-                                    {t('footer.product')}
-                                </h4>
-                                <ul className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
-                                    <li>
-                                        <a href="#features" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                            {t('welcome.about_title')}
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#pricing" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                            {t('welcome.pricing_title')}
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <Link href={register()} className="hover:text-blue-600 dark:hover:text-blue-400">
-                                            {t('welcome.cta_button')}
-                                        </Link>
-                                    </li>
+                                <h4 className="mb-4 text-sm font-semibold">{t('footer.product')}</h4>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li><a href="#features" className="hover:text-primary">{t('welcome.about_title')}</a></li>
+                                    <li><a href="#pricing" className="hover:text-primary">{t('welcome.pricing_title')}</a></li>
+                                    <li><Link href={register()} className="hover:text-primary">{t('welcome.cta_button')}</Link></li>
                                 </ul>
                             </div>
-
-                            {/* Support */}
                             <div>
-                                <h4 className="mb-3 text-sm font-semibold text-gray-900 uppercase tracking-wider dark:text-white">
-                                    {t('footer.support')}
-                                </h4>
-                                <ul className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
-                                    <li>
-                                        <Link href="/contact" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                            {t('footer.contact_us')}
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/docs" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                            {t('footer.documentation')}
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <a href="#faq" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                            {t('welcome.faq_title')}
-                                        </a>
-                                    </li>
+                                <h4 className="mb-4 text-sm font-semibold">{t('footer.support')}</h4>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li><Link href="/contact" className="hover:text-primary">{t('footer.contact_us')}</Link></li>
+                                    <li><Link href="/docs" className="hover:text-primary">{t('footer.documentation')}</Link></li>
+                                    <li><a href="#faq" className="hover:text-primary">{t('welcome.faq_title')}</a></li>
                                 </ul>
                             </div>
-
-                            {/* Legal */}
                             <div>
-                                <h4 className="mb-3 text-sm font-semibold text-gray-900 uppercase tracking-wider dark:text-white">
-                                    {t('footer.legal')}
-                                </h4>
-                                <ul className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
-                                    <li>
-                                        <Link href="/terms" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                            {t('footer.terms')}
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/privacy" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                            {t('footer.privacy')}
-                                        </Link>
-                                    </li>
+                                <h4 className="mb-4 text-sm font-semibold">{t('footer.legal')}</h4>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li><Link href="/terms" className="hover:text-primary">{t('footer.terms')}</Link></li>
+                                    <li><Link href="/privacy" className="hover:text-primary">{t('footer.privacy')}</Link></li>
                                 </ul>
                             </div>
                         </div>
-
-                        <div className="mt-10 border-t border-gray-200 pt-6 text-center dark:border-gray-800 sm:mt-12 sm:pt-8">
-                            <p className="text-xs text-gray-400 sm:text-sm dark:text-gray-500">
-                                &copy; {formatNumber(new Date().getFullYear())} {t('app.name')}. {t('welcome.copyright')}
-                            </p>
+                        <Separator className="my-8" />
+                        <div className="text-center text-sm text-muted-foreground">
+                            &copy; {formatNumber(new Date().getFullYear())} {t('app.name')}. {t('welcome.copyright')}
                         </div>
                     </div>
                 </footer>

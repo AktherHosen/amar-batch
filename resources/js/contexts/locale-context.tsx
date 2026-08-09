@@ -328,6 +328,8 @@ const translations: Record<Locale, Record<string, string>> = {
         // Welcome / SEO
         'welcome.hero_title': 'কর্ণফুলী আলফা একাডেমি',
         'welcome.hero_subtitle': 'আপনার কোচিং সেন্টারের সম্পূর্ণ ব্যবস্থাপনা সমাধান',
+        'welcome.hero_description': 'ছাত্রদের ট্র্যাক করুন, ব্যাচ পরিচালনা করুন, উপস্থিতি নির্ধারণ করুন, বেতন সংগ্রহ করুন এবং রিপোর্ট তৈরি করুন — সবকিছু একটি ড্যাশবোর্ড থেকে। বাংলাদেশের কোচিং সেন্টারগুলোর জন্য মাল্টি-টেন্যান্ট সাপোর্ট, ভূমিকা-ভিত্তিক প্রবেশ এবং সাবস্ক্রিপশন প্ল্যান সহ তৈরি।',
+        'welcome.trusted_by': 'শীর্ষস্থানীয় কোচিং সেন্টারগুলোর আস্থাভাজন',
         'welcome.students_feature': 'ছাত্র ব্যবস্থাপনা',
         'welcome.students_desc': 'ছাত্রদের তথ্য, যোগদান, ছাড়ার তারিখ সহজেই পরিচালনা করুন',
         'welcome.attendance_feature': 'উপস্থিতি ট্র্যাকিং',
@@ -650,6 +652,8 @@ const translations: Record<Locale, Record<string, string>> = {
         // Welcome / SEO
         'welcome.hero_title': 'Amar Batch',
         'welcome.hero_subtitle': 'Complete Management Solution for Your Coaching Center',
+        'welcome.hero_description': 'Track students, manage batches, mark attendance, collect fees, and generate reports — all from a single dashboard. Built for coaching centers in Bangladesh with multi-tenant support, role-based access, and subscription plans.',
+        'welcome.trusted_by': 'Trusted by leading coaching centers',
         'welcome.students_feature': 'Student Management',
         'welcome.students_desc': 'Manage student information, enrollment, and departure dates with ease',
         'welcome.attendance_feature': 'Attendance Tracking',
