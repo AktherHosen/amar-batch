@@ -9,6 +9,7 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 | Backend | Laravel 13 + PHP 8.3 |
 | Frontend | React 19 + TypeScript 5.7 + Inertia.js 3 |
 | UI | Tailwind CSS 4 + shadcn/ui (New York variant) |
+| Animations | Framer Motion |
 | Charts | Chart.js + react-chartjs-2 |
 | Auth | Laravel Fortify (passkeys, 2FA, password reset) |
 | Routing | Wayfinder (auto-generated typed routes) |
@@ -24,6 +25,12 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 - `BelongsToTenant` trait auto-scopes queries and auto-fills `tenant_id`
 - Each tenant has its own subscription, users, students, batches, and data
 - Super admin can view and manage all tenants
+
+### Feature Gating
+- Plans have a `features` JSON array (e.g. `['attendance', 'fees', 'exams', 'reports']`)
+- `Plan::hasFeature($feature)` method checks feature availability
+- Frontend hooks: `useFeatures()` and `useHasFeature()` from `resources/js/lib/features.ts`
+- Sidebar nav items and dashboard quick actions are feature-gated
 
 ### Onboarding Flow
 - New owner accounts go through `/onboarding` to create their tenant
@@ -41,6 +48,11 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 - Configurable limits: max students, max staff, max batches per plan
 - Features array per plan (attendance, fees, exams, reports, notifications, custom branding, multi-branch, API access)
 
+### Custom Branding
+- Tenant logo upload with preview
+- Tenant name display in sidebar
+- AppLogo component uses tenant logo/name when `custom_branding` feature enabled
+
 ### Teacher Approval System
 - Staff accounts require admin approval before accessing the app
 - `CheckTeacherApproval` middleware blocks unapproved staff with a warning toast
@@ -52,16 +64,24 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 - Live clock with time and date (hidden on mobile, right-aligned)
 - Interactive charts: Today's Attendance (doughnut), Enrollment Trend (bar), Fee Collection (line)
 - Batch history card with recent activity
+- Active notices widget (feature-gated)
+- Upcoming holidays widget
+- Quick actions: Add Student, Mark Attendance, Record Payment, Post Notice (admin only)
+- Clickable student/batch links in stat cards
 - Refresh button with spin animation
+- Framer Motion animations (staggered card entry, fade-in-up transitions)
 
 ### Student Management
 - Full CRUD with coaching class assignment
 - Joined/left dates tracking
-- Detail page with enrollment history, fee status, and attendance summary by month
+- Avatar/photo display on detail page
+- Detail page with enrollment history, fee status, attendance % summary with progress bar
 - Dropdown actions (view/edit/delete)
 - Sticky first column on index table
 - Pagination with page numbers (10 per page)
+- CSV export
 - Teachers see only students enrolled in their assigned batches
+- Framer Motion staggered table row animations
 
 ### Batch Management
 - Create batches with days/time schedule, capacity tracking
@@ -69,9 +89,12 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 - Batch history logging (enrollment/completion/removal actions)
 - Assign/remove teachers to batches
 - Enroll/remove students with capacity checks
+- Capacity progress bar with percentage on index and show pages
+- Capacity warning badge when full/near-full
 - Status badges: active (default), inactive (danger), archived (secondary), completed (success/green)
 - Dropdown actions on index and show pages
-- Show page: responsive grid cards for info, batch name in heading
+- Show page: responsive grid cards for info, batch name in heading, clickable student names
+- Framer Motion staggered table row animations
 
 ### Teacher Management
 - Admin CRUD, assign teachers to batches
@@ -79,6 +102,7 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 - Detail page with assigned batches and enrolled students
 - Dropdown actions (view/edit/delete)
 - Sticky first column on index table
+- Framer Motion staggered table row animations
 
 ### Coaching Classes
 - Define class names with default fees
@@ -98,12 +122,63 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 - Sticky first column on wide fee grid table
 - Dropdown for header menu, direct delete button
 
+### Fee Receipts
+- `FeeReceipt` model tracks payment receipts
+- Receipt index and detail pages
+- PDF view and CSV export
+- Routes: `/fees/receipts`, `/fees/receipts/{receipt}`
+
 ### Attendance
 - Bulk marking via create page (batch select + date in flex row)
 - Single record edit (status + notes)
 - Dropdown actions (edit/delete) on index
 - Sticky first column on index table
 - Completed batches filtered from dropdown
+
+### Notice Board
+- `Notice` model with title, content, target_audience, priority, is_active
+- CRUD pages: index (with search), create, edit, show
+- Notices shown on dashboard (active notices widget)
+- Feature-gated by subscription plan
+- Routes: `/notices`, `/notices/create`, `/notices/{notice}`
+
+### Holiday Calendar
+- `Holiday` model with title, description, start_date, end_date, type (holiday/exam/event)
+- CRUD pages: index (with year/type filters), create, edit, show
+- Upcoming holidays widget on dashboard
+- `checkDate` API endpoint for checking conflicts
+- Routes: `/holidays`, `/holidays/create`, `/holidays/{holiday}`
+
+### Exam Management
+- `Exam` model with title, subject, exam_date, total_marks, passing_marks, class, batch
+- CRUD pages: index (with search), create, edit, show
+- Feature-gated by `exams` plan feature
+- Routes: `/exams`, `/exams/create`, `/exams/{exam}`
+
+### In-App Notifications
+- `InAppNotification` model for real-time in-app notifications
+- `NotificationBell` component in header
+- Notification index page with read/unread status
+- Routes: `/notifications`, `/notifications/{notification}/read`
+
+### Reports & Analytics
+- `ReportController` with stats and trends endpoints
+- Reports page with Chart.js charts (attendance trends, fee collection, enrollment growth)
+- Feature-gated by `reports` plan feature
+- Routes: `/reports`
+
+### Multi-Branch Support
+- `Branch` model for multi-location coaching centers
+- CRUD pages: index, create, edit, show
+- Feature-gated by `multi_branch` plan feature
+- Routes: `/branches`, `/branches/create`, `/branches/{branch}`
+
+### API Access
+- Sanctum-based API tokens
+- `ApiTokenController` for token management
+- Settings page for API token management
+- Feature-gated by `api_access` plan feature
+- Routes: `/settings/api-tokens`
 
 ### Authentication
 - Email verification (configurable)
@@ -114,6 +189,8 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 - Password reset via email
 
 ### UI/UX
+- Framer Motion animations: page transitions, staggered lists, fade-in-up forms, card animations
+- Reusable animation components: `resources/js/components/animated.tsx`
 - ConfirmDialog + sonner toast across all pages
 - Tables: sticky first column, whitespace-nowrap on headers/cells
 - EllipsisVertical (vertical three dots) for multi-action dropdowns
@@ -122,6 +199,7 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 - Badge variants: success (green-600), danger (red-600)
 - Button destructive variant: bg-red-600 text-white
 - Light/dark/system theme toggle
+- Mobile-responsive navigation (all nav items visible)
 
 ### Internationalization
 - Full English + Bangla (Bengali) locale support
@@ -154,7 +232,7 @@ A multi-tenant coaching center management platform built with Laravel 13 + Inert
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd academia
+cd amar-batch
 
 # Install PHP dependencies
 composer install
@@ -249,10 +327,18 @@ php artisan wayfinder:generate --with-form  # Regenerate typed routes
 | `GET /batches` | Batch management |
 | `GET /coaching-classes` | Coaching class management |
 | `GET /fees` | Fee tracking (admin) |
+| `GET /fees/receipts` | Fee receipts |
 | `GET /attendance` | Attendance management |
+| `GET /notices` | Notice board (feature-gated) |
+| `GET /holidays` | Holiday calendar (feature-gated) |
+| `GET /exams` | Exam management (feature-gated) |
+| `GET /notifications` | In-app notifications |
+| `GET /reports` | Reports & analytics (feature-gated) |
+| `GET /branches` | Branch management (feature-gated) |
 | `GET /settings/profile` | Profile settings |
 | `GET /settings/security` | Security settings (2FA, passkeys) |
 | `GET /settings/appearance` | Theme settings |
+| `GET /settings/api-tokens` | API token management (feature-gated) |
 | `GET /onboarding` | Tenant onboarding (owners only) |
 
 ### Super Admin
@@ -269,35 +355,44 @@ app/
 ├── Concerns/                  # Shared traits (BelongsToTenant, validation rules)
 ├── Console/Commands/          # Artisan commands (make:admin, install:features)
 ├── Http/
-│   ├── Controllers/           # Backend controllers (16 total)
+│   ├── Controllers/           # Backend controllers (23 total)
 │   │   └── SuperAdmin/        # Super admin controllers
 │   ├── Middleware/             # Tenant, Role, Onboarding, TeacherApproval
-│   └── Requests/              # Form request validation (16 total)
-├── Models/                    # Eloquent models (11 total)
-├── Policies/                  # Authorization policies (4)
+│   └── Requests/              # Form request validation
+├── Models/                    # Eloquent models (18 total)
+├── Policies/                  # Authorization policies
 database/
 ├── migrations/                # Database migrations
 ├── seeders/                   # Database seeders (8 total)
 ├── factories/                 # Model factories
 routes/
 ├── web.php                    # Master router
-├── students.php               # Student routes
+├── students.php               # Student routes (+ CSV export)
 ├── batches.php                # Batch routes (+ enrollments)
 ├── teachers.php               # Teacher routes (+ approve/reject)
-├── fees.php                   # Fee routes
+├── fees.php                   # Fee routes (+ receipts)
 ├── attendance.php             # Attendance routes
 ├── classes.php                # Coaching class routes
+├── notices.php                # Notice board routes
+├── holidays.php               # Holiday calendar routes
+├── exams.php                  # Exam management routes
+├── notifications.php          # In-app notification routes
+├── reports.php                # Reports & analytics routes
+├── branches.php               # Multi-branch routes
 ├── settings.php               # Settings routes
 ├── super-admin.php            # Super admin routes
 └── onboarding.php             # Onboarding routes
 resources/
 ├── js/
-│   ├── pages/                 # Inertia.js pages (40 total)
-│   ├── components/            # React components (65+ total)
+│   ├── pages/                 # Inertia.js pages (50+ total)
+│   ├── components/            # React components (70+ total)
+│   │   ├── animated.tsx       # Reusable Framer Motion components
+│   │   ├── notification-bell.tsx  # In-app notification bell
 │   │   └── ui/                # shadcn/ui components
 │   ├── contexts/              # Locale context (EN/BN)
 │   ├── hooks/                 # Custom React hooks
 │   ├── layouts/               # Layout components (7 total)
+│   ├── lib/                   # Utility libraries (features.ts)
 │   ├── routes/                # Wayfinder typed routes
 │   └── types/                 # TypeScript types
 public/
@@ -317,9 +412,15 @@ public/
 | CoachingClass | Class definitions with default fees |
 | Enrollment | Student-batch relationships |
 | FeeStatus | Monthly fee tracking records |
+| FeeReceipt | Payment receipt tracking |
 | Attendance | Daily attendance records |
 | BatchHistory | Batch action audit trail (enrollment/completion/removal) |
-| Plan | Subscription plan tiers with limits |
+| Notice | Notice board posts with targeting and priority |
+| Holiday | Holiday calendar events with date ranges |
+| Exam | Exam records with marks and scheduling |
+| InAppNotification | Real-time in-app notifications |
+| Branch | Multi-location coaching centers |
+| Plan | Subscription plan tiers with limits and features |
 | Subscription | Tenant-plan binding with trial dates |
 
 ## Testing
