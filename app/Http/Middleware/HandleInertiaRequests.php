@@ -53,6 +53,7 @@ class HandleInertiaRequests extends Middleware
                 'logo' => $tenant->logo,
                 'currency' => $tenant->currency,
                 'timezone' => $tenant->timezone,
+                'features' => $tenant->subscription?->plan?->features ?? [],
                 'subscription' => $tenant->subscription ? [
                     'id' => $tenant->subscription->id,
                     'status' => $tenant->subscription->status,
@@ -62,6 +63,7 @@ class HandleInertiaRequests extends Middleware
                         'max_students' => $tenant->subscription->plan->max_students,
                         'max_staff' => $tenant->subscription->plan->max_staff,
                         'max_batches' => $tenant->subscription->plan->max_batches,
+                        'features' => $tenant->subscription->plan->features,
                     ] : null,
                     'trial_ends_at' => $tenant->subscription->trial_ends_at,
                 ] : null,

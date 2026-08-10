@@ -37,4 +37,9 @@ class Plan extends Model
     {
         return $this->is_default;
     }
+
+    public function hasFeature(string $feature): bool
+    {
+        return in_array($feature, $this->features ?? []);
+    }
 }

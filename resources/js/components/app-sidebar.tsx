@@ -8,6 +8,8 @@ import {
     CheckSquare,
     School,
     CreditCard,
+    FileText,
+    BarChart3,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -23,6 +25,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
+import { useHasFeature } from '@/lib/features';
 import { dashboard } from '@/routes';
 import students from '@/routes/students';
 import batches from '@/routes/batches';
@@ -30,6 +33,8 @@ import teachers from '@/routes/teachers';
 import fees from '@/routes/fees';
 import attendance from '@/routes/attendance';
 import coachingClasses from '@/routes/coaching-classes';
+import exams from '@/routes/exams';
+import reports from '@/routes/reports';
 import subscription from '@/routes/subscription';
 import type { NavItem } from '@/types';
 
@@ -37,6 +42,8 @@ export function AppSidebar() {
     const { t } = useLocale();
     const { auth } = usePage().props;
     const isUserOwner = isOwner(auth.user);
+    const hasExams = useHasFeature('exams');
+    const hasReports = useHasFeature('reports');
 
     const allNavItems: NavItem[] = [
         {
@@ -77,6 +84,18 @@ export function AppSidebar() {
             icon: CheckSquare,
         },
         {
+            title: t('nav.exams'),
+            href: exams.index(),
+            icon: FileText,
+            featureRequired: 'exams',
+        },
+        {
+            title: t('nav.reports'),
+            href: reports.index(),
+            icon: BarChart3,
+            featureRequired: 'reports',
+        },
+        {
             title: t('nav.subscription'),
             href: subscription.index(),
             icon: CreditCard,
@@ -85,8 +104,18 @@ export function AppSidebar() {
     ];
 
     const mainNavItems = isUserOwner
-        ? allNavItems
-        : allNavItems.filter((item) => !item.ownerOnly);
+        ? allNavItems.filter((item) => {
+            if (item.ownerOnly && !isUserOwner) return false;
+            if (item.featureRequired === 'exams' && !hasExams) return false;
+            if (item.featureRequired === 'reports' && !hasReports) return false;
+            return true;
+        })
+        : allNavItems.filter((item) => {
+            if (item.ownerOnly) return false;
+            if (item.featureRequired === 'exams' && !hasExams) return false;
+            if (item.featureRequired === 'reports' && !hasReports) return false;
+            return true;
+        });
 
     return (
         <Sidebar collapsible="icon" variant="inset">

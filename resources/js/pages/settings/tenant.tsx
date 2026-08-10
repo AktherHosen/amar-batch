@@ -38,6 +38,7 @@ export default function TenantSettings({ tenant }: PageProps) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/settings/tenant', {
+            forceFormData: true,
             onSuccess: () => {
                 toast.success('Settings updated successfully');
             },

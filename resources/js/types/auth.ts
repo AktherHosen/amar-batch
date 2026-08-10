@@ -25,6 +25,7 @@ export type Tenant = {
     logo: string | null;
     currency: string;
     timezone: string;
+    features: string[];
 };
 
 export type Plan = {

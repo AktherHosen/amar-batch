@@ -100,7 +100,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
     const handleUpgrade = (plan: Plan) => {
         if (plan.price_monthly > 0) {
             const billing = annual ? 'yearly' : 'monthly';
-            window.location.href = `/payment/initiate/${plan.id}?billing=${billing}`;
+            submitPayment(plan.id, billing);
         } else {
             const billing = annual ? 'yearly' : 'monthly';
             setUpgradeDialog({ open: true, plan, billing });
@@ -111,8 +111,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
         if (!upgradeDialog.plan) return;
 
         if (upgradeDialog.plan.price_monthly > 0) {
-            const url = `/payment/initiate/${upgradeDialog.plan.id}?billing=${upgradeDialog.billing}`;
-            window.location.assign(url);
+            submitPayment(upgradeDialog.plan.id, upgradeDialog.billing);
         } else {
             router.post(`/subscription/upgrade/${upgradeDialog.plan.id}`, {}, {
                 onSuccess: () => {
@@ -121,6 +120,24 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                 },
             });
         }
+    };
+
+    const submitPayment = (planId: number, billing: string) => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/payment/initiate/${planId}?billing=${billing}`;
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = '_token';
+            input.value = csrfToken;
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
     };
 
     const getStatusBadge = (status: string) => {
