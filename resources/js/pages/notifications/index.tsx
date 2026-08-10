@@ -137,7 +137,14 @@ export default function NotificationsIndex({ notifications: pagination }: PagePr
                                 ))}
                             </div>
                         )}
-                        <Pagination pagination={pagination} />
+                        <Pagination
+                            currentPage={pagination.current_page}
+                            lastPage={pagination.last_page}
+                            total={pagination.total}
+                            perPage={pagination.per_page}
+                            itemName="notifications"
+                            baseUrl="/notifications"
+                        />
                     </CardContent>
                 </Card>
             </div>

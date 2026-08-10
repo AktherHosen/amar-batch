@@ -10,6 +10,7 @@ import {
     CreditCard,
     FileText,
     BarChart3,
+    Building2,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -35,6 +36,7 @@ import attendance from '@/routes/attendance';
 import coachingClasses from '@/routes/coaching-classes';
 import exams from '@/routes/exams';
 import reports from '@/routes/reports';
+import branches from '@/routes/branches';
 import subscription from '@/routes/subscription';
 import type { NavItem } from '@/types';
 
@@ -44,6 +46,7 @@ export function AppSidebar() {
     const isUserOwner = isOwner(auth.user);
     const hasExams = useHasFeature('exams');
     const hasReports = useHasFeature('reports');
+    const hasMultiBranch = useHasFeature('multi_branch');
 
     const allNavItems: NavItem[] = [
         {
@@ -96,6 +99,12 @@ export function AppSidebar() {
             featureRequired: 'reports',
         },
         {
+            title: t('nav.branches'),
+            href: branches.index(),
+            icon: Building2,
+            featureRequired: 'multi_branch',
+        },
+        {
             title: t('nav.subscription'),
             href: subscription.index(),
             icon: CreditCard,
@@ -108,12 +117,14 @@ export function AppSidebar() {
             if (item.ownerOnly && !isUserOwner) return false;
             if (item.featureRequired === 'exams' && !hasExams) return false;
             if (item.featureRequired === 'reports' && !hasReports) return false;
+            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
             return true;
         })
         : allNavItems.filter((item) => {
             if (item.ownerOnly) return false;
             if (item.featureRequired === 'exams' && !hasExams) return false;
             if (item.featureRequired === 'reports' && !hasReports) return false;
+            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
             return true;
         });
 

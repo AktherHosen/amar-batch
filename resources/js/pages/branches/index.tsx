@@ -12,13 +12,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
     Table,
     TableBody,
     TableCell,
@@ -27,94 +20,75 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
-import exams from '@/routes/exams';
+import branches from '@/routes/branches';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Eye, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 
-type Exam = {
-    id: number;
-    title: string;
-    subject: string | null;
-    batch: { id: number; name: string } | null;
-    date: string | null;
-    total_marks: number;
-    passing_marks: number;
-    created_at: string;
-};
-
-type Batch = {
+type Branch = {
     id: number;
     name: string;
+    code: string | null;
+    address: string | null;
+    phone: string | null;
+    email: string | null;
+    is_active: boolean;
 };
 
 type PageProps = {
-    exams: {
-        data: Exam[];
+    branches: {
+        data: Branch[];
         current_page: number;
         last_page: number;
         per_page: number;
         total: number;
     };
-    batches: Batch[];
-    filters: { search?: string; batch_id?: string };
+    filters: { search?: string };
 };
 
-function formatDate(dateStr: string | null): string {
-    if (!dateStr) return '-';
-    const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
-}
-
-export default function ExamsIndex({ exams: pagination, batches, filters }: PageProps) {
+export default function BranchesIndex({ branches: pagination, filters }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage().props;
     const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
-    const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [refreshing, setRefreshing] = useState(false);
-    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Exam | null }>({ open: false, item: null });
+    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Branch | null }>({ open: false, item: null });
 
     const handleSearch = () => {
-        router.get(exams.index(), { search, batch_id: batchId }, { preserveState: true });
+        router.get(branches.index(), { search }, { preserveState: true });
     };
 
     const handleRefresh = () => {
         setRefreshing(true);
-        router.reload({
-            onFinish: () => setRefreshing(false),
-        });
+        router.reload({ onFinish: () => setRefreshing(false) });
     };
 
-    const handleDelete = (exam: Exam) => {
-        setDeleteDialog({ open: true, item: exam });
+    const handleDelete = (branch: Branch) => {
+        setDeleteDialog({ open: true, item: branch });
     };
 
     const confirmDelete = () => {
         if (deleteDialog.item) {
-            router.delete(exams.destroy(deleteDialog.item.id));
-            toast.success('Exam deleted successfully');
+            router.delete(branches.destroy(deleteDialog.item.id));
+            toast.success(t('branches.deleted'));
             setDeleteDialog({ open: false, item: null });
         }
     };
 
     return (
         <>
-            <Head title={t('exams.title')} />
+            <Head title={t('branches.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title={t('exams.title')} description={t('exams.desc')} />
+                    <Heading title={t('branches.title')} description={t('branches.desc')} />
                     {isAdmin && (
-                        <Link href={exams.create()}>
+                        <Link href={branches.create()}>
                             <Button size="sm">
                                 <Plus className="mr-2 size-4" />
-                                {t('exams.create')}
+                                {t('branches.create')}
                             </Button>
                         </Link>
                     )}
@@ -136,7 +110,7 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                                     <button
                                         onClick={() => {
                                             setSearch('');
-                                            router.get(exams.index(), { batch_id: batchId }, { preserveState: true });
+                                            router.get(branches.index(), {}, { preserveState: true });
                                         }}
                                         className="absolute right-3 top-1/2 -translate-y-1/2"
                                     >
@@ -144,25 +118,6 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                                     </button>
                                 )}
                             </div>
-                            <Select
-                                value={batchId}
-                                onValueChange={(value) => {
-                                    setBatchId(value === 'all' ? '' : value);
-                                    router.get(exams.index(), { search, batch_id: value === 'all' ? '' : value }, { preserveState: true });
-                                }}
-                            >
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder={t('exams.all_batches')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t('exams.all_batches')}</SelectItem>
-                                    {batches.map((batch) => (
-                                        <SelectItem key={batch.id} value={String(batch.id)}>
-                                            {batch.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
                             <Button variant="ghost" size="sm" onClick={handleRefresh}>
                                 <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                             </Button>
@@ -175,11 +130,11 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">{t('exams.title')}</TableHead>
-                                    <TableHead>{t('exams.subject')}</TableHead>
-                                    <TableHead>{t('exams.batch')}</TableHead>
-                                    <TableHead>{t('exams.date')}</TableHead>
-                                    <TableHead>{t('exams.marks')}</TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">{t('branches.name')}</TableHead>
+                                    <TableHead>{t('branches.code')}</TableHead>
+                                    <TableHead>{t('branches.address')}</TableHead>
+                                    <TableHead>{t('branches.phone')}</TableHead>
+                                    <TableHead>{t('branches.status')}</TableHead>
                                     <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -187,19 +142,23 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                            {t('exams.no_exams')}
+                                            {t('branches.no_branches')}
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    pagination.data.map((exam) => (
-                                        <TableRow key={exam.id}>
+                                    pagination.data.map((branch) => (
+                                        <TableRow key={branch.id}>
                                             <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium whitespace-nowrap">
-                                                {exam.title}
+                                                {branch.name}
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap">{exam.subject || '-'}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{exam.batch?.name || '-'}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{formatDate(exam.date)}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{exam.total_marks} (pass: {exam.passing_marks})</TableCell>
+                                            <TableCell className="whitespace-nowrap">{branch.code || '-'}</TableCell>
+                                            <TableCell className="whitespace-nowrap">{branch.address || '-'}</TableCell>
+                                            <TableCell className="whitespace-nowrap">{branch.phone || '-'}</TableCell>
+                                            <TableCell className="whitespace-nowrap">
+                                                <Badge className={branch.is_active ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}>
+                                                    {branch.is_active ? t('branches.active') : t('branches.inactive')}
+                                                </Badge>
+                                            </TableCell>
                                             <TableCell className="p-1 text-center whitespace-nowrap">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -208,17 +167,17 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => router.get(exams.show(exam.id))}>
+                                                        <DropdownMenuItem onClick={() => router.get(branches.show(branch.id))}>
                                                             <Eye className="mr-2 size-4" />
                                                             {t('actions.view')}
                                                         </DropdownMenuItem>
                                                         {isAdmin && (
                                                             <>
-                                                                <DropdownMenuItem onClick={() => router.get(exams.edit(exam.id))}>
+                                                                <DropdownMenuItem onClick={() => router.get(branches.edit(branch.id))}>
                                                                     <Pencil className="mr-2 size-4" />
                                                                     {t('actions.edit')}
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(exam)}>
+                                                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(branch)}>
                                                                     <Trash2 className="mr-2 size-4" />
                                                                     {t('actions.delete')}
                                                                 </DropdownMenuItem>
@@ -237,9 +196,9 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                             lastPage={pagination.last_page}
                             total={pagination.total}
                             perPage={pagination.per_page}
-                            itemName={t('exams.title').toLowerCase() + 's'}
-                            baseUrl={exams.index()}
-                            preserveParams={{ search, batch_id: batchId }}
+                            itemName={t('branches.title').toLowerCase() + 'es'}
+                            baseUrl={branches.index()}
+                            preserveParams={{ search }}
                         />
                     </CardContent>
                 </Card>
@@ -249,7 +208,7 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                 open={deleteDialog.open}
                 onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
                 title={t('confirm.are_you_sure')}
-                description={t('exams.delete_confirm')}
+                description={t('branches.delete_confirm')}
                 confirmText={t('confirm.delete')}
                 onConfirm={confirmDelete}
             />
@@ -257,6 +216,6 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
     );
 }
 
-ExamsIndex.layout = {
-    breadcrumbs: [{ title: 'Exams', href: exams.index() }],
+BranchesIndex.layout = {
+    breadcrumbs: [{ title: 'Branches', href: branches.index() }],
 };

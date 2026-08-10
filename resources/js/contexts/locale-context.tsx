@@ -57,6 +57,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'nav.settings': 'সেটিংস',
         'nav.exams': 'পরীক্ষা',
         'nav.reports': 'রিপোর্ট',
+        'nav.branches': 'ব্রাঞ্চ',
 
         // Dashboard
         'dashboard.title': 'ড্যাশবোর্ড',
@@ -251,6 +252,28 @@ const translations: Record<Locale, Record<string, string>> = {
         'reports.batch_name': 'ব্যাচ',
         'reports.active_students': 'সক্রিয় ছাত্র',
         'reports.no_batches': 'কোনো ব্যাচ পাওয়া যায়নি',
+
+        // Branches
+        'branches.title': 'ব্রাঞ্চ',
+        'branches.desc': 'আপনার ব্রাঞ্চ পরিচালনা করুন',
+        'branches.create': 'ব্রাঞ্চ যোগ করুন',
+        'branches.edit': 'ব্রাঞ্চ সম্পাদনা',
+        'branches.name': 'নাম',
+        'branches.code': 'কোড',
+        'branches.address': 'ঠিকানা',
+        'branches.phone': 'ফোন',
+        'branches.email': 'ইমেইল',
+        'branches.status': 'অবস্থা',
+        'branches.active': 'সক্রিয়',
+        'branches.inactive': 'নিষ্ক্রিয়',
+        'branches.batches': 'ব্যাচ',
+        'branches.students': 'ছাত্র',
+        'branches.no_branches': 'কোনো ব্রাঞ্চ পাওয়া যায়নি',
+        'branches.deleted': 'ব্রাঞ্চ সফলভাবে মুছে ফেলা হয়েছে',
+        'branches.delete_confirm': 'আপনি কি নিশ্চিত এই ব্রাঞ্চ মুছে ফেলতে চান?',
+        'branches.name_placeholder': 'যেমন: মূল শাখা',
+        'branches.code_placeholder': 'যেমন: BR-001',
+        'branches.update_details': 'ব্রাঞ্চের তথ্য আপডেট করুন',
 
         // Fees
         'fees.title': 'বেতন ব্যবস্থাপনা',
@@ -490,6 +513,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'nav.settings': 'Settings',
         'nav.exams': 'Exams',
         'nav.reports': 'Reports',
+        'nav.branches': 'Branches',
 
         // Dashboard
         'dashboard.title': 'Dashboard',
@@ -684,6 +708,28 @@ const translations: Record<Locale, Record<string, string>> = {
         'reports.batch_name': 'Batch',
         'reports.active_students': 'Active Students',
         'reports.no_batches': 'No batches found',
+
+        // Branches
+        'branches.title': 'Branches',
+        'branches.desc': 'Manage your branches',
+        'branches.create': 'Add Branch',
+        'branches.edit': 'Edit Branch',
+        'branches.name': 'Name',
+        'branches.code': 'Code',
+        'branches.address': 'Address',
+        'branches.phone': 'Phone',
+        'branches.email': 'Email',
+        'branches.status': 'Status',
+        'branches.active': 'Active',
+        'branches.inactive': 'Inactive',
+        'branches.batches': 'Batches',
+        'branches.students': 'Students',
+        'branches.no_branches': 'No branches found',
+        'branches.deleted': 'Branch deleted successfully',
+        'branches.delete_confirm': 'Are you sure you want to delete this branch?',
+        'branches.name_placeholder': 'e.g. Main Branch',
+        'branches.code_placeholder': 'e.g. BR-001',
+        'branches.update_details': 'Update branch details',
 
         // Fees
         'fees.title': 'Fee Management',

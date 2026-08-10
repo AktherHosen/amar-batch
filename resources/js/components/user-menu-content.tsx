@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { LogOut, Settings, CreditCard, Building2 } from 'lucide-react';
+import { LogOut, Settings, CreditCard, Building2, Key } from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -69,6 +69,17 @@ export function UserMenuContent({ user }: Props) {
                             >
                                 <CreditCard className="mr-2" />
                                 Subscription
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link
+                                className="block w-full cursor-pointer"
+                                href="/settings/api"
+                                prefetch
+                                onClick={cleanup}
+                            >
+                                <Key className="mr-2" />
+                                API Settings
                             </Link>
                         </DropdownMenuItem>
                     </>
