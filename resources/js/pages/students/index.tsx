@@ -18,7 +18,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Download } from 'lucide-react';
+import { Download, EllipsisVertical, Eye, PenLine, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import {
     Table,
     TableBody,
@@ -31,7 +32,6 @@ import { useLocale } from '@/contexts/locale-context';
 import students from '@/routes/students';
 import type { Student } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -231,8 +231,8 @@ export default function StudentsIndex({
                                     <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
-                                {pagination.data.length === 0 ? (
+                            {pagination.data.length === 0 ? (
+                                <TableBody>
                                     <TableRow>
                                         <TableCell
                                             colSpan={7}
@@ -241,9 +241,24 @@ export default function StudentsIndex({
                                             No students found
                                         </TableCell>
                                     </TableRow>
-                                ) : (
-                                    pagination.data.map((student) => (
-                                        <TableRow key={student.id}>
+                                </TableBody>
+                            ) : (
+                                <motion.tbody
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: {},
+                                        visible: { transition: { staggerChildren: 0.03 } },
+                                    }}
+                                >
+                                {pagination.data.map((student) => (
+                                    <motion.tr
+                                        key={student.id}
+                                        variants={{
+                                            hidden: { opacity: 0, x: -8 },
+                                            visible: { opacity: 1, x: 0 },
+                                        }}
+                                    >
                                             <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {student.name}
                                             </TableCell>
@@ -304,10 +319,10 @@ export default function StudentsIndex({
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
+                                        </motion.tr>
+                                ))}
+                                </motion.tbody>
+                            )}
                         </Table>
 
                         <Pagination

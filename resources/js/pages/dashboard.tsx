@@ -1,5 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { isOwner, isStaff } from '@/lib/role';
+import { motion } from 'framer-motion';
 import {
     Users,
     GraduationCap,
@@ -200,7 +201,12 @@ export default function Dashboard({
             <Head title={t('dashboard.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-start justify-between">
+                <motion.div
+                    className="flex items-start justify-between"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
                     <Heading
                         title={
                             isTeacher
@@ -216,228 +222,336 @@ export default function Dashboard({
                         }
                     />
                     <Clock />
-                </div>
+                </motion.div>
 
-                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">
-                                {t('dashboard.total_students')}
-                            </CardTitle>
-                            <Users className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">
-                                {stats.total_students}
-                            </div>
-                            <Link
-                                href={students.index().url}
-                                className="text-xs text-muted-foreground hover:underline"
-                            >
-                                {t('actions.view_all')}
-                            </Link>
-                        </CardContent>
-                    </Card>
-
-                    {isAdmin && (
+                <motion.div
+                    className="grid gap-3 grid-cols-2 lg:grid-cols-4"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                        hidden: {},
+                        visible: { transition: { staggerChildren: 0.1 } },
+                    }}
+                >
+                    <motion.div
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                        }}
+                    >
                         <Card className="py-3">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                                 <CardTitle className="text-sm font-medium">
-                                    {t('nav.teachers')}
+                                    {t('dashboard.total_students')}
                                 </CardTitle>
-                                <GraduationCap className="size-4 text-muted-foreground" />
+                                <Users className="size-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent className="px-3 pb-2 pt-0">
                                 <div className="text-2xl font-bold">
-                                    {stats.total_teachers ?? '-'}
+                                    {stats.total_students}
                                 </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">
-                                {t('dashboard.active_batches')}
-                            </CardTitle>
-                            <Layers className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">
-                                {stats.active_batches}
-                            </div>
-                            <Link
-                                href={batches.index().url}
-                                className="text-xs text-muted-foreground hover:underline"
-                            >
-                                {t('actions.view_all')}
-                            </Link>
-                        </CardContent>
-                    </Card>
-
-                    {isAdmin && (
-                        <Card className="py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                <CardTitle className="text-sm font-medium">
-                                    {t('dashboard.total_collected')}
-                                </CardTitle>
-                                <DollarSign className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent className="px-3 pb-2 pt-0">
-                                <div className="text-2xl font-bold">
-                                    {Number(feeStats.total_collected).toFixed(
-                                        0,
-                                    )}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    {feeStats.total_records} {t('dashboard.payment_records')}
-                                </p>
                                 <Link
-                                    href={fees.index().url}
-                                    className="mt-1 block text-xs text-muted-foreground hover:underline"
+                                    href={students.index().url}
+                                    className="text-xs text-muted-foreground hover:underline"
                                 >
                                     {t('actions.view_all')}
                                 </Link>
                             </CardContent>
                         </Card>
+                    </motion.div>
+
+                    {isAdmin && (
+                        <motion.div
+                            variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                            }}
+                        >
+                            <Card className="py-3">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
+                                    <CardTitle className="text-sm font-medium">
+                                        {t('nav.teachers')}
+                                    </CardTitle>
+                                    <GraduationCap className="size-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent className="px-3 pb-2 pt-0">
+                                    <div className="text-2xl font-bold">
+                                        {stats.total_teachers ?? '-'}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
                     )}
 
-                    {isTeacher && (
+                    <motion.div
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                        }}
+                    >
                         <Card className="py-3">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                                 <CardTitle className="text-sm font-medium">
-                                    {t('dashboard.total_collected')}
+                                    {t('dashboard.active_batches')}
                                 </CardTitle>
-                                <DollarSign className="size-4 text-muted-foreground" />
+                                <Layers className="size-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent className="px-3 pb-2 pt-0">
                                 <div className="text-2xl font-bold">
-                                    {Number(feeStats.total_collected).toFixed(
-                                        0,
-                                    )}
+                                    {stats.active_batches}
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                    {feeStats.total_records} {t('dashboard.payment_records')}
-                                </p>
+                                <Link
+                                    href={batches.index().url}
+                                    className="text-xs text-muted-foreground hover:underline"
+                                >
+                                    {t('actions.view_all')}
+                                </Link>
                             </CardContent>
                         </Card>
+                    </motion.div>
+
+                    {isAdmin && (
+                        <motion.div
+                            variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                            }}
+                        >
+                            <Card className="py-3">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
+                                    <CardTitle className="text-sm font-medium">
+                                        {t('dashboard.total_collected')}
+                                    </CardTitle>
+                                    <DollarSign className="size-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent className="px-3 pb-2 pt-0">
+                                    <div className="text-2xl font-bold">
+                                        {Number(feeStats.total_collected).toFixed(0)}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {feeStats.total_records} {t('dashboard.payment_records')}
+                                    </p>
+                                    <Link
+                                        href={fees.index().url}
+                                        className="mt-1 block text-xs text-muted-foreground hover:underline"
+                                    >
+                                        {t('actions.view_all')}
+                                    </Link>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
                     )}
-                </div>
+
+                    {isTeacher && (
+                        <motion.div
+                            variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                            }}
+                        >
+                            <Card className="py-3">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
+                                    <CardTitle className="text-sm font-medium">
+                                        {t('dashboard.total_collected')}
+                                    </CardTitle>
+                                    <DollarSign className="size-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent className="px-3 pb-2 pt-0">
+                                    <div className="text-2xl font-bold">
+                                        {Number(feeStats.total_collected).toFixed(0)}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {feeStats.total_records} {t('dashboard.payment_records')}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
+                </motion.div>
 
                 {activeNotices && activeNotices.length > 0 && (
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-sm font-medium">Recent Notices</CardTitle>
-                                <Link href="/notices" className="text-xs text-muted-foreground hover:underline">
-                                    View all
-                                </Link>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {activeNotices.map((notice) => (
-                                    <Link
-                                        key={notice.id}
-                                        href={`/notices/${notice.id}`}
-                                        className="block rounded-lg border p-3 transition-colors hover:bg-muted/50"
-                                    >
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="min-w-0 flex-1">
-                                                <h4 className="text-sm font-medium">{notice.title}</h4>
-                                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                                                    {notice.content}
-                                                </p>
-                                            </div>
-                                            <span className="shrink-0 text-xs text-muted-foreground">
-                                                {new Date(notice.created_at).toLocaleDateString()}
-                                            </span>
-                                        </div>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.2 }}
+                    >
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-sm font-medium">Recent Notices</CardTitle>
+                                    <Link href="/notices" className="text-xs text-muted-foreground hover:underline">
+                                        View all
                                     </Link>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <motion.div
+                                    className="space-y-3"
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: {},
+                                        visible: { transition: { staggerChildren: 0.08 } },
+                                    }}
+                                >
+                                    {activeNotices.map((notice) => (
+                                        <motion.div
+                                            key={notice.id}
+                                            variants={{
+                                                hidden: { opacity: 0, x: -10 },
+                                                visible: { opacity: 1, x: 0 },
+                                            }}
+                                        >
+                                            <Link
+                                                href={`/notices/${notice.id}`}
+                                                className="block rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                            >
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="min-w-0 flex-1">
+                                                        <h4 className="text-sm font-medium">{notice.title}</h4>
+                                                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                                            {notice.content}
+                                                        </p>
+                                                    </div>
+                                                    <span className="shrink-0 text-xs text-muted-foreground">
+                                                        {new Date(notice.created_at).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                            </Link>
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
                 )}
 
                 {upcomingHolidays.length > 0 && (
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-sm font-medium">Upcoming Holidays</CardTitle>
-                                <Link href="/holidays" className="text-xs text-muted-foreground hover:underline">
-                                    View all
-                                </Link>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {upcomingHolidays.map((holiday) => (
-                                    <Link
-                                        key={holiday.id}
-                                        href={`/holidays/${holiday.id}`}
-                                        className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <Calendar className="size-4 text-muted-foreground" />
-                                            <div>
-                                                <h4 className="text-sm font-medium">{holiday.title}</h4>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {new Date(holiday.start_date).toLocaleDateString()} - {new Date(holiday.end_date).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <Badge variant={holiday.type === 'holiday' ? 'default' : holiday.type === 'exam' ? 'secondary' : 'outline'}>
-                                            {holiday.type}
-                                        </Badge>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.3 }}
+                    >
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-sm font-medium">Upcoming Holidays</CardTitle>
+                                    <Link href="/holidays" className="text-xs text-muted-foreground hover:underline">
+                                        View all
                                     </Link>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <motion.div
+                                    className="space-y-2"
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: {},
+                                        visible: { transition: { staggerChildren: 0.08 } },
+                                    }}
+                                >
+                                    {upcomingHolidays.map((holiday) => (
+                                        <motion.div
+                                            key={holiday.id}
+                                            variants={{
+                                                hidden: { opacity: 0, x: -10 },
+                                                visible: { opacity: 1, x: 0 },
+                                            }}
+                                        >
+                                            <Link
+                                                href={`/holidays/${holiday.id}`}
+                                                className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Calendar className="size-4 text-muted-foreground" />
+                                                    <div>
+                                                        <h4 className="text-sm font-medium">{holiday.title}</h4>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {new Date(holiday.start_date).toLocaleDateString()} - {new Date(holiday.end_date).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <Badge variant={holiday.type === 'holiday' ? 'default' : holiday.type === 'exam' ? 'secondary' : 'outline'}>
+                                                    {holiday.type}
+                                                </Badge>
+                                            </Link>
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
                 )}
 
                 {isAdmin && (
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                <Link href="/students/create">
-                                    <Button variant="outline" className="w-full justify-start">
-                                        <Plus className="mr-2 size-4" />
-                                        Add Student
-                                    </Button>
-                                </Link>
-                                <Link href="/attendance/create">
-                                    <Button variant="outline" className="w-full justify-start">
-                                        <ClipboardCheck className="mr-2 size-4" />
-                                        Mark Attendance
-                                    </Button>
-                                </Link>
-                                <Link href="/fees">
-                                    <Button variant="outline" className="w-full justify-start">
-                                        <CreditCard className="mr-2 size-4" />
-                                        Record Payment
-                                    </Button>
-                                </Link>
-                                <Link href="/notices/create">
-                                    <Button variant="outline" className="w-full justify-start">
-                                        <Megaphone className="mr-2 size-4" />
-                                        Post Notice
-                                    </Button>
-                                </Link>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.35 }}
+                    >
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <motion.div
+                                    className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: {},
+                                        visible: { transition: { staggerChildren: 0.06 } },
+                                    }}
+                                >
+                                    <motion.div variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}>
+                                        <Link href="/students/create">
+                                            <Button variant="outline" className="w-full justify-start">
+                                                <Plus className="mr-2 size-4" />
+                                                Add Student
+                                            </Button>
+                                        </Link>
+                                    </motion.div>
+                                    <motion.div variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}>
+                                        <Link href="/attendance/create">
+                                            <Button variant="outline" className="w-full justify-start">
+                                                <ClipboardCheck className="mr-2 size-4" />
+                                                Mark Attendance
+                                            </Button>
+                                        </Link>
+                                    </motion.div>
+                                    <motion.div variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}>
+                                        <Link href="/fees">
+                                            <Button variant="outline" className="w-full justify-start">
+                                                <CreditCard className="mr-2 size-4" />
+                                                Record Payment
+                                            </Button>
+                                        </Link>
+                                    </motion.div>
+                                    <motion.div variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}>
+                                        <Link href="/notices/create">
+                                            <Button variant="outline" className="w-full justify-start">
+                                                <Megaphone className="mr-2 size-4" />
+                                                Post Notice
+                                            </Button>
+                                        </Link>
+                                    </motion.div>
+                                </motion.div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
                 )}
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">{t('dashboard.today_attendance')}</CardTitle>
-                        </CardHeader>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.4 }}
+                    >
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">{t('dashboard.today_attendance')}</CardTitle>
+                            </CardHeader>
                         <CardContent>
                             <div className="h-[200px]">
                                 <Doughnut
@@ -459,40 +573,52 @@ export default function Dashboard({
                             </div>
                         </CardContent>
                     </Card>
+                    </motion.div>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">{t('dashboard.enrollment_trend')}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="h-[200px]">
-                                <Bar
-                                    data={{
-                                        labels: enrollmentTrend.map(d => d.month),
-                                        datasets: [{
-                                            label: t('dashboard.enrollments'),
-                                            data: enrollmentTrend.map(d => d.enrollments),
-                                            backgroundColor: '#2563eb',
-                                            borderRadius: 4,
-                                        }],
-                                    }}
-                                    options={{
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: { legend: { display: false } },
-                                        scales: {
-                                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                                            y: { grid: { color: '#e5e7eb' }, ticks: { font: { size: 10 } }, beginAtZero: true },
-                                        },
-                                    }}
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.5 }}
+                    >
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">{t('dashboard.enrollment_trend')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="h-[200px]">
+                                    <Bar
+                                        data={{
+                                            labels: enrollmentTrend.map(d => d.month),
+                                            datasets: [{
+                                                label: t('dashboard.enrollments'),
+                                                data: enrollmentTrend.map(d => d.enrollments),
+                                                backgroundColor: '#2563eb',
+                                                borderRadius: 4,
+                                            }],
+                                        }}
+                                        options={{
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: { legend: { display: false } },
+                                            scales: {
+                                                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                                y: { grid: { color: '#e5e7eb' }, ticks: { font: { size: 10 } }, beginAtZero: true },
+                                            },
+                                        }}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">{t('dashboard.fee_collection')}</CardTitle>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.6 }}
+                    >
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">{t('dashboard.fee_collection')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[200px]">
@@ -521,54 +647,66 @@ export default function Dashboard({
                                 />
                             </div>
                         </CardContent>
-                    </Card>
+                        </Card>
+                    </motion.div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                {t('attendance.title')}
-                            </CardTitle>
-                            <CheckCircle className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex gap-4">
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-green-600">
-                                        {todayAttendance.present}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.7 }}
+                    >
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    {t('attendance.title')}
+                                </CardTitle>
+                                <CheckCircle className="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex gap-4">
+                                    <div className="text-center">
+                                        <div className="text-2xl font-bold text-green-600">
+                                            {todayAttendance.present}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {t('attendance.present')}
+                                        </div>
                                     </div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {t('attendance.present')}
+                                    <div className="text-center">
+                                        <div className="text-2xl font-bold text-red-600">
+                                            {todayAttendance.absent}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {t('attendance.absent')}
+                                        </div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-2xl font-bold text-yellow-600">
+                                            {todayAttendance.late}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {t('attendance.late')}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-red-600">
-                                        {todayAttendance.absent}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {t('attendance.absent')}
-                                    </div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-yellow-600">
-                                        {todayAttendance.late}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {t('attendance.late')}
-                                    </div>
-                                </div>
-                            </div>
-                            <Link
-                                href={attendance.index().url}
-                                className="mt-2 block text-xs text-muted-foreground hover:underline"
-                            >
-                                {t('actions.view_all')}
-                            </Link>
-                        </CardContent>
-                    </Card>
+                                <Link
+                                    href={attendance.index().url}
+                                    className="mt-2 block text-xs text-muted-foreground hover:underline"
+                                >
+                                    {t('actions.view_all')}
+                                </Link>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
 
                     {isAdmin && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.8 }}
+                        >
                         <Card>
                             <CardHeader>
                                 <CardTitle>
@@ -633,9 +771,15 @@ export default function Dashboard({
                                 )}
                             </CardContent>
                         </Card>
+                    </motion.div>
                     )}
 
                     {isTeacher && assignedBatches && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.8 }}
+                        >
                         <Card>
                             <CardHeader>
                                 <CardTitle>{t('dashboard.my_assigned_batches')}</CardTitle>
@@ -681,95 +825,108 @@ export default function Dashboard({
                                 )}
                             </CardContent>
                         </Card>
+                    </motion.div>
                     )}
 
                     {batchHistory && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t('dashboard.batch_history')}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="rounded-lg border p-4">
-                                        <div className="text-2xl font-bold text-green-600">
-                                            {batchHistory.completed}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.85 }}
+                        >
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>{t('dashboard.batch_history')}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="rounded-lg border p-4">
+                                            <div className="text-2xl font-bold text-green-600">
+                                                {batchHistory.completed}
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {t('dashboard.completed')}
+                                            </div>
                                         </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {t('dashboard.completed')}
+                                        <div className="rounded-lg border p-4">
+                                            <div className="text-2xl font-bold text-blue-600">
+                                                {batchHistory.active}
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {t('dashboard.ongoing')}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="rounded-lg border p-4">
-                                        <div className="text-2xl font-bold text-blue-600">
-                                            {batchHistory.active}
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {t('dashboard.ongoing')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
                     )}
 
                     {isAdmin && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>
-                                    {t('dashboard.recent_payments')}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {recentFeePayments.length > 0 ? (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>
-                                                    {t('fees.student')}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t('fees.month')}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t('fees.amount_paid')}
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {recentFeePayments.map(
-                                                (payment) => (
-                                                    <TableRow key={payment.id}>
-                                                        <TableCell className="font-medium">
-                                                            {
-                                                                payment.student
-                                                                    .name
-                                                            }
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {
-                                                                getMonthName(
-                                                                    payment
-                                                                        .month
-                                                                )
-                                                            }{' '}
-                                                            {payment.year}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {Number(
-                                                                payment.amount_paid,
-                                                            ).toFixed(0)}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ),
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        {t('dashboard.no_payments')}
-                                    </p>
-                                )}
-                            </CardContent>
-                        </Card>
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.9 }}
+                        >
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>
+                                        {t('dashboard.recent_payments')}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {recentFeePayments.length > 0 ? (
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>
+                                                        {t('fees.student')}
+                                                    </TableHead>
+                                                    <TableHead>
+                                                        {t('fees.month')}
+                                                    </TableHead>
+                                                    <TableHead>
+                                                        {t('fees.amount_paid')}
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {recentFeePayments.map(
+                                                    (payment) => (
+                                                        <TableRow key={payment.id}>
+                                                            <TableCell className="font-medium">
+                                                                {
+                                                                    payment.student
+                                                                        .name
+                                                                }
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {
+                                                                    getMonthName(
+                                                                        payment
+                                                                            .month
+                                                                    )
+                                                                }{' '}
+                                                                {payment.year}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {Number(
+                                                                    payment.amount_paid,
+                                                                ).toFixed(0)}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ),
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            {t('dashboard.no_payments')}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </motion.div>
                     )}
 
                     {isTeacher && (

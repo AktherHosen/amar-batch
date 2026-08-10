@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle, XCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -200,8 +201,8 @@ export default function TeachersIndex({
                                     <TableHead className="w-[100px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
-                                {pagination.data.length === 0 ? (
+                            {pagination.data.length === 0 ? (
+                                <TableBody>
                                     <TableRow>
                                         <TableCell
                                             colSpan={5}
@@ -210,9 +211,24 @@ export default function TeachersIndex({
                                             No teachers found
                                         </TableCell>
                                     </TableRow>
-                                ) : (
-                                    pagination.data.map((teacher) => (
-                                        <TableRow key={teacher.id}>
+                                </TableBody>
+                            ) : (
+                                <motion.tbody
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: {},
+                                        visible: { transition: { staggerChildren: 0.03 } },
+                                    }}
+                                >
+                                {pagination.data.map((teacher) => (
+                                    <motion.tr
+                                        key={teacher.id}
+                                        variants={{
+                                            hidden: { opacity: 0, x: -8 },
+                                            visible: { opacity: 1, x: 0 },
+                                        }}
+                                    >
                                             <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {teacher.name}
                                             </TableCell>
@@ -272,11 +288,11 @@ export default function TeachersIndex({
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
+                                    </motion.tr>
+                                ))}
+                                </motion.tbody>
+                            )}
+                            </Table>
 
                         <Pagination
                             currentPage={pagination.current_page}

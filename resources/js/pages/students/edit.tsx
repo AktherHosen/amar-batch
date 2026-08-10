@@ -1,5 +1,6 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import type { Student } from '@/types';
 import Heading from '@/components/heading';
 import StudentForm from '@/components/student-form';
@@ -36,7 +37,12 @@ export default function StudentsEdit({
         <>
             <Head title={`${t('students.edit')} ${student.name}`} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+            >
                 <div className="flex items-center gap-4">
                     <Link href={students.show(student.id)}>
                         <Button variant="ghost" size="sm">
@@ -61,7 +67,7 @@ export default function StudentsEdit({
                         />
                     </CardContent>
                 </Card>
-            </div>
+            </motion.div>
         </>
     );
 }

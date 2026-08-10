@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
@@ -254,8 +255,8 @@ export default function BatchesIndex({
                                     <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
-                                {pagination.data.length === 0 ? (
+                            {pagination.data.length === 0 ? (
+                                <TableBody>
                                     <TableRow>
                                         <TableCell
                                             colSpan={6}
@@ -264,9 +265,24 @@ export default function BatchesIndex({
                                             No batches found
                                         </TableCell>
                                     </TableRow>
-                                ) : (
-                                    pagination.data.map((batch) => (
-                                        <TableRow key={batch.id}>
+                                </TableBody>
+                            ) : (
+                                <motion.tbody
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: {},
+                                        visible: { transition: { staggerChildren: 0.03 } },
+                                    }}
+                                >
+                                {pagination.data.map((batch) => (
+                                    <motion.tr
+                                        key={batch.id}
+                                        variants={{
+                                            hidden: { opacity: 0, x: -8 },
+                                            visible: { opacity: 1, x: 0 },
+                                        }}
+                                    >
                                             <TableCell className="sticky left-0 z-10 bg-background font-medium">
                                                 {batch.name}
                                             </TableCell>
@@ -344,10 +360,10 @@ export default function BatchesIndex({
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
+                                        </motion.tr>
+                                ))}
+                                </motion.tbody>
+                            )}
                         </Table>
 
                         <Pagination
