@@ -34,6 +34,8 @@ Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'teacher.approved
     require __DIR__.'/classes.php';
     require __DIR__.'/exams.php';
     require __DIR__.'/notifications.php';
+    require __DIR__.'/notices.php';
+    require __DIR__.'/holidays.php';
     require __DIR__.'/reports.php';
     require __DIR__.'/branches.php';
     require __DIR__.'/api-tokens.php';

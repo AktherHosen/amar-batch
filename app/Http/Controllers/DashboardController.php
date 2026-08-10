@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\Batch;
 use App\Models\Enrollment;
 use App\Models\FeeStatus;
+use App\Models\Notice;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -77,6 +78,13 @@ class DashboardController extends Controller
 
         $recentStudents = Student::with('coachingClass')->where('tenant_id', $tenantId)->latest()->take(5)->get();
 
+        $activeNotices = Notice::where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->whereNull('batch_id')
+            ->latest()
+            ->take(5)
+            ->get();
+
         $batchHistory = [
             'completed' => Batch::where('tenant_id', $tenantId)->where('status', 'completed')->count(),
             'active' => Batch::where('tenant_id', $tenantId)->where('status', 'active')->count(),
@@ -120,6 +128,7 @@ class DashboardController extends Controller
             'recentFeePayments' => $recentFeePayments,
             'todayAttendance' => $todayAttendance,
             'recentStudents' => $recentStudents,
+            'activeNotices' => $activeNotices,
             'batchHistory' => $batchHistory,
             'attendanceTrend' => $attendanceTrend,
             'enrollmentTrend' => $enrollmentTrend,
@@ -188,6 +197,16 @@ class DashboardController extends Controller
                 ->get();
         }
 
+        $activeNotices = Notice::where('tenant_id', $teacher->tenant_id)
+            ->where('is_active', true)
+            ->where(function ($q) use ($assignedBatchIds) {
+                $q->whereNull('batch_id')
+                    ->orWhereIn('batch_id', $assignedBatchIds);
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+
         $batchHistory = [
             'completed' => Batch::whereIn('id', $assignedBatchIds)->where('status', 'completed')->count(),
             'active' => Batch::whereIn('id', $assignedBatchIds)->where('status', 'active')->count(),
@@ -236,6 +255,7 @@ class DashboardController extends Controller
             'recentFeePayments' => $recentFeePayments,
             'todayAttendance' => $todayAttendance,
             'recentStudents' => $recentStudents,
+            'activeNotices' => $activeNotices,
             'assignedBatches' => $assignedBatches,
             'batchHistory' => $batchHistory,
             'attendanceTrend' => $attendanceTrend,

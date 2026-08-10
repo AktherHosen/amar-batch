@@ -6,6 +6,7 @@ import {
     Layers,
     DollarSign,
     CheckCircle,
+    Megaphone,
 } from 'lucide-react';
 import Heading from '@/components/heading';
 import Clock from '@/components/clock';
@@ -94,6 +95,13 @@ type RecentStudent = {
     status: string;
 };
 
+type ActiveNotice = {
+    id: number;
+    title: string;
+    content: string;
+    created_at: string;
+};
+
 type AssignedBatch = {
     id: number;
     name: string;
@@ -111,6 +119,7 @@ type PageProps = {
     recentFeePayments: FeePayment[];
     todayAttendance: AttendanceStat;
     recentStudents: RecentStudent[];
+    activeNotices?: ActiveNotice[];
     assignedBatches?: AssignedBatch[];
     batchHistory?: { completed: number; active: number };
     attendanceTrend?: { month: string; present: number; absent: number; late: number }[];
@@ -126,6 +135,7 @@ export default function Dashboard({
     recentFeePayments,
     todayAttendance,
     recentStudents,
+    activeNotices = [],
     assignedBatches,
     batchHistory,
     attendanceTrend = [],
@@ -298,6 +308,42 @@ export default function Dashboard({
                         </Card>
                     )}
                 </div>
+
+                {activeNotices && activeNotices.length > 0 && (
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm font-medium">Recent Notices</CardTitle>
+                                <Link href="/notices" className="text-xs text-muted-foreground hover:underline">
+                                    View all
+                                </Link>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {activeNotices.map((notice) => (
+                                    <Link
+                                        key={notice.id}
+                                        href={`/notices/${notice.id}`}
+                                        className="block rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                    >
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="min-w-0 flex-1">
+                                                <h4 className="text-sm font-medium">{notice.title}</h4>
+                                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                                    {notice.content}
+                                                </p>
+                                            </div>
+                                            <span className="shrink-0 text-xs text-muted-foreground">
+                                                {new Date(notice.created_at).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card>

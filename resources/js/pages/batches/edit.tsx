@@ -1,4 +1,4 @@
-import { Head, router, Link } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import BatchForm from '@/components/batch-form';
@@ -23,8 +23,10 @@ type BatchesEditProps = {
 };
 
 export default function BatchesEdit({ batch }: BatchesEditProps) {
+    const { put, processing, errors } = useForm();
     const handleSubmit = (data: any) => {
-        router.put(batches.update(batch.id), data, {
+        put(batches.update(batch.id), {
+            ...data,
             preserveScroll: true,
         });
     };
@@ -52,8 +54,8 @@ export default function BatchesEdit({ batch }: BatchesEditProps) {
                         <BatchForm
                             batch={batch}
                             onSubmit={handleSubmit}
-                            processing={false}
-                            errors={{}}
+                            processing={processing}
+                            errors={errors as Record<string, string>}
                         />
                     </CardContent>
                 </Card>

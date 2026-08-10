@@ -11,6 +11,8 @@ import {
     FileText,
     BarChart3,
     Building2,
+    Megaphone,
+    Calendar,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -85,6 +87,16 @@ export function AppSidebar() {
             title: t('nav.attendance'),
             href: attendance.index(),
             icon: CheckSquare,
+        },
+        {
+            title: 'Notices',
+            href: '/notices',
+            icon: Megaphone,
+        },
+        {
+            title: 'Holidays',
+            href: '/holidays',
+            icon: Calendar,
         },
         {
             title: t('nav.exams'),

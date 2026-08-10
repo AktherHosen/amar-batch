@@ -246,8 +246,7 @@ export default function AttendanceIndex({
                                             }
                                             className="text-center"
                                         >
-                                            {t('attendance.title')}{' '}
-                                            {t('actions.search')}
+                                            No attendance records found
                                         </TableCell>
                                     </TableRow>
                                 ) : (

@@ -146,4 +146,61 @@ class StudentController extends Controller
 
         return to_route('students.index')->with('toast', ['type' => 'success', 'message' => 'Student deleted successfully.']);
     }
+
+    public function export(Request $request)
+    {
+        $this->authorize('viewAny', Student::class);
+
+        $query = Student::with('coachingClass');
+
+        if ($request->user()->isTeacher()) {
+            $studentIds = $request->user()->assignedBatches()
+                ->join('enrollments', 'batches.id', '=', 'enrollments.batch_id')
+                ->where('enrollments.status', 'active')
+                ->pluck('enrollments.student_id')
+                ->unique();
+            $query->whereIn('students.id', $studentIds);
+        }
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        $students = $query->latest()->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="students_' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($students) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['ID', 'Name', 'Phone', 'Class', 'Section', 'Status', 'Guardian Name', 'Guardian Phone', 'Joined At']);
+
+            foreach ($students as $student) {
+                fputcsv($file, [
+                    $student->id,
+                    $student->name,
+                    $student->phone,
+                    $student->coachingClass->name ?? '',
+                    $student->section,
+                    $student->status,
+                    $student->guardian_name,
+                    $student->guardian_phone,
+                    $student->joined_at,
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

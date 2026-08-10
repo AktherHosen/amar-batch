@@ -261,8 +261,7 @@ export default function BatchesIndex({
                                             colSpan={6}
                                             className="text-center"
                                         >
-                                            {t('batches.title')}{' '}
-                                            {t('actions.search')}
+                                            No batches found
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -278,7 +277,26 @@ export default function BatchesIndex({
                                                 {batch.capacity}
                                             </TableCell>
                                             <TableCell>
-                                                {batch.enrollments_count}
+                                                <div className="flex items-center gap-2">
+                                                    <span>{batch.enrollments_count}</span>
+                                                    <div className="h-2 w-16 overflow-hidden rounded-full bg-muted">
+                                                        <div
+                                                            className={`h-full rounded-full ${
+                                                                batch.enrollments_count >= batch.capacity
+                                                                    ? 'bg-red-500'
+                                                                    : batch.enrollments_count >= batch.capacity * 0.8
+                                                                      ? 'bg-yellow-500'
+                                                                      : 'bg-green-500'
+                                                            }`}
+                                                            style={{
+                                                                width: `${Math.min((batch.enrollments_count / batch.capacity) * 100, 100)}%`,
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {Math.round((batch.enrollments_count / batch.capacity) * 100)}%
+                                                    </span>
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge

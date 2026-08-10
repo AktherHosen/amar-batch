@@ -1,5 +1,18 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu } from 'lucide-react';
+import {
+    LayoutGrid,
+    Menu,
+    Users,
+    Layers,
+    GraduationCap,
+    DollarSign,
+    CheckSquare,
+    School,
+    CreditCard,
+    FileText,
+    BarChart3,
+    Building2,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -28,20 +41,25 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
+import { isOwner } from '@/lib/role';
+import { useHasFeature } from '@/lib/features';
+import { useLocale } from '@/contexts/locale-context';
 import { dashboard } from '@/routes';
+import students from '@/routes/students';
+import batches from '@/routes/batches';
+import teachers from '@/routes/teachers';
+import fees from '@/routes/fees';
+import attendance from '@/routes/attendance';
+import coachingClasses from '@/routes/coaching-classes';
+import exams from '@/routes/exams';
+import reports from '@/routes/reports';
+import branches from '@/routes/branches';
+import subscription from '@/routes/subscription';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
 };
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
 
 const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
@@ -51,6 +69,41 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const { auth } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
+    const { t } = useLocale();
+    const isUserOwner = isOwner(auth.user);
+    const hasExams = useHasFeature('exams');
+    const hasReports = useHasFeature('reports');
+    const hasMultiBranch = useHasFeature('multi_branch');
+
+    const allNavItems: NavItem[] = [
+        { title: t('nav.dashboard'), href: dashboard(), icon: LayoutGrid },
+        { title: t('nav.students'), href: students.index(), icon: Users },
+        { title: t('nav.coaching_classes'), href: coachingClasses.index(), icon: School },
+        { title: t('nav.teachers'), href: teachers.index(), icon: GraduationCap, ownerOnly: true },
+        { title: t('nav.batches'), href: batches.index(), icon: Layers },
+        { title: t('nav.fees'), href: fees.index(), icon: DollarSign, ownerOnly: true },
+        { title: t('nav.attendance'), href: attendance.index(), icon: CheckSquare },
+        { title: t('nav.exams'), href: exams.index(), icon: FileText, featureRequired: 'exams' },
+        { title: t('nav.reports'), href: reports.index(), icon: BarChart3, featureRequired: 'reports' },
+        { title: t('nav.branches'), href: branches.index(), icon: Building2, featureRequired: 'multi_branch' },
+        { title: t('nav.subscription'), href: subscription.index(), icon: CreditCard, ownerOnly: true },
+    ];
+
+    const mainNavItems = isUserOwner
+        ? allNavItems.filter((item) => {
+            if (item.ownerOnly && !isUserOwner) return false;
+            if (item.featureRequired === 'exams' && !hasExams) return false;
+            if (item.featureRequired === 'reports' && !hasReports) return false;
+            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
+            return true;
+        })
+        : allNavItems.filter((item) => {
+            if (item.ownerOnly) return false;
+            if (item.featureRequired === 'exams' && !hasExams) return false;
+            if (item.featureRequired === 'reports' && !hasReports) return false;
+            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
+            return true;
+        });
 
     return (
         <>
@@ -80,12 +133,15 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
-                                        <div className="flex flex-col space-y-4">
+                                        <div className="flex flex-col space-y-1">
                                             {mainNavItems.map((item) => (
                                                 <Link
                                                     key={item.title}
                                                     href={item.href}
-                                                    className="flex items-center space-x-2 font-medium"
+                                                    className={cn(
+                                                        'flex items-center space-x-2 rounded-md px-3 py-2 font-medium transition-colors hover:bg-sidebar-accent',
+                                                        isCurrentUrl(item.href) && 'bg-sidebar-accent text-foreground',
+                                                    )}
                                                 >
                                                     {item.icon && (
                                                         <item.icon className="h-5 w-5" />

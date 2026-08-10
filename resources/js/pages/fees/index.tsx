@@ -459,8 +459,7 @@ export default function FeesIndex({
                                                 colSpan={months.length + 4}
                                                 className="text-center"
                                             >
-                                                {t('fees.title')}{' '}
-                                                {t('actions.search')}
+                                                No fee records found
                                             </TableCell>
                                         </TableRow>
                                     ) : (

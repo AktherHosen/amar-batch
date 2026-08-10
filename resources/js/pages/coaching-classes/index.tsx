@@ -176,8 +176,7 @@ export default function CoachingClassesIndex({
                                             colSpan={isAdmin ? 4 : 3}
                                             className="text-center"
                                         >
-                                            {t('classes.title')}{' '}
-                                            {t('actions.search')}
+                                            No coaching classes found
                                         </TableCell>
                                     </TableRow>
                                 ) : (

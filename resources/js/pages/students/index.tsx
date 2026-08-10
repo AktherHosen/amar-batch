@@ -18,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Download } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -117,14 +118,20 @@ export default function StudentsIndex({
                         title={t('students.title')}
                         description={t('students.title')}
                     />
-                    {isAdmin && (
-                        <Link href={students.create()}>
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                {t('students.create')}
-                            </Button>
-                        </Link>
-                    )}
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => window.location.href = '/students/export'}>
+                            <Download className="mr-2 size-4" />
+                            Export CSV
+                        </Button>
+                        {isAdmin && (
+                            <Link href={students.create()}>
+                                <Button>
+                                    <Plus className="mr-2 size-4" />
+                                    {t('students.create')}
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 <Card>
@@ -231,8 +238,7 @@ export default function StudentsIndex({
                                             colSpan={7}
                                             className="text-center"
                                         >
-                                            {t('students.title')}{' '}
-                                            {t('actions.search')}
+                                            No students found
                                         </TableCell>
                                     </TableRow>
                                 ) : (

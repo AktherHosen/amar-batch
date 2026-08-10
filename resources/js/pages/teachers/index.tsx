@@ -60,6 +60,14 @@ export default function TeachersIndex({
         open: boolean;
         item: any | null;
     }>({ open: false, item: null });
+    const [approveDialog, setApproveDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
+    const [rejectDialog, setRejectDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
     const handleSearch = () => {
         router.get(teachers.index(), { search }, { preserveState: true });
@@ -78,21 +86,35 @@ export default function TeachersIndex({
     };
 
     const handleApprove = (teacher: { id: number; name: string }) => {
-        router.post(teachers.approve(teacher.id).url, {}, {
-            onSuccess: () => {
-                toast.success(`${teacher.name} has been approved`);
-                router.reload({ only: ['teachers'] });
-            },
-        });
+        setApproveDialog({ open: true, item: teacher });
+    };
+
+    const confirmApprove = () => {
+        if (approveDialog.item) {
+            router.post(teachers.approve(approveDialog.item.id).url, {}, {
+                onSuccess: () => {
+                    toast.success(`${approveDialog.item.name} has been approved`);
+                    router.reload({ only: ['teachers'] });
+                },
+            });
+            setApproveDialog({ open: false, item: null });
+        }
     };
 
     const handleReject = (teacher: { id: number; name: string }) => {
-        router.post(teachers.reject(teacher.id).url, {}, {
-            onSuccess: () => {
-                toast.success(`${teacher.name}'s approval has been revoked`);
-                router.reload({ only: ['teachers'] });
-            },
-        });
+        setRejectDialog({ open: true, item: teacher });
+    };
+
+    const confirmReject = () => {
+        if (rejectDialog.item) {
+            router.post(teachers.reject(rejectDialog.item.id).url, {}, {
+                onSuccess: () => {
+                    toast.success(`${rejectDialog.item.name}'s approval has been revoked`);
+                    router.reload({ only: ['teachers'] });
+                },
+            });
+            setRejectDialog({ open: false, item: null });
+        }
     };
 
     return (
@@ -185,8 +207,7 @@ export default function TeachersIndex({
                                             colSpan={5}
                                             className="text-center"
                                         >
-                                            {t('teachers.title')}{' '}
-                                            {t('actions.search')}
+                                            No teachers found
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -280,6 +301,29 @@ export default function TeachersIndex({
                 confirmText="Deactivate"
                 variant="destructive"
                 onConfirm={confirmDelete}
+            />
+
+            <ConfirmDialog
+                open={approveDialog.open}
+                onOpenChange={(open) =>
+                    setApproveDialog({ open, item: approveDialog.item })
+                }
+                title="Approve Teacher"
+                description={`Are you sure you want to approve ${approveDialog.item?.name}?`}
+                confirmText="Approve"
+                onConfirm={confirmApprove}
+            />
+
+            <ConfirmDialog
+                open={rejectDialog.open}
+                onOpenChange={(open) =>
+                    setRejectDialog({ open, item: rejectDialog.item })
+                }
+                title="Revoke Approval"
+                description={`Are you sure you want to revoke approval for ${rejectDialog.item?.name}?`}
+                confirmText="Revoke"
+                variant="destructive"
+                onConfirm={confirmReject}
             />
         </>
     );

@@ -1,4 +1,4 @@
-import { Head, router, Link } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import TeacherForm from '@/components/teacher-form';
@@ -17,8 +17,10 @@ type TeachersEditProps = {
 };
 
 export default function TeachersEdit({ teacher }: TeachersEditProps) {
+    const { put, processing, errors } = useForm();
     const handleSubmit = (data: any) => {
-        router.put(teachers.update(teacher.id), data, {
+        put(teachers.update(teacher.id), {
+            ...data,
             preserveScroll: true,
         });
     };
@@ -46,8 +48,8 @@ export default function TeachersEdit({ teacher }: TeachersEditProps) {
                         <TeacherForm
                             teacher={teacher}
                             onSubmit={handleSubmit}
-                            processing={false}
-                            errors={{}}
+                            processing={processing}
+                            errors={errors as Record<string, string>}
                         />
                     </CardContent>
                 </Card>
