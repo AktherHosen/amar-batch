@@ -17,7 +17,6 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
-import { usePage } from '@inertiajs/react';
 
 type Receipt = {
     id: number;

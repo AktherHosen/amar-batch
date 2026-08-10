@@ -89,7 +89,7 @@ class FeeStatusController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $tenantId = $request->user()->tenant_id;
         $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
