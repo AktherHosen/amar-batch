@@ -1,7 +1,8 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Plus, RefreshCw, Search, X, Eye, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
@@ -53,16 +54,22 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
     const { auth } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
     const [refreshing, setRefreshing] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Receipt | null }>({ open: false, item: null });
 
     const handleSearch = () => {
         router.get('/fees/receipts', { search }, { preserveState: true });
     };
 
     const handleDelete = (receipt: Receipt) => {
-        if (confirm(`Are you sure you want to delete receipt ${receipt.receipt_number}?`)) {
-            router.delete(`/fees/receipts/${receipt.id}`, {
+        setDeleteDialog({ open: true, item: receipt });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(`/fees/receipts/${deleteDialog.item.id}`, {
                 onSuccess: () => toast.success('Receipt deleted successfully'),
             });
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -204,6 +211,16 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) => setDeleteDialog({ open, item: deleteDialog.item })}
+                title="Delete Receipt"
+                description={`Are you sure you want to delete receipt ${deleteDialog.item?.receipt_number}? This action cannot be undone.`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

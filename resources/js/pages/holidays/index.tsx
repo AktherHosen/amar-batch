@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Plus, RefreshCw, Search, X, Eye, Pencil, Trash2, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
@@ -54,16 +55,22 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
     const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState('');
     const [refreshing, setRefreshing] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Holiday | null }>({ open: false, item: null });
 
     const handleSearch = () => {
         router.get('/holidays', { search }, { preserveState: true });
     };
 
     const handleDelete = (holiday: Holiday) => {
-        if (confirm(`Are you sure you want to delete "${holiday.title}"?`)) {
-            router.delete(`/holidays/${holiday.id}`, {
+        setDeleteDialog({ open: true, item: holiday });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(`/holidays/${deleteDialog.item.id}`, {
                 onSuccess: () => toast.success('Holiday deleted successfully'),
             });
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -228,6 +235,16 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) => setDeleteDialog({ open, item: deleteDialog.item })}
+                title="Delete Holiday"
+                description={`Are you sure you want to delete "${deleteDialog.item?.title}"? This action cannot be undone.`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

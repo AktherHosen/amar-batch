@@ -1,10 +1,12 @@
 import { Head, Link, usePage, router } from '@inertiajs/react';
+import { useState } from 'react';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { isOwner } from '@/lib/role';
 
 type Holiday = {
@@ -25,16 +27,20 @@ export default function HolidaysShow() {
     const { holiday } = usePage<PageProps>().props;
     const { auth } = usePage().props;
     const isAdmin = isOwner(auth.user);
+    const [deleteDialog, setDeleteDialog] = useState(false);
 
     const handleDelete = () => {
-        if (confirm(`Are you sure you want to delete "${holiday.title}"?`)) {
-            router.delete(`/holidays/${holiday.id}`, {
-                onSuccess: () => {
-                    toast.success('Holiday deleted successfully');
-                    router.visit('/holidays');
-                },
-            });
-        }
+        setDeleteDialog(true);
+    };
+
+    const confirmDelete = () => {
+        router.delete(`/holidays/${holiday.id}`, {
+            onSuccess: () => {
+                toast.success('Holiday deleted successfully');
+                router.visit('/holidays');
+            },
+        });
+        setDeleteDialog(false);
     };
 
     const duration = Math.ceil(
@@ -114,6 +120,16 @@ export default function HolidaysShow() {
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog}
+                onOpenChange={setDeleteDialog}
+                title="Delete Holiday"
+                description={`Are you sure you want to delete "${holiday.title}"? This action cannot be undone.`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

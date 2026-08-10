@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Plus, RefreshCw, Search, X, Eye, Pencil, Trash2, Megaphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
@@ -57,16 +58,22 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
     const [search, setSearch] = useState(filters.search || '');
     const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [refreshing, setRefreshing] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Notice | null }>({ open: false, item: null });
 
     const handleSearch = () => {
         router.get('/notices', { search, batch_id: batchId }, { preserveState: true });
     };
 
     const handleDelete = (notice: Notice) => {
-        if (confirm(`Are you sure you want to delete "${notice.title}"?`)) {
-            router.delete(`/notices/${notice.id}`, {
+        setDeleteDialog({ open: true, item: notice });
+    };
+
+    const confirmDelete = () => {
+        if (deleteDialog.item) {
+            router.delete(`/notices/${deleteDialog.item.id}`, {
                 onSuccess: () => toast.success('Notice deleted successfully'),
             });
+            setDeleteDialog({ open: false, item: null });
         }
     };
 
@@ -242,6 +249,16 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) => setDeleteDialog({ open, item: deleteDialog.item })}
+                title="Delete Notice"
+                description={`Are you sure you want to delete "${deleteDialog.item?.title}"? This action cannot be undone.`}
+                confirmText="Delete"
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

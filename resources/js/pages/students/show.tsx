@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { isOwner } from '@/lib/role';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -9,6 +9,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     Table,
     TableBody,
@@ -121,119 +122,171 @@ export default function StudentsShow({
                             <CardTitle>{t('students.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.name')}
-                                    </p>
-                                    <p className="text-sm font-medium">{student.name}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.phone')}
-                                    </p>
-                                    <p className="text-sm font-medium">
-                                        {student.phone || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.class')}
-                                    </p>
-                                    <p className="text-sm font-medium">
-                                        {student.coaching_class
-                                            ? `${student.coaching_class.name}${student.section ? ` - ${student.section}` : ''}`
-                                            : student.section || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.joined_at')}
-                                    </p>
-                                    <p className="text-sm font-medium">
-                                        {formatDate(student.joined_at)}
-                                    </p>
-                                </div>
-                                {student.left_at && (
+                            <div className="flex items-start gap-4">
+                                <Avatar className="size-16">
+                                    <AvatarImage src={student.photo || undefined} alt={student.name} />
+                                    <AvatarFallback className="text-lg">
+                                        {student.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 grid grid-cols-2 gap-3">
                                     <div>
                                         <p className="text-xs text-muted-foreground">
-                                            {t('students.left_at')}
+                                            {t('students.name')}
+                                        </p>
+                                        <p className="text-sm font-medium">{student.name}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('students.phone')}
                                         </p>
                                         <p className="text-sm font-medium">
-                                            {formatDate(student.left_at)}
+                                            {student.phone || '-'}
                                         </p>
                                     </div>
-                                )}
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.date_of_birth')}
-                                    </p>
-                                    <p className="text-sm font-medium">
-                                        {formatDate(student.date_of_birth)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.gender')}
-                                    </p>
-                                    <p className="text-sm font-medium capitalize">
-                                        {student.gender || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.status')}
-                                    </p>
-                                    <Badge
-                                        variant={
-                                            student.status === 'active'
-                                                ? 'default'
-                                                : 'warning'
-                                        }
-                                    >
-                                        {student.status}
-                                    </Badge>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('students.class')}
+                                        </p>
+                                        <p className="text-sm font-medium">
+                                            {student.coaching_class
+                                                ? `${student.coaching_class.name}${student.section ? ` - ${student.section}` : ''}`
+                                                : student.section || '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('students.joined_at')}
+                                        </p>
+                                        <p className="text-sm font-medium">
+                                            {formatDate(student.joined_at)}
+                                        </p>
+                                    </div>
+                                    {student.left_at && (
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">
+                                                {t('students.left_at')}
+                                            </p>
+                                            <p className="text-sm font-medium">
+                                                {formatDate(student.left_at)}
+                                            </p>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('students.date_of_birth')}
+                                        </p>
+                                        <p className="text-sm font-medium">
+                                            {formatDate(student.date_of_birth)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('students.gender')}
+                                        </p>
+                                        <p className="text-sm font-medium capitalize">
+                                            {student.gender || '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('students.status')}
+                                        </p>
+                                        <Badge
+                                            variant={
+                                                student.status === 'active'
+                                                    ? 'default'
+                                                    : 'warning'
+                                            }
+                                        >
+                                            {student.status}
+                                        </Badge>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>
-                                {t('students.guardian_name')} &{' '}
-                                {t('students.address')}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="col-span-2">
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.address')}
-                                    </p>
-                                    <p className="text-sm font-medium">
-                                        {student.address || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.guardian_name')}
-                                    </p>
-                                    <p className="text-sm font-medium">
-                                        {student.guardian_name || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('students.guardian_phone')}
-                                    </p>
-                                    <p className="text-sm font-medium">
-                                        {student.guardian_phone || '-'}
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <div className="grid gap-4">
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">Attendance Summary</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {(() => {
+                                    let totalPresent = 0;
+                                    let totalAbsent = 0;
+                                    let totalLate = 0;
+                                    Object.values(attendanceSummary).forEach(months => {
+                                        Object.values(months).forEach(counts => {
+                                            totalPresent += counts.present || 0;
+                                            totalAbsent += counts.absent || 0;
+                                            totalLate += counts.late || 0;
+                                        });
+                                    });
+                                    const total = totalPresent + totalAbsent + totalLate;
+                                    const percentage = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
+
+                                    return total > 0 ? (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-2xl font-bold">{percentage}%</span>
+                                                <Badge variant={percentage >= 75 ? 'success' : percentage >= 50 ? 'secondary' : 'destructive'}>
+                                                    {percentage >= 75 ? 'Good' : percentage >= 50 ? 'Average' : 'Low'}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex gap-4 text-sm">
+                                                <div className="flex items-center gap-1">
+                                                    <CheckCircle className="size-3 text-green-600" />
+                                                    <span>{totalPresent} present</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <XCircle className="size-3 text-red-600" />
+                                                    <span>{totalAbsent} absent</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <Clock className="size-3 text-yellow-600" />
+                                                    <span>{totalLate} late</span>
+                                                </div>
+                                            </div>
+                                            <div className="h-2 overflow-hidden rounded-full bg-muted">
+                                                <div
+                                                    className="h-full bg-green-600"
+                                                    style={{ width: `${percentage}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">No attendance records yet</p>
+                                    );
+                                })()}
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">Fee Summary</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {student.fee_statuses && student.fee_statuses.length > 0 ? (
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Total Paid</span>
+                                            <span className="font-bold text-green-600">
+                                                ${student.fee_statuses.reduce((sum, f) => sum + Number(f.amount_paid), 0).toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Records</span>
+                                            <span className="font-medium">{student.fee_statuses.length} months</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No payment records yet</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
 
                 {student.enrollments && student.enrollments.length > 0 && (

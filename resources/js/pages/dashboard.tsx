@@ -7,9 +7,14 @@ import {
     DollarSign,
     CheckCircle,
     Megaphone,
+    Calendar,
+    Plus,
+    ClipboardCheck,
+    CreditCard,
 } from 'lucide-react';
 import Heading from '@/components/heading';
 import Clock from '@/components/clock';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -102,6 +107,14 @@ type ActiveNotice = {
     created_at: string;
 };
 
+type UpcomingHoliday = {
+    id: number;
+    title: string;
+    start_date: string;
+    end_date: string;
+    type: string;
+};
+
 type AssignedBatch = {
     id: number;
     name: string;
@@ -120,6 +133,7 @@ type PageProps = {
     todayAttendance: AttendanceStat;
     recentStudents: RecentStudent[];
     activeNotices?: ActiveNotice[];
+    upcomingHolidays?: UpcomingHoliday[];
     assignedBatches?: AssignedBatch[];
     batchHistory?: { completed: number; active: number };
     attendanceTrend?: { month: string; present: number; absent: number; late: number }[];
@@ -136,6 +150,7 @@ export default function Dashboard({
     todayAttendance,
     recentStudents,
     activeNotices = [],
+    upcomingHolidays = [],
     assignedBatches,
     batchHistory,
     attendanceTrend = [],
@@ -345,6 +360,79 @@ export default function Dashboard({
                     </Card>
                 )}
 
+                {upcomingHolidays.length > 0 && (
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm font-medium">Upcoming Holidays</CardTitle>
+                                <Link href="/holidays" className="text-xs text-muted-foreground hover:underline">
+                                    View all
+                                </Link>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                {upcomingHolidays.map((holiday) => (
+                                    <Link
+                                        key={holiday.id}
+                                        href={`/holidays/${holiday.id}`}
+                                        className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Calendar className="size-4 text-muted-foreground" />
+                                            <div>
+                                                <h4 className="text-sm font-medium">{holiday.title}</h4>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {new Date(holiday.start_date).toLocaleDateString()} - {new Date(holiday.end_date).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Badge variant={holiday.type === 'holiday' ? 'default' : holiday.type === 'exam' ? 'secondary' : 'outline'}>
+                                            {holiday.type}
+                                        </Badge>
+                                    </Link>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {isAdmin && (
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                <Link href="/students/create">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        <Plus className="mr-2 size-4" />
+                                        Add Student
+                                    </Button>
+                                </Link>
+                                <Link href="/attendance/create">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        <ClipboardCheck className="mr-2 size-4" />
+                                        Mark Attendance
+                                    </Button>
+                                </Link>
+                                <Link href="/fees">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        <CreditCard className="mr-2 size-4" />
+                                        Record Payment
+                                    </Button>
+                                </Link>
+                                <Link href="/notices/create">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        <Megaphone className="mr-2 size-4" />
+                                        Post Notice
+                                    </Button>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card>
                         <CardHeader className="pb-2">
@@ -507,7 +595,9 @@ export default function Dashboard({
                                             {recentStudents.map((student) => (
                                                 <TableRow key={student.id}>
                                                     <TableCell className="font-medium">
-                                                        {student.name}
+                                                        <Link href={students.show(student.id).url} className="hover:underline">
+                                                            {student.name}
+                                                        </Link>
                                                     </TableCell>
                                                     <TableCell>
                                                         {student.coaching_class
@@ -568,7 +658,9 @@ export default function Dashboard({
                                             {assignedBatches.map((batch) => (
                                                 <TableRow key={batch.id}>
                                                     <TableCell className="font-medium">
-                                                        {batch.name}
+                                                        <Link href={batches.show(batch.id).url} className="hover:underline">
+                                                            {batch.name}
+                                                        </Link>
                                                     </TableCell>
                                                     <TableCell>
                                                         {batch.subject || '-'}

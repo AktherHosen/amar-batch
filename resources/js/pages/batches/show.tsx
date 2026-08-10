@@ -30,6 +30,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import batches from '@/routes/batches';
+import students from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
@@ -271,15 +272,36 @@ export default function BatchesShow({
                                     <p className="text-xs text-muted-foreground">
                                         {t('batches.capacity')}
                                     </p>
-                                    <p className="text-sm font-medium">{batch.capacity}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-medium">{batch.capacity}</p>
+                                        {batch.enrollments.length >= batch.capacity && (
+                                            <Badge variant="destructive" className="text-xs">Full</Badge>
+                                        )}
+                                    </div>
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">
                                         {t('batches.enrolled')}
                                     </p>
-                                    <p className="text-sm font-medium">
-                                        {batch.enrollments.length}
-                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-medium">
+                                            {batch.enrollments.length}/{batch.capacity}
+                                        </p>
+                                        <div className="h-2 w-16 overflow-hidden rounded-full bg-muted">
+                                            <div
+                                                className={`h-full rounded-full ${
+                                                    batch.enrollments.length >= batch.capacity
+                                                        ? 'bg-red-500'
+                                                        : batch.enrollments.length >= batch.capacity * 0.8
+                                                          ? 'bg-yellow-500'
+                                                          : 'bg-green-500'
+                                                }`}
+                                                style={{
+                                                    width: `${Math.min((batch.enrollments.length / batch.capacity) * 100, 100)}%`,
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">
@@ -582,7 +604,9 @@ export default function BatchesShow({
                                     {batch.enrollments.map((enrollment) => (
                                         <TableRow key={enrollment.id}>
                                             <TableCell className="font-medium">
-                                                {enrollment.student.name}
+                                                <Link href={students.show(enrollment.student.id)} className="hover:underline">
+                                                    {enrollment.student.name}
+                                                </Link>
                                             </TableCell>
                                             <TableCell>
                                                 {enrollment.student
