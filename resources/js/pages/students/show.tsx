@@ -88,14 +88,14 @@ export default function StudentsShow({
             <Head title={student.name} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Link href={students.index()}>
+                <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <Link href={students.index()} className="shrink-0">
                             <Button variant="ghost" size="icon" className="size-9">
                                 <ArrowLeft className="size-4" />
                             </Button>
                         </Link>
-                        <h1 className="text-lg font-bold tracking-tight sm:text-2xl">{student.name}</h1>
+                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">{student.name}</h1>
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
@@ -122,19 +122,19 @@ export default function StudentsShow({
                             <CardTitle>{t('students.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex items-start gap-4">
-                                <Avatar className="size-16">
+                            <div className="flex flex-col items-center gap-4">
+                                <Avatar className="size-16 sm:size-20">
                                     <AvatarImage src={student.photo ? `/storage/${student.photo}` : undefined} alt={student.name} />
-                                    <AvatarFallback className="text-lg">
+                                    <AvatarFallback className="text-xl">
                                         {student.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                                     </AvatarFallback>
                                 </Avatar>
-                                <div className="flex-1 grid grid-cols-2 gap-3">
-                                    <div>
+                                <div className="w-full grid grid-cols-2 gap-3">
+                                    <div className="min-w-0">
                                         <p className="text-xs text-muted-foreground">
                                             {t('students.name')}
                                         </p>
-                                        <p className="text-sm font-medium">{student.name}</p>
+                                        <p className="truncate text-sm font-medium">{student.name}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">
@@ -188,27 +188,13 @@ export default function StudentsShow({
                                             {student.gender || '-'}
                                         </p>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('students.status')}
-                                        </p>
-                                        <Badge
-                                            variant={
-                                                student.status === 'active'
-                                                    ? 'default'
-                                                    : 'warning'
-                                            }
-                                        >
-                                            {student.status}
-                                        </Badge>
-                                    </div>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
                     <div className="grid gap-4">
-                        <Card>
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Attendance Summary</CardTitle>
                         </CardHeader>
@@ -260,30 +246,6 @@ export default function StudentsShow({
                                         <p className="text-sm text-muted-foreground">No attendance records yet</p>
                                     );
                                 })()}
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium">Fee Summary</CardTitle>
-                        </CardHeader>
-                            <CardContent>
-                                {student.fee_statuses && student.fee_statuses.length > 0 ? (
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Total Paid</span>
-                                            <span className="font-bold text-green-600">
-                                                ${student.fee_statuses.reduce((sum, f) => sum + Number(f.amount_paid), 0).toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Records</span>
-                                            <span className="font-medium">{student.fee_statuses.length} months</span>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">No payment records yet</p>
-                                )}
                             </CardContent>
                         </Card>
                     </div>
@@ -423,26 +385,24 @@ export default function StudentsShow({
                 </Card>
 
                 <Card>
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <CardTitle>{t('fees.payment_history')}</CardTitle>
-                            {student.fee_statuses &&
-                                student.fee_statuses.length > 0 && (
-                                    <div className="text-sm text-muted-foreground">
-                                        Total Paid:{' '}
-                                        <span className="font-bold text-green-600">
-                                            {student.fee_statuses
-                                                .reduce(
-                                                    (sum, f) =>
-                                                        sum +
-                                                        Number(f.amount_paid),
-                                                    0,
-                                                )
-                                                .toFixed(0)}
-                                        </span>
-                                    </div>
-                                )}
-                        </div>
+                    <CardHeader className="flex-row items-center justify-between space-y-0">
+                        <CardTitle>{t('fees.payment_history')}</CardTitle>
+                        {student.fee_statuses &&
+                            student.fee_statuses.length > 0 && (
+                                <div className="text-sm text-muted-foreground">
+                                    Total Paid:{' '}
+                                    <span className="font-bold text-green-600">
+                                        {student.fee_statuses
+                                            .reduce(
+                                                (sum, f) =>
+                                                    sum +
+                                                    Number(f.amount_paid),
+                                                0,
+                                            )
+                                            .toFixed(0)}
+                                    </span>
+                                </div>
+                            )}
                     </CardHeader>
                     <CardContent>
                         {student.fee_statuses &&

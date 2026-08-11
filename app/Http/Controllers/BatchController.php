@@ -92,7 +92,7 @@ class BatchController extends Controller
         return to_route('batches.index')->with('toast', ['type' => 'success', 'message' => 'Batch created successfully.']);
     }
 
-    public function show(Batch $batch): Response
+    public function show(Request $request, Batch $batch): Response
     {
         $this->authorize('view', $batch);
 
@@ -103,7 +103,7 @@ class BatchController extends Controller
         $students = Student::with('coachingClass')->where('status', 'active')->where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $enrolledStudentIds = Enrollment::where('status', 'active')
-            ->where('tenant_id', $tenantId)
+            ->where('batch_id', $batch->id)
             ->pluck('student_id')
             ->unique()
             ->toArray();

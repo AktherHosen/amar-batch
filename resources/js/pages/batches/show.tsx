@@ -30,7 +30,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import batches from '@/routes/batches';
-import students from '@/routes/students';
+import studentsRoutes from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
@@ -604,7 +604,7 @@ export default function BatchesShow({
                                     {batch.enrollments.map((enrollment) => (
                                         <TableRow key={enrollment.id}>
                                             <TableCell className="font-medium">
-                                                <Link href={students.show(enrollment.student.id)} className="hover:underline">
+                                                <Link href={studentsRoutes.show(enrollment.student.id)} className="hover:underline">
                                                     {enrollment.student.name}
                                                 </Link>
                                             </TableCell>
