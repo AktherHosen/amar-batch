@@ -32,9 +32,19 @@ import { useLocale } from '@/contexts/locale-context';
 import students from '@/routes/students';
 import type { Student } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+
+function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
+    let timer: ReturnType<typeof setTimeout>;
+    const debounced = (...args: Parameters<T>) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
+    debounced.cancel = () => clearTimeout(timer);
+    return debounced;
+}
 
 function formatDate(dateStr: string | null): string {
     if (!dateStr) {
@@ -74,18 +84,25 @@ export default function StudentsIndex({
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [refreshing, setRefreshing] = useState(false);
+
+    const debouncedSearch = useCallback(
+        debounce((value: string) => {
+            router.get(
+                students.index(),
+                { search: value, status },
+                { preserveState: true },
+            );
+        }, 300),
+        [status],
+    );
+
+    useEffect(() => {
+        return () => debouncedSearch.cancel();
+    }, [debouncedSearch]);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: any | null;
     }>({ open: false, item: null });
-
-    const handleSearch = () => {
-        router.get(
-            students.index(),
-            { search, status },
-            { preserveState: true },
-        );
-    };
 
     const handleStatusChange = (value: string) => {
         setStatus(value === 'all' ? '' : value);
@@ -113,25 +130,36 @@ export default function StudentsIndex({
             <Head title={t('students.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <Heading
-                        title={t('students.title')}
-                        description={t('students.desc')}
-                    />
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => window.location.href = '/students/export'}>
-                            <Download className="mr-2 size-4" />
-                            Export CSV
-                        </Button>
-                        {isAdmin && (
-                            <Link href={students.create()}>
-                                <Button>
-                                    <Plus className="mr-2 size-4" />
-                                    {t('students.create')}
-                                </Button>
-                            </Link>
-                        )}
+                <div className="flex items-start justify-between">
+                    <div className="space-y-0.5">
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            {t('students.title')}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {t('students.desc')}
+                        </p>
                     </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="size-8 p-0">
+                                <EllipsisVertical className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => window.location.href = '/students/export'}>
+                                <Download className="mr-2 size-4" />
+                                Export CSV
+                            </DropdownMenuItem>
+                            {isAdmin && (
+                                <DropdownMenuItem asChild>
+                                    <Link href={students.create()}>
+                                        <Plus className="mr-2 size-4" />
+                                        {t('students.create')}
+                                    </Link>
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 <Card>
@@ -142,10 +170,10 @@ export default function StudentsIndex({
                                 <Input
                                     placeholder={t('actions.search') + '...'}
                                     value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleSearch()
-                                    }
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        debouncedSearch(e.target.value);
+                                    }}
                                     className="pr-9 pl-9"
                                 />
                                 {search && (
@@ -175,7 +203,7 @@ export default function StudentsIndex({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">
-                                            {t('actions.search')} Status
+                                            All Status
                                         </SelectItem>
                                         <SelectItem value="active">
                                             {t('students.active')}
@@ -185,15 +213,6 @@ export default function StudentsIndex({
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <Button
-                                    variant="secondary"
-                                    onClick={handleSearch}
-                                >
-                                    <Search className="size-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">
-                                        {t('actions.search')}
-                                    </span>
-                                </Button>
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -214,18 +233,18 @@ export default function StudentsIndex({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background whitespace-nowrap">
                                         {t('students.name')}
                                     </TableHead>
-                                    <TableHead>{t('students.class')}</TableHead>
-                                    <TableHead>{t('students.phone')}</TableHead>
-                                    <TableHead>
+                                    <TableHead className="whitespace-nowrap">{t('students.class')}</TableHead>
+                                    <TableHead className="whitespace-nowrap">{t('students.phone')}</TableHead>
+                                    <TableHead className="whitespace-nowrap">
                                         {t('students.guardian_name')}
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className="whitespace-nowrap">
                                         {t('students.joined_at')}
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className="whitespace-nowrap">
                                         {t('students.status')}
                                     </TableHead>
                                     <TableHead className="w-[50px]"></TableHead>
