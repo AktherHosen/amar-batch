@@ -10,6 +10,7 @@ import attendance from '@/routes/attendance';
 import batches from '@/routes/batches';
 import fees from '@/routes/fees';
 import students from '@/routes/students';
+import teachers from '@/routes/teachers';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     ArcElement,
@@ -308,6 +309,12 @@ export default function Dashboard({
                                     <div className="text-xl font-bold sm:text-2xl">
                                         {stats.total_teachers ?? '-'}
                                     </div>
+                                    <Link
+                                        href={teachers.index().url}
+                                        className="text-xs text-muted-foreground hover:underline"
+                                    >
+                                        {t('actions.view_all')}
+                                    </Link>
                                 </CardContent>
                             </Card>
                         </motion.div>
@@ -368,13 +375,9 @@ export default function Dashboard({
                                             feeStats.total_collected,
                                         ).toFixed(0)}
                                     </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {feeStats.total_records}{' '}
-                                        {t('dashboard.payment_records')}
-                                    </p>
                                     <Link
                                         href={fees.index().url}
-                                        className="mt-0.5 block text-xs text-muted-foreground hover:underline sm:mt-1"
+                                        className="text-xs text-muted-foreground hover:underline"
                                     >
                                         {t('actions.view_all')}
                                     </Link>
@@ -407,10 +410,12 @@ export default function Dashboard({
                                             feeStats.total_collected,
                                         ).toFixed(0)}
                                     </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {feeStats.total_records}{' '}
-                                        {t('dashboard.payment_records')}
-                                    </p>
+                                    <Link
+                                        href={fees.index().url}
+                                        className="text-xs text-muted-foreground hover:underline"
+                                    >
+                                        {t('actions.view_all')}
+                                    </Link>
                                 </CardContent>
                             </Card>
                         </motion.div>
@@ -585,21 +590,21 @@ export default function Dashboard({
                         {/* Mobile: floating bottom nav */}
                         <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/95 px-2 py-2 backdrop-blur-md sm:hidden">
                             <div className="flex items-center justify-around">
-                                <Link href="/students/create" className="flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
-                                    <Plus className="size-5" />
-                                    <span className="text-[10px] font-medium">Student</span>
+                                <Link href="/students/create" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                    <Plus className="size-5 shrink-0" />
+                                    <span className="w-full truncate text-center text-[10px] font-medium">Student</span>
                                 </Link>
-                                <Link href="/attendance/create" className="flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
-                                    <ClipboardCheck className="size-5" />
-                                    <span className="text-[10px] font-medium">Attendance</span>
+                                <Link href="/attendance/create" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                    <ClipboardCheck className="size-5 shrink-0" />
+                                    <span className="w-full truncate text-center text-[10px] font-medium">Attendance</span>
                                 </Link>
-                                <Link href="/fees" className="flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
-                                    <CreditCard className="size-5" />
-                                    <span className="text-[10px] font-medium">Payment</span>
+                                <Link href="/fees" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                    <CreditCard className="size-5 shrink-0" />
+                                    <span className="w-full truncate text-center text-[10px] font-medium">Payment</span>
                                 </Link>
-                                <Link href="/notices/create" className="flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
-                                    <Megaphone className="size-5" />
-                                    <span className="text-[10px] font-medium">Notice</span>
+                                <Link href="/notices/create" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                    <Megaphone className="size-5 shrink-0" />
+                                    <span className="w-full truncate text-center text-[10px] font-medium">Notice</span>
                                 </Link>
                             </div>
                         </div>
