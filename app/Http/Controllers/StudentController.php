@@ -89,7 +89,12 @@ class StudentController extends Controller
             ]);
         }
 
-        $student = Student::create($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('students', 'public');
+        }
+
+        $student = Student::create($validated);
 
         InAppNotification::create([
             'user_id' => $request->user()->id,
@@ -142,7 +147,16 @@ class StudentController extends Controller
     {
         $this->authorize('update', $student);
 
-        $student->update($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('photo')) {
+            // Delete old photo if exists
+            if ($student->photo) {
+                \Storage::disk('public')->delete($student->photo);
+            }
+            $validated['photo'] = $request->file('photo')->store('students', 'public');
+        }
+
+        $student->update($validated);
 
         return to_route('students.show', $student)->with('toast', ['type' => 'success', 'message' => 'Student updated successfully.']);
     }

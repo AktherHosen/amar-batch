@@ -124,7 +124,7 @@ export default function StudentsShow({
                         <CardContent>
                             <div className="flex items-start gap-4">
                                 <Avatar className="size-16">
-                                    <AvatarImage src={student.photo || undefined} alt={student.name} />
+                                    <AvatarImage src={student.photo ? `/storage/${student.photo}` : undefined} alt={student.name} />
                                     <AvatarFallback className="text-lg">
                                         {student.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                                     </AvatarFallback>

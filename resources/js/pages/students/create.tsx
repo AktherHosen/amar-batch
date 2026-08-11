@@ -21,9 +21,8 @@ type PageProps = {
 export default function StudentsCreate({ coachingClasses }: PageProps) {
     const { t } = useLocale();
 
-    const handleSubmit = (data: any) => {
-        router.post(students.store(), {
-            ...data,
+    const handleSubmit = (data: FormData) => {
+        router.post(students.store(), data, {
             preserveScroll: true,
         });
     };

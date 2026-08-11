@@ -25,9 +25,9 @@ export default function StudentsEdit({
     coachingClasses,
 }: StudentsEditProps) {
     const { t } = useLocale();
-    const handleSubmit = (data: any) => {
-        router.put(students.update(student.id), {
-            ...data,
+    const handleSubmit = (data: FormData) => {
+        data.append('_method', 'PUT');
+        router.post(students.update(student.id), data, {
             preserveScroll: true,
         });
     };

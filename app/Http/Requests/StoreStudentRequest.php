@@ -30,6 +30,7 @@ class StoreStudentRequest extends FormRequest
             'status' => ['sometimes', 'in:active,inactive'],
             'joined_at' => ['nullable', 'date'],
             'left_at' => ['nullable', 'date'],
+            'photo' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }
