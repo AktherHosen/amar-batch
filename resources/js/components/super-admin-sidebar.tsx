@@ -1,5 +1,5 @@
-import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Building2, CreditCard, Shield } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { LayoutGrid, Building2, CreditCard } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -12,29 +12,18 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import type { NavItem } from '@/types';
+import type { NavItemGroup } from '@/types';
 
 export function SuperAdminSidebar() {
-    const navItems: NavItem[] = [
+    const groups: NavItemGroup[] = [
         {
-            title: 'Dashboard',
-            href: '/super-admin/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Coaching Centers',
-            href: '/super-admin/tenants',
-            icon: Building2,
-        },
-        {
-            title: 'Plans',
-            href: '/super-admin/plans',
-            icon: CreditCard,
-        },
-        {
-            title: 'Payments',
-            href: '/super-admin/payments',
-            icon: CreditCard,
+            label: 'Platform',
+            items: [
+                { title: 'Dashboard', href: '/super-admin/dashboard', icon: LayoutGrid },
+                { title: 'Coaching Centers', href: '/super-admin/tenants', icon: Building2 },
+                { title: 'Plans', href: '/super-admin/plans', icon: CreditCard },
+                { title: 'Payments', href: '/super-admin/payments', icon: CreditCard },
+            ],
         },
     ];
 
@@ -53,7 +42,7 @@ export function SuperAdminSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={navItems} />
+                <NavMain groups={groups} />
             </SidebarContent>
 
             <SidebarFooter>

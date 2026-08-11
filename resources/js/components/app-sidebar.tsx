@@ -40,7 +40,7 @@ import exams from '@/routes/exams';
 import reports from '@/routes/reports';
 import branches from '@/routes/branches';
 import subscription from '@/routes/subscription';
-import type { NavItem } from '@/types';
+import type { NavItem, NavItemGroup } from '@/types';
 
 export function AppSidebar() {
     const { t } = useLocale();
@@ -50,95 +50,66 @@ export function AppSidebar() {
     const hasReports = useHasFeature('reports');
     const hasMultiBranch = useHasFeature('multi_branch');
 
-    const allNavItems: NavItem[] = [
+    const filterItem = (item: NavItem): boolean => {
+        if (item.ownerOnly && !isUserOwner) return false;
+        if (item.featureRequired === 'exams' && !hasExams) return false;
+        if (item.featureRequired === 'reports' && !hasReports) return false;
+        if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
+        return true;
+    };
+
+    const groups: NavItemGroup[] = [
         {
-            title: t('nav.dashboard'),
-            href: dashboard(),
-            icon: LayoutGrid,
+            label: 'Overview',
+            items: [
+                { title: t('nav.dashboard'), href: dashboard(), icon: LayoutGrid },
+            ],
         },
         {
-            title: t('nav.students'),
-            href: students.index(),
-            icon: Users,
+            label: 'Academic',
+            items: [
+                { title: t('nav.students'), href: students.index(), icon: Users },
+                { title: t('nav.coaching_classes'), href: coachingClasses.index(), icon: School },
+                { title: t('nav.teachers'), href: teachers.index(), icon: GraduationCap, ownerOnly: true },
+                { title: t('nav.batches'), href: batches.index(), icon: Layers },
+            ],
         },
         {
-            title: t('nav.coaching_classes'),
-            href: coachingClasses.index(),
-            icon: School,
+            label: 'Finance',
+            items: [
+                { title: t('nav.fees'), href: fees.index(), icon: DollarSign, ownerOnly: true },
+                { title: t('nav.subscription'), href: subscription.index(), icon: CreditCard, ownerOnly: true },
+            ],
         },
         {
-            title: t('nav.teachers'),
-            href: teachers.index(),
-            icon: GraduationCap,
-            ownerOnly: true,
+            label: 'Tracking',
+            items: [
+                { title: t('nav.attendance'), href: attendance.index(), icon: CheckSquare },
+                { title: t('nav.exams'), href: exams.index(), icon: FileText, featureRequired: 'exams' },
+            ],
         },
         {
-            title: t('nav.batches'),
-            href: batches.index(),
-            icon: Layers,
+            label: 'Communication',
+            items: [
+                { title: 'Notices', href: '/notices', icon: Megaphone },
+                { title: 'Holidays', href: '/holidays', icon: Calendar },
+            ],
         },
         {
-            title: t('nav.fees'),
-            href: fees.index(),
-            icon: DollarSign,
-            ownerOnly: true,
-        },
-        {
-            title: t('nav.attendance'),
-            href: attendance.index(),
-            icon: CheckSquare,
-        },
-        {
-            title: 'Notices',
-            href: '/notices',
-            icon: Megaphone,
-        },
-        {
-            title: 'Holidays',
-            href: '/holidays',
-            icon: Calendar,
-        },
-        {
-            title: t('nav.exams'),
-            href: exams.index(),
-            icon: FileText,
-            featureRequired: 'exams',
-        },
-        {
-            title: t('nav.reports'),
-            href: reports.index(),
-            icon: BarChart3,
-            featureRequired: 'reports',
-        },
-        {
-            title: t('nav.branches'),
-            href: branches.index(),
-            icon: Building2,
-            featureRequired: 'multi_branch',
-        },
-        {
-            title: t('nav.subscription'),
-            href: subscription.index(),
-            icon: CreditCard,
-            ownerOnly: true,
+            label: 'Insights',
+            items: [
+                { title: t('nav.reports'), href: reports.index(), icon: BarChart3, featureRequired: 'reports' },
+                { title: t('nav.branches'), href: branches.index(), icon: Building2, featureRequired: 'multi_branch' },
+            ],
         },
     ];
 
-    const mainNavItems = isUserOwner
-        ? allNavItems.filter((item) => {
-            if (item.ownerOnly && !isUserOwner) return false;
-            if (item.featureRequired === 'exams' && !hasExams) return false;
-            if (item.featureRequired === 'reports' && !hasReports) return false;
-            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
-            return true;
-        })
-        : allNavItems.filter((item) => {
-            if (item.ownerOnly) return false;
-            if (item.featureRequired === 'exams' && !hasExams) return false;
-            if (item.featureRequired === 'reports' && !hasReports) return false;
-            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
-            return true;
-        });
+    const filteredGroups = groups
+        .map((group) => ({
+            ...group,
+            items: group.items.filter(filterItem),
+        }))
+        .filter((group) => group.items.length > 0);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -155,7 +126,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain groups={filteredGroups} />
             </SidebarContent>
 
             <SidebarFooter>

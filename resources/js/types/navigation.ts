@@ -14,3 +14,8 @@ export type NavItem = {
     ownerOnly?: boolean;
     featureRequired?: string;
 };
+
+export type NavItemGroup = {
+    label: string;
+    items: NavItem[];
+};
