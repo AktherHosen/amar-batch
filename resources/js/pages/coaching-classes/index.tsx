@@ -89,7 +89,7 @@ export default function CoachingClassesIndex({
                 <div className="flex items-center justify-between">
                     <Heading
                         title={t('classes.title')}
-                        description={t('classes.title')}
+                        description={t('classes.desc')}
                     />
                     {isAdmin && (
                         <Link href={coachingClasses.create()}>

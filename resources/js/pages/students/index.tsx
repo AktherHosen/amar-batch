@@ -116,7 +116,7 @@ export default function StudentsIndex({
                 <div className="flex items-center justify-between">
                     <Heading
                         title={t('students.title')}
-                        description={t('students.title')}
+                        description={t('students.desc')}
                     />
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={() => window.location.href = '/students/export'}>

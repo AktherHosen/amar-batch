@@ -121,10 +121,10 @@ export default function AttendanceCreate({
             <Head title={t('attendance.mark')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading
-                    title={t('attendance.mark')}
-                    description={t('attendance.title')}
-                />
+                    <Heading
+                        title={t('attendance.title')}
+                        description={t('attendance.desc')}
+                    />
 
                 <Card>
                     <CardHeader>

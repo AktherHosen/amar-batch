@@ -40,10 +40,10 @@ export default function FeesCreate({
             <Head title={t('fees.create')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading
-                    title={t('fees.create')}
-                    description={t('fees.title')}
-                />
+                    <Heading
+                        title={t('fees.title')}
+                        description={t('fees.desc')}
+                    />
 
                 <Card>
                     <CardHeader>

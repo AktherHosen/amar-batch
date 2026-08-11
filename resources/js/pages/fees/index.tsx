@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { isOwner } from '@/lib/role';
 import {
     Plus,
@@ -9,6 +10,7 @@ import {
     EllipsisVertical,
     Download,
     X,
+    DollarSign,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -18,7 +20,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
-    TableBody,
     TableCell,
     TableHead,
     TableHeader,
@@ -30,6 +31,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import fees from '@/routes/fees';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -326,7 +334,7 @@ export default function FeesIndex({
                 <div className="flex items-center justify-between">
                     <Heading
                         title={t('fees.title')}
-                        description={t('fees.title')}
+                        description={t('fees.desc')}
                     />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -386,29 +394,22 @@ export default function FeesIndex({
                                     </button>
                                 )}
                             </div>
-                            <div className="flex gap-3 sm:gap-4">
-                                <select
-                                    value={selectedYear}
-                                    onChange={(e) =>
-                                        handleYearChange(Number(e.target.value))
-                                    }
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm sm:w-[120px]"
+                            <div className="flex gap-2">
+                                <Select
+                                    value={String(selectedYear)}
+                                    onValueChange={(value) => handleYearChange(Number(value))}
                                 >
-                                    {yearOptions.map((y) => (
-                                        <option key={y} value={y}>
-                                            {y}
-                                        </option>
-                                    ))}
-                                </select>
-                                <Button
-                                    variant="secondary"
-                                    onClick={handleSearch}
-                                >
-                                    <Search className="size-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">
-                                        {t('actions.search')}
-                                    </span>
-                                </Button>
+                                    <SelectTrigger className="w-[120px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {yearOptions.map((y) => (
+                                            <SelectItem key={y} value={String(y)}>
+                                                {y}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -452,20 +453,36 @@ export default function FeesIndex({
                                         )}
                                     </TableRow>
                                 </TableHeader>
-                                <TableBody>
+                                <motion.tbody
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: {},
+                                        visible: { transition: { staggerChildren: 0.03 } },
+                                    }}
+                                >
                                     {feeGrid.length === 0 ? (
                                         <TableRow>
                                             <TableCell
                                                 colSpan={months.length + 4}
                                                 className="text-center"
                                             >
-                                                No fee records found
+                                                <div className="flex flex-col items-center gap-2 py-4">
+                                                    <DollarSign className="size-8 text-muted-foreground" />
+                                                    <p>No fee records found</p>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         feeGrid.map((item, idx) => (
-                                            <TableRow key={idx}>
-                                                <TableCell className="sticky left-0 z-10 bg-background font-medium">
+                                            <motion.tr
+                                                key={idx}
+                                                variants={{
+                                                    hidden: { opacity: 0, x: -8 },
+                                                    visible: { opacity: 1, x: 0 },
+                                                }}
+                                            >
+                                                <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium">
                                                     {item.student.name}
                                                 </TableCell>
                                                 <TableCell>
@@ -511,10 +528,10 @@ export default function FeesIndex({
                                                         </Button>
                                                     </TableCell>
                                                 )}
-                                            </TableRow>
+                                            </motion.tr>
                                         ))
                                     )}
-                                </TableBody>
+                                </motion.tbody>
                             </Table>
                         </div>
                     </CardContent>

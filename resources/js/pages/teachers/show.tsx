@@ -84,10 +84,10 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                 {t('actions.back')}
                             </Button>
                         </Link>
-                        <Heading
-                            title={teacher.name}
-                            description={t('teachers.title')}
-                        />
+                    <Heading
+                        title={t('teachers.title')}
+                        description={t('teachers.desc')}
+                    />
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">

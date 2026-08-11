@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/select';
 import {
     Table,
-    TableBody,
     TableCell,
     TableHead,
     TableHeader,
@@ -29,7 +28,8 @@ import {
 import { useLocale } from '@/contexts/locale-context';
 import exams from '@/routes/exams';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { EllipsisVertical, Eye, FileText, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -112,7 +112,7 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                     <Heading title={t('exams.title')} description={t('exams.desc')} />
                     {isAdmin && (
                         <Link href={exams.create()}>
-                            <Button size="sm">
+                            <Button>
                                 <Plus className="mr-2 size-4" />
                                 {t('exams.create')}
                             </Button>
@@ -122,7 +122,7 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
@@ -145,10 +145,11 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                                 )}
                             </div>
                             <Select
-                                value={batchId}
+                                value={batchId || 'all'}
                                 onValueChange={(value) => {
-                                    setBatchId(value === 'all' ? '' : value);
-                                    router.get(exams.index(), { search, batch_id: value === 'all' ? '' : value }, { preserveState: true });
+                                    const v = value === 'all' ? '' : value;
+                                    setBatchId(v);
+                                    router.get(exams.index(), { search, batch_id: v }, { preserveState: true });
                                 }}
                             >
                                 <SelectTrigger className="w-[180px]">
@@ -163,15 +164,11 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Button variant="ghost" size="sm" onClick={handleRefresh}>
+                            <Button variant="ghost" size="icon" disabled={refreshing} onClick={handleRefresh}>
                                 <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                             </Button>
                         </div>
-                    </CardContent>
-                </Card>
 
-                <Card>
-                    <CardContent className="pt-6">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -183,24 +180,40 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                                     <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
+                            <motion.tbody
+                                initial="hidden"
+                                animate="visible"
+                                variants={{
+                                    hidden: {},
+                                    visible: { transition: { staggerChildren: 0.03 } },
+                                }}
+                            >
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                            {t('exams.no_exams')}
+                                        <TableCell colSpan={6} className="text-center">
+                                            <div className="flex flex-col items-center gap-2 py-4">
+                                                <FileText className="size-8 text-muted-foreground" />
+                                                <p>{t('exams.no_exams')}</p>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     pagination.data.map((exam) => (
-                                        <TableRow key={exam.id}>
-                                            <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium whitespace-nowrap">
+                                        <motion.tr
+                                            key={exam.id}
+                                            variants={{
+                                                hidden: { opacity: 0, x: -8 },
+                                                visible: { opacity: 1, x: 0 },
+                                            }}
+                                        >
+                                            <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium">
                                                 {exam.title}
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap">{exam.subject || '-'}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{exam.batch?.name || '-'}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{formatDate(exam.date)}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{exam.total_marks} (pass: {exam.passing_marks})</TableCell>
-                                            <TableCell className="p-1 text-center whitespace-nowrap">
+                                            <TableCell>{exam.subject || '-'}</TableCell>
+                                            <TableCell>{exam.batch?.name || '-'}</TableCell>
+                                            <TableCell>{formatDate(exam.date)}</TableCell>
+                                            <TableCell>{exam.total_marks} (pass: {exam.passing_marks})</TableCell>
+                                            <TableCell className="text-center">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" size="sm" className="size-8 p-0">
@@ -227,11 +240,12 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
-                                        </TableRow>
+                                        </motion.tr>
                                     ))
                                 )}
-                            </TableBody>
+                            </motion.tbody>
                         </Table>
+
                         <Pagination
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}

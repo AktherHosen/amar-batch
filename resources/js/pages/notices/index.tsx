@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, RefreshCw, Search, X, Eye, Pencil, Trash2, Megaphone } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plus, RefreshCw, Search, X, EllipsisVertical, Eye, Pencil, Trash2, Megaphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -10,6 +11,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -123,38 +137,31 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
                                 )}
                             </div>
                             <div className="flex gap-2">
-                                <select
-                                    value={batchId}
-                                    onChange={(e) => {
-                                        setBatchId(e.target.value);
-                                        router.get('/notices', { search, batch_id: e.target.value }, { preserveState: true });
-                                    }}
-                                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                >
-                                    <option value="">All Batches</option>
-                                    <option value="center">Center-wide</option>
-                                    {batches.map((batch) => (
-                                        <option key={batch.id} value={batch.id}>
-                                            {batch.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <Button variant="secondary" onClick={handleSearch}>
-                                    <Search className="size-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Search</span>
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={refreshing}
-                                    onClick={() => {
-                                        setRefreshing(true);
-                                        router.reload({
-                                            only: ['notices'],
-                                            onFinish: () => setRefreshing(false),
-                                        });
+                                <Select
+                                    value={batchId || 'all'}
+                                    onValueChange={(value) => {
+                                        const v = value === 'all' ? '' : value;
+                                        setBatchId(v);
+                                        router.get('/notices', { search, batch_id: v }, { preserveState: true });
                                     }}
                                 >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="All Batches" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Batches</SelectItem>
+                                        <SelectItem value="center">Center-wide</SelectItem>
+                                        {batches.map((batch) => (
+                                            <SelectItem key={batch.id} value={String(batch.id)}>
+                                                {batch.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button variant="ghost" size="icon" disabled={refreshing} onClick={() => {
+                                    setRefreshing(true);
+                                    router.reload({ only: ['notices'], onFinish: () => setRefreshing(false) });
+                                }}>
                                     <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                                 </Button>
                             </div>
@@ -163,15 +170,22 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="whitespace-nowrap">Title</TableHead>
-                                    <TableHead className="whitespace-nowrap">Batch</TableHead>
-                                    <TableHead className="whitespace-nowrap">Status</TableHead>
-                                    <TableHead className="whitespace-nowrap">Posted by</TableHead>
-                                    <TableHead className="whitespace-nowrap">Date</TableHead>
-                                    <TableHead className="w-[80px]"></TableHead>
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">Title</TableHead>
+                                    <TableHead>Batch</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Posted by</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
+                            <motion.tbody
+                                initial="hidden"
+                                animate="visible"
+                                variants={{
+                                    hidden: {},
+                                    visible: { transition: { staggerChildren: 0.03 } },
+                                }}
+                            >
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={6} className="text-center">
@@ -183,58 +197,65 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
                                     </TableRow>
                                 ) : (
                                     pagination.data.map((notice) => (
-                                        <TableRow key={notice.id}>
-                                            <TableCell className="whitespace-nowrap font-medium">
+                                        <motion.tr
+                                            key={notice.id}
+                                            variants={{
+                                                hidden: { opacity: 0, x: -8 },
+                                                visible: { opacity: 1, x: 0 },
+                                            }}
+                                        >
+                                            <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium">
                                                 {notice.title}
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap">
+                                            <TableCell>
                                                 {notice.batch ? (
                                                     <Badge variant="secondary">{notice.batch.name}</Badge>
                                                 ) : (
                                                     <Badge variant="outline">Center-wide</Badge>
                                                 )}
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap">
+                                            <TableCell>
                                                 <Badge variant={notice.is_active ? 'success' : 'secondary'}>
                                                     {notice.is_active ? 'Active' : 'Draft'}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap">
+                                            <TableCell>
                                                 {notice.creator.name}
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap">
+                                            <TableCell>
                                                 {new Date(notice.created_at).toLocaleDateString()}
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                <div className="flex gap-1">
-                                                    <Link href={`/notices/${notice.id}`}>
+                                            <TableCell className="text-center">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <Eye className="size-4" />
+                                                            <EllipsisVertical className="size-4" />
                                                         </Button>
-                                                    </Link>
-                                                    {isAdmin && (
-                                                        <>
-                                                            <Link href={`/notices/${notice.id}/edit`}>
-                                                                <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                                    <Pencil className="size-4" />
-                                                                </Button>
-                                                            </Link>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="size-8 p-0 text-destructive hover:text-destructive"
-                                                                onClick={() => handleDelete(notice)}
-                                                            >
-                                                                <Trash2 className="size-4" />
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                </div>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={() => router.get(`/notices/${notice.id}`)}>
+                                                            <Eye className="mr-2 size-4" />
+                                                            View
+                                                        </DropdownMenuItem>
+                                                        {isAdmin && (
+                                                            <>
+                                                                <DropdownMenuItem onClick={() => router.get(`/notices/${notice.id}/edit`)}>
+                                                                    <Pencil className="mr-2 size-4" />
+                                                                    Edit
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(notice)}>
+                                                                    <Trash2 className="mr-2 size-4" />
+                                                                    Delete
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
-                                        </TableRow>
+                                        </motion.tr>
                                     ))
                                 )}
-                            </TableBody>
+                            </motion.tbody>
                         </Table>
 
                         <Pagination

@@ -89,6 +89,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Students
         'students.title': 'ছাত্রছাত্রী',
+        'students.desc': 'সকল ছাত্রছাত্রীদের তালিকা ও ব্যবস্থাপনা',
         'students.create': 'ছাত্র যোগ করুন',
         'students.edit': 'ছাত্র সম্পাদনা',
         'students.name': 'নাম',
@@ -117,6 +118,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Batches
         'batches.title': 'ব্যাচ',
+        'batches.desc': 'সকল ব্যাচ পরিচালনা করুন',
         'batches.create': 'ব্যাচ যোগ করুন',
         'batches.name': 'নাম',
         'batches.subject': 'বিষয়',
@@ -155,6 +157,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Teachers
         'teachers.title': 'শিক্ষক',
+        'teachers.desc': 'সকল শিক্ষকদের তালিকা ও ব্যবস্থাপনা',
         'teachers.create': 'শিক্ষক যোগ করুন',
         'teachers.name': 'নাম',
         'teachers.email': 'ইমেইল',
@@ -175,6 +178,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Attendance
         'attendance.title': 'উপস্থিতি',
+        'attendance.desc': 'দৈনিক উপস্থিতি ট্র্যাক করুন',
         'attendance.mark': 'উপস্থিতি নির্ধারণ',
         'attendance.batch': 'ব্যাচ',
         'attendance.date': 'তারিখ',
@@ -277,6 +281,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Fees
         'fees.title': 'বেতন ব্যবস্থাপনা',
+        'fees.desc': 'ছাত্রদের বেতন ট্র্যাক করুন ও পেমেন্ট সংগ্রহ করুন',
         'fees.create': 'বেতন রেকর্ড যোগ করুন',
         'fees.student': 'ছাত্র',
         'fees.batch': 'ব্যাচ',
@@ -346,6 +351,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Classes
         'classes.title': 'কোচিং ক্লাস',
+        'classes.desc': 'সকল কোচিং ক্লাস পরিচালনা করুন',
         'classes.create': 'ক্লাস যোগ করুন',
         'classes.name': 'নাম',
         'classes.default_fee': 'ডিফল্ট বেতন',
@@ -545,6 +551,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Students
         'students.title': 'Students',
+        'students.desc': 'List and manage all students',
         'students.create': 'Add Student',
         'students.edit': 'Edit Student',
         'students.name': 'Name',
@@ -573,6 +580,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Batches
         'batches.title': 'Batches',
+        'batches.desc': 'Manage all batches',
         'batches.create': 'Add Batch',
         'batches.name': 'Name',
         'batches.subject': 'Subject',
@@ -611,6 +619,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Teachers
         'teachers.title': 'Teachers',
+        'teachers.desc': 'List and manage all teachers',
         'teachers.create': 'Add Teacher',
         'teachers.name': 'Name',
         'teachers.email': 'Email',
@@ -631,6 +640,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Attendance
         'attendance.title': 'Attendance',
+        'attendance.desc': 'Track daily attendance',
         'attendance.mark': 'Mark Attendance',
         'attendance.batch': 'Batch',
         'attendance.date': 'Date',
@@ -733,6 +743,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Fees
         'fees.title': 'Fee Management',
+        'fees.desc': 'Track student fees and collect payments',
         'fees.create': 'Add Fee Record',
         'fees.student': 'Student',
         'fees.batch': 'Batch',
@@ -750,6 +761,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Classes
         'classes.title': 'Coaching Classes',
+        'classes.desc': 'Manage all coaching classes',
         'classes.create': 'Add Class',
         'classes.name': 'Name',
         'classes.default_fee': 'Default Fee',

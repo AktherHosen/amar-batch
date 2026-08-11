@@ -126,7 +126,7 @@ export default function TeachersIndex({
                 <div className="flex items-center justify-between">
                     <Heading
                         title={t('teachers.title')}
-                        description={t('teachers.title')}
+                        description={t('teachers.desc')}
                     />
                     {isAdmin && (
                         <Link href={teachers.create()}>

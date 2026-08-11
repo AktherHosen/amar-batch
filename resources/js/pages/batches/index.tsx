@@ -142,7 +142,7 @@ export default function BatchesIndex({
                 <div className="flex items-center justify-between">
                     <Heading
                         title={t('batches.title')}
-                        description={t('batches.title')}
+                        description={t('batches.desc')}
                     />
                     {isAdmin && (
                         <Link href={batches.create()}>

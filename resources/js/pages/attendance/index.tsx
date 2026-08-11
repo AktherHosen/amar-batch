@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { EllipsisVertical, PenLine, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { EllipsisVertical, ClipboardCheck, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner, isStaff } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -16,7 +17,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,7 +26,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
     Table,
-    TableBody,
     TableCell,
     TableHead,
     TableHeader,
@@ -78,7 +78,7 @@ export default function AttendanceIndex({
     const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
-        item: any | null;
+        item: AttendanceRecord | null;
     }>({ open: false, item: null });
 
     const handleFilter = () => {
@@ -122,7 +122,7 @@ export default function AttendanceIndex({
                 <div className="flex items-center justify-between">
                     <Heading
                         title={t('attendance.title')}
-                        description={t('attendance.title')}
+                        description={t('attendance.desc')}
                     />
                     {(isAdmin || isTeacher) && (
                         <Link href={attendance.create()}>
@@ -135,13 +135,18 @@ export default function AttendanceIndex({
                 </div>
 
                 <Card>
-                    <CardHeader>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                    <CardContent className="pt-6">
+                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                             <Select
                                 value={batchId || 'all'}
-                                onValueChange={(v) =>
-                                    setBatchId(v === 'all' ? '' : v)
-                                }
+                                onValueChange={(v) => {
+                                    setBatchId(v === 'all' ? '' : v);
+                                    router.get(
+                                        attendance.index(),
+                                        { batch_id: v === 'all' ? '' : v, date },
+                                        { preserveState: true },
+                                    );
+                                }}
                             >
                                 <SelectTrigger className="w-full sm:w-[180px]">
                                     <SelectValue placeholder="All Batches" />
@@ -168,6 +173,7 @@ export default function AttendanceIndex({
                                         onChange={(e) =>
                                             setDate(e.target.value)
                                         }
+                                        onKeyDown={(e) => e.key === 'Enter' && handleFilter()}
                                         className="w-full pr-9"
                                     />
                                     {date && (
@@ -188,22 +194,13 @@ export default function AttendanceIndex({
                                     )}
                                 </div>
                                 <Button
-                                    variant="secondary"
-                                    onClick={handleFilter}
-                                >
-                                    <Search className="size-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">
-                                        {t('actions.search')}
-                                    </span>
-                                </Button>
-                                <Button
                                     variant="ghost"
                                     size="icon"
                                     disabled={refreshing}
                                     onClick={() => {
                                         setRefreshing(true);
                                         router.reload({
-                                            only: ['records'],
+                                            only: ['attendances'],
                                             onFinish: () => setRefreshing(false),
                                         });
                                     }}
@@ -212,8 +209,7 @@ export default function AttendanceIndex({
                                 </Button>
                             </div>
                         </div>
-                    </CardHeader>
-                    <CardContent>
+
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -237,7 +233,14 @@ export default function AttendanceIndex({
                                     )}
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
+                            <motion.tbody
+                                initial="hidden"
+                                animate="visible"
+                                variants={{
+                                    hidden: {},
+                                    visible: { transition: { staggerChildren: 0.03 } },
+                                }}
+                            >
                                 {pagination.data.length === 0 ? (
                                     <TableRow>
                                         <TableCell
@@ -246,13 +249,22 @@ export default function AttendanceIndex({
                                             }
                                             className="text-center"
                                         >
-                                            No attendance records found
+                                            <div className="flex flex-col items-center gap-2 py-4">
+                                                <ClipboardCheck className="size-8 text-muted-foreground" />
+                                                <p>No attendance records found</p>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     pagination.data.map((record) => (
-                                        <TableRow key={record.id}>
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
+                                        <motion.tr
+                                            key={record.id}
+                                            variants={{
+                                                hidden: { opacity: 0, x: -8 },
+                                                visible: { opacity: 1, x: 0 },
+                                            }}
+                                        >
+                                            <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium">
                                                 {record.student.name}
                                             </TableCell>
                                             <TableCell>
@@ -276,7 +288,7 @@ export default function AttendanceIndex({
                                                 {record.notes || '-'}
                                             </TableCell>
                                             {(isAdmin || isTeacher) && (
-                                                <TableCell className="p-1 text-center">
+                                                <TableCell className="text-center">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <Button variant="ghost" size="sm" className="size-8 p-0">
@@ -285,7 +297,7 @@ export default function AttendanceIndex({
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuItem onClick={() => router.get(attendance.edit(record.id))}>
-                                                                <PenLine className="mr-2 size-4" />
+                                                                <Pencil className="mr-2 size-4" />
                                                                 Edit
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(record)}>
@@ -296,10 +308,10 @@ export default function AttendanceIndex({
                                                     </DropdownMenu>
                                                 </TableCell>
                                             )}
-                                        </TableRow>
+                                        </motion.tr>
                                     ))
                                 )}
-                            </TableBody>
+                            </motion.tbody>
                         </Table>
 
                         <Pagination
