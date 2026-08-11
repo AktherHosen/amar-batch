@@ -1,51 +1,44 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import { isOwner, isStaff } from '@/lib/role';
-import { motion } from 'framer-motion';
-import {
-    Users,
-    GraduationCap,
-    Layers,
-    DollarSign,
-    CheckCircle,
-    Megaphone,
-    Calendar,
-    Plus,
-    ClipboardCheck,
-    CreditCard,
-} from 'lucide-react';
-import Heading from '@/components/heading';
 import Clock from '@/components/clock';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner, isStaff } from '@/lib/role';
 import { dashboard } from '@/routes';
-import students from '@/routes/students';
+import attendance from '@/routes/attendance';
 import batches from '@/routes/batches';
 import fees from '@/routes/fees';
-import attendance from '@/routes/attendance';
+import students from '@/routes/students';
+import { Head, Link, usePage } from '@inertiajs/react';
 import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
+    ArcElement,
     BarElement,
+    CategoryScale,
+    Chart as ChartJS,
+    Filler,
+    Legend,
+    LinearScale,
     LineElement,
     PointElement,
-    ArcElement,
     Title,
     Tooltip,
-    Legend,
-    Filler,
 } from 'chart.js';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { motion } from 'framer-motion';
+import {
+    Calendar,
+    CheckCircle,
+    ChevronRight,
+    ClipboardCheck,
+    CreditCard,
+    DollarSign,
+    GraduationCap,
+    Layers,
+    Megaphone,
+    Plus,
+    Users,
+} from 'lucide-react';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 
 ChartJS.register(
     CategoryScale,
@@ -137,7 +130,12 @@ type PageProps = {
     upcomingHolidays?: UpcomingHoliday[];
     assignedBatches?: AssignedBatch[];
     batchHistory?: { completed: number; active: number };
-    attendanceTrend?: { month: string; present: number; absent: number; late: number }[];
+    attendanceTrend?: {
+        month: string;
+        present: number;
+        absent: number;
+        late: number;
+    }[];
     enrollmentTrend?: { month: string; enrollments: number }[];
     feeTrend?: { month: string; collected: number }[];
 };
@@ -164,7 +162,22 @@ export default function Dashboard({
     const isTeacher = isStaff(auth.user);
 
     const getMonthName = (monthIndex: number) => {
-        const months = ['', 'month.january', 'month.february', 'month.march', 'month.april', 'month.may', 'month.june', 'month.july', 'month.august', 'month.september', 'month.october', 'month.november', 'month.december'];
+        const months = [
+            '',
+            'month.january',
+            'month.february',
+            'month.march',
+            'month.april',
+            'month.may',
+            'month.june',
+            'month.july',
+            'month.august',
+            'month.september',
+            'month.october',
+            'month.november',
+            'month.december',
+        ];
+
         return t(months[monthIndex]);
     };
 
@@ -172,21 +185,26 @@ export default function Dashboard({
         return (
             <>
                 <Head title={t('dashboard.pending_approval')} />
-                <div className="flex h-full flex-1 flex-col items-center justify-center gap-4 rounded-xl p-4">
+                <div className="flex h-full flex-1 flex-col items-center justify-center gap-4 p-4">
                     <Card className="w-full max-w-md text-center">
                         <CardHeader>
-                            <CardTitle className="text-xl">{t('dashboard.pending_approval')}</CardTitle>
+                            <CardTitle className="text-xl">
+                                {t('dashboard.pending_approval')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <p className="text-muted-foreground">
-                                {t('dashboard.welcome')}, <strong>{pendingTeacher?.name}</strong>! {t('dashboard.pending_message')}
+                                {t('dashboard.welcome')},{' '}
+                                <strong>{pendingTeacher?.name}</strong>!{' '}
+                                {t('dashboard.pending_message')}
                             </p>
                             <p className="text-sm text-muted-foreground">
                                 {t('dashboard.pending_submessage')}
                             </p>
                             <div className="rounded-lg border bg-muted/50 p-4">
                                 <p className="text-sm text-muted-foreground">
-                                    <strong>{t('dashboard.email')}:</strong> {pendingTeacher?.email}
+                                    <strong>{t('dashboard.email')}:</strong>{' '}
+                                    {pendingTeacher?.email}
                                 </p>
                             </div>
                         </CardContent>
@@ -200,9 +218,10 @@ export default function Dashboard({
         <>
             <Head title={t('dashboard.title')} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden p-3 sm:rounded-xl sm:p-4">
+                {/* Header */}
                 <motion.div
-                    className="flex items-start justify-between"
+                    className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
@@ -217,15 +236,18 @@ export default function Dashboard({
                             isTeacher
                                 ? t('dashboard.assigned_batches_desc')
                                 : tenant?.subscription?.plan
-                                    ? `Plan: ${tenant.subscription.plan.name}${tenant.subscription.status === 'trial' ? ' (Trial)' : ''}`
-                                    : t('app.tagline')
+                                  ? `Plan: ${tenant.subscription.plan.name}${tenant.subscription.status === 'trial' ? ' (Trial)' : ''}`
+                                  : t('app.tagline')
                         }
                     />
-                    <Clock />
+                    <div className="hidden sm:block">
+                        <Clock />
+                    </div>
                 </motion.div>
 
+                {/* Stat Cards */}
                 <motion.div
-                    className="grid gap-3 grid-cols-2 lg:grid-cols-4"
+                    className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4"
                     initial="hidden"
                     animate="visible"
                     variants={{
@@ -236,18 +258,22 @@ export default function Dashboard({
                     <motion.div
                         variants={{
                             hidden: { opacity: 0, y: 20 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                            visible: {
+                                opacity: 1,
+                                y: 0,
+                                transition: { duration: 0.4 },
+                            },
                         }}
                     >
-                        <Card className="py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                <CardTitle className="text-sm font-medium">
+                        <Card className="h-full py-2 sm:py-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
+                                <CardTitle className="py-0 text-xs font-medium">
                                     {t('dashboard.total_students')}
                                 </CardTitle>
-                                <Users className="size-4 text-muted-foreground" />
+                                <Users className="size-3.5 text-muted-foreground sm:size-4" />
                             </CardHeader>
-                            <CardContent className="px-3 pb-2 pt-0">
-                                <div className="text-2xl font-bold">
+                            <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                                <div className="text-xl font-bold sm:text-2xl">
                                     {stats.total_students}
                                 </div>
                                 <Link
@@ -264,18 +290,22 @@ export default function Dashboard({
                         <motion.div
                             variants={{
                                 hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                                visible: {
+                                    opacity: 1,
+                                    y: 0,
+                                    transition: { duration: 0.4 },
+                                },
                             }}
                         >
-                            <Card className="py-3">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                    <CardTitle className="text-sm font-medium">
+                            <Card className="h-full py-2 sm:py-3">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
+                                    <CardTitle className="text-xs font-medium">
                                         {t('nav.teachers')}
                                     </CardTitle>
-                                    <GraduationCap className="size-4 text-muted-foreground" />
+                                    <GraduationCap className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
-                                <CardContent className="px-3 pb-2 pt-0">
-                                    <div className="text-2xl font-bold">
+                                <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                                    <div className="text-xl font-bold sm:text-2xl">
                                         {stats.total_teachers ?? '-'}
                                     </div>
                                 </CardContent>
@@ -286,18 +316,22 @@ export default function Dashboard({
                     <motion.div
                         variants={{
                             hidden: { opacity: 0, y: 20 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                            visible: {
+                                opacity: 1,
+                                y: 0,
+                                transition: { duration: 0.4 },
+                            },
                         }}
                     >
-                        <Card className="py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                <CardTitle className="text-sm font-medium">
+                        <Card className="h-full py-2 sm:py-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
+                                <CardTitle className="text-xs font-medium">
                                     {t('dashboard.active_batches')}
                                 </CardTitle>
-                                <Layers className="size-4 text-muted-foreground" />
+                                <Layers className="size-3.5 text-muted-foreground sm:size-4" />
                             </CardHeader>
-                            <CardContent className="px-3 pb-2 pt-0">
-                                <div className="text-2xl font-bold">
+                            <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                                <div className="text-xl font-bold sm:text-2xl">
                                     {stats.active_batches}
                                 </div>
                                 <Link
@@ -314,26 +348,33 @@ export default function Dashboard({
                         <motion.div
                             variants={{
                                 hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                                visible: {
+                                    opacity: 1,
+                                    y: 0,
+                                    transition: { duration: 0.4 },
+                                },
                             }}
                         >
-                            <Card className="py-3">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                    <CardTitle className="text-sm font-medium">
+                            <Card className="h-full py-2 sm:py-3">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
+                                    <CardTitle className="text-xs font-medium">
                                         {t('dashboard.total_collected')}
                                     </CardTitle>
-                                    <DollarSign className="size-4 text-muted-foreground" />
+                                    <DollarSign className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
-                                <CardContent className="px-3 pb-2 pt-0">
-                                    <div className="text-2xl font-bold">
-                                        {Number(feeStats.total_collected).toFixed(0)}
+                                <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                                    <div className="text-xl font-bold sm:text-2xl">
+                                        {Number(
+                                            feeStats.total_collected,
+                                        ).toFixed(0)}
                                     </div>
                                     <p className="text-xs text-muted-foreground">
-                                        {feeStats.total_records} {t('dashboard.payment_records')}
+                                        {feeStats.total_records}{' '}
+                                        {t('dashboard.payment_records')}
                                     </p>
                                     <Link
                                         href={fees.index().url}
-                                        className="mt-1 block text-xs text-muted-foreground hover:underline"
+                                        className="mt-0.5 block text-xs text-muted-foreground hover:underline sm:mt-1"
                                     >
                                         {t('actions.view_all')}
                                     </Link>
@@ -346,22 +387,29 @@ export default function Dashboard({
                         <motion.div
                             variants={{
                                 hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                                visible: {
+                                    opacity: 1,
+                                    y: 0,
+                                    transition: { duration: 0.4 },
+                                },
                             }}
                         >
-                            <Card className="py-3">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                    <CardTitle className="text-sm font-medium">
+                            <Card className="h-full py-2 sm:py-3">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
+                                    <CardTitle className="text-xs font-medium">
                                         {t('dashboard.total_collected')}
                                     </CardTitle>
-                                    <DollarSign className="size-4 text-muted-foreground" />
+                                    <DollarSign className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
-                                <CardContent className="px-3 pb-2 pt-0">
-                                    <div className="text-2xl font-bold">
-                                        {Number(feeStats.total_collected).toFixed(0)}
+                                <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                                    <div className="text-xl font-bold sm:text-2xl">
+                                        {Number(
+                                            feeStats.total_collected,
+                                        ).toFixed(0)}
                                     </div>
                                     <p className="text-xs text-muted-foreground">
-                                        {feeStats.total_records} {t('dashboard.payment_records')}
+                                        {feeStats.total_records}{' '}
+                                        {t('dashboard.payment_records')}
                                     </p>
                                 </CardContent>
                             </Card>
@@ -369,29 +417,39 @@ export default function Dashboard({
                     )}
                 </motion.div>
 
-                {activeNotices && activeNotices.length > 0 && (
+                {/* Active Notices */}
+                {activeNotices.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.2 }}
                     >
                         <Card>
-                            <CardHeader className="pb-2">
+                            <CardHeader>
                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-sm font-medium">Recent Notices</CardTitle>
-                                    <Link href="/notices" className="text-xs text-muted-foreground hover:underline">
+                                    <CardTitle className="text-sm font-medium">
+                                        Recent Notices
+                                    </CardTitle>
+                                    <Link
+                                        href="/notices"
+                                        className="text-xs text-muted-foreground hover:underline"
+                                    >
                                         View all
                                     </Link>
                                 </div>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="p-3 sm:p-6">
                                 <motion.div
-                                    className="space-y-3"
+                                    className="space-y-2"
                                     initial="hidden"
                                     animate="visible"
                                     variants={{
                                         hidden: {},
-                                        visible: { transition: { staggerChildren: 0.08 } },
+                                        visible: {
+                                            transition: {
+                                                staggerChildren: 0.08,
+                                            },
+                                        },
                                     }}
                                 >
                                     {activeNotices.map((notice) => (
@@ -404,19 +462,18 @@ export default function Dashboard({
                                         >
                                             <Link
                                                 href={`/notices/${notice.id}`}
-                                                className="block rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                                className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
                                             >
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div className="min-w-0 flex-1">
-                                                        <h4 className="text-sm font-medium">{notice.title}</h4>
-                                                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                                                            {notice.content}
-                                                        </p>
-                                                    </div>
-                                                    <span className="shrink-0 text-xs text-muted-foreground">
-                                                        {new Date(notice.created_at).toLocaleDateString()}
-                                                    </span>
+                                                <Megaphone className="size-4 shrink-0 text-muted-foreground" />
+                                                <div className="min-w-0 flex-1">
+                                                    <h4 className="truncate text-sm font-medium">
+                                                        {notice.title}
+                                                    </h4>
+                                                    <p className="truncate text-xs text-muted-foreground">
+                                                        {notice.content}
+                                                    </p>
                                                 </div>
+                                                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                                             </Link>
                                         </motion.div>
                                     ))}
@@ -426,6 +483,7 @@ export default function Dashboard({
                     </motion.div>
                 )}
 
+                {/* Upcoming Holidays */}
                 {upcomingHolidays.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -433,22 +491,31 @@ export default function Dashboard({
                         transition={{ duration: 0.4, delay: 0.3 }}
                     >
                         <Card>
-                            <CardHeader className="pb-2">
+                            <CardHeader>
                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-sm font-medium">Upcoming Holidays</CardTitle>
-                                    <Link href="/holidays" className="text-xs text-muted-foreground hover:underline">
+                                    <CardTitle className="text-sm font-medium">
+                                        Upcoming Holidays
+                                    </CardTitle>
+                                    <Link
+                                        href="/holidays"
+                                        className="text-xs text-muted-foreground hover:underline"
+                                    >
                                         View all
                                     </Link>
                                 </div>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="p-3 sm:p-6">
                                 <motion.div
                                     className="space-y-2"
                                     initial="hidden"
                                     animate="visible"
                                     variants={{
                                         hidden: {},
-                                        visible: { transition: { staggerChildren: 0.08 } },
+                                        visible: {
+                                            transition: {
+                                                staggerChildren: 0.08,
+                                            },
+                                        },
                                     }}
                                 >
                                     {upcomingHolidays.map((holiday) => (
@@ -461,18 +528,34 @@ export default function Dashboard({
                                         >
                                             <Link
                                                 href={`/holidays/${holiday.id}`}
-                                                className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                                className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <Calendar className="size-4 text-muted-foreground" />
-                                                    <div>
-                                                        <h4 className="text-sm font-medium">{holiday.title}</h4>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {new Date(holiday.start_date).toLocaleDateString()} - {new Date(holiday.end_date).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
+                                                <Calendar className="size-4 shrink-0 text-muted-foreground" />
+                                                <div className="min-w-0 flex-1">
+                                                    <h4 className="truncate text-sm font-medium">
+                                                        {holiday.title}
+                                                    </h4>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {new Date(
+                                                            holiday.start_date,
+                                                        ).toLocaleDateString()}{' '}
+                                                        -{' '}
+                                                        {new Date(
+                                                            holiday.end_date,
+                                                        ).toLocaleDateString()}
+                                                    </p>
                                                 </div>
-                                                <Badge variant={holiday.type === 'holiday' ? 'default' : holiday.type === 'exam' ? 'secondary' : 'outline'}>
+                                                <Badge
+                                                    variant={
+                                                        holiday.type ===
+                                                        'holiday'
+                                                            ? 'default'
+                                                            : holiday.type ===
+                                                                'exam'
+                                                              ? 'secondary'
+                                                              : 'outline'
+                                                    }
+                                                >
                                                     {holiday.type}
                                                 </Badge>
                                             </Link>
@@ -484,6 +567,7 @@ export default function Dashboard({
                     </motion.div>
                 )}
 
+                {/* Quick Actions */}
                 {isAdmin && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -491,46 +575,84 @@ export default function Dashboard({
                         transition={{ duration: 0.4, delay: 0.35 }}
                     >
                         <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+                            <CardHeader>
+                                <CardTitle className="text-sm font-medium">
+                                    Quick Actions
+                                </CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="p-3 sm:p-6">
                                 <motion.div
                                     className="grid grid-cols-2 gap-2 sm:grid-cols-4"
                                     initial="hidden"
                                     animate="visible"
                                     variants={{
                                         hidden: {},
-                                        visible: { transition: { staggerChildren: 0.06 } },
+                                        visible: {
+                                            transition: {
+                                                staggerChildren: 0.06,
+                                            },
+                                        },
                                     }}
                                 >
-                                    <motion.div variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}>
+                                    <motion.div
+                                        variants={{
+                                            hidden: { opacity: 0, scale: 0.9 },
+                                            visible: { opacity: 1, scale: 1 },
+                                        }}
+                                    >
                                         <Link href="/students/create">
-                                            <Button variant="outline" className="w-full justify-start">
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start"
+                                            >
                                                 <Plus className="mr-2 size-4" />
                                                 Add Student
                                             </Button>
                                         </Link>
                                     </motion.div>
-                                    <motion.div variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}>
+                                    <motion.div
+                                        variants={{
+                                            hidden: { opacity: 0, scale: 0.9 },
+                                            visible: { opacity: 1, scale: 1 },
+                                        }}
+                                    >
                                         <Link href="/attendance/create">
-                                            <Button variant="outline" className="w-full justify-start">
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start"
+                                            >
                                                 <ClipboardCheck className="mr-2 size-4" />
                                                 Mark Attendance
                                             </Button>
                                         </Link>
                                     </motion.div>
-                                    <motion.div variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}>
+                                    <motion.div
+                                        variants={{
+                                            hidden: { opacity: 0, scale: 0.9 },
+                                            visible: { opacity: 1, scale: 1 },
+                                        }}
+                                    >
                                         <Link href="/fees">
-                                            <Button variant="outline" className="w-full justify-start">
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start"
+                                            >
                                                 <CreditCard className="mr-2 size-4" />
                                                 Record Payment
                                             </Button>
                                         </Link>
                                     </motion.div>
-                                    <motion.div variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}>
+                                    <motion.div
+                                        variants={{
+                                            hidden: { opacity: 0, scale: 0.9 },
+                                            visible: { opacity: 1, scale: 1 },
+                                        }}
+                                    >
                                         <Link href="/notices/create">
-                                            <Button variant="outline" className="w-full justify-start">
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start"
+                                            >
                                                 <Megaphone className="mr-2 size-4" />
                                                 Post Notice
                                             </Button>
@@ -542,37 +664,63 @@ export default function Dashboard({
                     </motion.div>
                 )}
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {/* Charts — full width on mobile, grid on desktop */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.4 }}
                     >
                         <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">{t('dashboard.today_attendance')}</CardTitle>
+                            <CardHeader>
+                                <CardTitle className="text-sm font-medium">
+                                    {t('dashboard.today_attendance')}
+                                </CardTitle>
                             </CardHeader>
-                        <CardContent>
-                            <div className="h-[200px]">
-                                <Doughnut
-                                    data={{
-                                        labels: [t('attendance.present'), t('attendance.absent'), t('attendance.late')],
-                                        datasets: [{
-                                            data: [todayAttendance.present, todayAttendance.absent, todayAttendance.late],
-                                            backgroundColor: ['#16a34a', '#dc2626', '#eab308'],
-                                            borderWidth: 0,
-                                        }],
-                                    }}
-                                    options={{
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        cutout: '60%',
-                                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
-                                    }}
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
+                            <CardContent>
+                                <div className="h-[200px]">
+                                    <Doughnut
+                                        data={{
+                                            labels: [
+                                                t('attendance.present'),
+                                                t('attendance.absent'),
+                                                t('attendance.late'),
+                                            ],
+                                            datasets: [
+                                                {
+                                                    data: [
+                                                        todayAttendance.present,
+                                                        todayAttendance.absent,
+                                                        todayAttendance.late,
+                                                    ],
+                                                    backgroundColor: [
+                                                        '#16a34a',
+                                                        '#dc2626',
+                                                        '#eab308',
+                                                    ],
+                                                    borderWidth: 0,
+                                                },
+                                            ],
+                                        }}
+                                        options={{
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            cutout: '60%',
+                                            plugins: {
+                                                legend: {
+                                                    position: 'bottom',
+                                                    labels: {
+                                                        boxWidth: 12,
+                                                        padding: 8,
+                                                        font: { size: 11 },
+                                                    },
+                                                },
+                                            },
+                                        }}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
                     </motion.div>
 
                     <motion.div
@@ -582,27 +730,50 @@ export default function Dashboard({
                     >
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">{t('dashboard.enrollment_trend')}</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    {t('dashboard.enrollment_trend')}
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="h-[200px]">
                                     <Bar
                                         data={{
-                                            labels: enrollmentTrend.map(d => d.month),
-                                            datasets: [{
-                                                label: t('dashboard.enrollments'),
-                                                data: enrollmentTrend.map(d => d.enrollments),
-                                                backgroundColor: '#2563eb',
-                                                borderRadius: 4,
-                                            }],
+                                            labels: enrollmentTrend.map(
+                                                (d) => d.month,
+                                            ),
+                                            datasets: [
+                                                {
+                                                    label: t(
+                                                        'dashboard.enrollments',
+                                                    ),
+                                                    data: enrollmentTrend.map(
+                                                        (d) => d.enrollments,
+                                                    ),
+                                                    backgroundColor: '#2563eb',
+                                                    borderRadius: 4,
+                                                },
+                                            ],
                                         }}
                                         options={{
                                             responsive: true,
                                             maintainAspectRatio: false,
-                                            plugins: { legend: { display: false } },
+                                            plugins: {
+                                                legend: { display: false },
+                                            },
                                             scales: {
-                                                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                                                y: { grid: { color: '#e5e7eb' }, ticks: { font: { size: 10 } }, beginAtZero: true },
+                                                x: {
+                                                    grid: { display: false },
+                                                    ticks: {
+                                                        font: { size: 10 },
+                                                    },
+                                                },
+                                                y: {
+                                                    grid: { color: '#e5e7eb' },
+                                                    ticks: {
+                                                        font: { size: 10 },
+                                                    },
+                                                    beginAtZero: true,
+                                                },
                                             },
                                         }}
                                     />
@@ -615,50 +786,77 @@ export default function Dashboard({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.6 }}
+                        className="sm:col-span-2 lg:col-span-1"
                     >
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">{t('dashboard.fee_collection')}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="h-[200px]">
-                                <Line
-                                    data={{
-                                        labels: feeTrend.map(d => d.month),
-                                        datasets: [{
-                                            label: t('dashboard.collected'),
-                                            data: feeTrend.map(d => d.collected),
-                                            borderColor: '#16a34a',
-                                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
-                                            fill: true,
-                                            tension: 0.3,
-                                            pointRadius: 0,
-                                        }],
-                                    }}
-                                    options={{
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: { legend: { display: false } },
-                                        scales: {
-                                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                                            y: { grid: { color: '#e5e7eb' }, ticks: { font: { size: 10 } }, beginAtZero: true },
-                                        },
-                                    }}
-                                />
-                            </div>
-                        </CardContent>
+                                <CardTitle className="text-sm font-medium">
+                                    {t('dashboard.fee_collection')}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="h-[200px]">
+                                    <Line
+                                        data={{
+                                            labels: feeTrend.map(
+                                                (d) => d.month,
+                                            ),
+                                            datasets: [
+                                                {
+                                                    label: t(
+                                                        'dashboard.collected',
+                                                    ),
+                                                    data: feeTrend.map(
+                                                        (d) => d.collected,
+                                                    ),
+                                                    borderColor: '#16a34a',
+                                                    backgroundColor:
+                                                        'rgba(22, 163, 74, 0.1)',
+                                                    fill: true,
+                                                    tension: 0.3,
+                                                    pointRadius: 0,
+                                                },
+                                            ],
+                                        }}
+                                        options={{
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: { display: false },
+                                            },
+                                            scales: {
+                                                x: {
+                                                    grid: { display: false },
+                                                    ticks: {
+                                                        font: { size: 10 },
+                                                    },
+                                                },
+                                                y: {
+                                                    grid: { color: '#e5e7eb' },
+                                                    ticks: {
+                                                        font: { size: 10 },
+                                                    },
+                                                    beginAtZero: true,
+                                                },
+                                            },
+                                        }}
+                                    />
+                                </div>
+                            </CardContent>
                         </Card>
                     </motion.div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+                {/* Bottom section — single column on mobile, grid on desktop */}
+                <div className="grid gap-4 md:grid-cols-2">
+                    {/* Attendance Summary */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.7 }}
                     >
                         <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0">
                                 <CardTitle className="text-sm font-medium">
                                     {t('attendance.title')}
                                 </CardTitle>
@@ -693,7 +891,7 @@ export default function Dashboard({
                                 </div>
                                 <Link
                                     href={attendance.index().url}
-                                    className="mt-2 block text-xs text-muted-foreground hover:underline"
+                                    className="mt-3 block text-xs text-muted-foreground hover:underline"
                                 >
                                     {t('actions.view_all')}
                                 </Link>
@@ -701,133 +899,7 @@ export default function Dashboard({
                         </Card>
                     </motion.div>
 
-                    {isAdmin && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: 0.8 }}
-                        >
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>
-                                    {t('dashboard.recent_students')}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {recentStudents.length > 0 ? (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>
-                                                    {t('students.name')}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t('students.class')}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t('students.status')}
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {recentStudents.map((student) => (
-                                                <TableRow key={student.id}>
-                                                    <TableCell className="font-medium">
-                                                        <Link href={students.show(student.id).url} className="hover:underline">
-                                                            {student.name}
-                                                        </Link>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {student.coaching_class
-                                                            ?.name || '-'}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant={
-                                                                student.status ===
-                                                                'active'
-                                                                    ? 'default'
-                                                                    : 'warning'
-                                                            }
-                                                        >
-                                                            {student.status ===
-                                                            'active'
-                                                                ? t(
-                                                                      'students.active',
-                                                                  )
-                                                                : t(
-                                                                      'students.inactive',
-                                                                  )}
-                                                        </Badge>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        {t('dashboard.no_students')}
-                                    </p>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                    )}
-
-                    {isTeacher && assignedBatches && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: 0.8 }}
-                        >
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t('dashboard.my_assigned_batches')}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {assignedBatches.length > 0 ? (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>
-                                                    {t('batches.name')}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t('batches.subject')}
-                                                </TableHead>
-                                                <TableHead>{t('dashboard.students')}</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {assignedBatches.map((batch) => (
-                                                <TableRow key={batch.id}>
-                                                    <TableCell className="font-medium">
-                                                        <Link href={batches.show(batch.id).url} className="hover:underline">
-                                                            {batch.name}
-                                                        </Link>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {batch.subject || '-'}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {
-                                                            batch.enrollments_count
-                                                        }
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        {t('dashboard.no_batches')}
-                                    </p>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                    )}
-
+                    {/* Batch History (teacher) */}
                     {batchHistory && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -836,7 +908,9 @@ export default function Dashboard({
                         >
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>{t('dashboard.batch_history')}</CardTitle>
+                                    <CardTitle>
+                                        {t('dashboard.batch_history')}
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid grid-cols-2 gap-4">
@@ -862,6 +936,138 @@ export default function Dashboard({
                         </motion.div>
                     )}
 
+                    {/* Recent Students (admin) — card list on mobile */}
+                    {isAdmin && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.8 }}
+                        >
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                                    <CardTitle className="text-sm font-medium">
+                                        {t('dashboard.recent_students')}
+                                    </CardTitle>
+                                    <Link
+                                        href={students.index().url}
+                                        className="text-xs text-muted-foreground hover:underline"
+                                    >
+                                        {t('actions.view_all')}
+                                    </Link>
+                                </CardHeader>
+                                <CardContent>
+                                    {recentStudents.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {recentStudents.map((student) => (
+                                                <Link
+                                                    key={student.id}
+                                                    href={
+                                                        students.show(
+                                                            student.id,
+                                                        ).url
+                                                    }
+                                                    className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                                >
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate text-sm font-medium">
+                                                            {student.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {student
+                                                                .coaching_class
+                                                                ?.name || '-'}
+                                                        </p>
+                                                    </div>
+                                                    <Badge
+                                                        variant={
+                                                            student.status ===
+                                                            'active'
+                                                                ? 'default'
+                                                                : 'secondary'
+                                                        }
+                                                    >
+                                                        {student.status ===
+                                                        'active'
+                                                            ? t(
+                                                                  'students.active',
+                                                              )
+                                                            : t(
+                                                                  'students.inactive',
+                                                              )}
+                                                    </Badge>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            {t('dashboard.no_students')}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
+
+                    {/* Assigned Batches (teacher) — card list on mobile */}
+                    {isTeacher && assignedBatches && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.8 }}
+                        >
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                                    <CardTitle className="text-sm font-medium">
+                                        {t('dashboard.my_assigned_batches')}
+                                    </CardTitle>
+                                    <Link
+                                        href={batches.index().url}
+                                        className="text-xs text-muted-foreground hover:underline"
+                                    >
+                                        {t('actions.view_all')}
+                                    </Link>
+                                </CardHeader>
+                                <CardContent>
+                                    {assignedBatches.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {assignedBatches.map((batch) => (
+                                                <Link
+                                                    key={batch.id}
+                                                    href={
+                                                        batches.show(batch.id)
+                                                            .url
+                                                    }
+                                                    className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                                >
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate text-sm font-medium">
+                                                            {batch.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {batch.subject ||
+                                                                '-'}
+                                                        </p>
+                                                    </div>
+                                                    <Badge variant="secondary">
+                                                        {
+                                                            batch.enrollments_count
+                                                        }{' '}
+                                                        students
+                                                    </Badge>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            {t('dashboard.no_batches')}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
+
+                    {/* Recent Payments (admin) — card list on mobile */}
                     {isAdmin && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -869,56 +1075,50 @@ export default function Dashboard({
                             transition={{ duration: 0.4, delay: 0.9 }}
                         >
                             <Card>
-                                <CardHeader>
-                                    <CardTitle>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                                    <CardTitle className="text-sm font-medium">
                                         {t('dashboard.recent_payments')}
                                     </CardTitle>
+                                    <Link
+                                        href={fees.index().url}
+                                        className="text-xs text-muted-foreground hover:underline"
+                                    >
+                                        {t('actions.view_all')}
+                                    </Link>
                                 </CardHeader>
                                 <CardContent>
                                     {recentFeePayments.length > 0 ? (
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>
-                                                        {t('fees.student')}
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        {t('fees.month')}
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        {t('fees.amount_paid')}
-                                                    </TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {recentFeePayments.map(
-                                                    (payment) => (
-                                                        <TableRow key={payment.id}>
-                                                            <TableCell className="font-medium">
+                                        <div className="space-y-2">
+                                            {recentFeePayments.map(
+                                                (payment) => (
+                                                    <div
+                                                        key={payment.id}
+                                                        className="flex items-center justify-between rounded-lg border p-3"
+                                                    >
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="truncate text-sm font-medium">
                                                                 {
-                                                                    payment.student
+                                                                    payment
+                                                                        .student
                                                                         .name
                                                                 }
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {
-                                                                    getMonthName(
-                                                                        payment
-                                                                            .month
-                                                                    )
-                                                                }{' '}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {getMonthName(
+                                                                    payment.month,
+                                                                )}{' '}
                                                                 {payment.year}
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {Number(
-                                                                    payment.amount_paid,
-                                                                ).toFixed(0)}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ),
-                                                )}
-                                            </TableBody>
-                                        </Table>
+                                                            </p>
+                                                        </div>
+                                                        <span className="shrink-0 text-sm font-semibold">
+                                                            {Number(
+                                                                payment.amount_paid,
+                                                            ).toFixed(0)}
+                                                        </span>
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
                                     ) : (
                                         <p className="text-sm text-muted-foreground">
                                             {t('dashboard.no_payments')}
@@ -929,69 +1129,67 @@ export default function Dashboard({
                         </motion.div>
                     )}
 
+                    {/* Recent Students (teacher) — card list */}
                     {isTeacher && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>
-                                    {t('dashboard.recent_students')}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {recentStudents.length > 0 ? (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>
-                                                    {t('students.name')}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t('students.class')}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t('students.status')}
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.8 }}
+                        >
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                                    <CardTitle className="text-sm font-medium">
+                                        {t('dashboard.recent_students')}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {recentStudents.length > 0 ? (
+                                        <div className="space-y-2">
                                             {recentStudents.map((student) => (
-                                                <TableRow key={student.id}>
-                                                    <TableCell className="font-medium">
-                                                        {student.name}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {student.coaching_class
-                                                            ?.name || '-'}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant={
-                                                                student.status ===
-                                                                'active'
-                                                                    ? 'default'
-                                                                    : 'warning'
-                                                            }
-                                                        >
-                                                            {student.status ===
+                                                <div
+                                                    key={student.id}
+                                                    className="flex items-center justify-between rounded-lg border p-3"
+                                                >
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate text-sm font-medium">
+                                                            {student.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {student
+                                                                .coaching_class
+                                                                ?.name || '-'}
+                                                        </p>
+                                                    </div>
+                                                    <Badge
+                                                        variant={
+                                                            student.status ===
                                                             'active'
-                                                                ? t(
-                                                                      'students.active',
-                                                                  )
-                                                                : t(
-                                                                      'students.inactive',
-                                                                  )}
-                                                        </Badge>
-                                                    </TableCell>
-                                                </TableRow>
+                                                                ? 'default'
+                                                                : 'secondary'
+                                                        }
+                                                    >
+                                                        {student.status ===
+                                                        'active'
+                                                            ? t(
+                                                                  'students.active',
+                                                              )
+                                                            : t(
+                                                                  'students.inactive',
+                                                              )}
+                                                    </Badge>
+                                                </div>
                                             ))}
-                                        </TableBody>
-                                    </Table>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        {t('dashboard.no_students_in_batches')}
-                                    </p>
-                                )}
-                            </CardContent>
-                        </Card>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            {t(
+                                                'dashboard.no_students_in_batches',
+                                            )}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </motion.div>
                     )}
                 </div>
             </div>

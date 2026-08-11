@@ -209,9 +209,9 @@ export default function StudentsShow({
 
                     <div className="grid gap-4">
                         <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Attendance Summary</CardTitle>
-                            </CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Attendance Summary</CardTitle>
+                        </CardHeader>
                             <CardContent>
                                 {(() => {
                                     let totalPresent = 0;
@@ -264,9 +264,9 @@ export default function StudentsShow({
                         </Card>
 
                         <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Fee Summary</CardTitle>
-                            </CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Fee Summary</CardTitle>
+                        </CardHeader>
                             <CardContent>
                                 {student.fee_statuses && student.fee_statuses.length > 0 ? (
                                     <div className="space-y-2">
