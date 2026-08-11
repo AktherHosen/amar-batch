@@ -1,7 +1,20 @@
 import type { ReactNode } from 'react';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 type Locale = 'en' | 'bn';
+
+const STORAGE_KEY = 'locale';
+
+let serverDetectedLocale: Locale = 'en';
+
+function getInitialLocale(): Locale {
+    if (typeof window === 'undefined') return serverDetectedLocale;
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored === 'en' || stored === 'bn') return stored;
+    } catch {}
+    return 'en';
+}
 
 const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 
@@ -1082,17 +1095,18 @@ type LocaleContextType = {
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-    const [locale, setLocale] = useState<Locale>(() => {
-        if (typeof window !== 'undefined') {
-            return (document.documentElement.getAttribute('data-locale') as Locale) || 'en';
-        }
+    const [locale, setLocale] = useState<Locale>(getInitialLocale);
+    const [mounted, setMounted] = useState(false);
 
-        return 'en';
-    });
+    useEffect(() => {
+        setMounted(true);
+        document.documentElement.setAttribute('data-locale', locale);
+        document.documentElement.setAttribute('lang', locale);
+    }, [locale]);
 
     const handleSetLocale = (newLocale: Locale) => {
         setLocale(newLocale);
-        localStorage.setItem('locale', newLocale);
+        localStorage.setItem(STORAGE_KEY, newLocale);
         document.documentElement.setAttribute('data-locale', newLocale);
         document.documentElement.setAttribute('lang', newLocale);
     };
@@ -1105,6 +1119,10 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     const formatTimeFn = (date: string | Date) => formatTime(date, locale);
     const formatCurrencyFn = (amount: number) => formatCurrency(amount, locale);
     const formatNumberFn = (num: number) => locale === 'bn' ? formatBanglaNumber(num) : num.toLocaleString('en-US');
+
+    if (!mounted) {
+        return null;
+    }
 
     return (
         <LocaleContext.Provider
