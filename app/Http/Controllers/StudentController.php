@@ -6,6 +6,7 @@ use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
 use App\Models\Attendance;
 use App\Models\CoachingClass;
+use App\Models\InAppNotification;
 use App\Models\Student;
 use App\Policies\PlanLimitsPolicy;
 use Illuminate\Http\RedirectResponse;
@@ -88,7 +89,15 @@ class StudentController extends Controller
             ]);
         }
 
-        Student::create($request->validated());
+        $student = Student::create($request->validated());
+
+        InAppNotification::create([
+            'user_id' => $request->user()->id,
+            'title' => 'New Student Added',
+            'message' => "Student \"{$student->name}\" has been enrolled.",
+            'type' => 'student',
+            'action_url' => route('students.show', $student->id),
+        ]);
 
         return to_route('students.index')->with('toast', ['type' => 'success', 'message' => 'Student created successfully.']);
     }

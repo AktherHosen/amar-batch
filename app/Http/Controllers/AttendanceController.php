@@ -6,6 +6,7 @@ use App\Http\Requests\StoreAttendanceRequest;
 use App\Models\Attendance;
 use App\Models\Batch;
 use App\Models\Enrollment;
+use App\Models\InAppNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -98,6 +99,17 @@ class AttendanceController extends Controller
                 );
             }
         }
+
+        $batch = Batch::find($request->batch_id);
+        $count = count(array_filter($attendances, fn($a) => $a['status'] !== null));
+
+        InAppNotification::create([
+            'user_id' => $request->user()->id,
+            'title' => 'Attendance Marked',
+            'message' => "{$count} students marked for {$batch->name} on {$request->date}.",
+            'type' => 'attendance',
+            'action_url' => route('attendance.index'),
+        ]);
 
         return to_route('attendance.index')->with('toast', ['type' => 'success', 'message' => 'Attendance marked successfully.']);
     }

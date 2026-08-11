@@ -1,4 +1,4 @@
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, router, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Heading from '@/components/heading';
@@ -10,9 +10,8 @@ import { useLocale } from '@/contexts/locale-context';
 
 export default function BatchesCreate() {
     const { t } = useLocale();
-    const { post, processing, errors } = useForm();
     const handleSubmit = (data: any) => {
-        post(batches.store(), {
+        router.post(batches.store(), {
             ...data,
             preserveScroll: true,
         });
@@ -45,8 +44,8 @@ export default function BatchesCreate() {
                     <CardContent className="pt-6">
                         <BatchForm
                             onSubmit={handleSubmit}
-                            processing={processing}
-                            errors={errors as Record<string, string>}
+                            processing={false}
+                            errors={{}}
                         />
                     </CardContent>
                 </Card>

@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateFeeStatusRequest;
 use App\Models\Batch;
 use App\Models\Enrollment;
 use App\Models\FeeStatus;
+use App\Models\InAppNotification;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -114,6 +115,8 @@ class FeeStatusController extends Controller
 
     public function store(StoreFeeStatusRequest $request): RedirectResponse
     {
+        $student = Student::find($request->student_id);
+
         FeeStatus::updateOrCreate(
             [
                 'student_id' => $request->student_id,
@@ -126,6 +129,14 @@ class FeeStatusController extends Controller
                 'notes' => $request->notes ?: null,
             ]
         );
+
+        InAppNotification::create([
+            'user_id' => $request->user()->id,
+            'title' => 'Fee Payment Recorded',
+            'message' => "{$student->name} — {$request->amount_paid} recorded for {$request->month}/{$request->year}.",
+            'type' => 'fee',
+            'action_url' => route('fees.index'),
+        ]);
 
         return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee record saved successfully.']);
     }

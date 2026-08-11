@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Notice;
 use App\Models\Batch;
+use App\Models\InAppNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -59,6 +60,14 @@ class NoticeController extends Controller
         $validated['published_at'] = $validated['is_active'] ? now() : null;
 
         Notice::create($validated);
+
+        InAppNotification::create([
+            'user_id' => $request->user()->id,
+            'title' => 'Notice Posted',
+            'message' => "\"{$request->title}\" has been published.",
+            'type' => 'notice',
+            'action_url' => route('notices.index'),
+        ]);
 
         return redirect()->route('notices.index')
             ->with('success', 'Notice created successfully');

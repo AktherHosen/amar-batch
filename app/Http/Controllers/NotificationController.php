@@ -30,7 +30,17 @@ class NotificationController extends Controller
         return response()->json(['count' => $count]);
     }
 
-    public function markAsRead(Request $request, InAppNotification $notification): RedirectResponse
+    public function recent(Request $request): JsonResponse
+    {
+        $notifications = InAppNotification::where('user_id', $request->user()->id)
+            ->latest()
+            ->limit(10)
+            ->get(['id', 'title', 'message', 'type', 'action_url', 'read_at', 'created_at']);
+
+        return response()->json(['notifications' => $notifications]);
+    }
+
+    public function markAsRead(Request $request, InAppNotification $notification): JsonResponse|RedirectResponse
     {
         if ($notification->user_id !== $request->user()->id) {
             abort(403);
@@ -38,14 +48,22 @@ class NotificationController extends Controller
 
         $notification->markAsRead();
 
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
+
         return back();
     }
 
-    public function markAllAsRead(Request $request): RedirectResponse
+    public function markAllAsRead(Request $request): JsonResponse|RedirectResponse
     {
         InAppNotification::where('user_id', $request->user()->id)
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
 
         return back()->with('toast', ['type' => 'success', 'message' => 'All notifications marked as read.']);
     }

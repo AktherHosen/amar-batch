@@ -1,4 +1,4 @@
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, router, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Heading from '@/components/heading';
@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button';
 import teachers from '@/routes/teachers';
 
 export default function TeachersCreate() {
-    const { post, processing, errors } = useForm();
     const handleSubmit = (data: any) => {
-        post(teachers.store(), {
+        router.post(teachers.store(), {
             ...data,
             preserveScroll: true,
         });
@@ -43,8 +42,8 @@ export default function TeachersCreate() {
                     <CardContent className="pt-6">
                         <TeacherForm
                             onSubmit={handleSubmit}
-                            processing={processing}
-                            errors={errors as Record<string, string>}
+                            processing={false}
+                            errors={{}}
                         />
                     </CardContent>
                 </Card>
