@@ -192,7 +192,7 @@ export default function Dashboard({
                                 {t('dashboard.pending_approval')}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent>
                             <p className="text-muted-foreground">
                                 {t('dashboard.welcome')},{' '}
                                 <strong>{pendingTeacher?.name}</strong>!{' '}
@@ -218,7 +218,7 @@ export default function Dashboard({
         <>
             <Head title={t('dashboard.title')} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden p-3 sm:rounded-xl sm:p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden p-3 pb-20 sm:rounded-xl sm:p-4 sm:pb-4">
                 {/* Header */}
                 <motion.div
                     className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"
@@ -265,14 +265,14 @@ export default function Dashboard({
                             },
                         }}
                     >
-                        <Card className="h-full py-2 sm:py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
-                                <CardTitle className="py-0 text-xs font-medium">
+                        <Card className="h-full">
+                            <CardHeader>
+                                <CardTitle>
                                     {t('dashboard.total_students')}
                                 </CardTitle>
                                 <Users className="size-3.5 text-muted-foreground sm:size-4" />
                             </CardHeader>
-                            <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                            <CardContent>
                                 <div className="text-xl font-bold sm:text-2xl">
                                     {stats.total_students}
                                 </div>
@@ -297,14 +297,14 @@ export default function Dashboard({
                                 },
                             }}
                         >
-                            <Card className="h-full py-2 sm:py-3">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
-                                    <CardTitle className="text-xs font-medium">
+                            <Card className="h-full">
+                                <CardHeader>
+                                    <CardTitle>
                                         {t('nav.teachers')}
                                     </CardTitle>
                                     <GraduationCap className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
-                                <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                                <CardContent>
                                     <div className="text-xl font-bold sm:text-2xl">
                                         {stats.total_teachers ?? '-'}
                                     </div>
@@ -323,14 +323,14 @@ export default function Dashboard({
                             },
                         }}
                     >
-                        <Card className="h-full py-2 sm:py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
-                                <CardTitle className="text-xs font-medium">
+                        <Card className="h-full">
+                            <CardHeader>
+                                <CardTitle>
                                     {t('dashboard.active_batches')}
                                 </CardTitle>
                                 <Layers className="size-3.5 text-muted-foreground sm:size-4" />
                             </CardHeader>
-                            <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                            <CardContent>
                                 <div className="text-xl font-bold sm:text-2xl">
                                     {stats.active_batches}
                                 </div>
@@ -355,14 +355,14 @@ export default function Dashboard({
                                 },
                             }}
                         >
-                            <Card className="h-full py-2 sm:py-3">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
-                                    <CardTitle className="text-xs font-medium">
+                            <Card className="h-full">
+                                <CardHeader>
+                                    <CardTitle>
                                         {t('dashboard.total_collected')}
                                     </CardTitle>
                                     <DollarSign className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
-                                <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                                <CardContent>
                                     <div className="text-xl font-bold sm:text-2xl">
                                         {Number(
                                             feeStats.total_collected,
@@ -394,14 +394,14 @@ export default function Dashboard({
                                 },
                             }}
                         >
-                            <Card className="h-full py-2 sm:py-3">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0.5 sm:px-3 sm:pb-1">
-                                    <CardTitle className="text-xs font-medium">
+                            <Card className="h-full">
+                                <CardHeader>
+                                    <CardTitle>
                                         {t('dashboard.total_collected')}
                                     </CardTitle>
                                     <DollarSign className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
-                                <CardContent className="px-2 pt-0 pb-1.5 sm:px-3 sm:pb-2">
+                                <CardContent>
                                     <div className="text-xl font-bold sm:text-2xl">
                                         {Number(
                                             feeStats.total_collected,
@@ -426,54 +426,58 @@ export default function Dashboard({
                     >
                         <Card>
                             <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-sm font-medium">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex size-7 items-center justify-center rounded-lg bg-amber-500/10">
+                                        <Megaphone className="size-3.5 text-amber-600" />
+                                    </div>
+                                    <CardTitle>
                                         Recent Notices
                                     </CardTitle>
-                                    <Link
-                                        href="/notices"
-                                        className="text-xs text-muted-foreground hover:underline"
-                                    >
-                                        View all
-                                    </Link>
                                 </div>
+                                <Link
+                                    href="/notices"
+                                    className="text-xs text-muted-foreground hover:underline"
+                                >
+                                    {t('actions.view_all')}
+                                </Link>
                             </CardHeader>
-                            <CardContent className="p-3 sm:p-6">
+                            <CardContent>
                                 <motion.div
-                                    className="space-y-2"
                                     initial="hidden"
                                     animate="visible"
                                     variants={{
                                         hidden: {},
                                         visible: {
                                             transition: {
-                                                staggerChildren: 0.08,
+                                                staggerChildren: 0.06,
                                             },
                                         },
                                     }}
                                 >
-                                    {activeNotices.map((notice) => (
+                                    {activeNotices.map((notice, idx) => (
                                         <motion.div
                                             key={notice.id}
                                             variants={{
-                                                hidden: { opacity: 0, x: -10 },
-                                                visible: { opacity: 1, x: 0 },
+                                                hidden: { opacity: 0, y: 4 },
+                                                visible: { opacity: 1, y: 0 },
                                             }}
                                         >
                                             <Link
                                                 href={`/notices/${notice.id}`}
-                                                className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                                className={`flex items-start gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 sm:px-4 ${idx !== activeNotices.length - 1 ? 'border-b border-border/40' : ''}`}
                                             >
-                                                <Megaphone className="size-4 shrink-0 text-muted-foreground" />
+                                                <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-amber-500/10">
+                                                    <Megaphone className="size-3 text-amber-600" />
+                                                </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <h4 className="truncate text-sm font-medium">
+                                                    <h4 className="text-sm font-medium leading-snug">
                                                         {notice.title}
                                                     </h4>
-                                                    <p className="truncate text-xs text-muted-foreground">
+                                                    <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
                                                         {notice.content}
                                                     </p>
                                                 </div>
-                                                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                                                <ChevronRight className="mt-1 size-3.5 shrink-0 text-muted-foreground/50" />
                                             </Link>
                                         </motion.div>
                                     ))}
@@ -492,97 +496,23 @@ export default function Dashboard({
                     >
                         <Card>
                             <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-sm font-medium">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex size-7 items-center justify-center rounded-lg bg-blue-500/10">
+                                        <Calendar className="size-3.5 text-blue-600" />
+                                    </div>
+                                    <CardTitle>
                                         Upcoming Holidays
                                     </CardTitle>
-                                    <Link
-                                        href="/holidays"
-                                        className="text-xs text-muted-foreground hover:underline"
-                                    >
-                                        View all
-                                    </Link>
                                 </div>
-                            </CardHeader>
-                            <CardContent className="p-3 sm:p-6">
-                                <motion.div
-                                    className="space-y-2"
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={{
-                                        hidden: {},
-                                        visible: {
-                                            transition: {
-                                                staggerChildren: 0.08,
-                                            },
-                                        },
-                                    }}
+                                <Link
+                                    href="/holidays"
+                                    className="text-xs text-muted-foreground hover:underline"
                                 >
-                                    {upcomingHolidays.map((holiday) => (
-                                        <motion.div
-                                            key={holiday.id}
-                                            variants={{
-                                                hidden: { opacity: 0, x: -10 },
-                                                visible: { opacity: 1, x: 0 },
-                                            }}
-                                        >
-                                            <Link
-                                                href={`/holidays/${holiday.id}`}
-                                                className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
-                                            >
-                                                <Calendar className="size-4 shrink-0 text-muted-foreground" />
-                                                <div className="min-w-0 flex-1">
-                                                    <h4 className="truncate text-sm font-medium">
-                                                        {holiday.title}
-                                                    </h4>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {new Date(
-                                                            holiday.start_date,
-                                                        ).toLocaleDateString()}{' '}
-                                                        -{' '}
-                                                        {new Date(
-                                                            holiday.end_date,
-                                                        ).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                                <Badge
-                                                    variant={
-                                                        holiday.type ===
-                                                        'holiday'
-                                                            ? 'default'
-                                                            : holiday.type ===
-                                                                'exam'
-                                                              ? 'secondary'
-                                                              : 'outline'
-                                                    }
-                                                >
-                                                    {holiday.type}
-                                                </Badge>
-                                            </Link>
-                                        </motion.div>
-                                    ))}
-                                </motion.div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                )}
-
-                {/* Quick Actions */}
-                {isAdmin && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.35 }}
-                    >
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-sm font-medium">
-                                    Quick Actions
-                                </CardTitle>
+                                    {t('actions.view_all')}
+                                </Link>
                             </CardHeader>
-                            <CardContent className="p-3 sm:p-6">
+                            <CardContent>
                                 <motion.div
-                                    className="grid grid-cols-2 gap-2 sm:grid-cols-4"
                                     initial="hidden"
                                     animate="visible"
                                     variants={{
@@ -594,74 +524,182 @@ export default function Dashboard({
                                         },
                                     }}
                                 >
-                                    <motion.div
-                                        variants={{
-                                            hidden: { opacity: 0, scale: 0.9 },
-                                            visible: { opacity: 1, scale: 1 },
-                                        }}
-                                    >
-                                        <Link href="/students/create">
-                                            <Button
-                                                variant="outline"
-                                                className="w-full justify-start"
+                                    {upcomingHolidays.map((holiday, idx) => {
+                                        const start = new Date(holiday.start_date);
+                                        const end = new Date(holiday.end_date);
+                                        const day = start.getDate();
+                                        const month = start.toLocaleDateString('en', { month: 'short' });
+                                        const isMultiDay = start.toDateString() !== end.toDateString();
+
+                                        return (
+                                            <motion.div
+                                                key={holiday.id}
+                                                variants={{
+                                                    hidden: { opacity: 0, y: 4 },
+                                                    visible: { opacity: 1, y: 0 },
+                                                }}
                                             >
-                                                <Plus className="mr-2 size-4" />
-                                                Add Student
-                                            </Button>
-                                        </Link>
-                                    </motion.div>
-                                    <motion.div
-                                        variants={{
-                                            hidden: { opacity: 0, scale: 0.9 },
-                                            visible: { opacity: 1, scale: 1 },
-                                        }}
-                                    >
-                                        <Link href="/attendance/create">
-                                            <Button
-                                                variant="outline"
-                                                className="w-full justify-start"
-                                            >
-                                                <ClipboardCheck className="mr-2 size-4" />
-                                                Mark Attendance
-                                            </Button>
-                                        </Link>
-                                    </motion.div>
-                                    <motion.div
-                                        variants={{
-                                            hidden: { opacity: 0, scale: 0.9 },
-                                            visible: { opacity: 1, scale: 1 },
-                                        }}
-                                    >
-                                        <Link href="/fees">
-                                            <Button
-                                                variant="outline"
-                                                className="w-full justify-start"
-                                            >
-                                                <CreditCard className="mr-2 size-4" />
-                                                Record Payment
-                                            </Button>
-                                        </Link>
-                                    </motion.div>
-                                    <motion.div
-                                        variants={{
-                                            hidden: { opacity: 0, scale: 0.9 },
-                                            visible: { opacity: 1, scale: 1 },
-                                        }}
-                                    >
-                                        <Link href="/notices/create">
-                                            <Button
-                                                variant="outline"
-                                                className="w-full justify-start"
-                                            >
-                                                <Megaphone className="mr-2 size-4" />
-                                                Post Notice
-                                            </Button>
-                                        </Link>
-                                    </motion.div>
+                                                <Link
+                                                    href={`/holidays/${holiday.id}`}
+                                                    className={`flex items-start gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 sm:px-4 ${idx !== upcomingHolidays.length - 1 ? 'border-b border-border/40' : ''}`}
+                                                >
+                                                    <div className="flex size-6 shrink-0 flex-col items-center justify-center rounded-md bg-blue-500/10 leading-none">
+                                                        <span className="text-[10px] font-bold text-blue-600">{day}</span>
+                                                        <span className="text-[8px] font-medium text-blue-600/70">{month}</span>
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <h4 className="text-sm font-medium leading-snug">
+                                                            {holiday.title}
+                                                        </h4>
+                                                        <p className="mt-0.5 text-xs text-muted-foreground">
+                                                            {isMultiDay
+                                                                ? `${start.toLocaleDateString('en', { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                                                                : start.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        </p>
+                                                    </div>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={`mt-0.5 shrink-0 text-[10px] font-medium ${
+                                                            holiday.type === 'holiday'
+                                                                ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                                                                : holiday.type === 'exam'
+                                                                  ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                                                  : 'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                                                        }`}
+                                                    >
+                                                        {holiday.type}
+                                                    </Badge>
+                                                </Link>
+                                            </motion.div>
+                                        );
+                                    })}
                                 </motion.div>
                             </CardContent>
                         </Card>
                     </motion.div>
+                )}
+
+                {/* Quick Actions — floating bottom nav on mobile, card on desktop */}
+                {isAdmin && (
+                    <>
+                        {/* Mobile: floating bottom nav */}
+                        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/95 px-2 py-2 backdrop-blur-md sm:hidden">
+                            <div className="flex items-center justify-around">
+                                <Link href="/students/create" className="flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                    <Plus className="size-5" />
+                                    <span className="text-[10px] font-medium">Student</span>
+                                </Link>
+                                <Link href="/attendance/create" className="flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                    <ClipboardCheck className="size-5" />
+                                    <span className="text-[10px] font-medium">Attendance</span>
+                                </Link>
+                                <Link href="/fees" className="flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                    <CreditCard className="size-5" />
+                                    <span className="text-[10px] font-medium">Payment</span>
+                                </Link>
+                                <Link href="/notices/create" className="flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                    <Megaphone className="size-5" />
+                                    <span className="text-[10px] font-medium">Notice</span>
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Desktop: card */}
+                        <motion.div
+                            className="hidden sm:block"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.35 }}
+                        >
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>
+                                        Quick Actions
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <motion.div
+                                        className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+                                        initial="hidden"
+                                        animate="visible"
+                                        variants={{
+                                            hidden: {},
+                                            visible: {
+                                                transition: {
+                                                    staggerChildren: 0.06,
+                                                },
+                                            },
+                                        }}
+                                    >
+                                        <motion.div
+                                            variants={{
+                                                hidden: { opacity: 0, scale: 0.9 },
+                                                visible: { opacity: 1, scale: 1 },
+                                            }}
+                                        >
+                                            <Link href="/students/create">
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full justify-start"
+                                                >
+                                                    <Plus className="mr-2 size-4" />
+                                                    Add Student
+                                                </Button>
+                                            </Link>
+                                        </motion.div>
+                                        <motion.div
+                                            variants={{
+                                                hidden: { opacity: 0, scale: 0.9 },
+                                                visible: { opacity: 1, scale: 1 },
+                                            }}
+                                        >
+                                            <Link href="/attendance/create">
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full justify-start"
+                                                >
+                                                    <ClipboardCheck className="mr-2 size-4" />
+                                                    Mark Attendance
+                                                </Button>
+                                            </Link>
+                                        </motion.div>
+                                        <motion.div
+                                            variants={{
+                                                hidden: { opacity: 0, scale: 0.9 },
+                                                visible: { opacity: 1, scale: 1 },
+                                            }}
+                                        >
+                                            <Link href="/fees">
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full justify-start"
+                                                >
+                                                    <CreditCard className="mr-2 size-4" />
+                                                    Record Payment
+                                                </Button>
+                                            </Link>
+                                        </motion.div>
+                                        <motion.div
+                                            variants={{
+                                                hidden: { opacity: 0, scale: 0.9 },
+                                                visible: { opacity: 1, scale: 1 },
+                                            }}
+                                        >
+                                            <Link href="/notices/create">
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full justify-start"
+                                                >
+                                                    <Megaphone className="mr-2 size-4" />
+                                                    Post Notice
+                                                </Button>
+                                            </Link>
+                                        </motion.div>
+                                    </motion.div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </>
                 )}
 
                 {/* Charts — full width on mobile, grid on desktop */}
@@ -673,12 +711,12 @@ export default function Dashboard({
                     >
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-sm font-medium">
+                                <CardTitle>
                                     {t('dashboard.today_attendance')}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[200px]">
+                                <div className="h-[200px] w-full">
                                     <Doughnut
                                         data={{
                                             labels: [
@@ -729,13 +767,13 @@ export default function Dashboard({
                         transition={{ duration: 0.4, delay: 0.5 }}
                     >
                         <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">
+                            <CardHeader>
+                                <CardTitle>
                                     {t('dashboard.enrollment_trend')}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[200px]">
+                                <div className="h-[200px] w-full">
                                     <Bar
                                         data={{
                                             labels: enrollmentTrend.map(
@@ -789,13 +827,13 @@ export default function Dashboard({
                         className="sm:col-span-2 lg:col-span-1"
                     >
                         <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">
+                            <CardHeader>
+                                <CardTitle>
                                     {t('dashboard.fee_collection')}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[200px]">
+                                <div className="h-[200px] w-full">
                                     <Line
                                         data={{
                                             labels: feeTrend.map(
@@ -856,8 +894,8 @@ export default function Dashboard({
                         transition={{ duration: 0.4, delay: 0.7 }}
                     >
                         <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                                <CardTitle className="text-sm font-medium">
+                            <CardHeader>
+                                <CardTitle>
                                     {t('attendance.title')}
                                 </CardTitle>
                                 <CheckCircle className="size-4 text-muted-foreground" />
@@ -944,8 +982,8 @@ export default function Dashboard({
                             transition={{ duration: 0.4, delay: 0.8 }}
                         >
                             <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                                    <CardTitle className="text-sm font-medium">
+                                <CardHeader>
+                                    <CardTitle>
                                         {t('dashboard.recent_students')}
                                     </CardTitle>
                                     <Link
@@ -1016,8 +1054,8 @@ export default function Dashboard({
                             transition={{ duration: 0.4, delay: 0.8 }}
                         >
                             <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                                    <CardTitle className="text-sm font-medium">
+                                <CardHeader>
+                                    <CardTitle>
                                         {t('dashboard.my_assigned_batches')}
                                     </CardTitle>
                                     <Link
@@ -1075,8 +1113,8 @@ export default function Dashboard({
                             transition={{ duration: 0.4, delay: 0.9 }}
                         >
                             <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                                    <CardTitle className="text-sm font-medium">
+                                <CardHeader>
+                                    <CardTitle>
                                         {t('dashboard.recent_payments')}
                                     </CardTitle>
                                     <Link
@@ -1110,7 +1148,7 @@ export default function Dashboard({
                                                                 {payment.year}
                                                             </p>
                                                         </div>
-                                                        <span className="shrink-0 text-sm font-semibold">
+                                                        <span className="shrink-0 text-sm font-medium">
                                                             {Number(
                                                                 payment.amount_paid,
                                                             ).toFixed(0)}
@@ -1137,8 +1175,8 @@ export default function Dashboard({
                             transition={{ duration: 0.4, delay: 0.8 }}
                         >
                             <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                                    <CardTitle className="text-sm font-medium">
+                                <CardHeader>
+                                    <CardTitle>
                                         {t('dashboard.recent_students')}
                                     </CardTitle>
                                 </CardHeader>

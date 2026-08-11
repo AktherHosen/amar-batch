@@ -54,7 +54,7 @@ export default function TwoFactorRecoveryCodes({
 
     return (
         <Card>
-            <CardHeader>
+            <CardHeader className="flex-col">
                 <CardTitle className="flex gap-3">
                     <LockKeyhole className="size-4" aria-hidden="true" />
                     2FA recovery codes
