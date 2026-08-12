@@ -505,7 +505,7 @@ const translations: Record<Locale, Record<string, string>> = {
         // Actions
         'actions.save': 'সংরক্ষণ',
         'actions.cancel': 'বাতিল',
-        'actions.edit': 'এডিট',
+        'actions.edit': 'আপডেট',
         'actions.delete': 'মুছুন',
         'actions.view': 'দেখুন',
         'actions.view_all': 'সব দেখুন',

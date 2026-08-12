@@ -47,7 +47,6 @@ export default function TeachersEdit({ teacher }: TeachersEditProps) {
                     <div className="min-w-0">
                         <Heading
                             title={`${t('actions.edit')} ${teacher.name}`}
-                            description={t('teachers.update_info')}
                         />
                     </div>
                 </div>

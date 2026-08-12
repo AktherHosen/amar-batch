@@ -52,7 +52,6 @@ export default function StudentsEdit({
                     <div className="min-w-0">
                         <Heading
                             title={`${t('students.edit')} ${student.name}`}
-                            description={t('students.edit')}
                         />
                     </div>
                 </div>

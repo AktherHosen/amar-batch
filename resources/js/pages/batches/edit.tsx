@@ -53,7 +53,6 @@ export default function BatchesEdit({ batch }: BatchesEditProps) {
                     <div className="min-w-0">
                         <Heading
                             title={`${t('actions.edit')} ${batch.name}`}
-                            description={t('batches.desc')}
                         />
                     </div>
                 </div>
