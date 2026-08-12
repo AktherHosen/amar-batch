@@ -172,18 +172,18 @@ export default function TeachersIndex({
                 <Card>
                     <CardContent className="pt-6">
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t('actions.search') + '...'}
-                                    value={search}
-                                    onChange={(e) => {
-                                        setSearch(e.target.value);
-                                        debouncedSearch(e.target.value);
-                                    }}
-                                    className="pr-16 pl-9"
-                                />
-                                <div className="absolute top-1/2 right-1 -translate-y-1/2 flex items-center">
+                            <div className="flex flex-1 items-center gap-2">
+                                <div className="relative flex-1">
+                                    <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        placeholder={t('actions.search') + '...'}
+                                        value={search}
+                                        onChange={(e) => {
+                                            setSearch(e.target.value);
+                                            debouncedSearch(e.target.value);
+                                        }}
+                                        className="pr-9 pl-9"
+                                    />
                                     {search && (
                                         <button
                                             type="button"
@@ -191,27 +191,26 @@ export default function TeachersIndex({
                                                 setSearch('');
                                                 router.get(teachers.index(), {}, { preserveState: true });
                                             }}
-                                            className="p-1 text-muted-foreground hover:text-foreground"
+                                            className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                         >
                                             <X className="size-4" />
                                         </button>
                                     )}
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 p-0"
-                                        disabled={refreshing}
-                                        onClick={() => {
-                                            setRefreshing(true);
-                                            router.reload({
-                                                only: ['teachers'],
-                                                onFinish: () => setRefreshing(false),
-                                            });
-                                        }}
-                                    >
-                                        <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                    </Button>
                                 </div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={refreshing}
+                                    onClick={() => {
+                                        setRefreshing(true);
+                                        router.reload({
+                                            only: ['teachers'],
+                                            onFinish: () => setRefreshing(false),
+                                        });
+                                    }}
+                                >
+                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
+                                </Button>
                             </div>
                         </div>
 
@@ -339,7 +338,7 @@ export default function TeachersIndex({
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
                 title={t('teachers.deactivate_title')}
-                description={t('teachers.deactivate_confirm', { name: deleteDialog.item?.name })}
+                description={t('teachers.deactivate_confirm').replace('{name}', deleteDialog.item?.name ?? '')}
                 confirmText={t('teachers.deactivate')}
                 cancelText={t('actions.cancel')}
                 variant="destructive"
@@ -352,7 +351,7 @@ export default function TeachersIndex({
                     setApproveDialog({ open, item: approveDialog.item })
                 }
                 title={t('teachers.approve_title')}
-                description={t('teachers.approve_confirm', { name: approveDialog.item?.name })}
+                description={t('teachers.approve_confirm').replace('{name}', approveDialog.item?.name ?? '')}
                 confirmText={t('teachers.approve')}
                 cancelText={t('actions.cancel')}
                 onConfirm={confirmApprove}
@@ -364,7 +363,7 @@ export default function TeachersIndex({
                     setRejectDialog({ open, item: rejectDialog.item })
                 }
                 title={t('teachers.revoke_title')}
-                description={t('teachers.revoke_confirm', { name: rejectDialog.item?.name })}
+                description={t('teachers.revoke_confirm').replace('{name}', rejectDialog.item?.name ?? '')}
                 confirmText={t('teachers.revoke_approval')}
                 cancelText={t('actions.cancel')}
                 variant="destructive"

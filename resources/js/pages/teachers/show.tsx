@@ -54,21 +54,16 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = isOwner(auth.user);
-    const [deleteDialog, setDeleteDialog] = useState<{
-        open: boolean;
-        item: any | null;
-    }>({ open: false, item: null });
+    const [deleteDialog, setDeleteDialog] = useState(false);
 
     const handleDelete = () => {
-        setDeleteDialog({ open: true, item: teacher });
+        setDeleteDialog(true);
     };
 
     const confirmDelete = () => {
-        if (deleteDialog.item) {
-            router.delete(teachers.destroy(deleteDialog.item.id));
-            toast.success(t('toast.deactivated_successfully'));
-            setDeleteDialog({ open: false, item: null });
-        }
+        router.delete(teachers.destroy(teacher.id));
+        toast.success(t('toast.deactivated_successfully'));
+        setDeleteDialog(false);
     };
 
     return (
@@ -76,21 +71,17 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
             <Head title={teacher.name} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link href={teachers.index()}>
-                            <Button variant="ghost" size="sm">
-                                <ArrowLeft className="mr-2 size-4" />
-                                {t('actions.back')}
+                <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <Link href={teachers.index()} className="shrink-0">
+                            <Button variant="ghost" size="icon" className="size-9">
+                                <ArrowLeft className="size-4" />
                             </Button>
                         </Link>
-                    <Heading
-                        title={t('teachers.title')}
-                        description={t('teachers.desc')}
-                    />
+                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">{teacher.name}</h1>
                     </div>
                     {isAdmin && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 shrink-0">
                             <Link href={teachers.edit(teacher.id)}>
                                 <Button variant="outline">
                                     <Pencil className="mr-2 size-4" />
@@ -145,16 +136,16 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>
+                                        <TableHead className="whitespace-nowrap">
                                             {t('batches.name')}
                                         </TableHead>
-                                        <TableHead>
+                                        <TableHead className="whitespace-nowrap">
                                             {t('batches.subject')}
                                         </TableHead>
-                                        <TableHead>
+                                        <TableHead className="whitespace-nowrap">
                                             {t('batches.enrolled')}
                                         </TableHead>
-                                        <TableHead>
+                                        <TableHead className="whitespace-nowrap">
                                             {t('students.status')}
                                         </TableHead>
                                         <TableHead className="w-[50px]"></TableHead>
@@ -163,16 +154,16 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                                 <TableBody>
                                     {teacher.assigned_batches.map((batch) => (
                                         <TableRow key={batch.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="font-medium whitespace-nowrap">
                                                 {batch.name}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {batch.subject || '-'}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {batch.enrollments_count}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 <Badge
                                                     variant={
                                                         batch.status ===
@@ -217,13 +208,12 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
             </div>
 
             <ConfirmDialog
-                open={deleteDialog.open}
-                onOpenChange={(open) =>
-                    setDeleteDialog({ open, item: deleteDialog.item })
-                }
-                title="Deactivate Teacher"
-                description={`Are you sure you want to deactivate ${deleteDialog.item?.name}?`}
-                confirmText="Deactivate"
+                open={deleteDialog}
+                onOpenChange={setDeleteDialog}
+                title={t('teachers.deactivate_title')}
+                description={t('teachers.deactivate_confirm').replace('{name}', teacher.name)}
+                confirmText={t('teachers.deactivate')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />

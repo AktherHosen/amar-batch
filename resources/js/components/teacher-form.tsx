@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
+import { useLocale } from '@/contexts/locale-context';
 
 type Teacher = {
     id?: number;
@@ -23,6 +24,7 @@ export default function TeacherForm({
     processing,
     errors,
 }: TeacherFormProps) {
+    const { t } = useLocale();
     const { data, setData } = useForm({
         name: teacher?.name || '',
         email: teacher?.email || '',
@@ -39,46 +41,46 @@ export default function TeacherForm({
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
+                    <Label htmlFor="name">{t('teachers.name')} *</Label>
                     <Input
                         id="name"
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
-                        placeholder="Enter teacher name"
+                        placeholder={t('teachers.name_placeholder')}
                     />
                     <InputError message={errors.name} />
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="email">{t('teachers.email')} *</Label>
                     <Input
                         id="email"
                         type="email"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
-                        placeholder="Enter email address"
+                        placeholder={t('teachers.email_placeholder')}
                     />
                     <InputError message={errors.email} />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="password">
-                        Password{' '}
-                        {teacher ? '(leave blank to keep current)' : '*'}
+                        {t('teachers.password')}{' '}
+                        {teacher ? `(${t('teachers.password_hint')})` : '*'}
                     </Label>
                     <Input
                         id="password"
                         type="password"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
-                        placeholder="Enter password"
+                        placeholder={t('teachers.password_placeholder')}
                     />
                     <InputError message={errors.password} />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="password_confirmation">
-                        Confirm Password {teacher ? '' : '*'}
+                        {t('teachers.confirm_password')} {teacher ? '' : '*'}
                     </Label>
                     <Input
                         id="password_confirmation"
@@ -87,7 +89,7 @@ export default function TeacherForm({
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)
                         }
-                        placeholder="Confirm password"
+                        placeholder={t('teachers.confirm_password_placeholder')}
                     />
                 </div>
             </div>
@@ -95,10 +97,10 @@ export default function TeacherForm({
             <div className="flex justify-end gap-2">
                 <Button type="submit" disabled={processing}>
                     {processing
-                        ? 'Saving...'
+                        ? t('teachers.saving')
                         : teacher
-                          ? 'Update Teacher'
-                          : 'Create Teacher'}
+                          ? t('teachers.update')
+                          : t('teachers.create')}
                 </Button>
             </div>
         </form>

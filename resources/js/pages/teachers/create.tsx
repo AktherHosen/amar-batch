@@ -1,4 +1,4 @@
-import { Head, router, Link } from '@inertiajs/react';
+import { Head, router, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Heading from '@/components/heading';
@@ -6,8 +6,11 @@ import TeacherForm from '@/components/teacher-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import teachers from '@/routes/teachers';
+import { useLocale } from '@/contexts/locale-context';
 
 export default function TeachersCreate() {
+    const { t } = useLocale();
+    const { errors } = usePage().props;
     const handleSubmit = (data: any) => {
         router.post(teachers.store(), {
             ...data,
@@ -17,7 +20,7 @@ export default function TeachersCreate() {
 
     return (
         <>
-            <Head title="Create Teacher" />
+            <Head title={t('teachers.create')} />
 
             <motion.div
                 initial={{ opacity: 0, y: 15 }}
@@ -25,17 +28,18 @@ export default function TeachersCreate() {
                 transition={{ duration: 0.3 }}
                 className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
             >
-                <div className="flex items-center gap-4">
-                    <Link href={teachers.index()}>
+                <div className="flex items-center gap-4 min-w-0">
+                    <Link href={teachers.index()} className="shrink-0">
                         <Button variant="ghost" size="sm">
-                            <ArrowLeft className="mr-2 size-4" />
-                            Back
+                            <ArrowLeft className="size-4" />
                         </Button>
                     </Link>
-                    <Heading
-                        title="Create Teacher"
-                        description="Add a new teacher to the system"
-                    />
+                    <div className="min-w-0">
+                        <Heading
+                            title={t('teachers.create')}
+                            description={t('teachers.add_desc')}
+                        />
+                    </div>
                 </div>
 
                 <Card>
@@ -43,7 +47,7 @@ export default function TeachersCreate() {
                         <TeacherForm
                             onSubmit={handleSubmit}
                             processing={false}
-                            errors={{}}
+                            errors={errors}
                         />
                     </CardContent>
                 </Card>
