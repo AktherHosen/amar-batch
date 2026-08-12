@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle } from 'lucide-react';
@@ -34,6 +34,16 @@ import {
 } from '@/components/ui/table';
 import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
+
+function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
+    let timer: ReturnType<typeof setTimeout>;
+    const debounced = (...args: Parameters<T>) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
+    debounced.cancel = () => clearTimeout(timer);
+    return debounced;
+}
 
 type PageProps = {
     auth: { user: { role: string } };
@@ -72,21 +82,21 @@ export default function BatchesIndex({
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
     const [completeDialog, setCompleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
 
-    const handleSearch = () => {
-        router.get(
-            batches.index(),
-            { search, status },
-            { preserveState: true },
-        );
-    };
+    const debouncedSearch = useCallback(
+        debounce((value: string, statusValue: string) => {
+            router.get(batches.index(), { search: value, status: statusValue }, { preserveState: true });
+        }, 300),
+        [],
+    );
+
+    useEffect(() => {
+        return () => debouncedSearch.cancel();
+    }, [debouncedSearch]);
 
     const handleStatusChange = (value: string) => {
-        setStatus(value === 'all' ? '' : value);
-        router.get(
-            batches.index(),
-            { search, status: value === 'all' ? '' : value },
-            { preserveState: true },
-        );
+        const newStatus = value === 'all' ? '' : value;
+        setStatus(newStatus);
+        router.get(batches.index(), { search, status: newStatus }, { preserveState: true });
     };
 
     const handleDelete = (batch: { id: number; name: string }) => {
@@ -139,18 +149,31 @@ export default function BatchesIndex({
             <Head title={t('batches.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <Heading
-                        title={t('batches.title')}
-                        description={t('batches.desc')}
-                    />
+                <div className="flex items-start justify-between">
+                    <div className="space-y-0.5">
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            {t('batches.title')}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {t('batches.desc')}
+                        </p>
+                    </div>
                     {isAdmin && (
-                        <Link href={batches.create()}>
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                {t('batches.create')}
-                            </Button>
-                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={batches.create()}>
+                                        <Plus className="mr-2 size-4" />
+                                        {t('batches.create')}
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
                 </div>
 
@@ -162,10 +185,10 @@ export default function BatchesIndex({
                                 <Input
                                     placeholder={t('actions.search') + '...'}
                                     value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleSearch()
-                                    }
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        debouncedSearch(e.target.value, status);
+                                    }}
                                     className="pr-9 pl-9"
                                 />
                                 {search && (
@@ -173,11 +196,7 @@ export default function BatchesIndex({
                                         type="button"
                                         onClick={() => {
                                             setSearch('');
-                                            router.get(
-                                                batches.index(),
-                                                { status },
-                                                { preserveState: true },
-                                            );
+                                            router.get(batches.index(), { status }, { preserveState: true });
                                         }}
                                         className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                     >
@@ -185,17 +204,17 @@ export default function BatchesIndex({
                                     </button>
                                 )}
                             </div>
-                            <div className="flex gap-3 sm:gap-4">
+                            <div className="flex items-center gap-2">
                                 <Select
                                     value={status || 'all'}
                                     onValueChange={handleStatusChange}
                                 >
                                     <SelectTrigger className="w-full sm:w-[180px]">
-                                        <SelectValue placeholder="All Status" />
+                                        <SelectValue placeholder={t('batches.all_status')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">
-                                            {t('actions.search')} Status
+                                            {t('batches.all_status')}
                                         </SelectItem>
                                         <SelectItem value="active">
                                             {t('students.active')}
@@ -203,20 +222,14 @@ export default function BatchesIndex({
                                         <SelectItem value="inactive">
                                             {t('students.inactive')}
                                         </SelectItem>
+                                        <SelectItem value="completed">
+                                            {t('actions.complete')}
+                                        </SelectItem>
                                         <SelectItem value="archived">
-                                            Archived
+                                            {t('batches.archived')}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <Button
-                                    variant="secondary"
-                                    onClick={handleSearch}
-                                >
-                                    <Search className="size-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">
-                                        {t('actions.search')}
-                                    </span>
-                                </Button>
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -237,19 +250,19 @@ export default function BatchesIndex({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background whitespace-nowrap">
                                         {t('batches.name')}
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className="whitespace-nowrap">
                                         {t('batches.subject')}
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className="whitespace-nowrap">
                                         {t('batches.capacity')}
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className="whitespace-nowrap">
                                         {t('batches.enrolled')}
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className="whitespace-nowrap">
                                         {t('students.status')}
                                     </TableHead>
                                     <TableHead className="w-[50px]"></TableHead>
@@ -262,7 +275,7 @@ export default function BatchesIndex({
                                             colSpan={6}
                                             className="text-center"
                                         >
-                                            No batches found
+                                            {t('batches.no_batches')}
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -283,16 +296,16 @@ export default function BatchesIndex({
                                             visible: { opacity: 1, x: 0 },
                                         }}
                                     >
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium whitespace-nowrap">
                                                 {batch.name}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {batch.subject || '-'}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {batch.capacity}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 <div className="flex items-center gap-2">
                                                     <span>{batch.enrollments_count}</span>
                                                     <div className="h-2 w-16 overflow-hidden rounded-full bg-muted">
@@ -314,7 +327,7 @@ export default function BatchesIndex({
                                                     </span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 <Badge
                                                     variant={getStatusBadge(
                                                         batch.status,
@@ -345,16 +358,16 @@ export default function BatchesIndex({
                                                                         {t('actions.edit')}
                                                                     </Link>
                                                                 </DropdownMenuItem>
+                                                                {batch.status !== 'completed' && (
+                                                                    <DropdownMenuItem onClick={() => handleComplete(batch)}>
+                                                                        <CheckCircle className="mr-2 size-4" />
+                                                                        {t('actions.complete')}
+                                                                    </DropdownMenuItem>
+                                                                )}
                                                                 <DropdownMenuItem onClick={() => handleDelete(batch)} className="text-destructive">
                                                                     <Trash2 className="mr-2 size-4" />
                                                                     {t('actions.delete')}
                                                                 </DropdownMenuItem>
-                                                                {batch.status !== 'completed' && (
-                                                                    <DropdownMenuItem onClick={() => handleComplete(batch)}>
-                                                                        <CheckCircle className="mr-2 size-4" />
-                                                                        Complete
-                                                                    </DropdownMenuItem>
-                                                                )}
                                                             </>
                                                         )}
                                                     </DropdownMenuContent>
@@ -382,9 +395,10 @@ export default function BatchesIndex({
             <ConfirmDialog
                 open={deleteDialog.open}
                 onOpenChange={(open) => setDeleteDialog({ open, batch: null })}
-                title="Delete Batch"
-                description={`Are you sure you want to delete "${deleteDialog.batch?.name}"? This action cannot be undone.`}
-                confirmText="Delete"
+                title={t('batches.delete_title')}
+                description={t('batches.delete_confirm').replace('{name}', deleteDialog.batch?.name ?? '')}
+                confirmText={t('actions.delete')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />
@@ -392,9 +406,10 @@ export default function BatchesIndex({
             <ConfirmDialog
                 open={completeDialog.open}
                 onOpenChange={(open) => setCompleteDialog({ open, batch: null })}
-                title="Complete Batch"
-                description={`Are you sure you want to complete "${completeDialog.batch?.name}"? This action cannot be undone. Once completed, no new students can be enrolled and no teachers can be assigned.`}
-                confirmText="Complete"
+                title={t('batches.complete_title')}
+                description={t('batches.complete_confirm').replace('{name}', completeDialog.batch?.name ?? '')}
+                confirmText={t('actions.complete')}
+                cancelText={t('actions.cancel')}
                 onConfirm={confirmComplete}
             />
         </>

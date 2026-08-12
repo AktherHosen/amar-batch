@@ -1,4 +1,4 @@
-import { Head, router, Link } from '@inertiajs/react';
+import { Head, router, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Heading from '@/components/heading';
@@ -10,6 +10,7 @@ import { useLocale } from '@/contexts/locale-context';
 
 export default function BatchesCreate() {
     const { t } = useLocale();
+    const { errors } = usePage().props;
     const handleSubmit = (data: any) => {
         router.post(batches.store(), {
             ...data,
@@ -27,17 +28,18 @@ export default function BatchesCreate() {
                 transition={{ duration: 0.3 }}
                 className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
             >
-                <div className="flex items-center gap-4">
-                    <Link href={batches.index()}>
+                <div className="flex items-center gap-4 min-w-0">
+                    <Link href={batches.index()} className="shrink-0">
                         <Button variant="ghost" size="sm">
-                            <ArrowLeft className="mr-2 size-4" />
-                            {t('actions.back')}
+                            <ArrowLeft className="size-4" />
                         </Button>
                     </Link>
-                    <Heading
-                        title={t('batches.create')}
-                        description={t('batches.create')}
-                    />
+                    <div className="min-w-0">
+                        <Heading
+                            title={t('batches.create')}
+                            description={t('batches.desc')}
+                        />
+                    </div>
                 </div>
 
                 <Card>
@@ -45,7 +47,7 @@ export default function BatchesCreate() {
                         <BatchForm
                             onSubmit={handleSubmit}
                             processing={false}
-                            errors={{}}
+                            errors={errors}
                         />
                     </CardContent>
                 </Card>

@@ -219,17 +219,17 @@ export default function BatchesShow({
             <Head title={batch.name} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Link href={batches.index()}>
+                <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <Link href={batches.index()} className="shrink-0">
                             <Button variant="ghost" size="icon" className="size-9">
                                 <ArrowLeft className="size-4" />
                             </Button>
                         </Link>
-                        <h1 className="text-lg font-bold tracking-tight sm:text-2xl">{batch.name}</h1>
+                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">{batch.name}</h1>
                     </div>
                     {isAdmin && batch.status !== 'completed' && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 shrink-0">
                             <Link href={batches.edit(batch.id)}>
                                 <Button variant="outline">
                                     <Pencil className="mr-2 size-4" />
@@ -376,24 +376,24 @@ export default function BatchesShow({
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>
-                                                {t('teachers.name')}
-                                            </TableHead>
-                                            <TableHead>
-                                                {t('teachers.email')}
-                                            </TableHead>
+                                        <TableHead className="whitespace-nowrap">
+                                            {t('teachers.name')}
+                                        </TableHead>
+                                        <TableHead className="whitespace-nowrap">
+                                            {t('teachers.email')}
+                                        </TableHead>
                                             <TableHead className="w-[50px]"></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {batch.teachers.map((teacher) => (
                                             <TableRow key={teacher.id}>
-                                                <TableCell className="font-medium">
-                                                    {teacher.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {teacher.email}
-                                                </TableCell>
+                                            <TableCell className="font-medium whitespace-nowrap">
+                                                {teacher.name}
+                                            </TableCell>
+                                            <TableCell className="whitespace-nowrap">
+                                                {teacher.email}
+                                            </TableCell>
                                                 <TableCell className="p-1 text-center">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
@@ -403,8 +403,8 @@ export default function BatchesShow({
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuItem onClick={() => handleRemoveTeacher(teacher.id)} className="text-destructive">
-                                                                <UserMinus className="mr-2 size-4" />
-                                                                Remove
+                                                                    <UserMinus className="mr-2 size-4" />
+                                                                    {t('batches.remove')}
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
@@ -421,10 +421,10 @@ export default function BatchesShow({
 
                             {availableTeachers.length > 0 || teacherSearch ? (
                                 <div className="mt-4 space-y-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Search teachers by name or email..."
-                                        value={teacherSearch}
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder={t('batches.search_teachers')}
+                                                                    value={teacherSearch}
                                         onChange={(e) =>
                                             setTeacherSearch(e.target.value)
                                         }
@@ -439,7 +439,7 @@ export default function BatchesShow({
                                                 }
                                             >
                                                 <SelectTrigger className="flex-1">
-                                                    <SelectValue placeholder="Select a teacher" />
+                                                        <SelectValue placeholder={t('batches.select_teacher')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {availableTeachers.map(
@@ -579,19 +579,19 @@ export default function BatchesShow({
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>
+                                        <TableHead className="whitespace-nowrap">
                                             {t('students.name')}
                                         </TableHead>
-                                        <TableHead>
+                                        <TableHead className="whitespace-nowrap">
                                             {t('students.class')}
                                         </TableHead>
-                                        <TableHead>
-                                            Enrolled At
+                                        <TableHead className="whitespace-nowrap">
+                                            {t('batches.enrolled_at')}
                                         </TableHead>
-                                        <TableHead>
+                                        <TableHead className="whitespace-nowrap">
                                             {t('students.joined_at')}
                                         </TableHead>
-                                        <TableHead>
+                                        <TableHead className="whitespace-nowrap">
                                             {t('students.status')}
                                         </TableHead>
                                         {(isAdmin ||
@@ -684,10 +684,10 @@ export default function BatchesShow({
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Student</TableHead>
-                                        <TableHead>Action</TableHead>
-                                        <TableHead>By</TableHead>
+                                        <TableHead className="whitespace-nowrap">{t('batches.date')}</TableHead>
+                                        <TableHead className="whitespace-nowrap">{t('batches.student')}</TableHead>
+                                        <TableHead className="whitespace-nowrap">{t('batches.action')}</TableHead>
+                                        <TableHead className="whitespace-nowrap">{t('batches.by')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -727,9 +727,10 @@ export default function BatchesShow({
             <ConfirmDialog
                 open={deleteDialog}
                 onOpenChange={setDeleteDialog}
-                title="Delete Batch"
-                description={`Are you sure you want to delete "${batch.name}"? This action cannot be undone.`}
-                confirmText="Delete"
+                title={t('batches.delete_title')}
+                description={t('batches.delete_confirm').replace('{name}', batch.name)}
+                confirmText={t('actions.delete')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />
@@ -737,9 +738,10 @@ export default function BatchesShow({
             <ConfirmDialog
                 open={removeTeacherDialog.open}
                 onOpenChange={(open) => setRemoveTeacherDialog({ open, teacherId: null })}
-                title="Remove Teacher"
-                description="Are you sure you want to remove this teacher from the batch?"
-                confirmText="Remove"
+                title={t('batches.remove_teacher_title')}
+                description={t('batches.remove_teacher_confirm')}
+                confirmText={t('batches.remove')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmRemoveTeacher}
             />
@@ -747,9 +749,10 @@ export default function BatchesShow({
             <ConfirmDialog
                 open={unenrollDialog.open}
                 onOpenChange={(open) => setUnenrollDialog({ open, enrollmentId: null })}
-                title="Unenroll Student"
-                description="Are you sure you want to unenroll this student from the batch?"
-                confirmText="Unenroll"
+                title={t('batches.unenroll_title')}
+                description={t('batches.unenroll_confirm')}
+                confirmText={t('batches.unenroll')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmUnenroll}
             />
