@@ -165,35 +165,54 @@ export default function StudentsIndex({
                 <Card>
                     <CardContent className="pt-6">
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="flex flex-1 items-center gap-2">
-                                <div className="relative flex-1">
-                                    <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        placeholder={t('actions.search') + '...'}
-                                        value={search}
-                                        onChange={(e) => {
-                                            setSearch(e.target.value);
-                                            debouncedSearch(e.target.value);
+                            <div className="relative flex-1">
+                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    placeholder={t('actions.search') + '...'}
+                                    value={search}
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        debouncedSearch(e.target.value);
+                                    }}
+                                    className="pr-9 pl-9"
+                                />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSearch('');
+                                            router.get(
+                                                students.index(),
+                                                { status },
+                                                { preserveState: true },
+                                            );
                                         }}
-                                        className="pr-9 pl-9"
-                                    />
-                                    {search && (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setSearch('');
-                                                router.get(
-                                                    students.index(),
-                                                    { status },
-                                                    { preserveState: true },
-                                                );
-                                            }}
-                                            className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                        >
-                                            <X className="size-4" />
-                                        </button>
-                                    )}
-                                </div>
+                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Select
+                                    value={status || 'all'}
+                                    onValueChange={handleStatusChange}
+                                >
+                                    <SelectTrigger className="w-full sm:w-[180px]">
+                                        <SelectValue placeholder={t('students.all_status')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            {t('students.all_status')}
+                                        </SelectItem>
+                                        <SelectItem value="active">
+                                            {t('students.active')}
+                                        </SelectItem>
+                                        <SelectItem value="inactive">
+                                            {t('students.inactive')}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -209,39 +228,6 @@ export default function StudentsIndex({
                                     <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
                                 </Button>
                             </div>
-                            <Select
-                                value={status || 'all'}
-                                onValueChange={handleStatusChange}
-                            >
-                                <SelectTrigger className="w-full sm:w-[180px]">
-                                    <SelectValue placeholder={t('students.all_status')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        {t('students.all_status')}
-                                    </SelectItem>
-                                    <SelectItem value="active">
-                                        {t('students.active')}
-                                    </SelectItem>
-                                    <SelectItem value="inactive">
-                                        {t('students.inactive')}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                disabled={refreshing}
-                                onClick={() => {
-                                    setRefreshing(true);
-                                    router.reload({
-                                        only: ['students'],
-                                        onFinish: () => setRefreshing(false),
-                                    });
-                                }}
-                            >
-                                <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                            </Button>
                         </div>
 
                         <Table>

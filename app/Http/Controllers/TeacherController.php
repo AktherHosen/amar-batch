@@ -20,7 +20,17 @@ class TeacherController extends Controller
             abort(403);
         }
 
-        $query = User::where('role', 'staff');
+        $query = User::where(function ($q) {
+            $q->where('role', 'staff')->orWhere('role', 'inactive');
+        });
+
+        if ($status = $request->input('status')) {
+            if ($status === 'active') {
+                $query->where('role', 'staff');
+            } elseif ($status === 'inactive') {
+                $query->where('role', 'inactive');
+            }
+        }
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -33,7 +43,7 @@ class TeacherController extends Controller
 
         return Inertia::render('teachers/index', [
             'teachers' => $teachers,
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'status']),
         ]);
     }
 
@@ -90,7 +100,7 @@ class TeacherController extends Controller
 
     public function show(User $teacher): Response
     {
-        if (! $teacher->isTeacher()) {
+        if (! in_array($teacher->role, ['staff', 'inactive'])) {
             abort(404);
         }
 
@@ -104,7 +114,7 @@ class TeacherController extends Controller
 
     public function edit(User $teacher): Response
     {
-        if (! $teacher->isTeacher()) {
+        if (! in_array($teacher->role, ['staff', 'inactive'])) {
             abort(404);
         }
 
@@ -115,7 +125,7 @@ class TeacherController extends Controller
 
     public function update(UpdateTeacherRequest $request, User $teacher): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || ! $teacher->isTeacher()) {
+        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['staff', 'inactive'])) {
             abort(403);
         }
 
@@ -134,8 +144,13 @@ class TeacherController extends Controller
 
     public function destroy(Request $request, User $teacher): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || ! $teacher->isTeacher()) {
+        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['staff', 'inactive'])) {
             abort(403);
+        }
+
+        if ($teacher->role === 'inactive') {
+            $teacher->update(['role' => 'staff']);
+            return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Staff member reactivated successfully.']);
         }
 
         $teacher->update(['role' => 'inactive']);
@@ -146,7 +161,7 @@ class TeacherController extends Controller
 
     public function approve(Request $request, User $teacher): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || ! $teacher->isTeacher()) {
+        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['staff', 'inactive'])) {
             abort(403);
         }
 
@@ -157,7 +172,7 @@ class TeacherController extends Controller
 
     public function reject(Request $request, User $teacher): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || ! $teacher->isTeacher()) {
+        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['staff', 'inactive'])) {
             abort(403);
         }
 

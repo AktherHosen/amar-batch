@@ -16,6 +16,13 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -45,6 +52,7 @@ type PageProps = {
             id: number;
             name: string;
             email: string;
+            role: string;
             is_approved: boolean;
             assigned_batches_count: number;
         }>;
@@ -55,6 +63,7 @@ type PageProps = {
     };
     filters: {
         search?: string;
+        status?: string;
     };
 };
 
@@ -66,11 +75,12 @@ export default function TeachersIndex({
     const { auth } = usePage<PageProps>().props;
     const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
+    const [status, setStatus] = useState(filters.status || '');
     const [refreshing, setRefreshing] = useState(false);
 
     const debouncedSearch = useCallback(
-        debounce((value: string) => {
-            router.get(teachers.index(), { search: value }, { preserveState: true });
+        debounce((value: string, statusValue: string) => {
+            router.get(teachers.index(), { search: value, status: statusValue }, { preserveState: true });
         }, 300),
         [],
     );
@@ -78,6 +88,12 @@ export default function TeachersIndex({
     useEffect(() => {
         return () => debouncedSearch.cancel();
     }, [debouncedSearch]);
+
+    const handleStatusChange = (value: string) => {
+        const newStatus = value === 'all' ? '' : value;
+        setStatus(newStatus);
+        router.get(teachers.index(), { search, status: newStatus }, { preserveState: true });
+    };
 
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
@@ -92,14 +108,14 @@ export default function TeachersIndex({
         item: any | null;
     }>({ open: false, item: null });
 
-    const handleDelete = (teacher: { id: number; name: string }) => {
+    const handleDelete = (teacher: { id: number; name: string; role: string }) => {
         setDeleteDialog({ open: true, item: teacher });
     };
 
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(teachers.destroy(deleteDialog.item.id));
-            toast.success(t('toast.deactivated_successfully'));
+            toast.success(deleteDialog.item.role === 'inactive' ? t('toast.updated_successfully') : t('toast.deactivated_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };
@@ -172,31 +188,50 @@ export default function TeachersIndex({
                 <Card>
                     <CardContent className="pt-6">
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="flex flex-1 items-center gap-2">
-                                <div className="relative flex-1">
-                                    <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        placeholder={t('actions.search') + '...'}
-                                        value={search}
-                                        onChange={(e) => {
-                                            setSearch(e.target.value);
-                                            debouncedSearch(e.target.value);
+                            <div className="relative flex-1">
+                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    placeholder={t('actions.search') + '...'}
+                                    value={search}
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        debouncedSearch(e.target.value, status);
+                                    }}
+                                    className="pr-9 pl-9"
+                                />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSearch('');
+                                            router.get(teachers.index(), { status }, { preserveState: true });
                                         }}
-                                        className="pr-9 pl-9"
-                                    />
-                                    {search && (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setSearch('');
-                                                router.get(teachers.index(), {}, { preserveState: true });
-                                            }}
-                                            className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                        >
-                                            <X className="size-4" />
-                                        </button>
-                                    )}
-                                </div>
+                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Select
+                                    value={status || 'all'}
+                                    onValueChange={handleStatusChange}
+                                >
+                                    <SelectTrigger className="w-full sm:w-[180px]">
+                                        <SelectValue placeholder={t('teachers.all_status')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            {t('teachers.all_status')}
+                                        </SelectItem>
+                                        <SelectItem value="active">
+                                            {t('teachers.active')}
+                                        </SelectItem>
+                                        <SelectItem value="inactive">
+                                            {t('teachers.inactive')}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -262,9 +297,9 @@ export default function TeachersIndex({
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap">
                                                 <Badge
-                                                    variant={teacher.is_approved ? 'success' : 'danger'}
+                                                    variant={teacher.role === 'inactive' ? 'danger' : 'success'}
                                                 >
-                                                    {teacher.is_approved ? t('teachers.approved') : t('teachers.pending')}
+                                                    {teacher.role === 'inactive' ? t('teachers.inactive') : t('teachers.active')}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap">
@@ -286,13 +321,13 @@ export default function TeachersIndex({
                                                         </DropdownMenuItem>
                                                         {isAdmin && (
                                                             <>
-                                                                {!teacher.is_approved && (
+                                                                {teacher.role === 'staff' && !teacher.is_approved && (
                                                                     <DropdownMenuItem onClick={() => handleApprove(teacher)}>
                                                                         <CheckCircle className="mr-2 size-4 text-green-600" />
                                                                         {t('teachers.approve')}
                                                                     </DropdownMenuItem>
                                                                 )}
-                                                                {teacher.is_approved && (
+                                                                {teacher.role === 'staff' && teacher.is_approved && (
                                                                     <DropdownMenuItem onClick={() => handleReject(teacher)}>
                                                                         <XCircle className="mr-2 size-4 text-yellow-600" />
                                                                         {t('teachers.revoke_approval')}
@@ -304,9 +339,9 @@ export default function TeachersIndex({
                                                                         {t('actions.edit')}
                                                                     </Link>
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() => handleDelete(teacher)} className="text-destructive">
+                                                                <DropdownMenuItem onClick={() => handleDelete(teacher)} className={teacher.role === 'inactive' ? '' : 'text-destructive'}>
                                                                     <Trash2 className="mr-2 size-4" />
-                                                                    {t('actions.delete')}
+                                                                    {teacher.role === 'inactive' ? t('teachers.reactivate') : t('actions.delete')}
                                                                 </DropdownMenuItem>
                                                             </>
                                                         )}
@@ -337,11 +372,11 @@ export default function TeachersIndex({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title={t('teachers.deactivate_title')}
-                description={t('teachers.deactivate_confirm').replace('{name}', deleteDialog.item?.name ?? '')}
-                confirmText={t('teachers.deactivate')}
+                title={deleteDialog.item?.role === 'inactive' ? t('teachers.reactivate_title') : t('teachers.deactivate_title')}
+                description={(deleteDialog.item?.role === 'inactive' ? t('teachers.reactivate_confirm') : t('teachers.deactivate_confirm')).replace('{name}', deleteDialog.item?.name ?? '')}
+                confirmText={deleteDialog.item?.role === 'inactive' ? t('teachers.reactivate') : t('teachers.deactivate')}
                 cancelText={t('actions.cancel')}
-                variant="destructive"
+                variant={deleteDialog.item?.role === 'inactive' ? 'default' : 'destructive'}
                 onConfirm={confirmDelete}
             />
 
