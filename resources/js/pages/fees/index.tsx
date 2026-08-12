@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { isOwner } from '@/lib/role';
 import {
@@ -40,6 +40,16 @@ import {
 } from '@/components/ui/select';
 import fees from '@/routes/fees';
 import { useLocale } from '@/contexts/locale-context';
+
+function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
+    let timer: ReturnType<typeof setTimeout>;
+    const debounced = (...args: Parameters<T>) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
+    debounced.cancel = () => clearTimeout(timer);
+    return debounced;
+}
 
 type Student = {
     id: number;
@@ -214,6 +224,17 @@ export default function FeesIndex({
     const [search, setSearch] = useState(filters.search || '');
     const [selectedYear, setSelectedYear] = useState(year);
     const [refreshing, setRefreshing] = useState(false);
+
+    const debouncedSearch = useCallback(
+        debounce((value: string, yearValue: number) => {
+            router.get(fees.index.url(), { search: value, year: yearValue }, { preserveState: true });
+        }, 300),
+        [],
+    );
+
+    useEffect(() => {
+        return () => debouncedSearch.cancel();
+    }, [debouncedSearch]);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: { studentId: number; batchId: number } | null;
@@ -331,14 +352,18 @@ export default function FeesIndex({
             <Head title={t('fees.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <Heading
-                        title={t('fees.title')}
-                        description={t('fees.desc')}
-                    />
+                <div className="flex items-start justify-between">
+                    <div className="space-y-0.5">
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            {t('fees.title')}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {t('fees.desc')}
+                        </p>
+                    </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon">
+                            <Button variant="ghost" size="icon" className="size-8 p-0">
                                 <EllipsisVertical className="size-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -366,12 +391,11 @@ export default function FeesIndex({
                                 <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     placeholder={t('actions.search') + '...'}
-
                                     value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleSearch()
-                                    }
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        debouncedSearch(e.target.value, selectedYear);
+                                    }}
                                     className="pr-9 pl-9"
                                 />
                                 {search && (
@@ -381,10 +405,7 @@ export default function FeesIndex({
                                             setSearch('');
                                             router.get(
                                                 fees.index.url(),
-                                                {
-                                                    search: '',
-                                                    year: selectedYear,
-                                                },
+                                                { search: '', year: selectedYear },
                                                 { preserveState: true },
                                             );
                                         }}
@@ -394,12 +415,12 @@ export default function FeesIndex({
                                     </button>
                                 )}
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex items-center gap-2">
                                 <Select
                                     value={String(selectedYear)}
                                     onValueChange={(value) => handleYearChange(Number(value))}
                                 >
-                                    <SelectTrigger className="w-[120px]">
+                                    <SelectTrigger className="w-full sm:w-[120px]">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -469,7 +490,7 @@ export default function FeesIndex({
                                             >
                                                 <div className="flex flex-col items-center gap-2 py-4">
                                                     <DollarSign className="size-8 text-muted-foreground" />
-                                                    <p>No fee records found</p>
+                                                    <p>{t('fees.no_records')}</p>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -543,9 +564,10 @@ export default function FeesIndex({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title="Delete Fee Records"
-                description="Delete all fee records for this student in this batch for the year?"
-                confirmText="Delete"
+                title={t('fees.delete_title')}
+                description={t('fees.delete_confirm')}
+                confirmText={t('actions.delete')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDeleteRow}
             />

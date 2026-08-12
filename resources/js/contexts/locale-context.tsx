@@ -358,6 +358,8 @@ const translations: Record<Locale, Record<string, string>> = {
         'fees.edit': 'বেতন রেকর্ড এডিট',
         'fees.update_details': 'বেতন পেমেন্টের বিবরণ আপডেট করুন',
         'fees.fee_details': 'বেতনের বিবরণ',
+        'fees.no_records': 'কোনো বেতন রেকর্ড পাওয়া যায়নি',
+        'fees.delete_title': 'বেতন রেকর্ড মুছুন',
 
         // Plan
         'plan.popular': 'সর্বাধিক জনপ্রিয়',
@@ -888,6 +890,8 @@ const translations: Record<Locale, Record<string, string>> = {
         'fees.edit': 'Edit Fee Record',
         'fees.update_details': 'Update fee payment details',
         'fees.fee_details': 'Fee Details',
+        'fees.no_records': 'No fee records found',
+        'fees.delete_title': 'Delete Fee Records',
 
         // Classes
         'classes.title': 'Coaching Classes',
