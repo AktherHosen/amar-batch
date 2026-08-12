@@ -7,6 +7,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 
 type Holiday = {
@@ -26,6 +27,7 @@ type PageProps = {
 export default function HolidaysShow() {
     const { holiday } = usePage<PageProps>().props;
     const { auth } = usePage().props;
+    const { t } = useLocale();
     const isAdmin = isOwner(auth.user);
     const [deleteDialog, setDeleteDialog] = useState(false);
 
@@ -36,7 +38,7 @@ export default function HolidaysShow() {
     const confirmDelete = () => {
         router.delete(`/holidays/${holiday.id}`, {
             onSuccess: () => {
-                toast.success('Holiday deleted successfully');
+                toast.success(t('toast.deleted_successfully'));
                 router.visit('/holidays');
             },
         });

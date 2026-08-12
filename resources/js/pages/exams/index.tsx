@@ -98,7 +98,7 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(exams.destroy(deleteDialog.item.id));
-            toast.success('Exam deleted successfully');
+            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };

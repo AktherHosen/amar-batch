@@ -49,7 +49,7 @@ type PageProps = {
 };
 
 export default function SuperAdminPayments({ payments, stats, filters }: PageProps) {
-    const { formatCurrency } = useLocale();
+    const { formatCurrency, t } = useLocale();
     const [search, setSearch] = useState(filters.search ?? '');
 
     const handleSearch = () => {
@@ -67,13 +67,13 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
 
     const handleApprove = (paymentId: number) => {
         router.post(`/super-admin/payments/${paymentId}/approve`, {}, {
-            onSuccess: () => toast.success('Payment approved and subscription activated.'),
+            onSuccess: () => toast.success(t('toast.approved_successfully')),
         });
     };
 
     const handleCancel = (paymentId: number) => {
         router.post(`/super-admin/payments/${paymentId}/cancel`, {}, {
-            onSuccess: () => toast.success('Payment cancelled.'),
+            onSuccess: () => toast.success(t('toast.deleted_successfully')),
         });
     };
 

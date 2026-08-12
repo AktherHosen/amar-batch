@@ -40,7 +40,7 @@ export default function TenantSettings({ tenant }: PageProps) {
         post('/settings/tenant', {
             forceFormData: true,
             onSuccess: () => {
-                toast.success('Settings updated successfully');
+                toast.success(t('toast.updated_successfully'));
             },
         });
     };

@@ -36,7 +36,7 @@ export default function PlanCreate() {
         setProcessing(true);
 
         router.post('/super-admin/plans', form, {
-            onSuccess: () => toast.success('Plan created successfully'),
+            onSuccess: () => toast.success(t('toast.created_successfully')),
             onFinish: () => setProcessing(false),
         });
     };

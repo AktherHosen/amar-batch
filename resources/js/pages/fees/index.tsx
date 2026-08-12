@@ -260,7 +260,7 @@ export default function FeesIndex({
             feeIds.forEach((id) => {
                 router.delete(fees.destroy.url(id), { preserveState: true });
             });
-            toast.success('Fee records deleted successfully');
+            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };

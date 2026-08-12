@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle, XCircle } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { EllipsisVertical, Eye, Pencil, Trash2, X, CheckCircle, XCircle, Plus, RefreshCw, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
@@ -27,6 +27,16 @@ import {
 } from '@/components/ui/table';
 import teachers from '@/routes/teachers';
 import { useLocale } from '@/contexts/locale-context';
+
+function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
+    let timer: ReturnType<typeof setTimeout>;
+    const debounced = (...args: Parameters<T>) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
+    debounced.cancel = () => clearTimeout(timer);
+    return debounced;
+}
 
 type PageProps = {
     auth: { user: { role: string } };
@@ -57,6 +67,18 @@ export default function TeachersIndex({
     const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
     const [refreshing, setRefreshing] = useState(false);
+
+    const debouncedSearch = useCallback(
+        debounce((value: string) => {
+            router.get(teachers.index(), { search: value }, { preserveState: true });
+        }, 300),
+        [],
+    );
+
+    useEffect(() => {
+        return () => debouncedSearch.cancel();
+    }, [debouncedSearch]);
+
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: any | null;
@@ -70,10 +92,6 @@ export default function TeachersIndex({
         item: any | null;
     }>({ open: false, item: null });
 
-    const handleSearch = () => {
-        router.get(teachers.index(), { search }, { preserveState: true });
-    };
-
     const handleDelete = (teacher: { id: number; name: string }) => {
         setDeleteDialog({ open: true, item: teacher });
     };
@@ -81,7 +99,7 @@ export default function TeachersIndex({
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(teachers.destroy(deleteDialog.item.id));
-            toast.success('Teacher deactivated successfully');
+            toast.success(t('toast.deactivated_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };
@@ -94,7 +112,7 @@ export default function TeachersIndex({
         if (approveDialog.item) {
             router.post(teachers.approve(approveDialog.item.id).url, {}, {
                 onSuccess: () => {
-                    toast.success(`${approveDialog.item.name} has been approved`);
+                    toast.success(`${approveDialog.item.name} ${t('toast.approved_successfully')}`);
                     router.reload({ only: ['teachers'] });
                 },
             });
@@ -110,7 +128,7 @@ export default function TeachersIndex({
         if (rejectDialog.item) {
             router.post(teachers.reject(rejectDialog.item.id).url, {}, {
                 onSuccess: () => {
-                    toast.success(`${rejectDialog.item.name}'s approval has been revoked`);
+                    toast.success(`${rejectDialog.item.name} ${t('toast.revoked_successfully')}`);
                     router.reload({ only: ['teachers'] });
                 },
             });
@@ -123,82 +141,90 @@ export default function TeachersIndex({
             <Head title={t('teachers.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <Heading
-                        title={t('teachers.title')}
-                        description={t('teachers.desc')}
-                    />
+                <div className="flex items-start justify-between">
+                    <div className="space-y-0.5">
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            {t('teachers.title')}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {t('teachers.desc')}
+                        </p>
+                    </div>
                     {isAdmin && (
-                        <Link href={teachers.create()}>
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                {t('teachers.create')}
-                            </Button>
-                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={teachers.create()}>
+                                        <Plus className="mr-2 size-4" />
+                                        {t('teachers.create')}
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex items-center gap-4">
+                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                             <div className="relative flex-1">
                                 <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     placeholder={t('actions.search') + '...'}
                                     value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleSearch()
-                                    }
-                                    className="pr-9 pl-9"
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        debouncedSearch(e.target.value);
+                                    }}
+                                    className="pr-16 pl-9"
                                 />
-                                {search && (
-                                    <button
-                                        type="button"
+                                <div className="absolute top-1/2 right-1 -translate-y-1/2 flex items-center">
+                                    {search && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSearch('');
+                                                router.get(teachers.index(), {}, { preserveState: true });
+                                            }}
+                                            className="p-1 text-muted-foreground hover:text-foreground"
+                                        >
+                                            <X className="size-4" />
+                                        </button>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 p-0"
+                                        disabled={refreshing}
                                         onClick={() => {
-                                            setSearch('');
-                                            router.get(
-                                                teachers.index(),
-                                                {},
-                                                { preserveState: true },
-                                            );
+                                            setRefreshing(true);
+                                            router.reload({
+                                                only: ['teachers'],
+                                                onFinish: () => setRefreshing(false),
+                                            });
                                         }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                     >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
+                                        <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
+                                    </Button>
+                                </div>
                             </div>
-                            <Button variant="secondary" onClick={handleSearch}>
-                                <Search className="size-4 sm:mr-2" />
-                                <span className="hidden sm:inline">Search</span>
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                disabled={refreshing}
-                                onClick={() => {
-                                    setRefreshing(true);
-                                    router.reload({
-                                        only: ['teachers'],
-                                        onFinish: () => setRefreshing(false),
-                                    });
-                                }}
-                            >
-                                <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                            </Button>
                         </div>
 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background whitespace-nowrap">
                                         {t('teachers.name')}
                                     </TableHead>
-                                    <TableHead>{t('teachers.email')}</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>{t('batches.title')}</TableHead>
-                                    <TableHead className="w-[100px]"></TableHead>
+                                    <TableHead className="whitespace-nowrap">{t('teachers.email')}</TableHead>
+                                    <TableHead className="whitespace-nowrap">{t('teachers.status')}</TableHead>
+                                    <TableHead className="whitespace-nowrap">{t('batches.title')}</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             {pagination.data.length === 0 ? (
@@ -208,7 +234,7 @@ export default function TeachersIndex({
                                             colSpan={5}
                                             className="text-center"
                                         >
-                                            No teachers found
+                                            {t('teachers.no_teachers')}
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -229,20 +255,20 @@ export default function TeachersIndex({
                                             visible: { opacity: 1, x: 0 },
                                         }}
                                     >
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium whitespace-nowrap">
                                                 {teacher.name}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {teacher.email}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 <Badge
                                                     variant={teacher.is_approved ? 'success' : 'danger'}
                                                 >
-                                                    {teacher.is_approved ? 'Approved' : 'Pending'}
+                                                    {teacher.is_approved ? t('teachers.approved') : t('teachers.pending')}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {teacher.assigned_batches_count}
                                             </TableCell>
                                             <TableCell className="p-1 text-center">
@@ -264,13 +290,13 @@ export default function TeachersIndex({
                                                                 {!teacher.is_approved && (
                                                                     <DropdownMenuItem onClick={() => handleApprove(teacher)}>
                                                                         <CheckCircle className="mr-2 size-4 text-green-600" />
-                                                                        Approve
+                                                                        {t('teachers.approve')}
                                                                     </DropdownMenuItem>
                                                                 )}
                                                                 {teacher.is_approved && (
                                                                     <DropdownMenuItem onClick={() => handleReject(teacher)}>
                                                                         <XCircle className="mr-2 size-4 text-yellow-600" />
-                                                                        Revoke Approval
+                                                                        {t('teachers.revoke_approval')}
                                                                     </DropdownMenuItem>
                                                                 )}
                                                                 <DropdownMenuItem asChild>
@@ -292,7 +318,7 @@ export default function TeachersIndex({
                                 ))}
                                 </motion.tbody>
                             )}
-                            </Table>
+                        </Table>
 
                         <Pagination
                             currentPage={pagination.current_page}
@@ -312,9 +338,10 @@ export default function TeachersIndex({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title="Deactivate Teacher"
-                description={`Are you sure you want to deactivate ${deleteDialog.item?.name}?`}
-                confirmText="Deactivate"
+                title={t('teachers.deactivate_title')}
+                description={t('teachers.deactivate_confirm', { name: deleteDialog.item?.name })}
+                confirmText={t('teachers.deactivate')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />
@@ -324,9 +351,10 @@ export default function TeachersIndex({
                 onOpenChange={(open) =>
                     setApproveDialog({ open, item: approveDialog.item })
                 }
-                title="Approve Teacher"
-                description={`Are you sure you want to approve ${approveDialog.item?.name}?`}
-                confirmText="Approve"
+                title={t('teachers.approve_title')}
+                description={t('teachers.approve_confirm', { name: approveDialog.item?.name })}
+                confirmText={t('teachers.approve')}
+                cancelText={t('actions.cancel')}
                 onConfirm={confirmApprove}
             />
 
@@ -335,9 +363,10 @@ export default function TeachersIndex({
                 onOpenChange={(open) =>
                     setRejectDialog({ open, item: rejectDialog.item })
                 }
-                title="Revoke Approval"
-                description={`Are you sure you want to revoke approval for ${rejectDialog.item?.name}?`}
-                confirmText="Revoke"
+                title={t('teachers.revoke_title')}
+                description={t('teachers.revoke_confirm', { name: rejectDialog.item?.name })}
+                confirmText={t('teachers.revoke_approval')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmReject}
             />

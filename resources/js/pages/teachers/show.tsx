@@ -66,7 +66,7 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(teachers.destroy(deleteDialog.item.id));
-            toast.success('Teacher deactivated successfully');
+            toast.success(t('toast.deactivated_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };

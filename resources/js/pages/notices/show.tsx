@@ -7,6 +7,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 
 type Notice = {
@@ -27,6 +28,7 @@ type PageProps = {
 export default function NoticesShow() {
     const { notice } = usePage<PageProps>().props;
     const { auth } = usePage().props;
+    const { t } = useLocale();
     const isAdmin = isOwner(auth.user);
     const [deleteDialog, setDeleteDialog] = useState(false);
 
@@ -37,7 +39,7 @@ export default function NoticesShow() {
     const confirmDelete = () => {
         router.delete(`/notices/${notice.id}`, {
             onSuccess: () => {
-                toast.success('Notice deleted successfully');
+                toast.success(t('toast.deleted_successfully'));
                 router.visit('/notices');
             },
         });

@@ -78,7 +78,7 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(`/holidays/${deleteDialog.item.id}`, {
-                onSuccess: () => toast.success('Holiday deleted successfully'),
+                onSuccess: () => toast.success(t('toast.deleted_successfully')),
             });
             setDeleteDialog({ open: false, item: null });
         }

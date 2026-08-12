@@ -1,10 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Plus, RefreshCw, Search, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +24,16 @@ import {
 } from '@/components/ui/table';
 import coachingClasses from '@/routes/coaching-classes';
 import { useLocale } from '@/contexts/locale-context';
+
+function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
+    let timer: ReturnType<typeof setTimeout>;
+    const debounced = (...args: Parameters<T>) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
+    debounced.cancel = () => clearTimeout(timer);
+    return debounced;
+}
 
 type CoachingClass = {
     id: number;
@@ -61,13 +70,16 @@ export default function CoachingClassesIndex({
         item: any | null;
     }>({ open: false, item: null });
 
-    const handleSearch = () => {
-        router.get(
-            coachingClasses.index(),
-            { search },
-            { preserveState: true },
-        );
-    };
+    const debouncedSearch = useCallback(
+        debounce((value: string) => {
+            router.get(
+                coachingClasses.index(),
+                { search: value },
+                { preserveState: true },
+            );
+        }, 300),
+        [],
+    );
 
     const handleDelete = (cls: CoachingClass) => {
         setDeleteDialog({ open: true, item: cls });
@@ -76,7 +88,7 @@ export default function CoachingClassesIndex({
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(coachingClasses.destroy(deleteDialog.item.id));
-            toast.success('Coaching class deleted successfully');
+            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };
@@ -86,18 +98,31 @@ export default function CoachingClassesIndex({
             <Head title={t('classes.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <Heading
-                        title={t('classes.title')}
-                        description={t('classes.desc')}
-                    />
+                <div className="flex items-start justify-between">
+                    <div className="space-y-0.5">
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            {t('classes.title')}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {t('classes.desc')}
+                        </p>
+                    </div>
                     {isAdmin && (
-                        <Link href={coachingClasses.create()}>
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                {t('classes.create')}
-                            </Button>
-                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={coachingClasses.create()}>
+                                        <Plus className="mr-2 size-4" />
+                                        {t('classes.create')}
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
                 </div>
 
@@ -109,10 +134,10 @@ export default function CoachingClassesIndex({
                                 <Input
                                     placeholder={t('actions.search') + '...'}
                                     value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleSearch()
-                                    }
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        debouncedSearch(e.target.value);
+                                    }}
                                     className="pr-9 pl-9"
                                 />
                                 {search && (
@@ -132,10 +157,6 @@ export default function CoachingClassesIndex({
                                     </button>
                                 )}
                             </div>
-                            <Button variant="secondary" onClick={handleSearch}>
-                                <Search className="size-4 sm:mr-2" />
-                                <span className="hidden sm:inline">{t('actions.search')}</span>
-                            </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -155,13 +176,13 @@ export default function CoachingClassesIndex({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
+                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background whitespace-nowrap">
                                         {t('classes.name')}
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className="whitespace-nowrap">
                                         {t('classes.default_fee')}
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className="whitespace-nowrap">
                                         {t('batches.enrolled')}
                                     </TableHead>
                                     {isAdmin && (
@@ -182,15 +203,15 @@ export default function CoachingClassesIndex({
                                 ) : (
                                     pagination.data.map((cls) => (
                                         <TableRow key={cls.id}>
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
+                                            <TableCell className="sticky left-0 z-10 bg-background font-medium whitespace-nowrap">
                                                 {cls.name}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {Number(
                                                     cls.default_fee,
                                                 ).toFixed(0)}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {cls.students_count}
                                             </TableCell>
                                             {isAdmin && (
@@ -240,9 +261,10 @@ export default function CoachingClassesIndex({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title="Delete Coaching Class"
-                description={`Are you sure you want to delete ${deleteDialog.item?.name}?`}
-                confirmText="Delete"
+                title={t('classes.delete_title')}
+                description={t('classes.delete_confirm').replace('{name}', deleteDialog.item?.name || '')}
+                confirmText={t('actions.delete')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />

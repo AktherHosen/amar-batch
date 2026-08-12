@@ -66,7 +66,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(`/fees/receipts/${deleteDialog.item.id}`, {
-                onSuccess: () => toast.success('Receipt deleted successfully'),
+                onSuccess: () => toast.success(t('toast.deleted_successfully')),
             });
             setDeleteDialog({ open: false, item: null });
         }

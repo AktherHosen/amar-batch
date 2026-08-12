@@ -42,7 +42,7 @@ export default function PlansIndex({ plans }: PageProps) {
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(`/super-admin/plans/${deleteDialog.item.id}`);
-            toast.success('Plan deleted successfully');
+            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };

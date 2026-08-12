@@ -1,12 +1,12 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
-import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import InputError from '@/components/input-error';
 import coachingClasses from '@/routes/coaching-classes';
+import { useLocale } from '@/contexts/locale-context';
 
 type CoachingClass = {
     id: number;
@@ -19,6 +19,7 @@ export default function CoachingClassEdit({
 }: {
     coachingClass: CoachingClass;
 }) {
+    const { t } = useLocale();
     const { data, setData, put, processing, errors } = useForm({
         name: coachingClass.name,
         default_fee: String(coachingClass.default_fee),
@@ -31,30 +32,29 @@ export default function CoachingClassEdit({
 
     return (
         <>
-            <Head title={`Edit ${coachingClass.name}`} />
+            <Head title={`${t('actions.edit')} ${coachingClass.name}`} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4">
-                    <Link href={coachingClasses.index().url}>
-                        <Button variant="ghost" size="sm">
-                            <ArrowLeft className="mr-2 size-4" />
-                            Back
+                <div className="flex items-center gap-4 min-w-0">
+                    <Link href={coachingClasses.index().url} className="shrink-0">
+                        <Button variant="ghost" size="icon" className="size-9">
+                            <ArrowLeft className="size-4" />
                         </Button>
                     </Link>
-                    <Heading
-                        title={`Edit ${coachingClass.name}`}
-                        description="Update class details"
-                    />
+                    <div className="min-w-0">
+                        <h2 className="truncate text-xl font-semibold tracking-tight">
+                            {t('actions.edit')} {coachingClass.name}
+                        </h2>
+                    </div>
                 </div>
 
                 <Card className="max-w-xl">
-                    <CardHeader>
-                        <CardTitle>Class Details</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Class Name *</Label>
+                                <Label htmlFor="name">
+                                    {t('classes.name')} *
+                                </Label>
                                 <Input
                                     id="name"
                                     value={data.name}
@@ -68,7 +68,7 @@ export default function CoachingClassEdit({
 
                             <div className="space-y-2">
                                 <Label htmlFor="default_fee">
-                                    Default Fee *
+                                    {t('classes.default_fee')} *
                                 </Label>
                                 <Input
                                     id="default_fee"
@@ -83,9 +83,11 @@ export default function CoachingClassEdit({
                                 <InputError message={errors.default_fee} />
                             </div>
 
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-2 pt-4 border-t">
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Saving...' : 'Update Class'}
+                                    {processing
+                                        ? t('actions.save') + '...'
+                                        : t('classes.update_class')}
                                 </Button>
                             </div>
                         </form>

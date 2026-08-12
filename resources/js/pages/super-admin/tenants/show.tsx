@@ -59,12 +59,12 @@ type PageProps = {
 
 export default function TenantShow({ tenant, stats, recentPayments }: PageProps) {
     const [toggleDialog, setToggleDialog] = useState(false);
-    const { formatCurrency } = useLocale();
+    const { formatCurrency, t } = useLocale();
 
     const handleToggle = () => {
         router.post(`/super-admin/tenants/${tenant.id}/toggle-active`, {}, {
             onSuccess: () => {
-                toast.success(`Tenant ${tenant.is_active ? 'deactivated' : 'activated'} successfully`);
+                toast.success(t('toast.updated_successfully'));
             },
         });
         setToggleDialog(false);

@@ -42,7 +42,7 @@ export default function ApiSettings({ tokens }: PageProps) {
             onSuccess: (page: any) => {
                 setNewToken(page.props.flash?.token || null);
                 reset();
-                toast.success('Token created successfully');
+                toast.success(t('toast.created_successfully'));
             },
         });
     };
@@ -55,7 +55,7 @@ export default function ApiSettings({ tokens }: PageProps) {
         if (deleteDialog.token) {
             router.delete(`/settings/api/${deleteDialog.token.id}`, {
                 onSuccess: () => {
-                    toast.success('Token revoked successfully');
+                    toast.success(t('toast.revoked_successfully'));
                     setDeleteDialog({ open: false, token: null });
                 },
             });
@@ -65,7 +65,7 @@ export default function ApiSettings({ tokens }: PageProps) {
     const copyToken = () => {
         if (newToken) {
             navigator.clipboard.writeText(newToken);
-            toast.success('Token copied to clipboard');
+            toast.success(t('toast.copied_to_clipboard'));
         }
     };
 

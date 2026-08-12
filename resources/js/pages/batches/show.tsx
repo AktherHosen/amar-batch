@@ -113,7 +113,7 @@ export default function BatchesShow({
 
     const confirmDelete = () => {
         router.delete(batches.destroy(batch.id), {
-            onSuccess: () => toast.success('Batch deleted successfully'),
+            onSuccess: () => toast.success(t('toast.deleted_successfully')),
         });
         setDeleteDialog(false);
     };
@@ -142,7 +142,7 @@ export default function BatchesShow({
             router.delete(batches.removeTeacher(batch.id), {
                 data: { teacher_id: removeTeacherDialog.teacherId },
                 preserveScroll: true,
-                onSuccess: () => toast.success('Teacher removed successfully'),
+                onSuccess: () => toast.success(t('toast.removed_successfully')),
             });
         }
         setRemoveTeacherDialog({ open: false, teacherId: null });
@@ -188,7 +188,7 @@ export default function BatchesShow({
         if (unenrollDialog.enrollmentId) {
             router.delete(`/enrollments/${unenrollDialog.enrollmentId}`, {
                 preserveScroll: true,
-                onSuccess: () => toast.success('Student unenrolled successfully'),
+                onSuccess: () => toast.success(t('toast.unenrolled_successfully')),
             });
         }
         setUnenrollDialog({ open: false, enrollmentId: null });

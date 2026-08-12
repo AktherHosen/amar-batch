@@ -96,7 +96,7 @@ export default function AttendanceIndex({
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(attendance.destroy(deleteDialog.item.id));
-            toast.success('Attendance record deleted successfully');
+            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };

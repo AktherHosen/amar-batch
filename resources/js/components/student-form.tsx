@@ -14,6 +14,7 @@ import {
 import InputError from '@/components/input-error';
 import { Camera, X, User, Phone, BookOpen, Calendar, Shield, MapPin } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { useLocale } from '@/contexts/locale-context';
 
 type CoachingClass = {
     id: number;
@@ -45,6 +46,7 @@ export default function StudentForm({
     processing,
     errors,
 }: StudentFormProps) {
+    const { t } = useLocale();
     const { data, setData } = useForm({
         name: student?.name || '',
         phone: student?.phone || '',
@@ -142,19 +144,19 @@ export default function StudentForm({
                     />
                 </div>
                 <div className="space-y-2 text-center">
-                    <Label>Student Photo</Label>
+                    <Label>{t('students.photo')}</Label>
                     <p className="text-xs text-muted-foreground">
-                        JPG, PNG or WebP. Max 2MB.
+                        {t('students.photo_hint')}
                     </p>
                     <InputError message={errors.photo} />
                 </div>
             </div>
 
             <div className="space-y-4">
-                <SectionHeader icon={User} title="Personal Info" />
+                <SectionHeader icon={User} title={t('students.personal_info')} />
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Name *</Label>
+                        <Label htmlFor="name">{t('students.name')} *</Label>
                         <Input
                             id="name"
                             value={data.name}
@@ -165,7 +167,7 @@ export default function StudentForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
+                        <Label htmlFor="phone">{t('students.phone')}</Label>
                         <Input
                             id="phone"
                             value={data.phone}
@@ -176,7 +178,7 @@ export default function StudentForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="date_of_birth">Date of Birth</Label>
+                        <Label htmlFor="date_of_birth">{t('students.date_of_birth')}</Label>
                         <Input
                             id="date_of_birth"
                             type="date"
@@ -190,7 +192,7 @@ export default function StudentForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="gender">Gender</Label>
+                        <Label htmlFor="gender">{t('students.gender')}</Label>
                         <Select
                             value={data.gender}
                             onValueChange={(value) => setData('gender', value)}
@@ -199,8 +201,8 @@ export default function StudentForm({
                                 <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="male">Male</SelectItem>
-                                <SelectItem value="female">Female</SelectItem>
+                                <SelectItem value="male">{t('students.male')}</SelectItem>
+                                <SelectItem value="female">{t('students.female')}</SelectItem>
                             </SelectContent>
                         </Select>
                         <InputError message={errors.gender} />
@@ -209,10 +211,10 @@ export default function StudentForm({
             </div>
 
             <div className="space-y-4">
-                <SectionHeader icon={BookOpen} title="Academic Info" />
+                <SectionHeader icon={BookOpen} title={t('students.academic_info')} />
                 <div className="flex gap-4">
                     <div className="flex-1 space-y-2">
-                        <Label htmlFor="coaching_class_id">Class</Label>
+                        <Label htmlFor="coaching_class_id">{t('students.class')}</Label>
                         <Select
                             value={data.coaching_class_id}
                             onValueChange={(value) =>
@@ -234,7 +236,7 @@ export default function StudentForm({
                     </div>
 
                     <div className="flex-1 space-y-2">
-                        <Label htmlFor="section">Section</Label>
+                        <Label htmlFor="section">{t('students.section')}</Label>
                         <Input
                             id="section"
                             value={data.section}
@@ -246,7 +248,7 @@ export default function StudentForm({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
+                    <Label htmlFor="status">{t('students.status')}</Label>
                     <Select
                         value={data.status}
                         onValueChange={(value) =>
@@ -257,8 +259,8 @@ export default function StudentForm({
                             <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="inactive">Inactive</SelectItem>
+                            <SelectItem value="active">{t('students.active')}</SelectItem>
+                            <SelectItem value="inactive">{t('students.inactive')}</SelectItem>
                         </SelectContent>
                     </Select>
                     <InputError message={errors.status} />
@@ -266,10 +268,10 @@ export default function StudentForm({
             </div>
 
             <div className="space-y-4">
-                <SectionHeader icon={Calendar} title="Dates" />
+                <SectionHeader icon={Calendar} title={t('students.dates')} />
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="joined_at">Joined At</Label>
+                        <Label htmlFor="joined_at">{t('students.joined_at')}</Label>
                         <Input
                             id="joined_at"
                             type="date"
@@ -282,7 +284,7 @@ export default function StudentForm({
 
                     {student && (
                         <div className="space-y-2">
-                            <Label htmlFor="left_at">Left At</Label>
+                            <Label htmlFor="left_at">{t('students.left_at')}</Label>
                             <Input
                                 id="left_at"
                                 type="date"
@@ -297,7 +299,7 @@ export default function StudentForm({
             </div>
 
             <div className="space-y-4">
-                <SectionHeader icon={MapPin} title="Address" />
+                <SectionHeader icon={MapPin} title={t('students.address')} />
                 <div className="space-y-2">
                     <Textarea
                         id="address"
@@ -311,10 +313,10 @@ export default function StudentForm({
             </div>
 
             <div className="space-y-4">
-                <SectionHeader icon={Shield} title="Guardian Info" />
+                <SectionHeader icon={Shield} title={t('students.guardian_info')} />
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="guardian_name">Guardian Name</Label>
+                        <Label htmlFor="guardian_name">{t('students.guardian_name')}</Label>
                         <Input
                             id="guardian_name"
                             value={data.guardian_name}
@@ -327,7 +329,7 @@ export default function StudentForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="guardian_phone">Guardian Phone</Label>
+                        <Label htmlFor="guardian_phone">{t('students.guardian_phone')}</Label>
                         <Input
                             id="guardian_phone"
                             value={data.guardian_phone}
@@ -344,10 +346,10 @@ export default function StudentForm({
             <div className="flex justify-end gap-2 pt-4 border-t">
                 <Button type="submit" disabled={processing}>
                     {processing
-                        ? 'Saving...'
+                        ? t('actions.save') + '...'
                         : student
-                          ? 'Update Student'
-                          : 'Create Student'}
+                          ? t('students.update')
+                          : t('students.create')}
                 </Button>
             </div>
         </form>

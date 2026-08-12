@@ -78,7 +78,7 @@ export default function StudentsShow({
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(students.destroy(deleteDialog.item.id));
-            toast.success('Student deleted successfully');
+            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };
@@ -196,7 +196,7 @@ export default function StudentsShow({
                     <div className="grid gap-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">Attendance Summary</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('attendance.summary')}</CardTitle>
                         </CardHeader>
                             <CardContent>
                                 {(() => {
@@ -218,21 +218,21 @@ export default function StudentsShow({
                                             <div className="flex items-center justify-between">
                                                 <span className="text-2xl font-bold">{percentage}%</span>
                                                 <Badge variant={percentage >= 75 ? 'success' : percentage >= 50 ? 'secondary' : 'destructive'}>
-                                                    {percentage >= 75 ? 'Good' : percentage >= 50 ? 'Average' : 'Low'}
+                                                    {percentage >= 75 ? t('attendance.good') : percentage >= 50 ? t('attendance.average') : t('attendance.low')}
                                                 </Badge>
                                             </div>
                                             <div className="flex gap-4 text-sm">
                                                 <div className="flex items-center gap-1">
                                                     <CheckCircle className="size-3 text-green-600" />
-                                                    <span>{totalPresent} present</span>
+                                                    <span>{totalPresent} {t('attendance.present').toLowerCase()}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <XCircle className="size-3 text-red-600" />
-                                                    <span>{totalAbsent} absent</span>
+                                                    <span>{totalAbsent} {t('attendance.absent').toLowerCase()}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="size-3 text-yellow-600" />
-                                                    <span>{totalLate} late</span>
+                                                    <span>{totalLate} {t('attendance.late').toLowerCase()}</span>
                                                 </div>
                                             </div>
                                             <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -243,7 +243,7 @@ export default function StudentsShow({
                                             </div>
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-muted-foreground">No attendance records yet</p>
+                                        <p className="text-sm text-muted-foreground">{t('students.no_attendance')}</p>
                                     );
                                 })()}
                             </CardContent>
@@ -378,7 +378,7 @@ export default function StudentsShow({
                             </Table>
                         ) : (
                             <p className="py-4 text-center text-sm text-muted-foreground">
-                                No attendance records yet.
+                                {t('students.no_attendance')}
                             </p>
                         )}
                     </CardContent>
@@ -455,7 +455,7 @@ export default function StudentsShow({
                             </Table>
                         ) : (
                             <p className="py-4 text-center text-sm text-muted-foreground">
-                                No payment records yet.
+                                {t('students.no_payments')}
                             </p>
                         )}
                     </CardContent>
@@ -467,9 +467,10 @@ export default function StudentsShow({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title="Delete Student"
-                description={`Are you sure you want to delete ${deleteDialog.item?.name}?`}
-                confirmText="Delete"
+                title={t('students.delete_title')}
+                description={t('students.delete_confirm')}
+                confirmText={t('actions.delete')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />

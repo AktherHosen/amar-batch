@@ -120,7 +120,7 @@ export default function StudentsIndex({
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(students.destroy(deleteDialog.item.id));
-            toast.success('Student deleted successfully');
+            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };
@@ -148,7 +148,7 @@ export default function StudentsIndex({
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => window.location.href = '/students/export'}>
                                 <Download className="mr-2 size-4" />
-                                Export CSV
+                                {t('actions.export_csv')}
                             </DropdownMenuItem>
                             {isAdmin && (
                                 <DropdownMenuItem asChild>
@@ -174,60 +174,61 @@ export default function StudentsIndex({
                                         setSearch(e.target.value);
                                         debouncedSearch(e.target.value);
                                     }}
-                                    className="pr-9 pl-9"
+                                    className="pr-16 pl-9"
                                 />
-                                {search && (
-                                    <button
-                                        type="button"
+                                <div className="absolute top-1/2 right-1 -translate-y-1/2 flex items-center">
+                                    {search && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSearch('');
+                                                router.get(
+                                                    students.index(),
+                                                    { status },
+                                                    { preserveState: true },
+                                                );
+                                            }}
+                                            className="p-1 text-muted-foreground hover:text-foreground"
+                                        >
+                                            <X className="size-4" />
+                                        </button>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 p-0"
+                                        disabled={refreshing}
                                         onClick={() => {
-                                            setSearch('');
-                                            router.get(
-                                                students.index(),
-                                                { status },
-                                                { preserveState: true },
-                                            );
+                                            setRefreshing(true);
+                                            router.reload({
+                                                only: ['students'],
+                                                onFinish: () => setRefreshing(false),
+                                            });
                                         }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                     >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
+                                        <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
+                                    </Button>
+                                </div>
                             </div>
-                            <div className="flex gap-3 sm:gap-4">
-                                <Select
-                                    value={status || 'all'}
-                                    onValueChange={handleStatusChange}
-                                >
-                                    <SelectTrigger className="w-full sm:w-[180px]">
-                                        <SelectValue placeholder="All Status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            All Status
-                                        </SelectItem>
-                                        <SelectItem value="active">
-                                            {t('students.active')}
-                                        </SelectItem>
-                                        <SelectItem value="inactive">
-                                            {t('students.inactive')}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={refreshing}
-                                    onClick={() => {
-                                        setRefreshing(true);
-                                        router.reload({
-                                            only: ['students'],
-                                            onFinish: () => setRefreshing(false),
-                                        });
-                                    }}
-                                >
-                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                </Button>
-                            </div>
+                            <Select
+                                value={status || 'all'}
+                                onValueChange={handleStatusChange}
+                            >
+                                <SelectTrigger className="w-full sm:w-[180px]">
+                                    <SelectValue placeholder={t('students.all_status')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">
+                                        {t('students.all_status')}
+                                    </SelectItem>
+                                    <SelectItem value="active">
+                                        {t('students.active')}
+                                    </SelectItem>
+                                    <SelectItem value="inactive">
+                                        {t('students.inactive')}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <Table>
@@ -362,9 +363,10 @@ export default function StudentsIndex({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title="Delete Student"
-                description={`Are you sure you want to delete ${deleteDialog.item?.name}?`}
-                confirmText="Delete"
+                title={t('students.delete_title')}
+                description={t('students.delete_confirm')}
+                confirmText={t('actions.delete')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />

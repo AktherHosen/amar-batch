@@ -436,7 +436,7 @@ export default function Dashboard({
                                         <Megaphone className="size-3.5 text-amber-600" />
                                     </div>
                                     <CardTitle>
-                                        Recent Notices
+                                        {t('dashboard.recent_notices')}
                                     </CardTitle>
                                 </div>
                                 <Link
@@ -506,7 +506,7 @@ export default function Dashboard({
                                         <Calendar className="size-3.5 text-blue-600" />
                                     </div>
                                     <CardTitle>
-                                        Upcoming Holidays
+                                        {t('dashboard.upcoming_holidays')}
                                     </CardTitle>
                                 </div>
                                 <Link
@@ -592,19 +592,19 @@ export default function Dashboard({
                             <div className="flex items-center justify-around">
                                 <Link href="/students/create" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
                                     <Plus className="size-5 shrink-0" />
-                                    <span className="w-full truncate text-center text-[10px] font-medium">Student</span>
+                                    <span className="w-full truncate text-center text-[10px] font-medium">{t('students.title')}</span>
                                 </Link>
                                 <Link href="/attendance/create" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
                                     <ClipboardCheck className="size-5 shrink-0" />
-                                    <span className="w-full truncate text-center text-[10px] font-medium">Attendance</span>
+                                    <span className="w-full truncate text-center text-[10px] font-medium">{t('attendance.title')}</span>
                                 </Link>
                                 <Link href="/fees" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
                                     <CreditCard className="size-5 shrink-0" />
-                                    <span className="w-full truncate text-center text-[10px] font-medium">Payment</span>
+                                    <span className="w-full truncate text-center text-[10px] font-medium">{t('fees.title')}</span>
                                 </Link>
                                 <Link href="/notices/create" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
                                     <Megaphone className="size-5 shrink-0" />
-                                    <span className="w-full truncate text-center text-[10px] font-medium">Notice</span>
+                                    <span className="w-full truncate text-center text-[10px] font-medium">{t('notices.title')}</span>
                                 </Link>
                             </div>
                         </div>
@@ -619,7 +619,7 @@ export default function Dashboard({
                             <Card>
                                 <CardHeader>
                                     <CardTitle>
-                                        Quick Actions
+                                        {t('dashboard.quick_actions')}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -648,7 +648,7 @@ export default function Dashboard({
                                                     className="w-full justify-start"
                                                 >
                                                     <Plus className="mr-2 size-4" />
-                                                    Add Student
+                                                    {t('dashboard.add_student')}
                                                 </Button>
                                             </Link>
                                         </motion.div>
@@ -664,7 +664,7 @@ export default function Dashboard({
                                                     className="w-full justify-start"
                                                 >
                                                     <ClipboardCheck className="mr-2 size-4" />
-                                                    Mark Attendance
+                                                    {t('dashboard.mark_attendance')}
                                                 </Button>
                                             </Link>
                                         </motion.div>
@@ -680,7 +680,7 @@ export default function Dashboard({
                                                     className="w-full justify-start"
                                                 >
                                                     <CreditCard className="mr-2 size-4" />
-                                                    Record Payment
+                                                    {t('dashboard.record_payment')}
                                                 </Button>
                                             </Link>
                                         </motion.div>
@@ -696,7 +696,7 @@ export default function Dashboard({
                                                     className="w-full justify-start"
                                                 >
                                                     <Megaphone className="mr-2 size-4" />
-                                                    Post Notice
+                                                    {t('dashboard.post_notice')}
                                                 </Button>
                                             </Link>
                                         </motion.div>

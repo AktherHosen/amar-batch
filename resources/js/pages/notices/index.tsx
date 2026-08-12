@@ -85,7 +85,7 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(`/notices/${deleteDialog.item.id}`, {
-                onSuccess: () => toast.success('Notice deleted successfully'),
+                onSuccess: () => toast.success(t('toast.deleted_successfully')),
             });
             setDeleteDialog({ open: false, item: null });
         }

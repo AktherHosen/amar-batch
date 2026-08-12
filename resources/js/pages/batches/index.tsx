@@ -97,7 +97,7 @@ export default function BatchesIndex({
         if (deleteDialog.batch) {
             router.delete(batches.destroy(deleteDialog.batch.id), {
                 onSuccess: () => {
-                    toast.success('Batch deleted successfully');
+                    toast.success(t('toast.deleted_successfully'));
                     setDeleteDialog({ open: false, batch: null });
                 },
             });
@@ -113,7 +113,7 @@ export default function BatchesIndex({
             router.put(`/batches/${completeDialog.batch.id}/complete`, {}, {
                 only: ['batches'],
                 onSuccess: () => {
-                    toast.success('Batch completed successfully');
+                    toast.success(t('toast.completed_successfully'));
                     setCompleteDialog({ open: false, batch: null });
                 },
             });

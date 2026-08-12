@@ -55,7 +55,7 @@ export default function PlanEdit({ plan }: PageProps) {
         setProcessing(true);
 
         router.put(`/super-admin/plans/${plan.id}`, form, {
-            onSuccess: () => toast.success('Plan updated successfully'),
+            onSuccess: () => toast.success(t('toast.updated_successfully')),
             onFinish: () => setProcessing(false),
         });
     };

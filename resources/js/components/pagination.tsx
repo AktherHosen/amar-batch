@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLocale } from '@/contexts/locale-context';
 
 type PaginationProps = {
     currentPage: number;
@@ -21,6 +22,7 @@ export default function Pagination({
     baseUrl,
     preserveParams = {},
 }: PaginationProps) {
+    const { t } = useLocale();
     if (total <= 0) return null;
 
     const goToPage = (page: number) => {
@@ -37,7 +39,11 @@ export default function Pagination({
     return (
         <div className="mt-4 flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
             <p className="text-sm text-muted-foreground">
-                Showing {from}-{to} of {total} {itemName}
+                {t('pagination.showing')
+                    .replace('{from}', String(from))
+                    .replace('{to}', String(to))
+                    .replace('{total}', String(total))
+                    .replace('{itemName}', itemName)}
             </p>
             <div className="flex items-center gap-1">
                 <Button
