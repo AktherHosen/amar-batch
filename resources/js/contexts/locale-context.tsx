@@ -183,6 +183,13 @@ const translations: Record<Locale, Record<string, string>> = {
         'batches.by': 'কর্তৃক',
         'batches.remove_teacher_confirm': 'আপনি কি নিশ্চিত এই শিক্ষককে ব্যাচ থেকে সরাতে চান?',
         'batches.unenroll_confirm': 'আপনি কি নিশ্চিত এই স্টুডেন্টকে ব্যাচ থেকে ভর্তি বাতিল করতে চান?',
+        'batches.no_batches': 'কোনো ব্যাচ পাওয়া যায়নি',
+        'batches.delete_title': 'ব্যাচ মুছুন',
+        'batches.complete_title': 'ব্যাচ সম্পন্ন করুন',
+        'batches.remove_teacher_title': 'শিক্ষক সরান',
+        'batches.unenroll_title': 'ভর্তি বাতিল',
+        'batches.full': 'পূর্ণ',
+        'batches.drop': 'বাদ দিন',
 
         // Teachers
         'teachers.title': 'শিক্ষক',
@@ -706,6 +713,13 @@ const translations: Record<Locale, Record<string, string>> = {
         'batches.by': 'By',
         'batches.remove_teacher_confirm': 'Are you sure you want to remove this teacher from the batch?',
         'batches.unenroll_confirm': 'Are you sure you want to unenroll this student from the batch?',
+        'batches.no_batches': 'No batches found',
+        'batches.delete_title': 'Delete Batch',
+        'batches.complete_title': 'Complete Batch',
+        'batches.remove_teacher_title': 'Remove Teacher',
+        'batches.unenroll_title': 'Unenroll Student',
+        'batches.full': 'Full',
+        'batches.drop': 'Drop',
 
         // Teachers
         'teachers.title': 'Teachers',

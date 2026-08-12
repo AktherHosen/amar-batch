@@ -275,7 +275,7 @@ export default function BatchesShow({
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm font-medium">{batch.capacity}</p>
                                         {batch.enrollments.length >= batch.capacity && (
-                                            <Badge variant="destructive" className="text-xs">Full</Badge>
+                                            <Badge variant="destructive" className="text-xs">{t('batches.full')}</Badge>
                                         )}
                                     </div>
                                 </div>
@@ -459,12 +459,12 @@ export default function BatchesShow({
                                                 onClick={handleAssignTeacher}
                                                 disabled={!selectedTeacher}
                                             >
-                                                Assign
+                                                {t('batches.assign')}
                                             </Button>
                                         </div>
                                     ) : (
                                         <p className="text-sm text-muted-foreground">
-                                            No teachers found.
+                                            {t('batches.no_teachers')}
                                         </p>
                                     )}
                                 </div>
@@ -493,10 +493,10 @@ export default function BatchesShow({
                                 return availableStudents.length > 0 ||
                                     studentSearch ? (
                                     <div className="space-y-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Search students by name..."
-                                            value={studentSearch}
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder={t('batches.search_students')}
+                                                                    value={studentSearch}
                                             onChange={(e) =>
                                                 setStudentSearch(e.target.value)
                                             }
@@ -511,7 +511,7 @@ export default function BatchesShow({
                                                     }
                                                 >
                                                     <SelectTrigger className="flex-1">
-                                                        <SelectValue placeholder="Select a student" />
+                                                        <SelectValue placeholder={t('batches.select_student')} />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {availableStudents.map(
@@ -526,10 +526,7 @@ export default function BatchesShow({
                                                                         student.name
                                                                     }{' '}
                                                                     (
-                                                                    {student
-                                                                        .coaching_class
-                                                                        ?.name ||
-                                                                        'No Class'}
+                                                                    {student.coaching_class?.name || t('batches.no_class')}
                                                                     )
                                                                 </SelectItem>
                                                             ),
@@ -548,7 +545,7 @@ export default function BatchesShow({
                                                     }
                                                     disabled={!selectedStudent}
                                                 >
-                                                    Enroll
+                                                    {t('batches.enroll')}
                                                 </Button>
                                             </div>
                                         ) : (
@@ -648,16 +645,16 @@ export default function BatchesShow({
                                                             {enrollment.status === 'active' && (
                                                                 <>
                                                                     <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'completed')}>
-                                                                        Complete
+                                                                        {t('actions.complete')}
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'dropped')}>
-                                                                        Drop
+                                                                        {t('batches.drop')}
                                                                     </DropdownMenuItem>
                                                                 </>
                                                             )}
                                                             <DropdownMenuItem onClick={() => handleUnenroll(enrollment.id)} className="text-destructive">
                                                                 <UserMinus className="mr-2 size-4" />
-                                                                Unenroll
+                                                                {t('batches.unenroll')}
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
