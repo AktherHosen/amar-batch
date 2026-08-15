@@ -636,6 +636,25 @@ export const translations: Record<Locale, Record<string, string>> = {
         'welcome.stat_batches': 'চলমান ব্যাচ',
         'welcome.stat_enrollments': 'চলমান ভর্তি',
         'welcome.stat_fees': 'বেতন সংগ্রহ',
+
+        // Contact page
+        'contact.page_title': 'যোগাযোগ করুন',
+        'contact.page_desc':
+            'আপনার কোনো প্রশ্ন বা সাহায্যের প্রয়োজন আছে? আমাদের সাথে যোগাযোগ করুন।',
+        'contact.email': 'ইমেইল',
+        'contact.phone': 'ফোন',
+        'contact.address': 'ঠিকানা',
+        'contact.address_value': 'চট্টগ্রাম, বাংলাদেশ',
+        'contact.hours': 'কাজের সময়',
+        'contact.hours_value': 'রবি - বৃহস্পতি, সকাল ৯:০০ - বিকাল ৬:০০ (বিএসটি)',
+        'contact.form_name': 'আপনার নাম',
+        'contact.form_email': 'ইমেইল ঠিকানা',
+        'contact.form_subject': 'বিষয়',
+        'contact.form_message': 'বার্তা',
+        'contact.form_submit': 'বার্তা পাঠান',
+        'contact.sent_success':
+            'আপনার বার্তাটি পাঠানো হয়েছে। আমরা শীঘ্রই আপনাকে উত্তর দেবো।',
+        'contact.sent_error': 'কিছু ভুল হয়েছে। আবার চেষ্টা করুন।',
     },
     en: {
         // Common
@@ -1293,6 +1312,9 @@ export const translations: Record<Locale, Record<string, string>> = {
         'contact.form_subject': 'Subject',
         'contact.form_message': 'Message',
         'contact.form_submit': 'Send Message',
+        'contact.sent_success':
+            'Your message has been sent. We will get back to you soon.',
+        'contact.sent_error': 'Something went wrong. Please try again.',
 
         // Terms page
         'terms.page_title': 'Terms of Service',

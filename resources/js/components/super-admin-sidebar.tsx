@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Building2, CreditCard } from 'lucide-react';
+import { LayoutGrid, Building2, CreditCard, Mail } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -23,6 +23,7 @@ export function SuperAdminSidebar() {
                 { title: 'Coaching Centers', href: '/super-admin/tenants', icon: Building2 },
                 { title: 'Plans', href: '/super-admin/plans', icon: CreditCard },
                 { title: 'Payments', href: '/super-admin/payments', icon: CreditCard },
+                { title: 'Contact Messages', href: '/super-admin/contacts', icon: Mail },
             ],
         },
     ];

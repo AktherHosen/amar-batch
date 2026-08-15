@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ContactMessage;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Subscription;
@@ -44,12 +45,17 @@ class SuperAdminController extends Controller
             ->withSum('payments as total_revenue', 'amount')
             ->get();
 
+        $recentContactMessages = ContactMessage::latest()
+            ->take(5)
+            ->get();
+
         return Inertia::render('super-admin/dashboard', [
             'stats' => $stats,
             'recentTenants' => $tenantStats,
             'tenantStats' => $tenantStats,
             'recentPayments' => $recentPayments,
             'revenueByPlan' => $revenueByPlan,
+            'recentContactMessages' => $recentContactMessages,
         ]);
     }
 

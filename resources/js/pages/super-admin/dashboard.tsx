@@ -10,6 +10,7 @@ import {
     CreditCard,
     TrendingUp,
     Eye,
+    MessageSquareReply,
 } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
 import { Link, router } from '@inertiajs/react';
@@ -60,14 +61,25 @@ type RevenueByPlan = {
     total_revenue: number | null;
 };
 
+type ContactMessage = {
+    id: number;
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    is_read: boolean;
+    created_at: string;
+};
+
 type PageProps = {
     stats: Stats;
     tenantStats: TenantStat[];
     recentPayments: PaymentRecord[];
     revenueByPlan: RevenueByPlan[];
+    recentContactMessages: ContactMessage[];
 };
 
-export default function SuperAdminDashboard({ stats, tenantStats, recentPayments, revenueByPlan }: PageProps) {
+export default function SuperAdminDashboard({ stats, tenantStats, recentPayments, revenueByPlan, recentContactMessages }: PageProps) {
     const { formatCurrency } = useLocale();
 
     const getStatusBadge = (status: string) => {
@@ -219,6 +231,59 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Contact Messages */}
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>Contact Messages</CardTitle>
+                        <Link href="/super-admin/contacts" className="text-sm text-blue-600 hover:underline">
+                            View All
+                        </Link>
+                    </CardHeader>
+                    <CardContent>
+                        {recentContactMessages.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="whitespace-nowrap">Name</TableHead>
+                                        <TableHead className="whitespace-nowrap">Email</TableHead>
+                                        <TableHead className="whitespace-nowrap">Subject</TableHead>
+                                        <TableHead className="whitespace-nowrap">Status</TableHead>
+                                        <TableHead className="whitespace-nowrap w-[50px]"></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {recentContactMessages.map((message) => (
+                                        <TableRow key={message.id}>
+                                            <TableCell className="font-medium whitespace-nowrap">{message.name}</TableCell>
+                                            <TableCell className="whitespace-nowrap">{message.email}</TableCell>
+                                            <TableCell className="max-w-[200px] truncate whitespace-nowrap">{message.subject}</TableCell>
+                                            <TableCell>
+                                                {!message.is_read ? (
+                                                    <Badge className="bg-yellow-600 text-white whitespace-nowrap">Unread</Badge>
+                                                ) : (
+                                                    <Badge variant="secondary" className="whitespace-nowrap">Read</Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="w-[50px]">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="size-8 p-0"
+                                                    onClick={() => router.get('/super-admin/contacts')}
+                                                >
+                                                    <MessageSquareReply className="size-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No contact messages yet.</p>
+                        )}
+                    </CardContent>
+                </Card>
 
                 <Card>
                     <CardHeader>

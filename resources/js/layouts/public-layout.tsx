@@ -17,16 +17,16 @@ export default function PublicLayout({ children }: Props) {
         <div className="min-h-screen bg-background">
             {/* Navigation */}
             <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-2">
                         <Link href="/" className="flex items-center gap-2">
                             <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-lg object-cover" />
                             <span className="hidden text-xl font-bold sm:inline-block">{t('app.name')}</span>
                         </Link>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                         {auth?.user ? (
-                            <Button asChild>
+                            <Button asChild className="px-3 sm:px-4">
                                 <Link href={dashboard()}>
                                     {t('nav.dashboard')}
                                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -34,10 +34,10 @@ export default function PublicLayout({ children }: Props) {
                             </Button>
                         ) : (
                             <>
-                                <Button variant="ghost" asChild>
+                                <Button variant="ghost" size="sm" asChild>
                                     <Link href={login()}>{t('auth.login')}</Link>
                                 </Button>
-                                <Button asChild>
+                                <Button asChild className="px-3 sm:px-4">
                                     <Link href={register()}>
                                         {t('auth.sign_up_free')}
                                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -53,9 +53,9 @@ export default function PublicLayout({ children }: Props) {
             <main>{children}</main>
 
             {/* Footer */}
-            <footer className="border-t bg-muted/30 py-12 sm:py-16">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="grid gap-8 md:grid-cols-4">
+            <footer className="border-t bg-muted/30 py-10 sm:py-16">
+                <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+                    <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                         <div>
                             <div className="flex items-center gap-2">
                                 <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-lg object-cover" />

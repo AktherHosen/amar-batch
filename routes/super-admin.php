@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SuperAdmin\ContactMessageController;
 use App\Http\Controllers\SuperAdmin\PlanController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\TenantController;
@@ -16,6 +17,10 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('super-admin
     Route::get('payments', [SuperAdminController::class, 'payments'])->name('payments');
     Route::post('payments/{payment}/approve', [SuperAdminController::class, 'approvePayment'])->name('payments.approve');
     Route::post('payments/{payment}/cancel', [SuperAdminController::class, 'cancelPayment'])->name('payments.cancel');
+
+    Route::get('contacts', [ContactMessageController::class, 'index'])->name('contacts.index');
+    Route::post('contacts/{contactMessage}/reply', [ContactMessageController::class, 'reply'])->name('contacts.reply');
+    Route::post('contacts/{contactMessage}/read', [ContactMessageController::class, 'markRead'])->name('contacts.read');
 
     Route::get('tenants/{tenant}/detail', [SuperAdminController::class, 'showTenant'])->name('tenants.detail');
 });
