@@ -1,4 +1,7 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage, Link } from '@inertiajs/react';
+import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
+import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import settings from '@/routes/settings';
+import { dashboard } from '@/routes';
 
 type Tenant = {
     id: number;
@@ -40,7 +44,7 @@ export default function TenantSettings({ tenant }: PageProps) {
         post('/settings/tenant', {
             forceFormData: true,
             onSuccess: () => {
-                toast.success(t('toast.updated_successfully'));
+                toast.success('Updated successfully');
             },
         });
     };
@@ -64,14 +68,32 @@ export default function TenantSettings({ tenant }: PageProps) {
         <>
             <Head title="Coaching Center Settings" />
 
-            <h1 className="sr-only">Coaching Center Settings</h1>
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+            >
+                <div className="flex items-center gap-4 min-w-0">
+                    <Link href={dashboard()} className="shrink-0">
+                        <Button variant="ghost" size="sm">
+                            <ArrowLeft className="size-4" />
+                        </Button>
+                    </Link>
+                    <div className="min-w-0">
+                        <Heading
+                            title="Coaching Center Settings"
+                            description="Manage your coaching center information"
+                        />
+                    </div>
+                </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Basic Information</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                <Card>
+                    <CardHeader className="pt-4">
+                        <CardTitle>Basic Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-3">
+                        <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Coaching Center Name *</Label>
@@ -184,7 +206,8 @@ export default function TenantSettings({ tenant }: PageProps) {
                         </div>
                     </form>
                 </CardContent>
-            </Card>
+                </Card>
+            </motion.div>
         </>
     );
 }

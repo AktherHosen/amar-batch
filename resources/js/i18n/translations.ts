@@ -75,6 +75,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.reports': 'রিপোর্ট',
         'nav.branches': 'ব্রাঞ্চ',
         'nav.roles': 'ভুমিকা ও অনুমতি',
+        'nav.coaching_center': 'কোচিং সেন্টার',
+        'nav.api_settings': 'API সেটিংস',
 
         // Dashboard
         'dashboard.title': 'ড্যাশবোর্ড',
@@ -734,6 +736,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.reports': 'Reports',
         'nav.branches': 'Branches',
         'nav.roles': 'Roles & Permissions',
+        'nav.coaching_center': 'Coaching Center',
+        'nav.api_settings': 'API Settings',
 
         // Dashboard
         'dashboard.title': 'Dashboard',

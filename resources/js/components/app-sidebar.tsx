@@ -2,8 +2,8 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutGrid,
     Users,
+    UsersRound,
     Layers,
-GraduationCap,
     Wallet,
     CheckSquare,
     School,
@@ -11,17 +11,16 @@ GraduationCap,
     FileText,
     BarChart3,
     Building2,
+    Key,
     Megaphone,
     Calendar,
     Shield,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
     SidebarContent,
-    SidebarFooter,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -42,6 +41,7 @@ import reports from '@/routes/reports';
 import branches from '@/routes/branches';
 import subscription from '@/routes/subscription';
 import roles from '@/routes/roles';
+import settings from '@/routes/settings';
 import type { NavItem, NavItemGroup } from '@/types';
 
 export function AppSidebar() {
@@ -51,12 +51,14 @@ export function AppSidebar() {
     const hasExams = useHasFeature('exams');
     const hasReports = useHasFeature('reports');
     const hasMultiBranch = useHasFeature('multi_branch');
+    const hasApiAccess = useHasFeature('api_access');
 
     const filterItem = (item: NavItem): boolean => {
         if (item.ownerOnly && !isUserOwner) return false;
         if (item.featureRequired === 'exams' && !hasExams) return false;
         if (item.featureRequired === 'reports' && !hasReports) return false;
         if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
+        if (item.featureRequired === 'api_access' && !hasApiAccess) return false;
         return true;
     };
 
@@ -72,7 +74,7 @@ export function AppSidebar() {
             items: [
                 { title: t('nav.students'), href: students.index(), icon: Users },
                 { title: t('nav.coaching_classes'), href: coachingClasses.index(), icon: School },
-                { title: t('nav.users'), href: users.index(), icon: GraduationCap, ownerOnly: true },
+                { title: t('nav.users'), href: users.index(), icon: UsersRound },
                 { title: t('nav.batches'), href: batches.index(), icon: Layers },
             ],
         },
@@ -108,6 +110,8 @@ export function AppSidebar() {
             label: 'Administration',
             items: [
                 { title: t('nav.roles'), href: roles.index(), icon: Shield, ownerOnly: true },
+                { title: t('nav.coaching_center'), href: settings.tenant.edit(), icon: Building2, ownerOnly: true },
+                { title: t('nav.api_settings'), href: settings.api.index(), icon: Key, ownerOnly: true, featureRequired: 'api_access' },
             ],
         },
     ];
@@ -136,10 +140,6 @@ export function AppSidebar() {
             <SidebarContent>
                 <NavMain groups={filteredGroups} />
             </SidebarContent>
-
-            <SidebarFooter>
-                <NavUser />
-            </SidebarFooter>
         </Sidebar>
     );
 }

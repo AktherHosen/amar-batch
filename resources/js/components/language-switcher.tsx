@@ -21,12 +21,11 @@ export default function LanguageSwitcher() {
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
-                    size="sm"
-                    className="gap-0 px-1.5 sm:gap-1.5 sm:px-2"
+                    size="icon"
+                    className="size-9"
                     title={locale === 'en' ? 'বাংলা' : 'English'}
                 >
-                    <Globe className="h-4 w-4" />
-                    <span className="hidden sm:inline">{locale === 'en' ? 'EN' : 'বাং'}</span>
+                    <Globe className="size-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-36">
