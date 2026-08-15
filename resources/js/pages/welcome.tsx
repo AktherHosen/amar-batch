@@ -157,14 +157,14 @@ export default function Welcome({ stats, plans }: Props) {
             <div className="min-h-screen bg-background">
                 {/* Navigation */}
                 <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                    <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                    <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
                         <div className="flex items-center gap-2">
                             <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-lg object-cover" />
                             <span className="hidden text-xl font-bold sm:inline-block">{t('app.name')}</span>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                             {auth.user ? (
-                                <Button asChild>
+                                <Button asChild className="px-3 sm:px-4">
                                     <Link href={dashboard()}>
                                         {t('nav.dashboard')}
                                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -172,10 +172,10 @@ export default function Welcome({ stats, plans }: Props) {
                                 </Button>
                             ) : (
                                 <>
-                                    <Button variant="ghost" asChild>
+                                    <Button variant="ghost" size="sm" asChild>
                                         <Link href={login()}>{t('auth.login')}</Link>
                                     </Button>
-                                    <Button asChild>
+                                    <Button asChild className="px-3 sm:px-4">
                                         <Link href={register()}>
                                             {t('auth.sign_up_free')}
                                             <ArrowRight className="ml-2 h-4 w-4" />
@@ -190,22 +190,22 @@ export default function Welcome({ stats, plans }: Props) {
                 {/* Hero Section */}
                 <section className="relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden border-b">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/5" />
-                    <div className="relative mx-auto w-full px-4 sm:px-6 lg:px-8">
+                    <div className="relative mx-auto w-full px-3 sm:px-6 lg:px-8">
                         <div className="mx-auto max-w-4xl text-center">
-                            <Badge variant="secondary" className="mb-6">
+                            <Badge variant="secondary" className="mb-3 sm:mb-6">
                                 <Check className="mr-1 h-3 w-3" />
                                 {t('welcome.trusted_badge')}
                             </Badge>
-                            <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
+                            <h1 className="mb-3 text-3xl font-bold tracking-tight sm:mb-6 sm:text-6xl lg:text-7xl">
                                 {t('welcome.hero_title')}
                             </h1>
-                            <p className="mb-4 text-lg text-muted-foreground sm:text-xl">
+                            <p className="mb-3 text-sm leading-relaxed text-muted-foreground sm:mb-4 sm:text-xl sm:leading-relaxed">
                                 {t('welcome.hero_subtitle')}
                             </p>
-                            <p className="mb-10 max-w-2xl mx-auto text-muted-foreground">
+                            <p className="mb-6 mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:mb-10 sm:text-base">
                                 {t('welcome.hero_description')}
                             </p>
-                            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+                            <div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
                                 {auth.user ? (
                                     <Button size="lg" asChild>
                                         <Link href={dashboard()}>
@@ -230,14 +230,14 @@ export default function Welcome({ stats, plans }: Props) {
                         </div>
                     </div>
                 </section>
-                <section className="border-b bg-muted/30 py-12 sm:py-16">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+                <section className="border-b bg-muted/30 py-8 sm:py-16">
+                    <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+                        <div className="grid grid-cols-2 gap-2 md:grid-cols-4 sm:gap-6">
                             {displayStats.map((stat) => (
                                 <div key={stat.label} className="text-center">
-                                    <stat.icon className="mx-auto mb-2 h-6 w-6 text-primary" />
-                                    <div className="text-3xl font-bold sm:text-4xl">{stat.number}</div>
-                                    <div className="mt-1 text-sm text-muted-foreground">{stat.label}</div>
+                                    <stat.icon className="mx-auto mb-1.5 h-5 w-5 text-primary sm:mb-2 sm:h-6 sm:w-6" />
+                                    <div className="text-xl font-bold sm:text-4xl">{stat.number}</div>
+                                    <div className="mt-1 text-xs text-muted-foreground sm:text-sm">{stat.label}</div>
                                 </div>
                             ))}
                         </div>
@@ -245,28 +245,28 @@ export default function Welcome({ stats, plans }: Props) {
                 </section>
 
                 {/* Features Section */}
-                <section id="features" className="py-20 sm:py-28">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="mb-16 text-center">
-                            <Badge variant="outline" className="mb-4">Features</Badge>
-                            <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+                <section id="features" className="py-12 sm:py-28">
+                    <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+                        <div className="mb-8 text-center sm:mb-16">
+                            <Badge variant="outline" className="mb-3 sm:mb-4">Features</Badge>
+                            <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-4xl lg:text-5xl">
                                 {t('welcome.about_title')}
                             </h2>
-                            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+                            <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-lg">
                                 {t('welcome.about_desc')}
                             </p>
                         </div>
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid gap-2 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {features.map((feature) => (
                                 <Card key={feature.title} className="group transition-all hover:shadow-lg hover:shadow-primary/5">
                                     <CardHeader>
-                                        <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                            <feature.icon className="h-6 w-6" />
+                                        <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:size-12">
+                                            <feature.icon className="size-5 sm:h-6 sm:w-6" />
                                         </div>
-                                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                                        <CardTitle className="text-base font-bold tracking-tight sm:text-xl">{feature.title}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <p className="text-muted-foreground">{feature.description}</p>
+                                        <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{feature.description}</p>
                                     </CardContent>
                                 </Card>
                             ))}
@@ -275,28 +275,28 @@ export default function Welcome({ stats, plans }: Props) {
                 </section>
 
                 {/* How it Works Section */}
-                <section className="border-y bg-muted/30 py-20 sm:py-28">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="mb-16 text-center">
-                            <Badge variant="outline" className="mb-4">How it Works</Badge>
-                            <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+                <section className="border-y bg-muted/30 py-12 sm:py-28">
+                    <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+                        <div className="mb-8 text-center sm:mb-16">
+                            <Badge variant="outline" className="mb-3 sm:mb-4">How it Works</Badge>
+                            <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-4xl lg:text-5xl">
                                 {t('welcome.how_it_works_title')}
                             </h2>
-                            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+                            <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-lg">
                                 {t('welcome.how_it_works_desc')}
                             </p>
                         </div>
-                        <div className="grid gap-8 md:grid-cols-3">
+                        <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
                             {steps.map((step, index) => (
                                 <div key={step.number} className="relative text-center">
                                     {index < steps.length - 1 && (
                                         <div className="absolute top-8 left-[calc(50%+40px)] hidden h-[2px] w-[calc(100%-80px)] bg-border md:block" />
                                     )}
-                                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border-2 border-primary bg-background">
-                                        <step.icon className="h-7 w-7 text-primary" />
+                                    <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full border-2 border-primary bg-background sm:mb-6 sm:size-16">
+                                        <step.icon className="size-6 sm:h-7 sm:w-7 text-primary" />
                                     </div>
-                                    <h3 className="mb-2 text-xl font-semibold">{step.title}</h3>
-                                    <p className="text-muted-foreground">{step.description}</p>
+                                    <h3 className="mb-2 text-base font-bold tracking-tight sm:text-xl">{step.title}</h3>
+                                    <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{step.description}</p>
                                 </div>
                             ))}
                         </div>
@@ -305,24 +305,24 @@ export default function Welcome({ stats, plans }: Props) {
 
                 {/* Pricing Section */}
                 {safePlans.length > 0 && (
-                    <section id="pricing" className="py-20 sm:py-28">
-                        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                            <div className="mb-16 text-center">
-                                <Badge variant="outline" className="mb-4">Pricing</Badge>
-                                <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+                    <section id="pricing" className="py-12 sm:py-28">
+                        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+                            <div className="mb-8 text-center sm:mb-16">
+                                <Badge variant="outline" className="mb-3 sm:mb-4">Pricing</Badge>
+                                <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-4xl lg:text-5xl">
                                     {t('welcome.pricing_title')}
                                 </h2>
-                                <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+                                <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-lg">
                                     {t('welcome.pricing_desc')}
                                 </p>
-                                <div className="mt-8 flex items-center justify-center gap-3">
+                                <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
                                     <span className={`text-sm ${!annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{t('plan.monthly')}</span>
                                     <Switch checked={annual} onCheckedChange={setAnnual} />
                                     <span className={`text-sm ${annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{t('plan.yearly')}</span>
                                     {annual && <Badge variant="secondary" className="ml-1 text-green-600 dark:text-green-400">Save 17%</Badge>}
                                 </div>
                             </div>
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
                                 {safePlans.map((plan) => {
                                     const isPopular = plan.slug === 'pro';
                                     const price = annual ? plan.price_yearly : plan.price_monthly;
@@ -345,10 +345,10 @@ export default function Welcome({ stats, plans }: Props) {
                                                 popularLabel={t('plan.popular')}
                                                 defaultLabel={t('plan.free_trial')}
                                             />
-                                            <CardHeader>
-                                                <CardTitle className="text-xl">{plan.name}</CardTitle>
+                                            <CardHeader className="flex flex-col items-start gap-1.5">
+                                                <CardTitle className="text-xl font-bold tracking-tight">{plan.name}</CardTitle>
                                                 {plan.description && (
-                                                    <p className="text-sm text-muted-foreground">{plan.description}</p>
+                                                    <p className="text-sm leading-relaxed text-muted-foreground">{plan.description}</p>
                                                 )}
                                             </CardHeader>
                                             <CardContent className="flex flex-1 flex-col">
@@ -415,14 +415,14 @@ export default function Welcome({ stats, plans }: Props) {
                 )}
 
                 {/* FAQ Section */}
-                <section id="faq" className="border-t bg-muted/30 py-20 sm:py-28">
-                    <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                        <div className="mb-16 text-center">
-                            <Badge variant="outline" className="mb-4">FAQ</Badge>
-                            <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+                <section id="faq" className="border-t bg-muted/30 py-12 sm:py-28">
+                    <div className="mx-auto max-w-3xl px-3 sm:px-6 lg:px-8">
+                        <div className="mb-8 text-center sm:mb-16">
+                            <Badge variant="outline" className="mb-3 sm:mb-4">FAQ</Badge>
+                            <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-4xl lg:text-5xl">
                                 {t('welcome.faq_title')}
                             </h2>
-                            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+                            <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-lg">
                                 {t('welcome.faq_desc')}
                             </p>
                         </div>
@@ -440,14 +440,14 @@ export default function Welcome({ stats, plans }: Props) {
                 </section>
 
                 {/* CTA Section */}
-                <section className="py-20 sm:py-28">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <section className="py-12 sm:py-28">
+                    <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
                         <Card className="overflow-hidden border-primary bg-primary text-primary-foreground">
-                            <CardContent className="px-6 py-12 text-center sm:px-12 sm:py-16">
-                                <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
+                            <CardContent className="px-4 py-10 text-center sm:px-12 sm:py-16">
+                                <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-4xl">
                                     {t('welcome.cta_title')}
                                 </h2>
-                                <p className="mx-auto mb-8 max-w-xl text-lg text-primary-foreground/80">
+                                <p className="mx-auto mb-6 max-w-xl text-sm leading-relaxed text-primary-foreground/80 sm:mb-8 sm:text-lg">
                                     {t('welcome.cta_desc')}
                                 </p>
                                 {!auth.user && (
@@ -464,9 +464,9 @@ export default function Welcome({ stats, plans }: Props) {
                 </section>
 
                 {/* Footer */}
-                <footer className="border-t bg-muted/30 py-12 sm:py-16">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="grid gap-8 md:grid-cols-4">
+                <footer className="border-t bg-muted/30 py-10 sm:py-16">
+                    <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+                        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                             <div>
                                 <div className="flex items-center gap-2">
                                     <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-lg object-cover" />

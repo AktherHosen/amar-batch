@@ -3,6 +3,7 @@ import { ArrowLeft, Printer } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
 
 type Receipt = {
     id: number;
@@ -30,6 +31,7 @@ const MONTHS = [
 export default function FeeReceiptShow() {
     const { receipt } = usePage<PageProps>().props;
     const { auth } = usePage().props;
+    const { formatCurrency } = useLocale();
 
     const handlePrint = () => {
         window.print();
@@ -113,11 +115,11 @@ export default function FeeReceiptShow() {
                         <div className="mb-6 grid grid-cols-2 gap-4 border-b pb-4">
                             <div>
                                 <p className="text-sm text-muted-foreground">Amount Due</p>
-                                <p className="text-lg font-bold">${Number(receipt.amount_due).toFixed(2)}</p>
+                                <p className="text-lg font-bold">{formatCurrency(Number(receipt.amount_due))}</p>
                             </div>
                             <div>
                                 <p className="text-sm text-muted-foreground">Amount Paid</p>
-                                <p className="text-lg font-bold text-green-600">${Number(receipt.amount_paid).toFixed(2)}</p>
+                                <p className="text-lg font-bold text-green-600">{formatCurrency(Number(receipt.amount_paid))}</p>
                             </div>
                         </div>
 

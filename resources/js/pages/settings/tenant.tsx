@@ -58,7 +58,6 @@ export default function TenantSettings({ tenant }: PageProps) {
         { code: 'BDT', symbol: '৳', name: 'Bangladeshi Taka' },
         { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
         { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee' },
-        { code: 'USD', symbol: '$', name: 'US Dollar' },
     ];
 
     return (

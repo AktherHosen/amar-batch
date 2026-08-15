@@ -1,12 +1,12 @@
-import { Head } from '@inertiajs/react';
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import PublicLayout from '@/layouts/public-layout';
 import { useLocale } from '@/contexts/locale-context';
+import PublicLayout from '@/layouts/public-layout';
+import { Head } from '@inertiajs/react';
+import { Clock, Mail, MapPin, Phone, Send } from 'lucide-react';
 
 export default function Contact() {
     const { t } = useLocale();
@@ -20,7 +20,7 @@ export default function Contact() {
         {
             icon: Phone,
             title: t('contact.phone'),
-            value: '+880 1XXX-XXXXXX',
+            value: '+880 1610-945101',
         },
         {
             icon: MapPin,
@@ -58,8 +58,12 @@ export default function Contact() {
                                         <item.icon className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold">{item.title}</h3>
-                                        <p className="text-sm text-muted-foreground">{item.value}</p>
+                                        <h3 className="font-semibold">
+                                            {item.title}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            {item.value}
+                                        </p>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -68,26 +72,42 @@ export default function Contact() {
 
                     {/* Contact Form */}
                     <Card>
-                        <CardHeader>
-                            <CardTitle>{t('contact.form_title')}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-4">
                             <form className="space-y-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="name">{t('contact.form_name')}</Label>
+                                    <Label htmlFor="name">
+                                        {t('contact.form_name')}
+                                    </Label>
                                     <Input id="name" placeholder="Your name" />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="email">{t('contact.form_email')}</Label>
-                                    <Input id="email" type="email" placeholder="you@example.com" />
+                                    <Label htmlFor="email">
+                                        {t('contact.form_email')}
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        placeholder="you@example.com"
+                                    />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="subject">{t('contact.form_subject')}</Label>
-                                    <Input id="subject" placeholder="How can we help?" />
+                                    <Label htmlFor="subject">
+                                        {t('contact.form_subject')}
+                                    </Label>
+                                    <Input
+                                        id="subject"
+                                        placeholder="How can we help?"
+                                    />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="message">{t('contact.form_message')}</Label>
-                                    <Textarea id="message" rows={4} placeholder="Your message..." />
+                                    <Label htmlFor="message">
+                                        {t('contact.form_message')}
+                                    </Label>
+                                    <Textarea
+                                        id="message"
+                                        rows={4}
+                                        placeholder="Your message..."
+                                    />
                                 </div>
                                 <Button type="submit" className="w-full">
                                     <Send className="mr-2 h-4 w-4" />

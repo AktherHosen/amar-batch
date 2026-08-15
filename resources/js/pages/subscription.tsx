@@ -58,17 +58,17 @@ type PageProps = {
     recentPayments: PaymentRecord[];
 };
 
-const featureLabels: Record<string, string> = {
-    students: 'Student Management',
-    batches: 'Batch Management',
-    attendance: 'Attendance Tracking',
-    fees: 'Fee Collection',
-    exams: 'Exam Management',
-    reports: 'Reports & Analytics',
-    notifications: 'Notifications',
-    custom_branding: 'Custom Branding',
-    multi_branch: 'Multi-branch Support',
-    api_access: 'API Access',
+const featureLabelKeys: Record<string, string> = {
+    students: 'plan.feature_students',
+    batches: 'plan.feature_batches',
+    attendance: 'plan.feature_attendance',
+    fees: 'plan.feature_fees',
+    exams: 'plan.feature_exams',
+    reports: 'plan.feature_reports',
+    notifications: 'plan.feature_notifications',
+    custom_branding: 'plan.feature_custom_branding',
+    multi_branch: 'plan.feature_multi_branch',
+    api_access: 'plan.feature_api_access',
 };
 
 export default function SubscriptionPage({ subscription, plans, currentUsage, recentPayments }: PageProps) {
@@ -90,7 +90,13 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
     const trialEndsAt = subscription?.trial_ends_at ? new Date(subscription.trial_ends_at) : null;
     const daysLeft = trialEndsAt ? Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
 
-    const formatLimit = (value: number) => (value === -1 ? t('plan.unlimited_students').replace('students', '').trim() || 'Unlimited' : value.toString());
+    const formatLimit = (value: number, type: 'students' | 'staff' | 'batches') => {
+        if (value === -1) {
+            const key = `plan.unlimited_${type}`;
+            return t(key);
+        }
+        return value.toString();
+    };
 
     const getUsagePercent = (current: number, max: number) => {
         if (max === -1) return 0;
@@ -173,9 +179,9 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                             <div className="flex items-start justify-between">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-2xl font-bold">{currentPlan?.name || 'No Plan'}</h3>
+                                        <h3 className="text-2xl font-bold">{currentPlan?.name || t('subscription.no_plan')}</h3>
                                         <Badge variant={isTrial ? 'secondary' : 'default'}>
-                                            {isTrial ? 'Trial' : subscription.status}
+                                            {isTrial ? t('subscription.trial') : subscription.status}
                                         </Badge>
                                         {subscription.billing_type && (
                                             <Badge variant="outline">{subscription.billing_type}</Badge>
@@ -183,12 +189,12 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                     </div>
                                     {isTrial && daysLeft > 0 && (
                                         <p className="mt-1 text-sm text-muted-foreground">
-                                            Trial ends in {daysLeft} days ({trialEndsAt?.toLocaleDateString()})
+                                            {t('subscription.trial_ends_in').replace('{days}', daysLeft.toString()).replace('{date}', trialEndsAt?.toLocaleDateString() || '')}
                                         </p>
                                     )}
                                     {subscription.ends_at && !isTrial && (
                                         <p className="mt-1 text-sm text-muted-foreground">
-                                            Active until {new Date(subscription.ends_at).toLocaleDateString()}
+                                            {t('subscription.active_until')} {new Date(subscription.ends_at).toLocaleDateString()}
                                         </p>
                                     )}
                                     {currentPlan && (
@@ -209,7 +215,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                                 {t('plan.students')}
                                             </span>
                                             <span className="font-medium">
-                                                {currentUsage.students} / {formatLimit(currentPlan.max_students)}
+                                                {currentUsage.students} / {formatLimit(currentPlan.max_students, 'students')}
                                             </span>
                                         </div>
                                         <div className="mt-1 h-2 rounded-full bg-secondary">
@@ -227,7 +233,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                                 {t('plan.staff')}
                                             </span>
                                             <span className="font-medium">
-                                                {currentUsage.staff} / {formatLimit(currentPlan.max_staff)}
+                                                {currentUsage.staff} / {formatLimit(currentPlan.max_staff, 'staff')}
                                             </span>
                                         </div>
                                         <div className="mt-1 h-2 rounded-full bg-secondary">
@@ -245,7 +251,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                                 {t('plan.batches')}
                                             </span>
                                             <span className="font-medium">
-                                                {currentUsage.batches} / {formatLimit(currentPlan.max_batches)}
+                                                {currentUsage.batches} / {formatLimit(currentPlan.max_batches, 'batches')}
                                             </span>
                                         </div>
                                         <div className="mt-1 h-2 rounded-full bg-secondary">
@@ -304,15 +310,15 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                         <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">{t('plan.students')}</span>
-                                                <span className="font-medium">{formatLimit(plan.max_students)}</span>
+                                                <span className="font-medium">{formatLimit(plan.max_students, 'students')}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">{t('plan.staff')}</span>
-                                                <span className="font-medium">{formatLimit(plan.max_staff)}</span>
+                                                <span className="font-medium">{formatLimit(plan.max_staff, 'staff')}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">{t('plan.batches')}</span>
-                                                <span className="font-medium">{formatLimit(plan.max_batches)}</span>
+                                                <span className="font-medium">{formatLimit(plan.max_batches, 'batches')}</span>
                                             </div>
                                         </div>
 
@@ -321,7 +327,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                                 {plan.features.map((feature) => (
                                                     <div key={feature} className="flex items-center gap-1 text-sm">
                                                         <Check className="size-3 text-green-500" />
-                                                        <span>{featureLabels[feature] || feature}</span>
+                                                        <span>{t(featureLabelKeys[feature] || feature)}</span>
                                                     </div>
                                                 ))}
                                             </div>

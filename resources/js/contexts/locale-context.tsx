@@ -5,14 +5,21 @@ type Locale = 'en' | 'bn';
 
 const STORAGE_KEY = 'locale';
 
-let serverDetectedLocale: Locale = 'en';
+const serverDetectedLocale: Locale = 'en';
 
 function getInitialLocale(): Locale {
-    if (typeof window === 'undefined') return serverDetectedLocale;
+    if (typeof window === 'undefined') {
+        return serverDetectedLocale;
+    }
+
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored === 'en' || stored === 'bn') return stored;
+
+        if (stored === 'en' || stored === 'bn') {
+            return stored;
+        }
     } catch {}
+
     return 'en';
 }
 
@@ -30,26 +37,44 @@ function formatCurrency(amount: number, locale: Locale): string {
     if (locale === 'bn') {
         return `৳${formatBanglaNumber(amount)}`;
     }
+
     return `৳${amount.toLocaleString('en-BD')}`;
 }
 
 function formatDate(date: string | Date, locale: Locale): string {
     const d = new Date(date);
+
     if (locale === 'bn') {
         const day = toBanglaDigits(d.getDate());
         const month = d.toLocaleDateString('bn-BD', { month: 'long' });
         const year = toBanglaDigits(d.getFullYear());
+
         return `${day} ${month}, ${year}`;
     }
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+    return d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
 }
 
 function formatTime(date: string | Date, locale: Locale): string {
     const d = new Date(date);
+
     if (locale === 'bn') {
-        return d.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', hour12: true });
+        return d.toLocaleTimeString('bn-BD', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        });
     }
-    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    return d.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+    });
 }
 
 const translations: Record<Locale, Record<string, string>> = {
@@ -91,14 +116,19 @@ const translations: Record<Locale, Record<string, string>> = {
         'dashboard.ongoing': 'চলমান',
         'dashboard.pending_approval': 'অনুমোদন অপেক্ষমাণ',
         'dashboard.welcome': 'স্বাগতম',
-        'dashboard.pending_message': 'আপনার শিক্ষক অ্যাকাউন্ট অ্যাডমিন অনুমোদন অপেক্ষমাণ।',
-        'dashboard.pending_submessage': 'একজন প্রশাসক আপনার অ্যাকাউন্ট অনুমোদন করলে আপনি সিস্টেমে প্রবেশ পাবেন। অনুগ্রহ করে পরে আবার দেখুন।',
+        'dashboard.pending_message':
+            'আপনার শিক্ষক অ্যাকাউন্ট অ্যাডমিন অনুমোদন অপেক্ষমাণ।',
+        'dashboard.pending_submessage':
+            'একজন প্রশাসক আপনার অ্যাকাউন্ট অনুমোদন করলে আপনি সিস্টেমে প্রবেশ পাবেন। অনুগ্রহ করে পরে আবার দেখুন।',
         'dashboard.email': 'ইমেইল',
         'dashboard.no_students': 'এখনো কোনো স্টুডেন্ট নেই।',
-        'dashboard.no_batches': 'এখনো কোনো ব্যাচ নির্ধারিত হয়নি। অ্যাডমিনের সাথে যোগাযোগ করুন।',
+        'dashboard.no_batches':
+            'এখনো কোনো ব্যাচ নির্ধারিত হয়নি। অ্যাডমিনের সাথে যোগাযোগ করুন।',
         'dashboard.no_payments': 'সাম্প্রতিক কোনো পেমেন্ট নেই।',
-        'dashboard.no_students_in_batches': 'আপনার ব্যাচে এখনো কোনো স্টুডেন্ট নেই।',
-        'dashboard.assigned_batches_desc': 'আপনার নির্ধারিত ব্যাচ এবং স্টুডেন্টরা',
+        'dashboard.no_students_in_batches':
+            'আপনার ব্যাচে এখনো কোনো স্টুডেন্ট নেই।',
+        'dashboard.assigned_batches_desc':
+            'আপনার নির্ধারিত ব্যাচ এবং স্টুডেন্টরা',
         'dashboard.recent_notices': 'সাম্প্রতিক নোটিশ',
         'dashboard.upcoming_holidays': 'আসন্ন ছুটির দিন',
         'dashboard.quick_actions': 'দ্রুত কাজ',
@@ -132,7 +162,8 @@ const translations: Record<Locale, Record<string, string>> = {
         'students.all_status': 'সব অবস্থা',
         'students.deleted': 'স্টুডেন্ট সফলভাবে মুছে ফেলা হয়েছে',
         'students.delete_title': 'স্টুডেন্ট মুছুন',
-        'students.delete_confirm': 'আপনি কি নিশ্চিত এই স্টুডেন্টকে মুছে ফেলতে চান?',
+        'students.delete_confirm':
+            'আপনি কি নিশ্চিত এই স্টুডেন্টকে মুছে ফেলতে চান?',
         'students.no_attendance': 'এখনো কোনো উপস্থিতির রেকর্ড নেই।',
         'students.total_paid': 'মোট পরিশোধিত:',
         'students.no_payments': 'এখনো কোনো পেমেন্ট রেকর্ড নেই।',
@@ -158,8 +189,10 @@ const translations: Record<Locale, Record<string, string>> = {
         'batches.archived': 'সংরক্ষিত',
         'batches.deleted': 'ব্যাচ সফলভাবে মুছে ফেলা হয়েছে',
         'batches.completed_msg': 'ব্যাচ সফলভাবে সম্পন্ন হয়েছে',
-        'batches.delete_confirm': 'আপনি কি নিশ্চিত "{name}" মুছে ফেলতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।',
-        'batches.complete_confirm': 'আপনি কি নিশ্চিত "{name}" সম্পন্ন করতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না। সম্পন্ন হলে আর নতুন স্টুডেন্ট ভর্তি করানো যাবে না।',
+        'batches.delete_confirm':
+            'আপনি কি নিশ্চিত "{name}" মুছে ফেলতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।',
+        'batches.complete_confirm':
+            'আপনি কি নিশ্চিত "{name}" সম্পন্ন করতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না। সম্পন্ন হলে আর নতুন স্টুডেন্ট ভর্তি করানো যাবে না।',
         'batches.time': 'সময়',
         'batches.start_date': 'শুরুর তারিখ',
         'batches.end_date': 'শেষের তারিখ',
@@ -174,15 +207,18 @@ const translations: Record<Locale, Record<string, string>> = {
         'batches.enroll': 'ভর্তি করুন',
         'batches.enrolled_at': 'ভর্তির তারিখ',
         'batches.teacher_removed': 'শিক্ষক সফলভাবে সরানো হয়েছে',
-        'batches.student_unenrolled': 'স্টুডেন্ট সফলভাবে ভর্তি বাতিল করা হয়েছে',
+        'batches.student_unenrolled':
+            'স্টুডেন্ট সফলভাবে ভর্তি বাতিল করা হয়েছে',
         'batches.unenroll': 'ভর্তি বাতিল',
         'batches.history': 'ইতিহাস',
         'batches.date': 'তারিখ',
         'batches.student': 'স্টুডেন্ট',
         'batches.action': 'কার্যক্রম',
         'batches.by': 'কর্তৃক',
-        'batches.remove_teacher_confirm': 'আপনি কি নিশ্চিত এই শিক্ষককে ব্যাচ থেকে সরাতে চান?',
-        'batches.unenroll_confirm': 'আপনি কি নিশ্চিত এই স্টুডেন্টকে ব্যাচ থেকে ভর্তি বাতিল করতে চান?',
+        'batches.remove_teacher_confirm':
+            'আপনি কি নিশ্চিত এই শিক্ষককে ব্যাচ থেকে সরাতে চান?',
+        'batches.unenroll_confirm':
+            'আপনি কি নিশ্চিত এই স্টুডেন্টকে ব্যাচ থেকে ভর্তি বাতিল করতে চান?',
         'batches.no_batches': 'কোনো ব্যাচ পাওয়া যায়নি',
         'batches.delete_title': 'ব্যাচ মুছুন',
         'batches.complete_title': 'ব্যাচ সম্পন্ন করুন',
@@ -214,18 +250,22 @@ const translations: Record<Locale, Record<string, string>> = {
         'teachers.revoke_approval': 'অনুমোদন বাতিল করুন',
         'teachers.deactivated': 'শিক্ষক সফলভাবে নিষ্ক্রিয় করা হয়েছে',
         'teachers.approved_msg': '{name} সফলভাবে অনুমোদিত হয়েছে',
-        'teachers.revoked_msg': '{name}\'র অনুমোদন বাতিল করা হয়েছে',
-        'teachers.deactivate_confirm': 'আপনি কি নিশ্চিত {name}কে নিষ্ক্রিয় করতে চান?',
+        'teachers.revoked_msg': "{name}'র অনুমোদন বাতিল করা হয়েছে",
+        'teachers.deactivate_confirm':
+            'আপনি কি নিশ্চিত {name}কে নিষ্ক্রিয় করতে চান?',
         'teachers.deactivate_title': 'শিক্ষক নিষ্ক্রিয় করুন',
         'teachers.approve_title': 'শিক্ষক অনুমোদন করুন',
-        'teachers.approve_confirm': 'আপনি কি নিশ্চিত {name}কে অনুমোদন করতে চান?',
+        'teachers.approve_confirm':
+            'আপনি কি নিশ্চিত {name}কে অনুমোদন করতে চান?',
         'teachers.revoke_title': 'অনুমোদন বাতিল করুন',
-        'teachers.revoke_confirm': 'আপনি কি নিশ্চিত {name}এর অনুমোদন বাতিল করতে চান?',
+        'teachers.revoke_confirm':
+            'আপনি কি নিশ্চিত {name}এর অনুমোদন বাতিল করতে চান?',
         'teachers.no_teachers': 'কোনো শিক্ষক পাওয়া যায়নি',
         'teachers.deactivate': 'নিষ্ক্রিয় করুন',
         'teachers.reactivate': 'পুনরায় সক্রিয় করুন',
         'teachers.reactivate_title': 'শিক্ষক পুনরায় সক্রিয় করুন',
-        'teachers.reactivate_confirm': 'আপনি কি নিশ্চিত {name}কে পুনরায় সক্রিয় করতে চান?',
+        'teachers.reactivate_confirm':
+            'আপনি কি নিশ্চিত {name}কে পুনরায় সক্রিয় করতে চান?',
         'teachers.all_status': 'সকল অবস্থা',
         'teachers.active': 'চলমান',
         'teachers.inactive': 'নিষ্ক্রিয়',
@@ -255,19 +295,23 @@ const translations: Record<Locale, Record<string, string>> = {
         'attendance.edit': 'উপস্থিতি এডিট',
         'attendance.select_batch': 'একটি ব্যাচ নির্বাচন করুন',
         'attendance.notes_placeholder': 'মন্তব্য...',
-        'attendance.no_enrolled': 'এই ব্যাচে কোনো ভর্তি স্টুডেন্ট পাওয়া যায়নি।',
-        'attendance.select_batch_date': 'উপস্থিতি নির্ধারণ করতে একটি ব্যাচ এবং তারিখ নির্বাচন করুন।',
+        'attendance.no_enrolled':
+            'এই ব্যাচে কোনো ভর্তি স্টুডেন্ট পাওয়া যায়নি।',
+        'attendance.select_batch_date':
+            'উপস্থিতি নির্ধারণ করতে একটি ব্যাচ এবং তারিখ নির্বাচন করুন।',
         'attendance.summary': 'উপস্থিতি সারসংক্ষেপ',
         'attendance.good': 'ভালো',
         'attendance.average': 'গড়',
         'attendance.low': 'কম',
-        'attendance.delete_confirm': 'আপনি কি নিশ্চিত এই উপস্থিতির রেকর্ড মুছে ফেলতে চান?',
+        'attendance.delete_confirm':
+            'আপনি কি নিশ্চিত এই উপস্থিতির রেকর্ড মুছে ফেলতে চান?',
         'attendance.cancel': 'বাতিল',
         'attendance.update': 'আপডেট',
 
         // Exams
         'exams.title': 'পরীক্ষা',
-        'exams.desc': 'পরীক্ষা পরিচালনা করুন এবং স্টুডেন্টদের ফলাফল ট্র্যাক করুন',
+        'exams.desc':
+            'পরীক্ষা পরিচালনা করুন এবং স্টুডেন্টদের ফলাফল ট্র্যাক করুন',
         'exams.create': 'পরীক্ষা যোগ করুন',
         'exams.edit': 'পরীক্ষা এডিট',
         'exams.subject': 'বিষয়',
@@ -354,7 +398,8 @@ const translations: Record<Locale, Record<string, string>> = {
         'fees.export': 'এক্সেলে রপ্তানি',
         'fees.payment_history': 'বেতনের ইতিহাস',
         'fees.deleted': 'বেতন রেকর্ড সফলভাবে মুছে ফেলা হয়েছে',
-        'fees.delete_confirm': 'এই স্টুডেন্টের এই ব্যাচের সব বেতন রেকর্ড মুছে ফেলবেন?',
+        'fees.delete_confirm':
+            'এই স্টুডেন্টের এই ব্যাচের সব বেতন রেকর্ড মুছে ফেলবেন?',
         'fees.edit': 'বেতন রেকর্ড এডিট',
         'fees.update_details': 'বেতন পেমেন্টের বিবরণ আপডেট করুন',
         'fees.fee_details': 'বেতনের বিবরণ',
@@ -380,11 +425,14 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Payment
         'payment.success_title': 'পেমেন্ট সফল হয়েছে',
-        'payment.success_desc': 'আপনার সাবস্ক্রিপশন চলমান হয়েছে। আপনার পেমেন্টের জন্য ধন্যবাদ!',
+        'payment.success_desc':
+            'আপনার সাবস্ক্রিপশন চলমান হয়েছে। আপনার পেমেন্টের জন্য ধন্যবাদ!',
         'payment.failure_title': 'পেমেন্ট ব্যর্থ হয়েছে',
-        'payment.failure_desc': 'আপনার পেমেন্টে কিছু ভুল হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+        'payment.failure_desc':
+            'আপনার পেমেন্টে কিছু ভুল হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
         'payment.cancel_title': 'পেমেন্ট বাতিল করা হয়েছে',
-        'payment.cancel_desc': 'আপনি পেমেন্ট বাতিল করেছেন। আপনার সাবস্ক্রিপশন পরিবর্তন হয়নি।',
+        'payment.cancel_desc':
+            'আপনি পেমেন্ট বাতিল করেছেন। আপনার সাবস্ক্রিপশন পরিবর্তন হয়নি।',
         'payment.plan': 'প্ল্যান',
         'payment.amount_paid': 'পরিশোধিত পরিমাণ',
         'payment.go_to_subscription': 'সাবস্ক্রিপশনে যান',
@@ -401,7 +449,8 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Subscription
         'subscription.title': 'সাবস্ক্রিপশন ও প্ল্যান',
-        'subscription.desc': 'আপনার সাবস্ক্রিপশন পরিচালনা করুন এবং প্ল্যানের বিবরণ দেখুন',
+        'subscription.desc':
+            'আপনার সাবস্ক্রিপশন পরিচালনা করুন এবং প্ল্যানের বিবরণ দেখুন',
         'subscription.current_plan': 'বর্তমান প্ল্যান',
         'subscription.available_plans': 'উপলব্ধ প্ল্যান',
         'subscription.switch_plan': 'প্ল্যান পরিবর্তন করুন',
@@ -409,6 +458,10 @@ const translations: Record<Locale, Record<string, string>> = {
         'subscription.upgrade_title': 'প্ল্যান আপগ্রেড',
         'subscription.upgrade_desc': 'আপনি কি "{plan}" এ পরিবর্তন করতে চান?',
         'subscription.proceed_to_payment': 'পেমেন্টে এগিয়ে যান',
+        'subscription.trial': 'ট্রায়াল',
+        'subscription.no_plan': 'কোনো প্ল্যান নেই',
+        'subscription.active_until': 'সক্রিয় পর্যন্ত',
+        'subscription.trial_ends_in': 'ট্রায়াল শেষ হচ্ছে {days} দিনে ({date})',
 
         // Toast
         'toast.upgraded': 'সফলভাবে আপগ্রেড হয়েছে!',
@@ -442,16 +495,20 @@ const translations: Record<Locale, Record<string, string>> = {
         'settings.email': 'ইমেইল ঠিকানা',
         'settings.email_placeholder': 'ইমেইল ঠিকানা',
         'settings.unverified': 'আপনার ইমেইল ঠিকানা যাচাইকৃত নয়।',
-        'settings.resend_verification': 'যাচাইকরণ ইমেইল আবার পাঠাতে এখানে ক্লিক করুন।',
-        'settings.verification_sent': 'একটি নতুন যাচাইকরণ লিঙ্ক আপনার ইমেইলে পাঠানো হয়েছে।',
+        'settings.resend_verification':
+            'যাচাইকরণ ইমেইল আবার পাঠাতে এখানে ক্লিক করুন।',
+        'settings.verification_sent':
+            'একটি নতুন যাচাইকরণ লিঙ্ক আপনার ইমেইলে পাঠানো হয়েছে।',
         'settings.security': 'নিরাপত্তা সেটিংস',
         'settings.update_password': 'পাসওয়ার্ড আপডেট করুন',
-        'settings.password_desc': 'নিরাপদ থাকতে দীর্ঘ, এলোমেলো পাসওয়ার্ড ব্যবহার করুন',
+        'settings.password_desc':
+            'নিরাপদ থাকতে দীর্ঘ, এলোমেলো পাসওয়ার্ড ব্যবহার করুন',
         'settings.current_password': 'বর্তমান পাসওয়ার্ড',
         'settings.new_password': 'নতুন পাসওয়ার্ড',
         'settings.confirm_password': 'পাসওয়ার্ড নিশ্চিত করুন',
         'settings.appearance': 'চেহারা সেটিংস',
-        'settings.appearance_desc': 'আপনার অ্যাকাউন্টের চেহারা সেটিংস আপডেট করুন',
+        'settings.appearance_desc':
+            'আপনার অ্যাকাউন্টের চেহারা সেটিংস আপডেট করুন',
 
         // Auth
         'auth.login': 'লগ ইন',
@@ -482,22 +539,27 @@ const translations: Record<Locale, Record<string, string>> = {
         'auth.reset_desc': 'অনুগ্রহ করে নিচে আপনার নতুন পাসওয়ার্ড লিখুন',
         'auth.reset_button': 'পাসওয়ার্ড রিসেট',
         'auth.confirm_title': 'পাসওয়ার্ড নিশ্চিত করুন',
-        'auth.confirm_desc': 'এটি অ্যাপ্লিকেশনের একটি নিরাপদ এলাকা। চালিয়ে যেতে আপনার পাসওয়ার্ড নিশ্চিত করুন।',
+        'auth.confirm_desc':
+            'এটি অ্যাপ্লিকেশনের একটি নিরাপদ এলাকা। চালিয়ে যেতে আপনার পাসওয়ার্ড নিশ্চিত করুন।',
         'auth.confirm_with_passkey': 'পাসকিই দিয়ে নিশ্চিত করুন',
         'auth.confirming': 'নিশ্চিত করা হচ্ছে...',
         'auth.or_confirm_password': 'অথবা পাসওয়ার্ড দিয়ে নিশ্চিত করুন',
         'auth.confirm_button': 'পাসওয়ার্ড নিশ্চিত করুন',
         'auth.verify_title': 'ইমেইল যাচাই',
-        'auth.verify_desc': 'আমরা আপনাকে যাচাইকরণ লিঙ্ক পাঠিয়েছি। অনুগ্রহ করে ইমেইলে ক্লিক করুন।',
-        'auth.verify_message': 'আপনার নিবন্ধনের সময় প্রদত্ত ইমেইল ঠিকানায় একটি নতুন যাচাইকরণ লিঙ্ক পাঠানো হয়েছে।',
+        'auth.verify_desc':
+            'আমরা আপনাকে যাচাইকরণ লিঙ্ক পাঠিয়েছি। অনুগ্রহ করে ইমেইলে ক্লিক করুন।',
+        'auth.verify_message':
+            'আপনার নিবন্ধনের সময় প্রদত্ত ইমেইল ঠিকানায় একটি নতুন যাচাইকরণ লিঙ্ক পাঠানো হয়েছে।',
         'auth.resend_verification': 'যাচাইকরণ ইমেইল আবার পাঠান',
         'auth.logout': 'লগ আউট',
         'auth.two_factor': 'দুই-ফ্যাক্টর প্রমাণীকরণ',
         'auth.recovery_code': 'পুনরুদ্ধার কোড',
-        'auth.recovery_desc': 'আপনার অ্যাকাউন্টে প্রবেশ নিশ্চিত করতে আপনার জরুরি পুনরুদ্ধার কোডগুলোর একটি লিখুন।',
+        'auth.recovery_desc':
+            'আপনার অ্যাকাউন্টে প্রবেশ নিশ্চিত করতে আপনার জরুরি পুনরুদ্ধার কোডগুলোর একটি লিখুন।',
         'auth.use_recovery_code': 'পুনরুদ্ধার কোড দিয়ে লগ ইন',
         'auth.auth_code': 'প্রমাণীকরণ কোড',
-        'auth.auth_desc': 'আপনার প্রমাণীকরণ অ্যাপ্লিকেশন থেকে প্রাপ্ত কোড লিখুন।',
+        'auth.auth_desc':
+            'আপনার প্রমাণীকরণ অ্যাপ্লিকেশন থেকে প্রাপ্ত কোড লিখুন।',
         'auth.use_auth_code': 'প্রমাণীকরণ কোড দিয়ে লগ ইন',
         'auth.continue': 'চালিয়ে যান',
         'auth.or': 'অথবা',
@@ -548,38 +610,51 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Welcome / SEO
         'welcome.hero_title': 'কর্ণফুলী আলফা একাডেমি',
-        'welcome.hero_subtitle': 'আপনার কোচিং সেন্টারের সম্পূর্ণ ব্যবস্থাপনা সমাধান',
-        'welcome.hero_description': 'স্টুডেন্টদের ট্র্যাক করুন, ব্যাচ পরিচালনা করুন, উপস্থিতি নির্ধারণ করুন, বেতন সংগ্রহ করুন এবং রিপোর্ট তৈরি করুন — সবকিছু একটি ড্যাশবোর্ড থেকে। বাংলাদেশের কোচিং সেন্টারগুলোর জন্য মাল্টি-টেন্যান্ট সাপোর্ট, ভূমিকা-ভিত্তিক প্রবেশ এবং সাবস্ক্রিপশন প্ল্যান সহ তৈরি।',
+        'welcome.hero_subtitle':
+            'আপনার কোচিং সেন্টারের সম্পূর্ণ ব্যবস্থাপনা সমাধান',
+        'welcome.hero_description':
+            'স্টুডেন্টদের ট্র্যাক করুন, ব্যাচ পরিচালনা করুন, উপস্থিতি নির্ধারণ করুন, বেতন সংগ্রহ করুন এবং রিপোর্ট তৈরি করুন — সবকিছু একটি ড্যাশবোর্ড থেকে। বাংলাদেশের কোচিং সেন্টারগুলোর জন্য মাল্টি-টেন্যান্ট সাপোর্ট, ভূমিকা-ভিত্তিক প্রবেশ এবং সাবস্ক্রিপশন প্ল্যান সহ তৈরি।',
         'welcome.trusted_by': 'শীর্ষস্থানীয় কোচিং সেন্টারগুলোর আস্থাভাজন',
         'welcome.students_feature': 'স্টুডেন্ট ব্যবস্থাপনা',
-        'welcome.students_desc': 'স্টুডেন্টদের তথ্য, যোগদান, ছাড়ার তারিখ সহজেই পরিচালনা করুন',
+        'welcome.students_desc':
+            'স্টুডেন্টদের তথ্য, যোগদান, ছাড়ার তারিখ সহজেই পরিচালনা করুন',
         'welcome.attendance_feature': 'উপস্থিতি ট্র্যাকিং',
-        'welcome.attendance_desc': 'দৈনিক উপস্থিতি নির্ধারণ এবং রিপোর্ট তৈরি করুন',
+        'welcome.attendance_desc':
+            'দৈনিক উপস্থিতি নির্ধারণ এবং রিপোর্ট তৈরি করুন',
         'welcome.fees_feature': 'বেতন সংগ্রহ',
         'welcome.fees_desc': 'মাসিক বেতন ট্র্যাক করুন এবং পেমেন্ট রেকর্ড রাখুন',
         'welcome.batch_feature': 'ব্যাচ ব্যবস্থাপনা',
-        'welcome.batch_desc': 'ব্যাচ তৈরি করুন, শিক্ষক নিয়োগ করুন এবং সময়সূচী পরিচালনা করুন',
+        'welcome.batch_desc':
+            'ব্যাচ তৈরি করুন, শিক্ষক নিয়োগ করুন এবং সময়সূচী পরিচালনা করুন',
         'welcome.cta': 'এখনই শুরু করুন',
         'welcome.contact': 'যোগাযোগ করুন',
         'welcome.about_title': 'কেন কর্ণফুলী আলফা একাডেমি?',
-        'welcome.about_desc': 'আমরা বাংলাদেশের কোচিং সেন্টারগুলোর জন্য একটি সম্পূর্ণ সমাধান প্রদান করি। স্টুডেন্ট ব্যবস্থাপনা থেকে শুরু করে বেতন সংগ্রহ পর্যন্ত সবকিছু এক জায়গায়।',
+        'welcome.about_desc':
+            'আমরা বাংলাদেশের কোচিং সেন্টারগুলোর জন্য একটি সম্পূর্ণ সমাধান প্রদান করি। স্টুডেন্ট ব্যবস্থাপনা থেকে শুরু করে বেতন সংগ্রহ পর্যন্ত সবকিছু এক জায়গায়।',
         'welcome.trusted_badge': 'বিশ্বস্ত কোচিং সেন্টার সমাধান',
         'welcome.how_it_works_title': 'মিনিটের মধ্যে শুরু করুন',
-        'welcome.how_it_works_desc': 'আপনার কোচিং সেন্টার অনলাইনে আনতে সহজ সেটআপ প্রক্রিয়া।',
+        'welcome.how_it_works_desc':
+            'আপনার কোচিং সেন্টার অনলাইনে আনতে সহজ সেটআপ প্রক্রিয়া।',
         'welcome.step1_title': 'অ্যাকাউন্ট তৈরি করুন',
-        'welcome.step1_desc': 'সাইন আপ করুন এবং আপনার কোচিং সেন্টারের প্রোফাইল সেকেন্ডের মধ্যে সেট আপ করুন।',
+        'welcome.step1_desc':
+            'সাইন আপ করুন এবং আপনার কোচিং সেন্টারের প্রোফাইল সেকেন্ডের মধ্যে সেট আপ করুন।',
         'welcome.step2_title': 'স্টুডেন্ট যোগ করুন',
-        'welcome.step2_desc': 'আপনার স্টুডেন্টদের ইম্পোর্ট বা যোগ করুন এবং ব্যাচে সাজান।',
+        'welcome.step2_desc':
+            'আপনার স্টুডেন্টদের ইম্পোর্ট বা যোগ করুন এবং ব্যাচে সাজান।',
         'welcome.step3_title': 'পরিচালনা শুরু করুন',
-        'welcome.step3_desc': 'প্রতিদিন উপস্থিতি ট্র্যাক করুন, বেতন সংগ্রহ করুন এবং রিপোর্ট তৈরি করুন।',
+        'welcome.step3_desc':
+            'প্রতিদিন উপস্থিতি ট্র্যাক করুন, বেতন সংগ্রহ করুন এবং রিপোর্ট তৈরি করুন।',
         'welcome.cta_title': 'আপনার কোচিং সেন্টার পরিবর্তন করতে প্রস্তুত?',
-        'welcome.cta_desc': 'ইতিমধ্যে কর্ণফুলী আলফা একাডেমি ব্যবহারকারী শত শত কোচিং সেন্টারের সাথে যোগ দিন।',
+        'welcome.cta_desc':
+            'ইতিমধ্যে কর্ণফুলী আলফা একাডেমি ব্যবহারকারী শত শত কোচিং সেন্টারের সাথে যোগ দিন।',
         'welcome.cta_button': 'বিনামূল্যে শুরু করুন',
         'welcome.copyright': 'সর্বস্বত্ব সংরক্ষিত।',
         'welcome.reports_feature': 'রিপোর্ট ও অ্যানালিটিক্স',
-        'welcome.reports_desc': 'উপস্থিতি সারসংক্ষেপ, বেতন সংগ্রহ রিপোর্ট এবং স্টুডেন্ট বিশ্লেষণ দেখুন',
+        'welcome.reports_desc':
+            'উপস্থিতি সারসংক্ষেপ, বেতন সংগ্রহ রিপোর্ট এবং স্টুডেন্ট বিশ্লেষণ দেখুন',
         'welcome.role_feature': 'ভূমিকা-ভিত্তিক প্রবেশাধিকার',
-        'welcome.role_desc': 'অ্যাডমিন এবং শিক্ষক ভূমিকা বিভিন্ন অনুমতি সহ। নিরাপদ এবং নিয়ন্ত্রিত প্রবেশ।',
+        'welcome.role_desc':
+            'অ্যাডমিন এবং শিক্ষক ভূমিকা বিভিন্ন অনুমতি সহ। নিরাপদ এবং নিয়ন্ত্রিত প্রবেশ।',
         'welcome.stat_students': 'স্টুডেন্ট পরিচালিত',
         'welcome.stat_batches': 'চলমান ব্যাচ',
         'welcome.stat_enrollments': 'চলমান ভর্তি',
@@ -623,8 +698,10 @@ const translations: Record<Locale, Record<string, string>> = {
         'dashboard.ongoing': 'Ongoing',
         'dashboard.pending_approval': 'Account Pending Approval',
         'dashboard.welcome': 'Welcome',
-        'dashboard.pending_message': 'Your teacher account is pending admin approval.',
-        'dashboard.pending_submessage': 'You will receive access to the system once an administrator approves your account. Please check back later.',
+        'dashboard.pending_message':
+            'Your teacher account is pending admin approval.',
+        'dashboard.pending_submessage':
+            'You will receive access to the system once an administrator approves your account. Please check back later.',
         'dashboard.email': 'Email',
         'dashboard.no_students': 'No students yet.',
         'dashboard.no_batches': 'No batches assigned yet. Contact admin.',
@@ -664,7 +741,8 @@ const translations: Record<Locale, Record<string, string>> = {
         'students.all_status': 'All Status',
         'students.deleted': 'Student deleted successfully',
         'students.delete_title': 'Delete Student',
-        'students.delete_confirm': 'Are you sure you want to delete this student?',
+        'students.delete_confirm':
+            'Are you sure you want to delete this student?',
         'students.no_attendance': 'No attendance records yet.',
         'students.total_paid': 'Total Paid:',
         'students.no_payments': 'No payment records yet.',
@@ -690,8 +768,10 @@ const translations: Record<Locale, Record<string, string>> = {
         'batches.archived': 'Archived',
         'batches.deleted': 'Batch deleted successfully',
         'batches.completed_msg': 'Batch completed successfully',
-        'batches.delete_confirm': 'Are you sure you want to delete "{name}"? This action cannot be undone.',
-        'batches.complete_confirm': 'Are you sure you want to complete "{name}"? This action cannot be undone. Once completed, no new students can be enrolled.',
+        'batches.delete_confirm':
+            'Are you sure you want to delete "{name}"? This action cannot be undone.',
+        'batches.complete_confirm':
+            'Are you sure you want to complete "{name}"? This action cannot be undone. Once completed, no new students can be enrolled.',
         'batches.time': 'Time',
         'batches.start_date': 'Start Date',
         'batches.end_date': 'End Date',
@@ -713,8 +793,10 @@ const translations: Record<Locale, Record<string, string>> = {
         'batches.student': 'Student',
         'batches.action': 'Action',
         'batches.by': 'By',
-        'batches.remove_teacher_confirm': 'Are you sure you want to remove this teacher from the batch?',
-        'batches.unenroll_confirm': 'Are you sure you want to unenroll this student from the batch?',
+        'batches.remove_teacher_confirm':
+            'Are you sure you want to remove this teacher from the batch?',
+        'batches.unenroll_confirm':
+            'Are you sure you want to unenroll this student from the batch?',
         'batches.no_batches': 'No batches found',
         'batches.delete_title': 'Delete Batch',
         'batches.complete_title': 'Complete Batch',
@@ -747,17 +829,20 @@ const translations: Record<Locale, Record<string, string>> = {
         'teachers.deactivated': 'Teacher deactivated successfully',
         'teachers.approved_msg': '{name} has been approved',
         'teachers.revoked_msg': "{name}'s approval has been revoked",
-        'teachers.deactivate_confirm': 'Are you sure you want to deactivate {name}?',
+        'teachers.deactivate_confirm':
+            'Are you sure you want to deactivate {name}?',
         'teachers.deactivate_title': 'Deactivate Teacher',
         'teachers.approve_title': 'Approve Teacher',
         'teachers.approve_confirm': 'Are you sure you want to approve {name}?',
         'teachers.revoke_title': 'Revoke Approval',
-        'teachers.revoke_confirm': 'Are you sure you want to revoke approval for {name}?',
+        'teachers.revoke_confirm':
+            'Are you sure you want to revoke approval for {name}?',
         'teachers.no_teachers': 'No teachers found',
         'teachers.deactivate': 'Deactivate',
         'teachers.reactivate': 'Reactivate',
         'teachers.reactivate_title': 'Reactivate Teacher',
-        'teachers.reactivate_confirm': 'Are you sure you want to reactivate {name}?',
+        'teachers.reactivate_confirm':
+            'Are you sure you want to reactivate {name}?',
         'teachers.all_status': 'All Status',
         'teachers.active': 'Active',
         'teachers.inactive': 'Inactive',
@@ -788,8 +873,10 @@ const translations: Record<Locale, Record<string, string>> = {
         'attendance.select_batch': 'Select a batch',
         'attendance.notes_placeholder': 'Notes...',
         'attendance.no_enrolled': 'No enrolled students found for this batch.',
-        'attendance.select_batch_date': 'Select a batch and date to mark attendance.',
-        'attendance.delete_confirm': 'Are you sure you want to delete this attendance record?',
+        'attendance.select_batch_date':
+            'Select a batch and date to mark attendance.',
+        'attendance.delete_confirm':
+            'Are you sure you want to delete this attendance record?',
         'attendance.cancel': 'Cancel',
         'attendance.update': 'Update',
         'attendance.summary': 'Attendance Summary',
@@ -868,7 +955,8 @@ const translations: Record<Locale, Record<string, string>> = {
         'branches.students': 'Students',
         'branches.no_branches': 'No branches found',
         'branches.deleted': 'Branch deleted successfully',
-        'branches.delete_confirm': 'Are you sure you want to delete this branch?',
+        'branches.delete_confirm':
+            'Are you sure you want to delete this branch?',
         'branches.name_placeholder': 'e.g. Main Branch',
         'branches.code_placeholder': 'e.g. BR-001',
         'branches.update_details': 'Update branch details',
@@ -886,7 +974,8 @@ const translations: Record<Locale, Record<string, string>> = {
         'fees.export': 'Export to Excel',
         'fees.payment_history': 'Payment History',
         'fees.deleted': 'Fee records deleted successfully',
-        'fees.delete_confirm': 'Delete all fee records for this student in this batch for the year?',
+        'fees.delete_confirm':
+            'Delete all fee records for this student in this batch for the year?',
         'fees.edit': 'Edit Fee Record',
         'fees.update_details': 'Update fee payment details',
         'fees.fee_details': 'Fee Details',
@@ -922,16 +1011,20 @@ const translations: Record<Locale, Record<string, string>> = {
         'settings.email': 'Email address',
         'settings.email_placeholder': 'Email address',
         'settings.unverified': 'Your email address is unverified.',
-        'settings.resend_verification': 'Click here to re-send the verification email.',
-        'settings.verification_sent': 'A new verification link has been sent to your email address.',
+        'settings.resend_verification':
+            'Click here to re-send the verification email.',
+        'settings.verification_sent':
+            'A new verification link has been sent to your email address.',
         'settings.security': 'Security settings',
         'settings.update_password': 'Update password',
-        'settings.password_desc': 'Ensure your account is using a long, random password to stay secure',
+        'settings.password_desc':
+            'Ensure your account is using a long, random password to stay secure',
         'settings.current_password': 'Current password',
         'settings.new_password': 'New password',
         'settings.confirm_password': 'Confirm password',
         'settings.appearance': 'Appearance settings',
-        'settings.appearance_desc': 'Update the appearance settings for your account',
+        'settings.appearance_desc':
+            'Update the appearance settings for your account',
 
         // Auth
         'auth.login': 'Log in',
@@ -962,22 +1055,27 @@ const translations: Record<Locale, Record<string, string>> = {
         'auth.reset_desc': 'Please enter your new password below',
         'auth.reset_button': 'Reset password',
         'auth.confirm_title': 'Confirm password',
-        'auth.confirm_desc': 'This is a secure area of the application. Please confirm your password before continuing.',
+        'auth.confirm_desc':
+            'This is a secure area of the application. Please confirm your password before continuing.',
         'auth.confirm_with_passkey': 'Confirm with passkey',
         'auth.confirming': 'Confirming...',
         'auth.or_confirm_password': 'Or confirm with password',
         'auth.confirm_button': 'Confirm password',
         'auth.verify_title': 'Email verification',
-        'auth.verify_desc': 'Please verify your email address by clicking on the link we just emailed to you.',
-        'auth.verify_message': 'A new verification link has been sent to the email address you provided during registration.',
+        'auth.verify_desc':
+            'Please verify your email address by clicking on the link we just emailed to you.',
+        'auth.verify_message':
+            'A new verification link has been sent to the email address you provided during registration.',
         'auth.resend_verification': 'Resend verification email',
         'auth.logout': 'Log out',
         'auth.two_factor': 'Two-factor authentication',
         'auth.recovery_code': 'Recovery code',
-        'auth.recovery_desc': 'Please confirm access to your account by entering one of your emergency recovery codes.',
+        'auth.recovery_desc':
+            'Please confirm access to your account by entering one of your emergency recovery codes.',
         'auth.use_recovery_code': 'login using a recovery code',
         'auth.auth_code': 'Authentication code',
-        'auth.auth_desc': 'Enter the authentication code provided by your authenticator application.',
+        'auth.auth_desc':
+            'Enter the authentication code provided by your authenticator application.',
         'auth.use_auth_code': 'login using an authentication code',
         'auth.continue': 'Continue',
         'auth.or': 'or',
@@ -1028,38 +1126,50 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Welcome / SEO
         'welcome.hero_title': 'Amar Batch',
-        'welcome.hero_subtitle': 'Complete Management Solution for Your Coaching Center',
-        'welcome.hero_description': 'Track students, manage batches, mark attendance, collect fees, and generate reports — all from a single dashboard. Built for coaching centers in Bangladesh with multi-tenant support, role-based access, and subscription plans.',
+        'welcome.hero_subtitle':
+            'Complete Management Solution for Your Coaching Center',
+        'welcome.hero_description':
+            'Track students, manage batches, mark attendance, collect fees, and generate reports — all from a single dashboard. Built for coaching centers in Bangladesh with multi-tenant support, role-based access, and subscription plans.',
         'welcome.trusted_by': 'Trusted by leading coaching centers',
         'welcome.students_feature': 'Student Management',
-        'welcome.students_desc': 'Manage student information, enrollment, and departure dates with ease',
+        'welcome.students_desc':
+            'Manage student information, enrollment, and departure dates with ease',
         'welcome.attendance_feature': 'Attendance Tracking',
         'welcome.attendance_desc': 'Mark daily attendance and generate reports',
         'welcome.fees_feature': 'Fee Collection',
         'welcome.fees_desc': 'Track monthly fees and maintain payment records',
         'welcome.batch_feature': 'Batch Management',
-        'welcome.batch_desc': 'Create batches, assign teachers, and manage schedules',
+        'welcome.batch_desc':
+            'Create batches, assign teachers, and manage schedules',
         'welcome.cta': 'Get Started Now',
         'welcome.contact': 'Contact Us',
         'welcome.about_title': 'Why Amar Batch?',
-        'welcome.about_desc': 'We provide a complete solution for coaching centers in Bangladesh. From student management to fee collection, everything in one place.',
+        'welcome.about_desc':
+            'We provide a complete solution for coaching centers in Bangladesh. From student management to fee collection, everything in one place.',
         'welcome.trusted_badge': 'Trusted Coaching Center Solution',
         'welcome.how_it_works_title': 'Get Started in Minutes',
-        'welcome.how_it_works_desc': 'Simple setup process to bring your coaching center online.',
+        'welcome.how_it_works_desc':
+            'Simple setup process to bring your coaching center online.',
         'welcome.step1_title': 'Create Account',
-        'welcome.step1_desc': 'Sign up and set up your coaching center profile in seconds.',
+        'welcome.step1_desc':
+            'Sign up and set up your coaching center profile in seconds.',
         'welcome.step2_title': 'Add Students',
-        'welcome.step2_desc': 'Import or add your students and organize them into batches.',
+        'welcome.step2_desc':
+            'Import or add your students and organize them into batches.',
         'welcome.step3_title': 'Start Managing',
-        'welcome.step3_desc': 'Track daily attendance, collect fees, and generate reports.',
+        'welcome.step3_desc':
+            'Track daily attendance, collect fees, and generate reports.',
         'welcome.cta_title': 'Ready to Transform Your Coaching Center?',
-        'welcome.cta_desc': 'Join hundreds of coaching centers already using Amar Batch.',
+        'welcome.cta_desc':
+            'Join hundreds of coaching centers already using Amar Batch.',
         'welcome.cta_button': 'Start for Free',
         'welcome.copyright': 'All rights reserved.',
         'welcome.reports_feature': 'Reports & Analytics',
-        'welcome.reports_desc': 'View attendance summaries, fee collection reports, and student analytics',
+        'welcome.reports_desc':
+            'View attendance summaries, fee collection reports, and student analytics',
         'welcome.role_feature': 'Role-based Access',
-        'welcome.role_desc': 'Admin and teacher roles with different permissions. Secure and controlled access.',
+        'welcome.role_desc':
+            'Admin and teacher roles with different permissions. Secure and controlled access.',
         'welcome.stat_students': 'Students Managed',
         'welcome.stat_batches': 'Active Batches',
         'welcome.stat_enrollments': 'Active Enrollments',
@@ -1067,7 +1177,8 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Pricing
         'welcome.pricing_title': 'Simple, Transparent Pricing',
-        'welcome.pricing_desc': 'Choose the plan that fits your coaching center. Start free, upgrade when you need\u00A0to.',
+        'welcome.pricing_desc':
+            'Choose the plan that fits your coaching center. Start free, upgrade when you need\u00A0to.',
         'plan.popular': 'Most Popular',
         'plan.free_trial': 'Free Trial',
         'plan.free': 'Free',
@@ -1096,11 +1207,14 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Payment
         'payment.success_title': 'Payment Successful',
-        'payment.success_desc': 'Your subscription has been activated. Thank you for your payment!',
+        'payment.success_desc':
+            'Your subscription has been activated. Thank you for your payment!',
         'payment.failure_title': 'Payment Failed',
-        'payment.failure_desc': 'Something went wrong with your payment. Please try again.',
+        'payment.failure_desc':
+            'Something went wrong with your payment. Please try again.',
         'payment.cancel_title': 'Payment Cancelled',
-        'payment.cancel_desc': 'You have cancelled the payment. Your subscription has not been changed.',
+        'payment.cancel_desc':
+            'You have cancelled the payment. Your subscription has not been changed.',
         'payment.plan': 'Plan',
         'payment.amount_paid': 'Amount Paid',
         'payment.go_to_subscription': 'Go to Subscription',
@@ -1123,8 +1237,13 @@ const translations: Record<Locale, Record<string, string>> = {
         'subscription.switch_plan': 'Switch Plan',
         'subscription.get_started': 'Get Started',
         'subscription.upgrade_title': 'Upgrade Plan',
-        'subscription.upgrade_desc': 'Are you sure you want to switch to "{plan}"?',
+        'subscription.upgrade_desc':
+            'Are you sure you want to switch to "{plan}"?',
         'subscription.proceed_to_payment': 'Proceed to Payment',
+        'subscription.trial': 'Trial',
+        'subscription.no_plan': 'No Plan',
+        'subscription.active_until': 'Active until',
+        'subscription.trial_ends_in': 'Trial ends in {days} days ({date})',
 
         // Toast
         'toast.upgraded': 'Upgraded successfully!',
@@ -1133,13 +1252,17 @@ const translations: Record<Locale, Record<string, string>> = {
         'welcome.faq_title': 'Frequently Asked Questions',
         'welcome.faq_desc': 'Everything you need to know about Amar Batch.',
         'welcome.faq1_q': 'What is Amar Batch?',
-        'welcome.faq1_a': 'Amar Batch is a complete coaching center management platform that helps you manage students, teachers, batches, attendance, and fees all in one place.',
+        'welcome.faq1_a':
+            'Amar Batch is a complete coaching center management platform that helps you manage students, teachers, batches, attendance, and fees all in one place.',
         'welcome.faq2_q': 'Is there a free plan?',
-        'welcome.faq2_a': 'Yes! Our Free Trial plan lets you manage up to 30 students with 2 staff members and 5 batches at no cost.',
+        'welcome.faq2_a':
+            'Yes! Our Free Trial plan lets you manage up to 30 students with 2 staff members and 5 batches at no cost.',
         'welcome.faq3_q': 'Can I upgrade or downgrade my plan anytime?',
-        'welcome.faq3_a': 'Yes, you can change your plan at any time. Upgrades take effect immediately, and downgrades apply at the end of your billing cycle.',
+        'welcome.faq3_a':
+            'Yes, you can change your plan at any time. Upgrades take effect immediately, and downgrades apply at the end of your billing cycle.',
         'welcome.faq4_q': 'Is my data secure?',
-        'welcome.faq4_a': 'Absolutely. We use industry-standard encryption and security practices. Your data is isolated per tenant and backed up regularly.',
+        'welcome.faq4_a':
+            'Absolutely. We use industry-standard encryption and security practices. Your data is isolated per tenant and backed up regularly.',
 
         // Footer
         'footer.product': 'Product',
@@ -1152,34 +1275,42 @@ const translations: Record<Locale, Record<string, string>> = {
 
         // Docs page
         'docs.page_title': 'Documentation',
-        'docs.page_desc': 'Learn how to use Amar Batch to manage your coaching center effectively.',
+        'docs.page_desc':
+            'Learn how to use Amar Batch to manage your coaching center effectively.',
         'docs.badge': 'Documentation',
         'docs.students_title': 'Student Management',
-        'docs.students_content': 'Add, edit, and manage your students. Track their coaching class, section, guardian info, and enrollment history. You can filter students by status and search by name.',
+        'docs.students_content':
+            'Add, edit, and manage your students. Track their coaching class, section, guardian info, and enrollment history. You can filter students by status and search by name.',
         'docs.batches_title': 'Batch Management',
-        'docs.batches_content': 'Create batches with custom schedules (days and time), set capacity limits, and assign teachers. Complete a batch to finalize all active enrollments automatically.',
+        'docs.batches_content':
+            'Create batches with custom schedules (days and time), set capacity limits, and assign teachers. Complete a batch to finalize all active enrollments automatically.',
         'docs.attendance_title': 'Attendance Tracking',
-        'docs.attendance_content': 'Mark daily attendance for your batches in bulk. Select a batch and date, then mark each student as present, absent, or late. Edit individual records anytime.',
+        'docs.attendance_content':
+            'Mark daily attendance for your batches in bulk. Select a batch and date, then mark each student as present, absent, or late. Edit individual records anytime.',
         'docs.fees_title': 'Fee Collection',
-        'docs.fees_content': 'Track monthly fees using the grid view. See all students across months at a glance, record payments, and filter by year. Only admins can manage fees.',
+        'docs.fees_content':
+            'Track monthly fees using the grid view. See all students across months at a glance, record payments, and filter by year. Only admins can manage fees.',
         'docs.roles_title': 'User Roles',
-        'docs.roles_content': 'Amar Batch supports three roles: Super Admin (global access), Owner/Admin (full tenant access), and Staff/Teacher (limited to assigned batches). Teachers require admin approval.',
+        'docs.roles_content':
+            'Amar Batch supports three roles: Super Admin (global access), Owner/Admin (full tenant access), and Staff/Teacher (limited to assigned batches). Teachers require admin approval.',
         'docs.settings_title': 'Settings',
-        'docs.settings_content': 'Manage your profile, enable two-factor authentication, register passkeys, and change your password from the Settings page.',
+        'docs.settings_content':
+            'Manage your profile, enable two-factor authentication, register passkeys, and change your password from the Settings page.',
         'docs.get_started_title': 'Ready to get started?',
-        'docs.get_started_desc': 'Create your free account and start managing your coaching center today.',
+        'docs.get_started_desc':
+            'Create your free account and start managing your coaching center today.',
         'docs.back': 'Back',
 
         // Contact page
         'contact.page_title': 'Contact Us',
-        'contact.page_desc': 'Have a question or need help? Reach out to our team.',
+        'contact.page_desc':
+            'Have a question or need help? Reach out to our team.',
         'contact.email': 'Email',
         'contact.phone': 'Phone',
         'contact.address': 'Address',
-        'contact.address_value': 'Dhaka, Bangladesh',
+        'contact.address_value': 'Chattogram, Bangladesh',
         'contact.hours': 'Business Hours',
         'contact.hours_value': 'Sun - Thu, 9:00 AM - 6:00 PM (BST)',
-        'contact.form_title': 'Send us a message',
         'contact.form_name': 'Your Name',
         'contact.form_email': 'Email Address',
         'contact.form_subject': 'Subject',
@@ -1190,35 +1321,48 @@ const translations: Record<Locale, Record<string, string>> = {
         'terms.page_title': 'Terms of Service',
         'terms.last_updated': 'Last updated: January 2026',
         'terms.s1_title': '1. Acceptance of Terms',
-        'terms.s1_content': 'By accessing and using Amar Batch, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you may not use our service.',
+        'terms.s1_content':
+            'By accessing and using Amar Batch, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you may not use our service.',
         'terms.s2_title': '2. Description of Service',
-        'terms.s2_content': 'Amar Batch is a coaching center management platform that provides tools for managing students, teachers, batches, attendance, and fees. The service is provided "as is" and may be modified at any time.',
+        'terms.s2_content':
+            'Amar Batch is a coaching center management platform that provides tools for managing students, teachers, batches, attendance, and fees. The service is provided "as is" and may be modified at any time.',
         'terms.s3_title': '3. User Accounts',
-        'terms.s3_content': 'You are responsible for maintaining the confidentiality of your account credentials. You must notify us immediately of any unauthorized use of your account. Each account is for a single coaching center (tenant).',
+        'terms.s3_content':
+            'You are responsible for maintaining the confidentiality of your account credentials. You must notify us immediately of any unauthorized use of your account. Each account is for a single coaching center (tenant).',
         'terms.s4_title': '4. Data Ownership',
-        'terms.s4_content': 'You retain full ownership of all data you input into Amar Batch. We will never sell or share your data with third parties. Each tenant\'s data is isolated and encrypted.',
+        'terms.s4_content':
+            "You retain full ownership of all data you input into Amar Batch. We will never sell or share your data with third parties. Each tenant's data is isolated and encrypted.",
         'terms.s5_title': '5. Acceptable Use',
-        'terms.s5_content': 'You agree not to use the service for any unlawful purpose, attempt to gain unauthorized access to any part of the service, or interfere with other users\' enjoyment of the service.',
+        'terms.s5_content':
+            "You agree not to use the service for any unlawful purpose, attempt to gain unauthorized access to any part of the service, or interfere with other users' enjoyment of the service.",
         'terms.s6_title': '6. Payment and Subscriptions',
-        'terms.s6_content': 'Free trial accounts are provided at no cost. Paid subscriptions are billed according to the selected plan. All fees are non-refundable except as required by law.',
+        'terms.s6_content':
+            'Free trial accounts are provided at no cost. Paid subscriptions are billed according to the selected plan. All fees are non-refundable except as required by law.',
         'terms.s7_title': '7. Limitation of Liability',
-        'terms.s7_content': 'Amar Batch shall not be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of the service.',
+        'terms.s7_content':
+            'Amar Batch shall not be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of the service.',
 
         // Privacy page
         'privacy.page_title': 'Privacy Policy',
         'privacy.last_updated': 'Last updated: January 2026',
         'privacy.s1_title': '1. Information We Collect',
-        'privacy.s1_content': 'We collect information you provide directly, including your name, email address, and coaching center details. We also collect usage data such as pages visited and actions taken within the platform.',
+        'privacy.s1_content':
+            'We collect information you provide directly, including your name, email address, and coaching center details. We also collect usage data such as pages visited and actions taken within the platform.',
         'privacy.s2_title': '2. How We Use Your Information',
-        'privacy.s2_content': 'We use your information to provide and improve our services, send important updates, and ensure the security of your account. We do not use your data for advertising purposes.',
+        'privacy.s2_content':
+            'We use your information to provide and improve our services, send important updates, and ensure the security of your account. We do not use your data for advertising purposes.',
         'privacy.s3_title': '3. Data Storage and Security',
-        'privacy.s3_content': 'Your data is stored on secure servers with industry-standard encryption. Each tenant\'s data is isolated. We perform regular backups and implement strict access controls.',
+        'privacy.s3_content':
+            "Your data is stored on secure servers with industry-standard encryption. Each tenant's data is isolated. We perform regular backups and implement strict access controls.",
         'privacy.s4_title': '4. Data Sharing',
-        'privacy.s4_content': 'We do not sell, trade, or otherwise transfer your personal information to outside parties. Your data is only shared with third-party services essential to operating the platform (e.g., hosting providers).',
+        'privacy.s4_content':
+            'We do not sell, trade, or otherwise transfer your personal information to outside parties. Your data is only shared with third-party services essential to operating the platform (e.g., hosting providers).',
         'privacy.s5_title': '5. Your Rights',
-        'privacy.s5_content': 'You have the right to access, correct, or delete your personal data at any time. You can export your data from the settings page or contact us for assistance.',
+        'privacy.s5_content':
+            'You have the right to access, correct, or delete your personal data at any time. You can export your data from the settings page or contact us for assistance.',
         'privacy.s6_title': '6. Contact Us',
-        'privacy.s6_content': 'If you have questions about this Privacy Policy, please contact us at support@amarbatch.com.',
+        'privacy.s6_content':
+            'If you have questions about this Privacy Policy, please contact us at support@amarbatch.com.',
     },
 };
 
@@ -1258,7 +1402,8 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     const formatDateFn = (date: string | Date) => formatDate(date, locale);
     const formatTimeFn = (date: string | Date) => formatTime(date, locale);
     const formatCurrencyFn = (amount: number) => formatCurrency(amount, locale);
-    const formatNumberFn = (num: number) => locale === 'bn' ? formatBanglaNumber(num) : num.toLocaleString('en-US');
+    const formatNumberFn = (num: number) =>
+        locale === 'bn' ? formatBanglaNumber(num) : num.toLocaleString('en-US');
 
     if (!mounted) {
         return null;

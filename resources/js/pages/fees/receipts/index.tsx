@@ -49,7 +49,7 @@ const MONTHS = [
 ];
 
 export default function FeeReceiptsIndex({ receipts: pagination, filters }: PageProps) {
-    const { t } = useLocale();
+    const { t, formatCurrency } = useLocale();
     const { auth } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
     const [refreshing, setRefreshing] = useState(false);
@@ -167,10 +167,10 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
                                                 {MONTHS[receipt.month - 1]} {receipt.year}
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap">
-                                                ${Number(receipt.amount_paid).toFixed(2)}
+                                                {formatCurrency(Number(receipt.amount_paid))}
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap">
-                                                ${Number(receipt.amount_due).toFixed(2)}
+                                                {formatCurrency(Number(receipt.amount_due))}
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap">
                                                 {new Date(receipt.created_at).toLocaleDateString()}
