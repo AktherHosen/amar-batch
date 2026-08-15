@@ -3,8 +3,8 @@ import {
     LayoutGrid,
     Users,
     Layers,
-    GraduationCap,
-Wallet,
+GraduationCap,
+    Wallet,
     CheckSquare,
     School,
     CreditCard,
@@ -13,6 +13,7 @@ Wallet,
     Building2,
     Megaphone,
     Calendar,
+    Shield,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -32,7 +33,7 @@ import { useHasFeature } from '@/lib/features';
 import { dashboard } from '@/routes';
 import students from '@/routes/students';
 import batches from '@/routes/batches';
-import teachers from '@/routes/teachers';
+import users from '@/routes/users';
 import fees from '@/routes/fees';
 import attendance from '@/routes/attendance';
 import coachingClasses from '@/routes/coaching-classes';
@@ -40,6 +41,7 @@ import exams from '@/routes/exams';
 import reports from '@/routes/reports';
 import branches from '@/routes/branches';
 import subscription from '@/routes/subscription';
+import roles from '@/routes/roles';
 import type { NavItem, NavItemGroup } from '@/types';
 
 export function AppSidebar() {
@@ -70,7 +72,7 @@ export function AppSidebar() {
             items: [
                 { title: t('nav.students'), href: students.index(), icon: Users },
                 { title: t('nav.coaching_classes'), href: coachingClasses.index(), icon: School },
-                { title: t('nav.teachers'), href: teachers.index(), icon: GraduationCap, ownerOnly: true },
+                { title: t('nav.users'), href: users.index(), icon: GraduationCap, ownerOnly: true },
                 { title: t('nav.batches'), href: batches.index(), icon: Layers },
             ],
         },
@@ -100,6 +102,12 @@ export function AppSidebar() {
             items: [
                 { title: t('nav.reports'), href: reports.index(), icon: BarChart3, featureRequired: 'reports' },
                 { title: t('nav.branches'), href: branches.index(), icon: Building2, featureRequired: 'multi_branch' },
+            ],
+        },
+        {
+            label: 'Administration',
+            items: [
+                { title: t('nav.roles'), href: roles.index(), icon: Shield, ownerOnly: true },
             ],
         },
     ];

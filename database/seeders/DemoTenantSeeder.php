@@ -28,6 +28,8 @@ class DemoTenantSeeder extends Seeder
             ]);
         }
 
+        \App\Support\DefaultRoles::createForTenant($tenant->id);
+
         $this->command->info("Demo tenant created: {$tenant->name} (slug: {$tenant->slug})");
 
         return $tenant;

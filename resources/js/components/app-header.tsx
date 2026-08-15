@@ -12,6 +12,7 @@ Wallet,
     FileText,
     BarChart3,
     Building2,
+    Shield,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
@@ -47,7 +48,7 @@ import { useLocale } from '@/contexts/locale-context';
 import { dashboard } from '@/routes';
 import students from '@/routes/students';
 import batches from '@/routes/batches';
-import teachers from '@/routes/teachers';
+import users from '@/routes/users';
 import fees from '@/routes/fees';
 import attendance from '@/routes/attendance';
 import coachingClasses from '@/routes/coaching-classes';
@@ -55,6 +56,7 @@ import exams from '@/routes/exams';
 import reports from '@/routes/reports';
 import branches from '@/routes/branches';
 import subscription from '@/routes/subscription';
+import roles from '@/routes/roles';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -79,7 +81,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
         { title: t('nav.dashboard'), href: dashboard(), icon: LayoutGrid },
         { title: t('nav.students'), href: students.index(), icon: Users },
         { title: t('nav.coaching_classes'), href: coachingClasses.index(), icon: School },
-        { title: t('nav.teachers'), href: teachers.index(), icon: GraduationCap, ownerOnly: true },
+        { title: t('nav.users'), href: users.index(), icon: GraduationCap, ownerOnly: true },
         { title: t('nav.batches'), href: batches.index(), icon: Layers },
         { title: t('nav.fees'), href: fees.index(), icon: Wallet, ownerOnly: true },
         { title: t('nav.attendance'), href: attendance.index(), icon: CheckSquare },
@@ -87,6 +89,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
         { title: t('nav.reports'), href: reports.index(), icon: BarChart3, featureRequired: 'reports' },
         { title: t('nav.branches'), href: branches.index(), icon: Building2, featureRequired: 'multi_branch' },
         { title: t('nav.subscription'), href: subscription.index(), icon: CreditCard, ownerOnly: true },
+        { title: t('nav.roles'), href: roles.index(), icon: Shield, ownerOnly: true },
     ];
 
     const mainNavItems = isUserOwner

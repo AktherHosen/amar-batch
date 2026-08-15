@@ -6,6 +6,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\OnboardingMiddleware;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\TenantMiddleware;
+use App\Http\Middleware\CheckRoutePermission;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -32,8 +33,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'payment/*',
         ]);
 
-        $middleware->alias([
+$middleware->alias([
             'role' => RoleMiddleware::class,
+            'role.permission' => CheckRoutePermission::class,
             'tenant' => TenantMiddleware::class,
             'teacher.approved' => CheckTeacherApproval::class,
             'onboarding' => OnboardingMiddleware::class,

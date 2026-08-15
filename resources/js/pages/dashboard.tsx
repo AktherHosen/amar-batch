@@ -10,7 +10,7 @@ import attendance from '@/routes/attendance';
 import batches from '@/routes/batches';
 import fees from '@/routes/fees';
 import students from '@/routes/students';
-import teachers from '@/routes/teachers';
+import users from '@/routes/users';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     ArcElement,
@@ -310,7 +310,7 @@ export default function Dashboard({
                                         {stats.total_teachers ?? '-'}
                                     </div>
                                     <Link
-                                        href={teachers.index().url}
+                                        href={users.index().url}
                                         className="text-xs text-muted-foreground hover:underline"
                                     >
                                         {t('actions.view_all')}

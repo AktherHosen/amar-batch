@@ -41,6 +41,12 @@ class Tenant extends Model
         return $this->hasMany(Student::class);
     }
 
+    /** @return HasMany<Role, $this> */
+    public function roles(): HasMany
+    {
+        return $this->hasMany(Role::class);
+    }
+
     /** @return HasMany<Batch, $this> */
     public function batches(): HasMany
     {

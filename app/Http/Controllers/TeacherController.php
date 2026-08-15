@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTeacherRequest;
 use App\Http\Requests\UpdateTeacherRequest;
+use App\Models\Role;
 use App\Models\User;
 use App\Policies\PlanLimitsPolicy;
 use Illuminate\Http\RedirectResponse;
@@ -44,6 +45,7 @@ class TeacherController extends Controller
         return Inertia::render('teachers/index', [
             'teachers' => $teachers,
             'filters' => $request->only(['search', 'status']),
+            'roles' => Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get([ 'id', 'name', 'slug']),
         ]);
     }
 
@@ -70,6 +72,7 @@ class TeacherController extends Controller
                 'remaining' => $remaining,
                 'limit' => $limit,
             ],
+            'roles' => Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get(['id', 'name', 'slug']),
         ]);
     }
 
@@ -91,7 +94,7 @@ class TeacherController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'staff',
+            'role' => $request->role ?? 'staff',
             'tenant_id' => $request->user()->tenant_id,
         ]);
 
@@ -120,6 +123,7 @@ class TeacherController extends Controller
 
         return Inertia::render('teachers/edit', [
             'teacher' => $teacher,
+            'roles' => Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get(['id', 'name', 'slug']),
         ]);
     }
 

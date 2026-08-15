@@ -43,6 +43,8 @@ class AdminSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
+        \App\Support\DefaultRoles::createForTenant($tenant->id);
+
         $this->command->info('Admin user created: admin@amarbatch.com (password: password)');
         $this->command->info("Assigned to tenant: {$tenant->name}");
     }

@@ -63,6 +63,8 @@ class OnboardingController extends Controller
             'onboarding_complete' => true,
         ]);
 
+        \App\Support\DefaultRoles::createForTenant($tenant->id);
+
         return to_route('dashboard')->with('toast', ['type' => 'success', 'message' => 'Coaching center created successfully!']);
     }
 }

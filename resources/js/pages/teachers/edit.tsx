@@ -14,11 +14,18 @@ type Teacher = {
     email: string;
 };
 
-type TeachersEditProps = {
-    teacher: Teacher;
+type Role = {
+    id: number;
+    name: string;
+    slug: string;
 };
 
-export default function TeachersEdit({ teacher }: TeachersEditProps) {
+type TeachersEditProps = {
+    teacher: Teacher;
+    roles?: Role[];
+};
+
+export default function TeachersEdit({ teacher, roles = [] }: TeachersEditProps) {
     const { t } = useLocale();
     const { errors } = usePage().props;
     const handleSubmit = (data: any) => {
@@ -55,6 +62,7 @@ export default function TeachersEdit({ teacher }: TeachersEditProps) {
                     <CardContent className="pt-6">
                         <TeacherForm
                             teacher={teacher}
+                            roles={roles}
                             onSubmit={handleSubmit}
                             processing={false}
                             errors={errors}
