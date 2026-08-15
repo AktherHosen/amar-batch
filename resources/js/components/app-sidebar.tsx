@@ -4,7 +4,7 @@ import {
     Users,
     Layers,
     GraduationCap,
-    DollarSign,
+Wallet,
     CheckSquare,
     School,
     CreditCard,
@@ -77,7 +77,7 @@ export function AppSidebar() {
         {
             label: 'Finance',
             items: [
-                { title: t('nav.fees'), href: fees.index(), icon: DollarSign, ownerOnly: true },
+                { title: t('nav.fees'), href: fees.index(), icon: Wallet, ownerOnly: true },
                 { title: t('nav.subscription'), href: subscription.index(), icon: CreditCard, ownerOnly: true },
             ],
         },

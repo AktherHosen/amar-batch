@@ -32,7 +32,7 @@ import {
     ChevronRight,
     ClipboardCheck,
     CreditCard,
-    DollarSign,
+    Wallet,
     GraduationCap,
     Layers,
     Megaphone,
@@ -367,7 +367,7 @@ export default function Dashboard({
                                     <CardTitle>
                                         {t('dashboard.total_collected')}
                                     </CardTitle>
-                                    <DollarSign className="size-3.5 text-muted-foreground sm:size-4" />
+                                    <Wallet className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-xl font-bold sm:text-2xl">
@@ -402,7 +402,7 @@ export default function Dashboard({
                                     <CardTitle>
                                         {t('dashboard.total_collected')}
                                     </CardTitle>
-                                    <DollarSign className="size-3.5 text-muted-foreground sm:size-4" />
+                                    <Wallet className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-xl font-bold sm:text-2xl">

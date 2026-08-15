@@ -3,7 +3,7 @@ import { useState } from 'react';
 import {
     Users,
     Calendar,
-    DollarSign,
+    Wallet,
     GraduationCap,
     BarChart3,
     Shield,
@@ -80,7 +80,7 @@ export default function Welcome({ stats, plans }: Props) {
             description: t('welcome.attendance_desc'),
         },
         {
-            icon: DollarSign,
+            icon: Wallet,
             title: t('welcome.fees_feature'),
             description: t('welcome.fees_desc'),
         },
@@ -105,7 +105,7 @@ export default function Welcome({ stats, plans }: Props) {
         { number: `${formatNumber(safeStats.total_students)}+`, label: t('welcome.stat_students'), icon: Users },
         { number: `${formatNumber(safeStats.active_batches)}+`, label: t('welcome.stat_batches'), icon: GraduationCap },
         { number: `${formatNumber(safeStats.total_enrollments)}+`, label: t('welcome.stat_enrollments'), icon: BarChart3 },
-        { number: `${formatNumber(100)}%`, label: t('welcome.stat_fees'), icon: DollarSign },
+        { number: `${formatNumber(100)}%`, label: t('welcome.stat_fees'), icon: Wallet },
     ];
 
     const steps = [
@@ -173,17 +173,12 @@ export default function Welcome({ stats, plans }: Props) {
                                     </Link>
                                 </Button>
                             ) : (
-                                <>
-                                    <Button variant="ghost" size="sm" className="hidden px-2 sm:px-3 sm:inline-flex" asChild>
-                                        <Link href={login()}>{t('auth.login')}</Link>
-                                    </Button>
-                                    <Button size="sm" asChild className="px-2.5 sm:px-3">
-                                        <Link href={register()}>
-                                            {t('auth.sign_up_free')}
-                                            <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
-                                        </Link>
-                                    </Button>
-                                </>
+                                <Button size="sm" asChild className="px-2.5 sm:px-3">
+                                    <Link href={register()}>
+                                        {t('auth.sign_up_free')}
+                                        <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
+                                    </Link>
+                                </Button>
                             )}
                         </div>
                     </nav>
@@ -258,11 +253,11 @@ export default function Welcome({ stats, plans }: Props) {
                                 {t('welcome.about_desc')}
                             </p>
                         </div>
-                        <div className="grid gap-2 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {features.map((feature) => (
                                 <Card key={feature.title} className="group transition-all hover:shadow-lg hover:shadow-primary/5">
-                                    <CardHeader>
-                                        <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:size-12">
+                                    <CardHeader className="flex flex-col items-start gap-1.5">
+                                        <div className="mb-1 flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:size-12 sm:mb-2">
                                             <feature.icon className="size-5 sm:h-6 sm:w-6" />
                                         </div>
                                         <CardTitle className="text-base font-bold tracking-tight sm:text-xl">{feature.title}</CardTitle>

@@ -10,7 +10,7 @@ import {
     EllipsisVertical,
     Download,
     X,
-    DollarSign,
+    Wallet,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -489,7 +489,7 @@ export default function FeesIndex({
                                                 className="text-center"
                                             >
                                                 <div className="flex flex-col items-center gap-2 py-4">
-                                                    <DollarSign className="size-8 text-muted-foreground" />
+                                                    <Wallet className="size-8 text-muted-foreground" />
                                                     <p>{t('fees.no_records')}</p>
                                                 </div>
                                             </TableCell>

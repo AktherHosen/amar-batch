@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { BookOpen, Users, Calendar, DollarSign, GraduationCap, Settings, Shield, ArrowRight } from 'lucide-react';
+import { BookOpen, Users, Calendar, Wallet, GraduationCap, Settings, Shield, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ export default function Docs() {
             content: t('docs.attendance_content'),
         },
         {
-            icon: DollarSign,
+            icon: Wallet,
             title: t('docs.fees_title'),
             content: t('docs.fees_content'),
         },

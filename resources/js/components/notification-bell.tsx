@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react';
 import {
     Bell,
     UserPlus,
-    DollarSign,
+    Wallet,
     FileText,
     CheckSquare,
     BellRing,
@@ -31,7 +31,7 @@ type Notification = {
 
 const typeIcons: Record<string, typeof Bell> = {
     student: UserPlus,
-    fee: DollarSign,
+    fee: Wallet,
     notice: FileText,
     attendance: CheckSquare,
     info: BellRing,
