@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { dashboard, login, register } from '@/routes';
+import LanguageSwitcher from '@/components/language-switcher';
 import { useLocale } from '@/contexts/locale-context';
 
 type Props = {
@@ -24,23 +25,24 @@ export default function PublicLayout({ children }: Props) {
                             <span className="hidden text-xl font-bold sm:inline-block">{t('app.name')}</span>
                         </Link>
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                        <LanguageSwitcher />
                         {auth?.user ? (
-                            <Button asChild className="px-3 sm:px-4">
+                            <Button size="sm" asChild className="px-2.5 sm:px-3">
                                 <Link href={dashboard()}>
                                     {t('nav.dashboard')}
-                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                    <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
                                 </Link>
                             </Button>
                         ) : (
                             <>
-                                <Button variant="ghost" size="sm" asChild>
+                                <Button variant="ghost" size="sm" className="hidden px-2 sm:px-3 sm:inline-flex" asChild>
                                     <Link href={login()}>{t('auth.login')}</Link>
                                 </Button>
-                                <Button asChild className="px-3 sm:px-4">
+                                <Button size="sm" asChild className="px-2.5 sm:px-3">
                                     <Link href={register()}>
                                         {t('auth.sign_up_free')}
-                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                        <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
                                     </Link>
                                 </Button>
                             </>

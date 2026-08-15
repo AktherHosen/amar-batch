@@ -15,6 +15,7 @@ import {
     Clock,
 } from 'lucide-react';
 import PlanBadge from '@/components/plan-badge';
+import LanguageSwitcher from '@/components/language-switcher';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -162,23 +163,24 @@ export default function Welcome({ stats, plans }: Props) {
                             <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-lg object-cover" />
                             <span className="hidden text-xl font-bold sm:inline-block">{t('app.name')}</span>
                         </div>
-                        <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-1 sm:gap-2">
+                            <LanguageSwitcher />
                             {auth.user ? (
-                                <Button asChild className="px-3 sm:px-4">
+                                <Button asChild size="sm" className="px-2.5 sm:px-3">
                                     <Link href={dashboard()}>
                                         {t('nav.dashboard')}
-                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                        <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
                                     </Link>
                                 </Button>
                             ) : (
                                 <>
-                                    <Button variant="ghost" size="sm" asChild>
+                                    <Button variant="ghost" size="sm" className="hidden px-2 sm:px-3 sm:inline-flex" asChild>
                                         <Link href={login()}>{t('auth.login')}</Link>
                                     </Button>
-                                    <Button asChild className="px-3 sm:px-4">
+                                    <Button size="sm" asChild className="px-2.5 sm:px-3">
                                         <Link href={register()}>
                                             {t('auth.sign_up_free')}
-                                            <ArrowRight className="ml-2 h-4 w-4" />
+                                            <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
                                         </Link>
                                     </Button>
                                 </>
