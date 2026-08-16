@@ -8,13 +8,19 @@ import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import teachers from '@/routes/teachers';
 import { useLocale } from '@/contexts/locale-context';
@@ -140,6 +146,31 @@ export default function TeachersIndex({
         }
     };
 
+    const handleRowStatusChange = (teacher: TeacherRow, value: string) => {
+        const current =
+            teacher.role === 'inactive'
+                ? 'inactive'
+                : teacher.is_approved
+                  ? 'active'
+                  : 'pending';
+        if (value === current) return;
+        router.patch(
+            teachers.status(teacher.id).url,
+            { status: value },
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(
+                        value === 'inactive'
+                            ? t('toast.deactivated_successfully')
+                            : t('toast.updated_successfully'),
+                    );
+                    router.reload({ only: ['teachers'] });
+                },
+            },
+        );
+    };
+
     const columns = (() => {
         type Col = NonNullable<DataTableProps<TeacherRow, unknown>['columns']>[number];
         return [
@@ -174,13 +205,47 @@ export default function TeachersIndex({
                 accessorKey: 'status',
                 header: t('teachers.status'),
                 enableSorting: false,
-                cell: ({ row }: any) => (
-                    <Badge
-                        variant={row.original.role === 'inactive' ? 'danger' : 'success'}
-                    >
-                        {row.original.role === 'inactive' ? t('teachers.inactive') : t('teachers.active')}
-                    </Badge>
-                ),
+                cell: ({ row }: any) => {
+                    const teacher: TeacherRow = row.original;
+                    const statusValue =
+                        teacher.role === 'inactive'
+                            ? 'inactive'
+                            : teacher.is_approved
+                              ? 'active'
+                              : 'pending';
+                    return (
+                        <Select
+                            value={statusValue}
+                            onValueChange={(value) =>
+                                handleRowStatusChange(teacher, value)
+                            }
+                        >
+                            <SelectTrigger className="h-8 w-auto min-w-[7rem]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-green-600" />
+                                        {t('teachers.active')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="pending">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-yellow-500" />
+                                        {t('teachers.pending')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="inactive">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-red-600" />
+                                        {t('teachers.inactive')}
+                                    </span>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    );
+                },
             } as Col,
             {
                 id: 'assigned_batches_count',

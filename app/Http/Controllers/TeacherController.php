@@ -101,7 +101,7 @@ class TeacherController extends Controller
         return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Staff member created successfully.']);
     }
 
-    public function show(User $teacher): Response
+public function show(User $teacher): Response
     {
         if (! in_array($teacher->role, ['teacher', 'inactive'])) {
             abort(404);
@@ -110,8 +110,19 @@ class TeacherController extends Controller
         $teacher->load(['assignedBatches.enrollments.student']);
         $teacher->loadCount('assignedBatches');
 
+        $activeBatches = $teacher->assignedBatches()->where('status', 'active')->count();
+
+        $totalStudents = $teacher->assignedBatches()
+            ->withCount('enrollments')
+            ->get()
+            ->sum('enrollments_count');
+
         return Inertia::render('teachers/show', [
             'teacher' => $teacher,
+            'stats' => [
+                'active_batches' => $activeBatches,
+                'total_students' => $totalStudents,
+            ],
         ]);
     }
 
@@ -161,6 +172,31 @@ class TeacherController extends Controller
         $teacher->assignedBatches()->detach();
 
         return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Staff member deactivated successfully.']);
+    }
+
+    public function updateStatus(Request $request, User $teacher): RedirectResponse
+    {
+        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['teacher', 'inactive'])) {
+            abort(403);
+        }
+
+        $status = $request->input('status');
+
+        if ($status === 'active') {
+            $teacher->update(['role' => 'teacher', 'is_approved' => true]);
+            $message = 'Staff member activated successfully.';
+        } elseif ($status === 'pending') {
+            $teacher->update(['role' => 'teacher', 'is_approved' => false]);
+            $message = 'Staff member set to pending approval.';
+        } elseif ($status === 'inactive') {
+            $teacher->update(['role' => 'inactive', 'is_approved' => false]);
+            $teacher->assignedBatches()->detach();
+            $message = 'Staff member deactivated successfully.';
+        } else {
+            abort(422);
+        }
+
+        return back()->with('toast', ['type' => 'success', 'message' => $message]);
     }
 
     public function approve(Request $request, User $teacher): RedirectResponse

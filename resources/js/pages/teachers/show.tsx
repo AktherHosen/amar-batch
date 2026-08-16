@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { isOwner } from '@/lib/role';
-import { ArrowLeft, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, EllipsisVertical, Pencil, Trash2, Mail, Phone, Layers, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import teachers from '@/routes/teachers';
 import batches from '@/routes/batches';
@@ -35,15 +36,34 @@ type Teacher = {
     id: number;
     name: string;
     email: string;
+    phone: string | null;
+    avatar: string | null;
+    role: string;
+    is_approved: boolean;
+    created_at: string;
     assigned_batches: Batch[];
     assigned_batches_count: number;
 };
 
 type TeachersShowProps = {
     teacher: Teacher;
+    stats: {
+        active_batches: number;
+        total_students: number;
+    };
 };
 
-export default function TeachersShow({ teacher }: TeachersShowProps) {
+function formatDate(dateStr: string | null): string {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
+}
+
+export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = isOwner(auth.user);
@@ -174,30 +194,118 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                         <CardTitle>{t('teachers.title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid w-full grid-cols-2 gap-3">
-                            <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">
-                                    {t('teachers.name')}
-                                </p>
-                                <p className="truncate text-sm font-medium">{teacher.name}</p>
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">
-                                    {t('teachers.email')}
-                                </p>
-                                <p className="truncate text-sm font-medium">{teacher.email}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">
-                                    {t('batches.title')}
-                                </p>
-                                <p className="text-sm font-medium">
-                                    {teacher.assigned_batches_count}
-                                </p>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                            <Avatar className="size-16 sm:size-20">
+                                <AvatarImage
+                                    src={teacher.avatar ? `/storage/${teacher.avatar}` : undefined}
+                                    alt={teacher.name}
+                                />
+                                <AvatarFallback className="text-xl">
+                                    {teacher.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 space-y-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Badge variant={teacher.role === 'inactive' ? 'danger' : 'success'}>
+                                        {teacher.role === 'inactive' ? t('teachers.inactive') : t('teachers.active')}
+                                    </Badge>
+                                    <Badge variant={teacher.is_approved ? 'success' : 'secondary'}>
+                                        {teacher.is_approved ? t('teachers.approved') : t('teachers.pending')}
+                                    </Badge>
+                                </div>
+                                <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <div className="min-w-0">
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('teachers.name')}
+                                        </p>
+                                        <p className="truncate text-sm font-medium">{teacher.name}</p>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('teachers.email')}
+                                        </p>
+                                        <p className="truncate text-sm font-medium">{teacher.email}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('teachers.phone')}
+                                        </p>
+                                        <p className="text-sm font-medium">{teacher.phone || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('teachers.role')}
+                                        </p>
+                                        <p className="text-sm font-medium capitalize">{teacher.role}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('teachers.joined')}
+                                        </p>
+                                        <p className="text-sm font-medium">
+                                            {formatDate(teacher.created_at)}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
+
+                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-4">
+                            <Layers className="size-5 shrink-0 text-muted-foreground" />
+                            <div className="min-w-0">
+                                <p className="text-2xl font-bold leading-none">
+                                    {teacher.assigned_batches_count}
+                                </p>
+                                <p className="mt-1 truncate text-xs text-muted-foreground">
+                                    {t('batches.title')}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-4">
+                            <Calendar className="size-5 shrink-0 text-muted-foreground" />
+                            <div className="min-w-0">
+                                <p className="text-2xl font-bold leading-none">
+                                    {stats.active_batches}
+                                </p>
+                                <p className="mt-1 truncate text-xs text-muted-foreground">
+                                    {t('batches.active')}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-4">
+                            <Mail className="size-5 shrink-0 text-muted-foreground" />
+                            <div className="min-w-0">
+                                <p className="text-2xl font-bold leading-none">
+                                    {stats.total_students}
+                                </p>
+                                <p className="mt-1 truncate text-xs text-muted-foreground">
+                                    {t('students.title')}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-4">
+                            <Phone className="size-5 shrink-0 text-muted-foreground" />
+                            <div className="min-w-0">
+                                <p className="text-2xl font-bold leading-none">
+                                    {teacher.assigned_batches_count > 0 ? 'Yes' : 'No'}
+                                </p>
+                                <p className="mt-1 truncate text-xs text-muted-foreground">
+                                    {t('batches.assigned')}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
                 <Card>
                     <CardHeader>

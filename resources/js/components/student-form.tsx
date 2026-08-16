@@ -211,8 +211,8 @@ export default function StudentForm({
 
             <div className="space-y-4">
                 <SectionHeader icon={BookOpen} title={t('students.academic_info')} />
-                <div className="flex gap-4">
-                    <div className="flex-1 space-y-2">
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
                         <Label htmlFor="coaching_class_id">{t('students.class')}</Label>
                         <Select
                             value={data.coaching_class_id}
@@ -234,7 +234,7 @@ export default function StudentForm({
                         <InputError message={errors.coaching_class_id} />
                     </div>
 
-                    <div className="flex-1 space-y-2">
+                    <div className="space-y-2">
                         <Label htmlFor="section">{t('students.section')}</Label>
                         <Input
                             id="section"

@@ -18,7 +18,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem, NavItemGroup } from '@/types';
 
 function GroupItems({ items }: { items: NavItem[] }) {
-    const { isCurrentUrl } = useCurrentUrl();
+    const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
         <SidebarMenu>
@@ -42,7 +42,7 @@ function GroupItems({ items }: { items: NavItem[] }) {
                         <SidebarMenuItem>
                             <SidebarMenuButton
                                 asChild
-                                isActive={isCurrentUrl(item.href)}
+                                isActive={isCurrentOrParentUrl(item.href)}
                                 tooltip={{ children: item.title }}
                             >
                                 <Link href={item.href} prefetch>
@@ -63,14 +63,14 @@ function GroupLabel({ label }: { label: string }) {
 }
 
 export function NavMain({ groups }: { groups: NavItemGroup[] }) {
-    const { isCurrentUrl } = useCurrentUrl();
+    const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
         <>
             {groups.map((group) => {
                 const collapsible = group.items.length > 1;
                 const anyActive = group.items.some((item) =>
-                    isCurrentUrl(item.href),
+                    isCurrentOrParentUrl(item.href),
                 );
 
                 if (!collapsible) {
