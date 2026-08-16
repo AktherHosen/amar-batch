@@ -16,7 +16,7 @@ export function RefreshButton({
         <Button
             variant="ghost"
             size="icon"
-            className={`size-9 ${className ?? ''}`}
+            className={`size-8 p-0 ${className ?? ''}`}
             onClick={onRefresh}
             disabled={refreshing}
             title="Refresh"
