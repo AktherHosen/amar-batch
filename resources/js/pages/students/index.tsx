@@ -293,10 +293,6 @@ export default function StudentsIndex({
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => window.location.href = '/students/export'}>
-                                    <Download className="mr-2 size-4" />
-                                    {t('actions.export_csv')}
-                                </DropdownMenuItem>
                                 {isAdmin && (
                                     <DropdownMenuItem asChild>
                                         <Link href={students.create()}>
@@ -305,6 +301,10 @@ export default function StudentsIndex({
                                         </Link>
                                     </DropdownMenuItem>
                                 )}
+                                <DropdownMenuItem onClick={() => window.location.href = '/students/export'}>
+                                    <Download className="mr-2 size-4" />
+                                    {t('actions.export_csv')}
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
