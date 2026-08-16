@@ -10,6 +10,7 @@ import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -277,14 +278,13 @@ export default function AttendanceIndex({
                                     ]}
                                 >
                                     <div className="relative">
-                                        <Input
-                                            type="date"
+                                        <DatePicker
                                             value={date}
-                                            onChange={(e) =>
-                                                setDate(e.target.value)
-                                            }
-                                            onKeyDown={(e) => e.key === 'Enter' && handleFilter()}
-                                            className="w-full pr-9"
+                                            onValueChange={(value) => {
+                                                setDate(value);
+                                                handleFilter();
+                                            }}
+                                            placeholder={t('attendance.date')}
                                         />
                                         {date && (
                                             <button
@@ -297,7 +297,7 @@ export default function AttendanceIndex({
                                                         { preserveState: true },
                                                     );
                                                 }}
-                                                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                className="absolute top-1/2 right-9 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                             >
                                                 <X className="size-4" />
                                             </button>

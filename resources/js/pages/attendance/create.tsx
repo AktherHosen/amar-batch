@@ -4,6 +4,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
     Select,
     SelectContent,
@@ -254,12 +255,10 @@ export default function AttendanceCreate({
                             </div>
                             <div className="w-full space-y-2 sm:w-auto sm:max-w-[200px]">
                                 <Label>{t('attendance.date')}</Label>
-                                <Input
-                                    type="date"
+                                <DatePicker
                                     value={date}
-                                    onChange={(e) =>
-                                        handleDateChange(e.target.value)
-                                    }
+                                    onValueChange={handleDateChange}
+                                    placeholder={t('attendance.date')}
                                     className="w-full"
                                 />
                             </div>

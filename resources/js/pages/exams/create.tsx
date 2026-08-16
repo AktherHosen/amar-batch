@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
@@ -103,11 +104,10 @@ export default function ExamsCreate({ batches }: PageProps) {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="date">{t('exams.date')}</Label>
-                                    <Input
-                                        id="date"
-                                        type="date"
+                                    <DatePicker
                                         value={data.date}
-                                        onChange={(e) => setData('date', e.target.value)}
+                                        onValueChange={(value) => setData('date', value)}
+                                        placeholder={t('exams.date')}
                                     />
                                     <InputError message={errors.date} />
                                 </div>

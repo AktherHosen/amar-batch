@@ -2,6 +2,7 @@ import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
     Select,
     SelectContent,
@@ -143,22 +144,20 @@ export default function BatchForm({
 
                 <div className="space-y-2">
                     <Label htmlFor="start_date">Start Date</Label>
-                    <Input
-                        id="start_date"
-                        type="date"
+                    <DatePicker
                         value={data.start_date || ''}
-                        onChange={(e) => setData('start_date', e.target.value)}
+                        onValueChange={(value) => setData('start_date', value)}
+                        placeholder="Select start date"
                     />
                     <InputError message={errors.start_date} />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="end_date">End Date</Label>
-                    <Input
-                        id="end_date"
-                        type="date"
+                    <DatePicker
                         value={data.end_date || ''}
-                        onChange={(e) => setData('end_date', e.target.value)}
+                        onValueChange={(value) => setData('end_date', value)}
+                        placeholder="Select end date"
                     />
                     <InputError message={errors.end_date} />
                 </div>

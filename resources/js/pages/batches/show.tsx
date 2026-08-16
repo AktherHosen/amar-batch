@@ -6,6 +6,7 @@ import { ArrowLeft, EllipsisVertical, Pencil, Trash2, UserMinus } from 'lucide-r
 import Heading from '@/components/heading';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -693,11 +694,10 @@ export default function BatchesShow({
                                                         )}
                                                     </SelectContent>
                                                 </Select>
-                                                <input
-                                                    type="date"
+                                                <DatePicker
                                                     value={enrollmentDate}
-                                                    onChange={(e) => setEnrollmentDate(e.target.value)}
-                                                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                                    onValueChange={(value) => setEnrollmentDate(value)}
+                                                    placeholder={t('batches.enroll_date')}
                                                 />
                                                 <Button
                                                     onClick={

@@ -12,6 +12,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import InputError from '@/components/input-error';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Camera, X, User, Phone, BookOpen, Calendar, Shield, MapPin } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useLocale } from '@/contexts/locale-context';
@@ -179,14 +180,12 @@ export default function StudentForm({
 
                     <div className="space-y-2">
                         <Label htmlFor="date_of_birth">{t('students.date_of_birth')}</Label>
-                        <Input
-                            id="date_of_birth"
-                            type="date"
-                            lang="en-GB"
+                        <DatePicker
                             value={data.date_of_birth}
-                            onChange={(e) =>
-                                setData('date_of_birth', e.target.value)
+                            onValueChange={(value) =>
+                                setData('date_of_birth', value)
                             }
+                            placeholder="Select date of birth"
                         />
                         <InputError message={errors.date_of_birth} />
                     </div>
@@ -272,12 +271,10 @@ export default function StudentForm({
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                         <Label htmlFor="joined_at">{t('students.joined_at')}</Label>
-                        <Input
-                            id="joined_at"
-                            type="date"
-                            lang="en-GB"
+                        <DatePicker
                             value={data.joined_at}
-                            onChange={(e) => setData('joined_at', e.target.value)}
+                            onValueChange={(value) => setData('joined_at', value)}
+                            placeholder={t('students.joined_at')}
                         />
                         <InputError message={errors.joined_at} />
                     </div>
@@ -285,12 +282,10 @@ export default function StudentForm({
                     {student && (
                         <div className="space-y-2">
                             <Label htmlFor="left_at">{t('students.left_at')}</Label>
-                            <Input
-                                id="left_at"
-                                type="date"
-                                lang="en-GB"
+                            <DatePicker
                                 value={data.left_at}
-                                onChange={(e) => setData('left_at', e.target.value)}
+                                onValueChange={(value) => setData('left_at', value)}
+                                placeholder={t('students.left_at')}
                             />
                             <InputError message={errors.left_at} />
                         </div>
