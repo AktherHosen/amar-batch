@@ -214,7 +214,7 @@ export function DataTable<TData, TValue>({
             )}
 
             <div className="rounded-md border">
-                <Table className="min-w-max">
+                <Table className="w-max min-w-full">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
