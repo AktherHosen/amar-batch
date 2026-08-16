@@ -44,8 +44,8 @@ type User = {
     role: string;
     is_owner: boolean;
     is_approved: boolean;
-    assigned_batches: Batch[];
-    assigned_batches_count: number;
+    assigned_batches?: Batch[];
+    assigned_batches_count?: number;
 };
 
 type UsersShowProps = {
@@ -215,38 +215,40 @@ export default function UsersShow({ user, roles = [] }: UsersShowProps) {
                                 </Badge>
                             )}
                         </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">
-                                {t('users.name')}
-                            </p>
-                            <p className="font-medium">{user.name}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">
-                                {t('users.email')}
-                            </p>
-                            <p className="font-medium">{user.email}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">
-                                {t('users.role')}
-                            </p>
-                            <p className="font-medium capitalize">{roleName(user.role)}</p>
-                        </div>
-                        {!user.is_owner && (
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('batches.title')}
+                        <div className="grid w-full grid-cols-2 gap-3">
+                            <div className="min-w-0">
+                                <p className="text-xs text-muted-foreground">
+                                    {t('users.name')}
                                 </p>
-                                <p className="font-medium">
-                                    {user.assigned_batches_count}
-                                </p>
+                                <p className="truncate text-sm font-medium">{user.name}</p>
                             </div>
-                        )}
+                            <div className="min-w-0">
+                                <p className="text-xs text-muted-foreground">
+                                    {t('users.email')}
+                                </p>
+                                <p className="truncate text-sm font-medium">{user.email}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">
+                                    {t('users.role')}
+                                </p>
+                                <p className="text-sm font-medium capitalize">{roleName(user.role)}</p>
+                            </div>
+                            {user.role === 'teacher' && (
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('batches.title')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {user.assigned_batches_count}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
 
-                {!user.is_owner && (
+                {user.role === 'teacher' && (
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('batches.title')}</CardTitle>
@@ -254,7 +256,7 @@ export default function UsersShow({ user, roles = [] }: UsersShowProps) {
                         <CardContent>
                             <DataTable
                                 columns={columns}
-                                data={user.assigned_batches}
+                                data={user.assigned_batches ?? []}
                                 showPagination={false}
                                 emptyMessage={t('users.no_batches')}
                                 getRowId={(row) => String(row.id)}

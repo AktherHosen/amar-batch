@@ -112,9 +112,12 @@ class UserController extends Controller
 
     public function show(User $user): Response
     {
-        $user->load(['assignedBatches.enrollments.student']);
-        $user->loadCount('assignedBatches');
         $user->setAttribute('is_owner', $user->isOwner());
+
+        if ($user->role === 'teacher') {
+            $user->load(['assignedBatches.enrollments.student']);
+            $user->loadCount('assignedBatches');
+        }
 
         return Inertia::render('users/show', [
             'user' => $user,

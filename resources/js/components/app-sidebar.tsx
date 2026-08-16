@@ -7,6 +7,7 @@ import {
     Wallet,
     CheckSquare,
     School,
+    GraduationCap,
     CreditCard,
     FileText,
     BarChart3,
@@ -34,6 +35,7 @@ import { useHasFeature } from '@/lib/features';
 import { dashboard } from '@/routes';
 import students from '@/routes/students';
 import batches from '@/routes/batches';
+import teachers from '@/routes/teachers';
 import users from '@/routes/users';
 import fees from '@/routes/fees';
 import attendance from '@/routes/attendance';
@@ -78,6 +80,7 @@ export function AppSidebar() {
             items: [
                 { title: t('nav.students'), href: students.index(), icon: Users },
                 { title: t('nav.coaching_classes'), href: coachingClasses.index(), icon: School },
+                { title: t('nav.teachers'), href: teachers.index(), icon: GraduationCap },
                 { title: t('nav.batches'), href: batches.index(), icon: Layers },
             ],
         },
