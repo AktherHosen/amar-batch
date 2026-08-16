@@ -48,6 +48,7 @@ type FilterBarProps = {
     active?: boolean;
     className?: string;
     children?: ReactNode;
+    customFilters?: ReactNode;
 };
 
 export function FilterBar({
@@ -60,6 +61,7 @@ export function FilterBar({
     active,
     className,
     children,
+    customFilters,
 }: FilterBarProps) {
     const [localSearch, setLocalSearch] = useState(searchValue);
 
@@ -180,6 +182,9 @@ export function FilterBar({
                                     </div>
                                 ))}
                             </div>
+                            {customFilters && (
+                                <div className="mt-3">{customFilters}</div>
+                            )}
                             {hasActiveFilters && onClearAll && (
                                 <Button
                                     variant="outline"

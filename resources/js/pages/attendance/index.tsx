@@ -4,7 +4,6 @@ import { EllipsisVertical, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner, isStaff } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import Heading from '@/components/heading';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
@@ -13,6 +12,13 @@ import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,7 +30,12 @@ import { useLocale } from '@/contexts/locale-context';
 
 type AttendanceRecord = {
     id: number;
-    student: { id: number; name: string };
+    student: {
+        id: number;
+        name: string;
+        coaching_class: { id: number; name: string } | null;
+        section?: string | null;
+    };
     batch: { id: number; name: string };
     date: string;
     status: 'present' | 'absent' | 'late';
@@ -70,10 +81,10 @@ export default function AttendanceIndex({
         item: AttendanceRecord | null;
     }>({ open: false, item: null });
 
-    const handleFilter = () => {
+    const handleFilter = (overrideDate?: string) => {
         router.get(
             attendance.index(),
-            { search, batch_id: batchId, date },
+            { search, batch_id: batchId, date: overrideDate ?? date },
             { preserveState: true },
         );
     };
@@ -109,6 +120,21 @@ export default function AttendanceIndex({
         setDeleteDialog({ open: true, item: record });
     };
 
+    const handleStatusChange = (record: AttendanceRecord, value: string) => {
+        if (value === record.status) return;
+        router.put(
+            attendance.update(record.id),
+            { status: value, notes: record.notes },
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(t('toast.updated_successfully'));
+                    router.reload({ only: ['attendances'] });
+                },
+            },
+        );
+    };
+
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(attendance.destroy(deleteDialog.item.id));
@@ -139,16 +165,24 @@ export default function AttendanceIndex({
                 header: t('attendance.student'),
                 enableSorting: true,
                 meta: { sticky: true },
-                cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.student.name}</span>
-                ),
-            } as Col,
-            {
-                id: 'batch',
-                accessorKey: 'batch.name',
-                header: t('attendance.batch'),
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.batch.name,
+                cell: ({ row }: any) => {
+                    const record: AttendanceRecord = row.original;
+                    const cls = record.student.coaching_class
+                        ? record.student.coaching_class.name
+                        : '';
+                    const clsWithSection = cls && record.student.section
+                        ? `${cls} - ${record.student.section}`
+                        : cls;
+
+                    return (
+                        <div className="flex flex-col">
+                            <span className="font-medium">{record.student.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                                {[clsWithSection, record.batch.name].filter(Boolean).join(' • ')}
+                            </span>
+                        </div>
+                    );
+                },
             } as Col,
             {
                 id: 'date',
@@ -163,11 +197,48 @@ export default function AttendanceIndex({
                 accessorKey: 'status',
                 header: t('attendance.status'),
                 enableSorting: false,
-                cell: ({ row }: any) => (
-                    <Badge variant={getStatusBadge(row.original.status)}>
-                        {row.original.status}
-                    </Badge>
-                ),
+                cell: ({ row }: any) => {
+                    const record: AttendanceRecord = row.original;
+                    if (!isAdmin && !isTeacher) {
+                        return (
+                            <Badge variant={getStatusBadge(record.status)}>
+                                {record.status}
+                            </Badge>
+                        );
+                    }
+                    return (
+                        <Select
+                            value={record.status}
+                            onValueChange={(value) =>
+                                handleStatusChange(record, value)
+                            }
+                        >
+                            <SelectTrigger className="h-8 w-auto min-w-[7rem] capitalize">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="present">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-green-600" />
+                                        {t('attendance.present')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="late">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-yellow-500" />
+                                        {t('attendance.late')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="absent">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-red-600" />
+                                        {t('attendance.absent')}
+                                    </span>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    );
+                },
             } as Col,
             {
                 id: 'notes',
@@ -216,11 +287,15 @@ export default function AttendanceIndex({
             <Head title={t('attendance.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <Heading
-                        title={t('attendance.title')}
-                        description={t('attendance.desc')}
-                    />
+                <div className="flex items-start justify-between">
+                    <div className="space-y-0.5">
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            {t('attendance.title')}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {t('attendance.desc')}
+                        </p>
+                    </div>
                     <div className="flex items-center gap-1">
                         <RefreshButton
                             refreshing={refreshing}
@@ -233,12 +308,21 @@ export default function AttendanceIndex({
                             }}
                         />
                         {(isAdmin || isTeacher) && (
-                            <Link href={attendance.create()}>
-                                <Button>
-                                    <Plus className="mr-2 size-4" />
-                                    {t('attendance.mark')}
-                                </Button>
-                            </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                        <EllipsisVertical className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <Link href={attendance.create()}>
+                                            <Plus className="mr-2 size-4" />
+                                            {t('attendance.mark')}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
                 </div>
@@ -276,33 +360,40 @@ export default function AttendanceIndex({
                                             onValueChange: handleBatchChange,
                                         },
                                     ]}
+                                    customFilters={
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-medium text-muted-foreground">
+                                                {t('attendance.date')}
+                                            </label>
+                                            <div className="relative">
+                                                <DatePicker
+                                                    value={date}
+                                                    onValueChange={(value) => {
+                                                        setDate(value);
+                                                        handleFilter(value);
+                                                    }}
+                                                    placeholder={t('attendance.date')}
+                                                />
+                                                {date && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setDate('');
+                                                            router.get(
+                                                                attendance.index(),
+                                                                { search, batch_id: batchId },
+                                                                { preserveState: true },
+                                                            );
+                                                        }}
+                                                        className="absolute top-1/2 right-9 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                    >
+                                                        <X className="size-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    }
                                 >
-                                    <div className="relative">
-                                        <DatePicker
-                                            value={date}
-                                            onValueChange={(value) => {
-                                                setDate(value);
-                                                handleFilter();
-                                            }}
-                                            placeholder={t('attendance.date')}
-                                        />
-                                        {date && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setDate('');
-                                                    router.get(
-                                                        attendance.index(),
-                                                        { search, batch_id: batchId },
-                                                        { preserveState: true },
-                                                    );
-                                                }}
-                                                className="absolute top-1/2 right-9 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                            >
-                                                <X className="size-4" />
-                                            </button>
-                                        )}
-                                    </div>
                                 </FilterBar>
                             }
                         />

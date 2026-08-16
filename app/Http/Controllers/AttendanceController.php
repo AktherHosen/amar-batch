@@ -16,7 +16,7 @@ class AttendanceController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Attendance::with(['student', 'batch']);
+        $query = Attendance::with(['student.coachingClass', 'batch']);
 
         if ($request->has('batch_id') && $request->batch_id) {
             $query->where('batch_id', $request->batch_id);
