@@ -450,6 +450,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'fees.year': 'বছর',
         'fees.amount_paid': 'পরিশোধিত পরিমাণ',
         'fees.total_paid': 'মোট পরিশোধিত',
+        'fees.paid_months': 'পরিশোধিত মাস',
         'fees.export': 'এক্সেলে রপ্তানি',
         'fees.payment_history': 'বেতনের ইতিহাস',
         'fees.deleted': 'বেতন রেকর্ড সফলভাবে মুছে ফেলা হয়েছে',
@@ -646,6 +647,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.deactivated_successfully': 'সফলভাবে নিষ্ক্রিয় করা হয়েছে',
         'toast.removed_successfully': 'সফলভাবে সরিয়ে ফেলা হয়েছে',
         'toast.unenrolled_successfully': 'সফলভাবে ভর্তি বাতিল করা হয়েছে',
+        'toast.enrolled_successfully': 'সফলভাবে ভর্তি করা হয়েছে',
+        'toast.assigned_successfully': 'সফলভাবে নির্ধারিত হয়েছে',
         'toast.completed_successfully': 'সফলভাবে সম্পন্ন করা হয়েছে',
         'toast.copied_to_clipboard': 'ক্লিপবোর্ডে কপি করা হয়েছে',
 
@@ -1123,6 +1126,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'fees.year': 'Year',
         'fees.amount_paid': 'Amount Paid',
         'fees.total_paid': 'Total Paid',
+        'fees.paid_months': 'Paid Months',
         'fees.export': 'Export to Excel',
         'fees.payment_history': 'Payment History',
         'fees.deleted': 'Fee records deleted successfully',
@@ -1259,6 +1263,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.deactivated_successfully': 'Deactivated successfully',
         'toast.removed_successfully': 'Removed successfully',
         'toast.unenrolled_successfully': 'Unenrolled successfully',
+        'toast.enrolled_successfully': 'Enrolled successfully',
+        'toast.assigned_successfully': 'Assigned successfully',
         'toast.completed_successfully': 'Completed successfully',
         'toast.copied_to_clipboard': 'Copied to clipboard',
 

@@ -225,6 +225,10 @@ export function DataTable<TData, TValue>({
                                             header.column.columnDef.meta?.sticky
                                                 ? 'sticky left-0 z-10 min-w-[150px] rounded-tl-md bg-background'
                                                 : ''
+                                        } ${
+                                            header.column.columnDef.meta?.stickyRight
+                                                ? 'sticky right-0 z-10 min-w-[100px] rounded-tr-md bg-background'
+                                                : ''
                                         }`}
                                         colSpan={header.colSpan}
                                     >
@@ -318,6 +322,15 @@ export function DataTable<TData, TValue>({
                                                           rowIndex ===
                                                           table.getRowModel().rows.length - 1
                                                               ? 'rounded-bl-md'
+                                                              : ''
+                                                      }`
+                                                    : ''
+                                            } ${
+                                                cell.column.columnDef.meta?.stickyRight
+                                                    ? `sticky right-0 z-10 bg-background ${
+                                                          rowIndex ===
+                                                          table.getRowModel().rows.length - 1
+                                                              ? 'rounded-br-md'
                                                               : ''
                                                       }`
                                                     : ''

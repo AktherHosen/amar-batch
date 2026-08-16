@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { isOwner, isStaff } from '@/lib/role';
-import { ArrowLeft, EllipsisVertical, Pencil, Trash2, UserMinus } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, EllipsisVertical, Pencil, Trash2, UserMinus, UserX } from 'lucide-react';
 import Heading from '@/components/heading';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -114,7 +114,10 @@ export default function BatchesShow({
             { teacher_id: parseInt(selectedTeacher) },
             {
                 preserveScroll: true,
-                onSuccess: () => setSelectedTeacher(''),
+                onSuccess: () => {
+                    setSelectedTeacher('');
+                    toast.success(t('toast.assigned_successfully'));
+                },
             },
         );
     };
@@ -148,6 +151,7 @@ export default function BatchesShow({
                 onSuccess: () => {
                     setSelectedStudent('');
                     setEnrollmentDate(new Date().toISOString().split('T')[0]);
+                    toast.success(t('toast.enrolled_successfully'));
                 },
             },
         );
@@ -325,9 +329,11 @@ export default function BatchesShow({
                                 {enrollment.status === 'active' && (
                                     <>
                                         <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'completed')}>
+                                            <CheckCircle2 className="mr-2 size-4" />
                                             {t('actions.complete')}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'dropped')}>
+                                            <UserX className="mr-2 size-4" />
                                             {t('batches.drop')}
                                         </DropdownMenuItem>
                                     </>

@@ -88,7 +88,11 @@ function FeeCell({
     const inputRef = useRef<HTMLInputElement>(null);
 
     if (disabled) {
-        return <span className="text-muted-foreground"></span>;
+        return (
+            <span className="inline-flex h-7 w-16 items-center justify-center text-xs text-muted-foreground/40">
+                –
+            </span>
+        );
     }
 
     const handleSave = (value: string) => {
@@ -133,15 +137,15 @@ function FeeCell({
     if (!isAdmin) {
         return (
             <span
-                className={
+                className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-semibold ${
                     fee && fee.amount_paid > 0
-                        ? 'font-medium text-green-600'
-                        : 'text-muted-foreground'
-                }
+                        ? 'bg-green-500/10 text-green-600'
+                        : 'bg-muted text-muted-foreground'
+                }`}
             >
                 {fee && fee.amount_paid > 0
-                    ? Number(fee.amount_paid).toFixed(0)
-                    : '-'}
+                    ? `৳${Number(fee.amount_paid).toFixed(0)}`
+                    : '—'}
             </span>
         );
     }
@@ -152,7 +156,7 @@ function FeeCell({
                 ref={inputRef}
                 type="number"
                 min="0"
-                className="h-8 w-[70px] text-center text-sm"
+                className="h-7 w-16 text-center text-xs"
                 defaultValue={fee ? fee.amount_paid : ''}
                 placeholder="0"
                 onBlur={(e) => handleSave(e.target.value)}
@@ -168,19 +172,19 @@ function FeeCell({
         );
     }
 
+    const paid = fee && fee.amount_paid > 0;
+
     return (
         <button
             type="button"
-            className={`h-8 w-[70px] cursor-text rounded-md border border-transparent px-2 text-center text-sm transition-colors hover:border-border hover:bg-muted ${
-                fee && fee.amount_paid > 0
-                    ? 'font-medium text-green-600'
-                    : 'text-muted-foreground'
+            className={`inline-flex h-7 min-w-16 cursor-text items-center justify-center rounded-full px-3 text-xs font-semibold transition-all ${
+                paid
+                    ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
+                    : 'border border-dashed border-border bg-muted/40 text-muted-foreground/70 hover:border-muted-foreground/30 hover:bg-muted'
             }`}
             onClick={() => setEditing(true)}
         >
-            {fee && fee.amount_paid > 0
-                ? Number(fee.amount_paid).toFixed(0)
-                : '0'}
+            {paid ? `৳${Number(fee.amount_paid).toFixed(0)}` : '0'}
         </button>
     );
 }
@@ -330,7 +334,17 @@ export default function FeesIndex({
                 enableSorting: true,
                 meta: { sticky: true },
                 cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.student.name}</span>
+                    <div className="flex items-center gap-3">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                            {row.original.student.name
+                                .split(' ')
+                                .map((n: string) => n[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2)}
+                        </span>
+                        <span className="font-medium">{row.original.student.name}</span>
+                    </div>
                 ),
             } as Col,
             {
@@ -356,12 +370,46 @@ export default function FeesIndex({
                     <span>{row.original.batch.name}</span>
                 ),
             } as Col,
+            {
+                id: 'paid',
+                header: t('fees.paid_months'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const item: FeeGridItem = row.original;
+                    const paidCount = months.filter(
+                        (m) =>
+                            item.months[m] &&
+                            Number(item.months[m].amount_paid) > 0,
+                    ).length;
+                    return (
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-2 w-16 overflow-hidden rounded-full bg-muted">
+                                <div
+                                    className="h-full rounded-full bg-green-500"
+                                    style={{
+                                        width: `${Math.min((paidCount / months.length) * 100, 100)}%`,
+                                    }}
+                                />
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                                {paidCount}/{months.length}
+                            </span>
+                        </div>
+                    );
+                },
+            } as Col,
             ...months.map(
                 (m) =>
                     ({
                         id: `month_${m}`,
                         accessorKey: `months.${m}`,
-                        header: monthNames[m].slice(0, 3),
+                        header: () => (
+                            <div className="flex flex-col items-center justify-center gap-0.5">
+                                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {monthNames[m].slice(0, 3)}
+                                </span>
+                            </div>
+                        ),
                         enableSorting: false,
                         cell: ({ row }: any) => {
                             const item: FeeGridItem = row.original;
@@ -386,6 +434,39 @@ export default function FeesIndex({
                     }) as Col,
             ),
         ];
+
+        cols.push({
+            id: 'total',
+            accessorKey: 'total',
+            header: () => (
+                <div className="flex items-center justify-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {t('fees.total_paid')}
+                </div>
+            ),
+            enableSorting: false,
+            meta: { stickyRight: true },
+            cell: ({ row }: any) => {
+                const item: FeeGridItem = row.original;
+                const total = months.reduce((sum, m) => {
+                    const fee = item.months[m];
+
+                    return sum + (fee ? Number(fee.amount_paid) : 0);
+                }, 0);
+                return (
+                    <div className="flex justify-center">
+                        <span
+                            className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold ${
+                                total > 0
+                                    ? 'bg-primary/10 text-primary'
+                                    : 'bg-muted text-muted-foreground'
+                            }`}
+                        >
+                            ৳{Number(total).toFixed(0)}
+                        </span>
+                    </div>
+                );
+            },
+        } as Col);
 
         if (isAdmin) {
             cols.push({
