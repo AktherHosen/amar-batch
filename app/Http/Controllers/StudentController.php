@@ -170,6 +170,29 @@ class StudentController extends Controller
         return to_route('students.index')->with('toast', ['type' => 'success', 'message' => 'Student deleted successfully.']);
     }
 
+    public function updateStatus(Request $request, Student $student): RedirectResponse
+    {
+        $this->authorize('update', $student);
+
+        $status = $request->input('status');
+
+        if (! in_array($status, ['active', 'inactive'])) {
+            abort(422);
+        }
+
+        $student->update([
+            'status' => $status,
+            'left_at' => $status === 'inactive' ? now() : null,
+        ]);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => $status === 'active'
+                ? 'Student activated successfully.'
+                : 'Student deactivated successfully.',
+        ]);
+    }
+
     public function export(Request $request)
     {
         $this->authorize('viewAny', Student::class);

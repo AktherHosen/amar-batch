@@ -28,6 +28,7 @@ import { useLocale } from '@/contexts/locale-context';
 type Student = {
     id: number;
     name: string;
+    photo: string | null;
     coaching_class: { id: number; name: string } | null;
 };
 
@@ -333,42 +334,41 @@ export default function FeesIndex({
                 header: t('fees.student'),
                 enableSorting: true,
                 meta: { sticky: true },
-                cell: ({ row }: any) => (
-                    <div className="flex items-center gap-3">
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                            {row.original.student.name
-                                .split(' ')
-                                .map((n: string) => n[0])
-                                .join('')
-                                .toUpperCase()
-                                .slice(0, 2)}
-                        </span>
-                        <span className="font-medium">{row.original.student.name}</span>
-                    </div>
-                ),
-            } as Col,
-            {
-                id: 'class',
-                accessorKey: 'student.coaching_class.name',
-                header: t('students.class'),
-                enableSorting: false,
                 cell: ({ row }: any) => {
                     const item: FeeGridItem = row.original;
                     return (
-                        <span>
-                            {item.student.coaching_class?.name || '-'}
-                        </span>
+                        <div className="flex items-center gap-3">
+                            {item.student.photo ? (
+                                <img
+                                    src={`/storage/${item.student.photo}`}
+                                    alt={item.student.name}
+                                    className="size-8 shrink-0 rounded-full object-cover"
+                                />
+                            ) : (
+                                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                                    {item.student.name
+                                        .split(' ')
+                                        .map((n: string) => n[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)}
+                                </span>
+                            )}
+                            <div className="min-w-0">
+                                <p className="truncate font-medium">
+                                    {item.student.name}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                    {item.student.coaching_class?.name || '-'}
+                                    <span className="mx-1 text-muted-foreground/50">
+                                        •
+                                    </span>
+                                    {item.batch.name}
+                                </p>
+                            </div>
+                        </div>
                     );
                 },
-            } as Col,
-            {
-                id: 'batch',
-                accessorKey: 'batch.name',
-                header: t('batches.name'),
-                enableSorting: false,
-                cell: ({ row }: any) => (
-                    <span>{row.original.batch.name}</span>
-                ),
             } as Col,
             {
                 id: 'paid',
@@ -544,7 +544,7 @@ export default function FeesIndex({
                     </div>
                 </div>
 
-                <Card>
+                <Card className="min-w-0">
                     <CardContent className="pt-6">
                         <DataTable
                             columns={columns}

@@ -8,6 +8,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Download, EllipsisVertical, Eye, PenLine, Pencil, Plus, Trash2 } from 'lucide-react';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
@@ -99,6 +106,21 @@ export default function StudentsIndex({
         }
     };
 
+    const handleRowStatusChange = (student: Student, value: string) => {
+        if (value === student.status) return;
+        router.patch(
+            students.status(student.id),
+            { status: value },
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(t('toast.updated_successfully'));
+                    router.reload({ only: ['students'] });
+                },
+            },
+        );
+    };
+
     const activeFilterCount = status ? 1 : 0;
 
     const columns = (() => {
@@ -152,15 +174,46 @@ export default function StudentsIndex({
                 accessorKey: 'status',
                 header: t('students.status'),
                 enableSorting: false,
-                cell: ({ row }: any) => (
-                    <Badge
-                        variant={
-                            row.original.status === 'active' ? 'default' : 'warning'
-                        }
-                    >
-                        {row.original.status}
-                    </Badge>
-                ),
+                cell: ({ row }: any) => {
+                    const s: Student = row.original;
+                    if (!isAdmin) {
+                        return (
+                            <Badge
+                                variant={
+                                    s.status === 'active' ? 'default' : 'warning'
+                                }
+                            >
+                                {s.status}
+                            </Badge>
+                        );
+                    }
+                    return (
+                        <Select
+                            value={s.status}
+                            onValueChange={(value) =>
+                                handleRowStatusChange(s, value)
+                            }
+                        >
+                            <SelectTrigger className="h-8 w-auto min-w-[7rem]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-green-600" />
+                                        {t('students.active')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="inactive">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-red-600" />
+                                        {t('students.inactive')}
+                                    </span>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    );
+                },
             } as Col,
             {
                 id: 'actions',
