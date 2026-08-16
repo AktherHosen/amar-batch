@@ -201,4 +201,18 @@ class FeeStatusController extends Controller
 
         return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee record deleted successfully.']);
     }
+
+    public function destroyStudentBatch(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'student_id' => ['required', 'integer'],
+            'batch_id' => ['required', 'integer'],
+        ]);
+
+        FeeStatus::where('student_id', $data['student_id'])
+            ->where('batch_id', $data['batch_id'])
+            ->delete();
+
+        return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee record deleted successfully.']);
+    }
 }

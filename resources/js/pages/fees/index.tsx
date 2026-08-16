@@ -240,11 +240,11 @@ function MobileFeeList({
                         key={key}
                         className="overflow-hidden rounded-lg border bg-card"
                     >
-                        <div className="flex items-center gap-1 px-2 pr-1">
+                        <div className="flex items-center">
                             <button
                                 type="button"
                                 onClick={() => toggle(key)}
-                                className="flex min-w-0 flex-1 items-center gap-3 px-1 py-2.5 text-left"
+                                className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left"
                             >
                                 {item.student.photo ? (
                                     <img
@@ -282,16 +282,18 @@ function MobileFeeList({
                             </button>
 
                             {isAdmin && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="size-8 shrink-0 p-0 text-destructive hover:text-destructive"
-                                    onClick={() =>
-                                        onDeleteRow(item.student.id, item.batch.id)
-                                    }
-                                >
-                                    <Trash2 className="size-4" />
-                                </Button>
+                                <div className="flex shrink-0 items-center border-l pl-1 pr-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="size-8 p-0 text-destructive hover:text-destructive"
+                                        onClick={() =>
+                                            onDeleteRow(item.student.id, item.batch.id)
+                                        }
+                                    >
+                                        <Trash2 className="size-4" />
+                                    </Button>
+                                </div>
                             )}
                         </div>
 
@@ -399,17 +401,16 @@ export default function FeesIndex({
     const confirmDeleteRow = () => {
         if (deleteDialog.item) {
             const { studentId, batchId } = deleteDialog.item;
-            const feeIds = feeGrid
-                .filter(
-                    (item) =>
-                        item.student.id === studentId &&
-                        item.batch.id === batchId,
-                )
-                .flatMap((item) => Object.values(item.months).map((f) => f.id));
-            feeIds.forEach((id) => {
-                router.delete(fees.destroy.url(id), { preserveState: true });
+            router.delete(fees.clearStudent.url(), {
+                data: { student_id: studentId, batch_id: batchId },
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(t('toast.deleted_successfully'));
+                },
+                onError: () => {
+                    toast.error(t('toast.error_occurred'));
+                },
             });
-            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };
@@ -746,7 +747,7 @@ export default function FeesIndex({
                                 year={year}
                                 isAdmin={isAdmin}
                                 isMonthDisabled={isMonthDisabled}
-                                onDeleteRow={confirmDeleteRow}
+                                onDeleteRow={handleDeleteRow}
                                 t={t}
                             />
                         </div>

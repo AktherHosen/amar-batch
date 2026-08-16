@@ -651,6 +651,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.assigned_successfully': 'সফলভাবে নির্ধারিত হয়েছে',
         'toast.completed_successfully': 'সফলভাবে সম্পন্ন করা হয়েছে',
         'toast.copied_to_clipboard': 'ক্লিপবোর্ডে কপি করা হয়েছে',
+        'toast.error_occurred': 'কিছু একটা ভুল হয়েছে',
 
         // Months
         'month.january': 'জানুয়ারি',
@@ -1267,6 +1268,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.assigned_successfully': 'Assigned successfully',
         'toast.completed_successfully': 'Completed successfully',
         'toast.copied_to_clipboard': 'Copied to clipboard',
+        'toast.error_occurred': 'Something went wrong',
 
         // Months
         'month.january': 'January',
