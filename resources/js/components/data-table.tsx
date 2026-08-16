@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import React, { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
     flexRender,
     getCoreRowModel,
@@ -151,8 +151,28 @@ export function DataTable<TData, TValue>({
         <div className="w-full">
             {(toolbar || enableColumnVisibility) && (
                 <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="min-w-0 flex-1">{toolbar}</div>
-                    {enableColumnVisibility && <ColumnToggle table={table} />}
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <div className="min-w-0 flex-1">
+                            {toolbar &&
+                                enableColumnVisibility &&
+                                React.isValidElement(toolbar)
+                                ? React.cloneElement(
+                                      toolbar as React.ReactElement<{ children?: ReactNode }>,
+                                      {
+                                          children: (
+                                              <>
+                                                  {toolbar.props.children}
+                                                  <ColumnToggle table={table} />
+                                              </>
+                                          ),
+                                      },
+                                  )
+                                : toolbar}
+                            {!toolbar && enableColumnVisibility && (
+                                <ColumnToggle table={table} />
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -303,13 +323,13 @@ export function ColumnToggle<TData>({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 gap-2">
+                <Button variant="outline" size="sm" className="h-9 flex-1 gap-2 sm:flex-none">
                     <Columns3 className="size-4" />
                     Columns
                     <ChevronDown className="size-3.5 opacity-60" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
                 {table
                     .getAllColumns()
                     .filter((col) => col.getCanHide())

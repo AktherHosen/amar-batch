@@ -242,7 +242,7 @@ export default function UsersIndex({
                                 <SelectTrigger className="h-7 w-[150px]">
                                     <SelectValue>{roleName(user.role)}</SelectValue>
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="w-[150px]">
                                     {assignableRoles.map((role) => (
                                         <SelectItem key={role.id} value={role.slug}>
                                             {role.name}
