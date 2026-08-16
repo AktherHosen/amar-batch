@@ -48,7 +48,7 @@ export default function PlansIndex({ plans }: PageProps) {
         }
     };
 
-    const formatLimit = (value: number) => (value === -1 ? 'Unlimited' : value.toString());
+    const formatLimit = (value: number) => (value === -1 ? '∞' : value.toString());
 
     return (
         <>
