@@ -254,13 +254,15 @@ export default function UsersShow({ user, roles = [] }: UsersShowProps) {
                             <CardTitle>{t('batches.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <DataTable
-                                columns={columns}
-                                data={user.assigned_batches ?? []}
-                                showPagination={false}
-                                emptyMessage={t('users.no_batches')}
-                                getRowId={(row) => String(row.id)}
-                            />
+                        <DataTable
+                            columns={columns}
+                            data={user.assigned_batches ?? []}
+                            showPagination={false}
+                            searchable
+                            searchPlaceholder={t('batches.title') + '...'}
+                            emptyMessage={t('users.no_batches')}
+                            getRowId={(row) => String(row.id)}
+                        />
                         </CardContent>
                     </Card>
                 )}

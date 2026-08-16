@@ -11,9 +11,10 @@ import {
     type SortingState,
     type VisibilityState,
 } from '@tanstack/react-table';
-import { ChevronDown, ChevronUp, ChevronsUpDown, Columns3 } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronsUpDown, Columns3, Search, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -51,6 +52,8 @@ export type DataTableProps<TData, TValue> = {
     showPagination?: boolean;
     emptyMessage?: string;
     toolbar?: ReactNode;
+    searchable?: boolean;
+    searchPlaceholder?: string;
     getRowId?: (row: TData, index?: number, parent?: any) => string;
 };
 
@@ -72,6 +75,8 @@ export function DataTable<TData, TValue>({
     showPagination = true,
     emptyMessage = 'No records found',
     toolbar,
+    searchable = false,
+    searchPlaceholder = 'Search...',
     getRowId,
 }: DataTableProps<TData, TValue>) {
     const resolvedStorageKey =
@@ -82,6 +87,7 @@ export function DataTable<TData, TValue>({
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [globalFilter, setGlobalFilter] = useState('');
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
         () => {
             if (!resolvedStorageKey) return {};
@@ -117,9 +123,11 @@ export function DataTable<TData, TValue>({
         state: {
             sorting,
             columnFilters,
+            globalFilter,
             columnVisibility,
             pagination: showPagination ? pagination : undefined,
         },
+        onGlobalFilterChange: searchable ? setGlobalFilter : undefined,
         onSortingChange: enableSorting ? setSorting : undefined,
         onColumnFiltersChange: setColumnFilters,
         onColumnVisibilityChange: (updater) => {
@@ -149,7 +157,7 @@ export function DataTable<TData, TValue>({
 
     return (
         <div className="w-full">
-            {(toolbar || enableColumnVisibility) && (
+            {(toolbar || enableColumnVisibility || searchable) && (
                 <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                         <div className="min-w-0 flex-1">
@@ -168,8 +176,37 @@ export function DataTable<TData, TValue>({
                                       },
                                   )
                                 : toolbar}
-                            {!toolbar && enableColumnVisibility && (
-                                <ColumnToggle table={table} />
+                            {!toolbar && searchable && (
+                                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+                                    <div className="relative w-full sm:flex-1">
+                                        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            placeholder={searchPlaceholder}
+                                            value={globalFilter}
+                                            onChange={(e) => setGlobalFilter(e.target.value)}
+                                            className="h-9 pr-9 pl-9"
+                                        />
+                                        {globalFilter && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setGlobalFilter('')}
+                                                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            >
+                                                <X className="size-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    {enableColumnVisibility && (
+                                        <div className="flex w-full sm:w-auto sm:flex-none">
+                                            <ColumnToggle table={table} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            {!toolbar && !searchable && enableColumnVisibility && (
+                                <div className="flex w-full sm:w-auto">
+                                    <ColumnToggle table={table} />
+                                </div>
                             )}
                         </div>
                     </div>
@@ -306,9 +343,11 @@ export function DataTable<TData, TValue>({
                         preserveParams={preserveParams}
                     />
                 ) : (
-                    <div className="text-sm text-muted-foreground">
-                        {total} {itemName}
-                    </div>
+                    total > 0 && (
+                        <div className="text-sm text-muted-foreground">
+                            {total} {itemName}
+                        </div>
+                    )
                 )}
             </div>
         </div>

@@ -119,6 +119,9 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const role: RoleItem = row.original;
+                    if (role.slug === 'owner') {
+                        return null;
+                    }
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -194,6 +197,8 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                             itemName="roles"
                             baseUrl={roles.index().url}
                             preserveParams={{}}
+                            searchable
+                            searchPlaceholder="Search roles..."
                             emptyMessage="No roles found."
                             getRowId={(row) => String(row.id)}
                         />

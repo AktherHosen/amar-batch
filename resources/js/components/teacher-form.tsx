@@ -46,7 +46,7 @@ export default function TeacherForm({
         email: teacher?.email || '',
         password: '',
         password_confirmation: '',
-        role: teacher?.role && teacher.role !== 'inactive' ? teacher.role : 'staff',
+        role: teacher?.role && teacher.role !== 'inactive' ? teacher.role : 'teacher',
     });
 
     const handleSubmit = (e: React.FormEvent) => {

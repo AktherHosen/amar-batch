@@ -212,13 +212,13 @@ export default function TeachersIndex({
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                     <>
-                                        {teacher.role === 'staff' && !teacher.is_approved && (
+                                        {teacher.role === 'teacher' && !teacher.is_approved && (
                                             <DropdownMenuItem onClick={() => handleApprove(teacher)}>
                                                 <CheckCircle className="mr-2 size-4 text-green-600" />
                                                 {t('teachers.approve')}
                                             </DropdownMenuItem>
                                         )}
-                                        {teacher.role === 'staff' && teacher.is_approved && (
+                                        {teacher.role === 'teacher' && teacher.is_approved && (
                                             <DropdownMenuItem onClick={() => handleReject(teacher)}>
                                                 <XCircle className="mr-2 size-4 text-yellow-600" />
                                                 {t('teachers.revoke_approval')}

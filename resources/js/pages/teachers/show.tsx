@@ -173,26 +173,28 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                     <CardHeader>
                         <CardTitle>{t('teachers.title')}</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div>
-                            <p className="text-sm text-muted-foreground">
-                                {t('teachers.name')}
-                            </p>
-                            <p className="font-medium">{teacher.name}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">
-                                {t('teachers.email')}
-                            </p>
-                            <p className="font-medium">{teacher.email}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">
-                                {t('batches.title')}
-                            </p>
-                            <p className="font-medium">
-                                {teacher.assigned_batches_count}
-                            </p>
+                    <CardContent>
+                        <div className="grid w-full grid-cols-2 gap-3">
+                            <div className="min-w-0">
+                                <p className="text-xs text-muted-foreground">
+                                    {t('teachers.name')}
+                                </p>
+                                <p className="truncate text-sm font-medium">{teacher.name}</p>
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-xs text-muted-foreground">
+                                    {t('teachers.email')}
+                                </p>
+                                <p className="truncate text-sm font-medium">{teacher.email}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">
+                                    {t('batches.title')}
+                                </p>
+                                <p className="text-sm font-medium">
+                                    {teacher.assigned_batches_count}
+                                </p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -204,8 +206,10 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                     <CardContent>
                         <DataTable
                             columns={columns}
-                            data={teacher.assigned_batches}
+                            data={teacher.assigned_batches ?? []}
                             showPagination={false}
+                            searchable
+                            searchPlaceholder={t('batches.title') + '...'}
                             emptyMessage={t('batches.title')}
                             getRowId={(row) => String(row.id)}
                         />
