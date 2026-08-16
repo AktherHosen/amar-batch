@@ -10,6 +10,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { AvatarUpload } from '@/components/avatar-upload';
+import { useState } from 'react';
 import { useLocale } from '@/contexts/locale-context';
 
 type Role = {
@@ -23,12 +25,13 @@ type Teacher = {
     name: string;
     email: string;
     role?: string;
+    avatar?: string | null;
 };
 
 type TeacherFormProps = {
     teacher?: Teacher;
     roles?: Role[];
-    onSubmit: (data: any) => void;
+    onSubmit: (data: FormData) => void;
     processing: boolean;
     errors: Record<string, string>;
 };
@@ -48,14 +51,31 @@ export default function TeacherForm({
         password_confirmation: '',
         role: teacher?.role && teacher.role !== 'inactive' ? teacher.role : 'teacher',
     });
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(data);
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                formData.append(key, String(value));
+            }
+        });
+        if (avatarFile) {
+            formData.append('avatar', avatarFile);
+        }
+        onSubmit(formData);
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
+            <AvatarUpload
+                value={teacher?.avatar ?? null}
+                onChange={(file) => setAvatarFile(file)}
+                label={t('teachers.avatar')}
+                hint={t('teachers.avatar_hint')}
+                error={errors.avatar}
+            />
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="name">{t('teachers.name')} *</Label>

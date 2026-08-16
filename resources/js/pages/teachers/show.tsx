@@ -194,7 +194,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <CardTitle>{t('teachers.title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                        <div className="flex flex-col items-center gap-4">
                             <Avatar className="size-16 sm:size-20">
                                 <AvatarImage
                                     src={teacher.avatar ? `/storage/${teacher.avatar}` : undefined}
@@ -204,8 +204,8 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                                     {teacher.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1 space-y-3">
-                                <div className="flex flex-wrap items-center gap-2">
+                            <div className="w-full space-y-3">
+                                <div className="flex flex-wrap items-center justify-center gap-2">
                                     <Badge variant={teacher.role === 'inactive' ? 'danger' : 'success'}>
                                         {teacher.role === 'inactive' ? t('teachers.inactive') : t('teachers.active')}
                                     </Badge>

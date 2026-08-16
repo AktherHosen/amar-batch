@@ -13,6 +13,7 @@ type User = {
     name: string;
     email: string;
     role: string;
+    avatar?: string | null;
 };
 
 type Role = {
@@ -29,9 +30,9 @@ type UsersEditProps = {
 export default function UsersEdit({ user, roles = [] }: UsersEditProps) {
     const { t } = useLocale();
     const { errors } = usePage().props;
-    const handleSubmit = (data: any) => {
-        router.put(users.update(user.id), {
-            ...data,
+    const handleSubmit = (data: FormData) => {
+        data.append('_method', 'PUT');
+        router.post(users.update(user.id), data, {
             preserveScroll: true,
         });
     };

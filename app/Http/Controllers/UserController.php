@@ -105,6 +105,9 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'staff',
             'tenant_id' => $request->user()->tenant_id,
+            'avatar' => $request->hasFile('avatar')
+                ? $request->file('avatar')->store('avatars', 'public')
+                : null,
         ]);
 
         return to_route('users.index')->with('toast', ['type' => 'success', 'message' => 'User created successfully.']);
@@ -147,6 +150,13 @@ class UserController extends Controller
             unset($data['password']);
         } else {
             $data['password'] = Hash::make($data['password']);
+        }
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                \Storage::disk('public')->delete($user->avatar);
+            }
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
         $user->update($data);

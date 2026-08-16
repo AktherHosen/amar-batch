@@ -11,9 +11,8 @@ import { useLocale } from '@/contexts/locale-context';
 export default function TeachersCreate({ roles = [] }: { roles?: { id: number; name: string; slug: string }[] }) {
     const { t } = useLocale();
     const { errors } = usePage().props;
-    const handleSubmit = (data: any) => {
-        router.post(teachers.store(), {
-            ...data,
+    const handleSubmit = (data: FormData) => {
+        router.post(teachers.store(), data, {
             preserveScroll: true,
         });
     };

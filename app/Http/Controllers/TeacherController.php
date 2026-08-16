@@ -87,7 +87,13 @@ class TeacherController extends Controller
             return to_route('subscription.index')->with('toast', [
                 'type' => 'warning',
                 'message' => 'You have reached the staff limit for your current plan. Please upgrade to add more staff.',
-            ]);
+]);
+        }
+
+        $data = $request->validated();
+
+        if ($request->hasFile('avatar')) {
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
         User::create([
@@ -96,6 +102,7 @@ class TeacherController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'teacher',
             'tenant_id' => $request->user()->tenant_id,
+            'avatar' => $data['avatar'] ?? null,
         ]);
 
         return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Staff member created successfully.']);
@@ -144,12 +151,19 @@ public function show(User $teacher): Response
             abort(403);
         }
 
-        $data = $request->validated();
+$data = $request->validated();
 
         if (empty($data['password'])) {
             unset($data['password']);
         } else {
             $data['password'] = Hash::make($data['password']);
+        }
+
+        if ($request->hasFile('avatar')) {
+            if ($teacher->avatar) {
+                \Storage::disk('public')->delete($teacher->avatar);
+            }
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
         $teacher->update($data);

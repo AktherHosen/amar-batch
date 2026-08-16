@@ -12,6 +12,7 @@ type Teacher = {
     id: number;
     name: string;
     email: string;
+    avatar?: string | null;
 };
 
 type Role = {
@@ -28,9 +29,9 @@ type TeachersEditProps = {
 export default function TeachersEdit({ teacher, roles = [] }: TeachersEditProps) {
     const { t } = useLocale();
     const { errors } = usePage().props;
-    const handleSubmit = (data: any) => {
-        router.put(teachers.update(teacher.id), {
-            ...data,
+    const handleSubmit = (data: FormData) => {
+        data.append('_method', 'PUT');
+        router.post(teachers.update(teacher.id), data, {
             preserveScroll: true,
         });
     };

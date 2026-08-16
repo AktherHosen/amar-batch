@@ -11,9 +11,8 @@ import { useLocale } from '@/contexts/locale-context';
 export default function UsersCreate({ roles = [] }: { roles?: { id: number; name: string; slug: string }[] }) {
     const { t } = useLocale();
     const { errors } = usePage().props;
-    const handleSubmit = (data: any) => {
-        router.post(users.store(), {
-            ...data,
+    const handleSubmit = (data: FormData) => {
+        router.post(users.store(), data, {
             preserveScroll: true,
         });
     };

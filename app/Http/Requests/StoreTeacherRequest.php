@@ -27,6 +27,7 @@ class StoreTeacherRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['nullable', Rule::in($assignableRoles)],
+            'avatar' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }
