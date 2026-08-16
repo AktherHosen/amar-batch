@@ -16,13 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DataTable, type DataTableProps } from '@/components/data-table';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import batches from '@/routes/batches';
 import studentsRoutes from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
@@ -94,8 +88,6 @@ export default function BatchesShow({
     const isAdmin = isOwner(auth.user);
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [selectedStudent, setSelectedStudent] = useState('');
-    const [teacherSearch, setTeacherSearch] = useState('');
-    const [studentSearch, setStudentSearch] = useState('');
     const [enrollmentDate, setEnrollmentDate] = useState(new Date().toISOString().split('T')[0]);
     const [deleteDialog, setDeleteDialog] = useState(false);
     const [removeTeacherDialog, setRemoveTeacherDialog] = useState<{ open: boolean; teacherId: number | null }>({ open: false, teacherId: null });
@@ -202,10 +194,7 @@ export default function BatchesShow({
     };
 
     const availableTeachers = teachers.filter(
-        (t) =>
-            !batch.teachers.some((bt) => bt.id === t.id) &&
-            (t.name.toLowerCase().includes(teacherSearch.toLowerCase()) ||
-                t.email.toLowerCase().includes(teacherSearch.toLowerCase())),
+        (t) => !batch.teachers.some((bt) => bt.id === t.id),
     );
 
     const teacherColumns = (() => {
@@ -566,161 +555,118 @@ export default function BatchesShow({
                     </Card>
                 </div>
 
-                {isAdmin && batch.status !== 'completed' && (
+                {(isAdmin || isStaff(auth.user)) && batch.status !== 'completed' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t('teachers.title')}</CardTitle>
+                            <CardTitle>{t('batches.manage')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-6 md:grid-cols-2">
+                                {isAdmin && (
+                                    <div className="space-y-3">
+                                        <p className="text-sm">
+                                            {t('teachers.title')}
+                                        </p>
+                                        {availableTeachers.length > 0 ? (
+                                            <div className="flex flex-col gap-2">
+                                                <SearchableSelect
+                                                    options={availableTeachers.map((teacher) => ({
+                                                        value: String(teacher.id),
+                                                        label: `${teacher.name} (${teacher.email})`,
+                                                        searchText: `${teacher.name} ${teacher.email}`,
+                                                    }))}
+                                                    value={selectedTeacher}
+                                                    onValueChange={setSelectedTeacher}
+                                                    placeholder={t('batches.select_teacher')}
+                                                    emptyText={t('batches.no_teachers')}
+                                                    noResultsText={t('batches.no_teachers')}
+                                                    className="w-full"
+                                                />
+                                                <Button
+                                                    onClick={handleAssignTeacher}
+                                                    disabled={!selectedTeacher}
+                                                >
+                                                    {t('batches.assign')}
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">
+                                                {t('batches.no_teachers')}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {(() => {
+                                    const availableStudents = students.filter(
+                                        (s) =>
+                                            !enrolledStudentIds.includes(s.id),
+                                    );
+
+                                    return (
+                                        <div className="space-y-3">
+                                            <p className="text-sm ">
+                                                {t('students.title')}
+                                            </p>
+                                            {availableStudents.length > 0 ? (
+                                                <div className="flex flex-col gap-2">
+                                                    <SearchableSelect
+                                                        options={availableStudents.map((student) => ({
+                                                            value: String(student.id),
+                                                            label: `${student.name} (${student.coaching_class?.name || t('batches.no_class')})`,
+                                                            searchText: student.name,
+                                                        }))}
+                                                        value={selectedStudent}
+                                                        onValueChange={setSelectedStudent}
+                                                        placeholder={t('batches.select_student')}
+                                                        emptyText={t('batches.no_teachers')}
+                                                        noResultsText={t('batches.no_teachers')}
+                                                        className="w-full"
+                                                    />
+                                                    <div className="flex flex-col gap-2 sm:flex-row">
+                                                        <DatePicker
+                                                            value={enrollmentDate}
+                                                            onValueChange={(value) => setEnrollmentDate(value)}
+                                                            placeholder={t('batches.enroll_date')}
+                                                        />
+                                                        <Button
+                                                            onClick={
+                                                                handleEnrollStudent
+                                                            }
+                                                            disabled={!selectedStudent}
+                                                        >
+                                                            {t('batches.enroll')}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground">
+                                                    {t('batches.enrolled')}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {isAdmin && batch.teachers.length > 0 && batch.status !== 'completed' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{t('batches.assigned_teachers')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <DataTable
                                 columns={teacherColumns}
                                 data={batch.teachers}
                                 showPagination={false}
+                                searchable
+                                searchPlaceholder={t('teachers.title') + '...'}
                                 emptyMessage={t('teachers.title')}
                                 getRowId={(row) => String(row.id)}
                             />
-
-                            {availableTeachers.length > 0 || teacherSearch ? (
-                                <div className="mt-4 space-y-2">
-                                                                <input
-                                                                    type="text"
-                                                                    placeholder={t('batches.search_teachers')}
-                                                                    value={teacherSearch}
-                                        onChange={(e) =>
-                                            setTeacherSearch(e.target.value)
-                                        }
-                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none"
-                                    />
-                                    {availableTeachers.length > 0 ? (
-                                        <div className="flex gap-2">
-                                            <Select
-                                                value={selectedTeacher}
-                                                onValueChange={
-                                                    setSelectedTeacher
-                                                }
-                                            >
-                                                <SelectTrigger className="flex-1">
-                                                        <SelectValue placeholder={t('batches.select_teacher')} />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {availableTeachers.map(
-                                                        (teacher) => (
-                                                            <SelectItem
-                                                                key={teacher.id}
-                                                                value={teacher.id.toString()}
-                                                            >
-                                                                {teacher.name} (
-                                                                {teacher.email})
-                                                            </SelectItem>
-                                                        ),
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                            <Button
-                                                onClick={handleAssignTeacher}
-                                                disabled={!selectedTeacher}
-                                            >
-                                                {t('batches.assign')}
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-muted-foreground">
-                                            {t('batches.no_teachers')}
-                                        </p>
-                                    )}
-                                </div>
-                            ) : null}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {(isAdmin || isStaff(auth.user)) && batch.status !== 'completed' && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('students.title')}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {(() => {
-                                const availableStudents = students.filter(
-                                    (s) =>
-                                        !enrolledStudentIds.includes(s.id) &&
-                                        s.name
-                                            .toLowerCase()
-                                            .includes(
-                                                studentSearch.toLowerCase(),
-                                            ),
-                                );
-
-                                return availableStudents.length > 0 ||
-                                    studentSearch ? (
-                                    <div className="space-y-2">
-                                                                <input
-                                                                    type="text"
-                                                                    placeholder={t('batches.search_students')}
-                                                                    value={studentSearch}
-                                            onChange={(e) =>
-                                                setStudentSearch(e.target.value)
-                                            }
-                                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none"
-                                        />
-                                        {availableStudents.length > 0 ? (
-                                            <div className="flex flex-col gap-2 sm:flex-row">
-                                                <Select
-                                                    value={selectedStudent}
-                                                    onValueChange={
-                                                        setSelectedStudent
-                                                    }
-                                                >
-                                                    <SelectTrigger className="flex-1">
-                                                        <SelectValue placeholder={t('batches.select_student')} />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {availableStudents.map(
-                                                            (student) => (
-                                                                <SelectItem
-                                                                    key={
-                                                                        student.id
-                                                                    }
-                                                                    value={student.id.toString()}
-                                                                >
-                                                                    {
-                                                                        student.name
-                                                                    }{' '}
-                                                                    (
-                                                                    {student.coaching_class?.name || t('batches.no_class')}
-                                                                    )
-                                                                </SelectItem>
-                                                            ),
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
-                                                <DatePicker
-                                                    value={enrollmentDate}
-                                                    onValueChange={(value) => setEnrollmentDate(value)}
-                                                    placeholder={t('batches.enroll_date')}
-                                                />
-                                                <Button
-                                                    onClick={
-                                                        handleEnrollStudent
-                                                    }
-                                                    disabled={!selectedStudent}
-                                                >
-                                                    {t('batches.enroll')}
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground">
-                                                {t('students.title')}{' '}
-                                                {t('actions.search')}
-                                            </p>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        {t('batches.enrolled')}
-                                    </p>
-                                );
-                            })()}
                         </CardContent>
                     </Card>
                 )}
@@ -736,6 +682,8 @@ export default function BatchesShow({
                             columns={enrollmentColumns}
                             data={batch.enrollments}
                             showPagination={false}
+                            searchable
+                            searchPlaceholder={t('students.name') + '...'}
                             emptyMessage={t('batches.enrolled')}
                             getRowId={(row) => String(row.id)}
                         />
@@ -752,6 +700,8 @@ export default function BatchesShow({
                                 columns={historyColumns}
                                 data={batch.history}
                                 showPagination={false}
+                                searchable
+                                searchPlaceholder={t('actions.search') + '...'}
                                 emptyMessage="No history records"
                                 getRowId={(row) => String(row.id)}
                             />
