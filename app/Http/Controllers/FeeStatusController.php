@@ -32,6 +32,20 @@ class FeeStatusController extends Controller
     {
         $year = $request->input('year', date('Y'));
 
+        $years = FeeStatus::query()
+            ->select('year')
+            ->distinct()
+            ->orderByDesc('year')
+            ->pluck('year')
+            ->map(fn ($y) => (int) $y)
+            ->toArray();
+
+        $yearOptions = array_values(array_unique(array_merge(
+            $years,
+            [(int) date('Y')],
+        )));
+        sort($yearOptions);
+
         $query = FeeStatus::with(['student.coachingClass', 'batch'])
             ->where('year', $year)
             ->whereHas('student', fn ($q) => $q->where('status', 'active'));
@@ -86,6 +100,7 @@ class FeeStatusController extends Controller
             'months' => $months,
             'monthNames' => $monthNames,
             'year' => (int) $year,
+            'yearOptions' => $yearOptions,
             'filters' => $request->only(['search', 'year']),
         ]);
     }

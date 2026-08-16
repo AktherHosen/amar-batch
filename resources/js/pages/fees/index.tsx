@@ -7,24 +7,15 @@ import {
     EllipsisVertical,
     Download,
     ChevronDown,
-    Search,
-    X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -71,6 +62,7 @@ type PageProps = {
     months: number[];
     monthNames: Record<number, string>;
     year: number;
+    yearOptions: number[];
     filters: {
         search?: string;
         year?: string;
@@ -358,6 +350,7 @@ export default function FeesIndex({
     months,
     monthNames,
     year,
+    yearOptions,
     filters,
 }: PageProps) {
     const { t } = useLocale();
@@ -372,11 +365,8 @@ export default function FeesIndex({
     }>({ open: false, item: null });
 
     const currentYear = new Date().getFullYear();
-    const yearOptions = [];
-
-    for (let y = currentYear - 2; y <= currentYear + 1; y++) {
-        yearOptions.push(y);
-    }
+    const yearOptionsList =
+        yearOptions.length > 0 ? yearOptions : [currentYear];
 
     const isMonthDisabled = (
         enrolledAt: string | null,
@@ -709,58 +699,27 @@ export default function FeesIndex({
 
                 <Card className="min-w-0">
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-                            <div className="relative w-full sm:flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t('actions.search') + '...'}
-                                    value={search}
-                                    onChange={(e) =>
-                                        handleSearch(e.target.value)
-                                    }
-                                    className="h-9 pr-9 pl-9"
-                                />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleSearch('')}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-start">
-                                <Select
-                                    value={String(selectedYear)}
-                                    onValueChange={handleYearChange}
-                                >
-                                    <SelectTrigger className="h-9 w-auto min-w-[7rem]">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {yearOptions.map((y) => (
-                                            <SelectItem
-                                                key={y}
-                                                value={String(y)}
-                                            >
-                                                {y}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {activeFilterCount > 0 && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-9 px-2 text-muted-foreground hover:text-foreground"
-                                        onClick={clearAll}
-                                    >
-                                        <X className="size-4" />
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
+                        <FilterBar
+                            className="mb-4"
+                            searchPlaceholder={t('actions.search') + '...'}
+                            searchValue={search}
+                            onSearchChange={handleSearch}
+                            activeFilterCount={activeFilterCount}
+                            active={selectedYear !== currentYear}
+                            onClearAll={clearAll}
+                            filters={[
+                                {
+                                    id: 'year',
+                                    placeholder: t('fees.year'),
+                                    value: String(selectedYear),
+                                    options: yearOptionsList.map((y) => ({
+                                        label: String(y),
+                                        value: String(y),
+                                    })),
+                                    onValueChange: handleYearChange,
+                                },
+                            ]}
+                        />
 
                         <div className="hidden lg:block">
                             <DataTable
@@ -787,6 +746,7 @@ export default function FeesIndex({
                                 year={year}
                                 isAdmin={isAdmin}
                                 isMonthDisabled={isMonthDisabled}
+                                onDeleteRow={confirmDeleteRow}
                                 t={t}
                             />
                         </div>

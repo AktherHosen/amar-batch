@@ -45,6 +45,7 @@ type FilterBarProps = {
     }>;
     activeFilterCount?: number;
     onClearAll?: () => void;
+    active?: boolean;
     className?: string;
     children?: ReactNode;
 };
@@ -56,6 +57,7 @@ export function FilterBar({
     filters = [],
     activeFilterCount = 0,
     onClearAll,
+    active,
     className,
     children,
 }: FilterBarProps) {
@@ -73,7 +75,9 @@ export function FilterBar({
     }, [debouncedSearch]);
 
     const hasActiveFilters =
-        activeFilterCount > 0 || filters.some((f) => f.value);
+        active !== undefined
+            ? active
+            : activeFilterCount > 0 || filters.some((f) => f.value);
     const hasFilters = filters.length > 0;
 
     return (
@@ -126,23 +130,9 @@ export function FilterBar({
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent
-                            align="end"
-                            className={`max-w-[calc(100vw-2rem)] w-fit p-4`}
+                            align="center"
+                            className={`w-fit max-w-[calc(100vw-2rem)] p-4`}
                         >
-                            <div className="mb-3 flex items-center justify-between">
-                                <h4 className="text-sm font-medium">Filters</h4>
-                                {hasActiveFilters && onClearAll && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                                        onClick={onClearAll}
-                                    >
-                                        <SlidersHorizontal className="size-3.5" />
-                                        Clear all
-                                    </Button>
-                                )}
-                            </div>
                             <div
                                 className={`grid grid-cols-1 gap-3 ${filters.length > 1 ? 'sm:grid-cols-2' : ''}`}
                             >
@@ -190,6 +180,17 @@ export function FilterBar({
                                     </div>
                                 ))}
                             </div>
+                            {hasActiveFilters && onClearAll && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-4 w-full gap-2 text-muted-foreground hover:text-foreground"
+                                    onClick={onClearAll}
+                                >
+                                    <SlidersHorizontal className="size-3.5" />
+                                    Clear all
+                                </Button>
+                            )}
                         </PopoverContent>
                     </Popover>
                 )}
