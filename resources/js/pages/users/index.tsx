@@ -239,10 +239,10 @@ export default function UsersIndex({
                                 value={user.role}
                                 onValueChange={(value) => handleRoleChange(user, value)}
                             >
-                                <SelectTrigger className="h-7 w-[150px]">
+                                <SelectTrigger className="h-7 w-auto min-w-[110px]">
                                     <SelectValue>{roleName(user.role)}</SelectValue>
                                 </SelectTrigger>
-                                <SelectContent className="w-[150px]">
+                                <SelectContent>
                                     {assignableRoles.map((role) => (
                                         <SelectItem key={role.id} value={role.slug}>
                                             {role.name}

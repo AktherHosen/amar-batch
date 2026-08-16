@@ -127,7 +127,7 @@ export function FilterBar({
                         </PopoverTrigger>
                         <PopoverContent
                             align="end"
-                            className="w-40 p-4 sm:w-80"
+                            className={`max-w-[calc(100vw-2rem)] w-fit p-4`}
                         >
                             <div className="mb-3 flex items-center justify-between">
                                 <h4 className="text-sm font-medium">Filters</h4>
@@ -143,7 +143,9 @@ export function FilterBar({
                                     </Button>
                                 )}
                             </div>
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div
+                                className={`grid grid-cols-1 gap-3 ${filters.length > 1 ? 'sm:grid-cols-2' : ''}`}
+                            >
                                 {filters.map((filter) => (
                                     <div
                                         key={filter.id}
@@ -162,14 +164,14 @@ export function FilterBar({
                                                 )
                                             }
                                         >
-                                            <SelectTrigger className="h-9 w-full">
+                                            <SelectTrigger className="h-9 w-auto min-w-[7rem]">
                                                 <SelectValue
                                                     placeholder={
                                                         filter.placeholder
                                                     }
                                                 />
                                             </SelectTrigger>
-                                            <SelectContent className="min-w-0 [&_[data-slot=select-viewport]]:w-auto [&_[data-slot=select-viewport]]:min-w-0">
+                                            <SelectContent>
                                                 <SelectItem value="all">
                                                     All
                                                 </SelectItem>

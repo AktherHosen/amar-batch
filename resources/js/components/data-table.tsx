@@ -329,7 +329,7 @@ export function ColumnToggle<TData>({
                     <ChevronDown className="size-3.5 opacity-60" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+            <DropdownMenuContent align="end">
                 {table
                     .getAllColumns()
                     .filter((col) => col.getCanHide())
