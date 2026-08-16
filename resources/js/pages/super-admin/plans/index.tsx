@@ -2,13 +2,13 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Link, router } from '@inertiajs/react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useLocale } from '@/contexts/locale-context';
 
 type Plan = {
     id: number;
@@ -30,6 +30,7 @@ type PageProps = {
 };
 
 export default function PlansIndex({ plans }: PageProps) {
+    const { t } = useLocale();
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Plan | null }>({
         open: false,
         item: null,

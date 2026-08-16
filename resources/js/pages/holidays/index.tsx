@@ -1,14 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, RefreshCw, Search, X, EllipsisVertical, Eye, Pencil, Trash2, Calendar } from 'lucide-react';
+import { Plus, EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
-import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -17,22 +14,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
+import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
+import holidays from '@/routes/holidays';
 
 type Holiday = {
     id: number;
@@ -67,8 +53,9 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
     const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Holiday | null }>({ open: false, item: null });
 
-    const handleSearch = () => {
-        router.get('/holidays', { search, type: typeFilter }, { preserveState: true });
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get('/holidays', { search: value, type: typeFilter }, { preserveState: true });
     };
 
     const handleDelete = (holiday: Holiday) => {
@@ -93,6 +80,100 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
         return variants[type] || 'secondary';
     };
 
+    const activeFilterCount = typeFilter ? 1 : 0;
+
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<Holiday, unknown>['columns']>[number];
+        return [
+            {
+                id: 'title',
+                accessorKey: 'title',
+                header: 'Title',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.title}</span>
+                ),
+            } as Col,
+            {
+                id: 'start_date',
+                accessorKey: 'start_date',
+                header: 'Start Date',
+                enableSorting: false,
+                cell: ({ row }: any) => new Date(row.original.start_date).toLocaleDateString(),
+            } as Col,
+            {
+                id: 'end_date',
+                accessorKey: 'end_date',
+                header: 'End Date',
+                enableSorting: false,
+                cell: ({ row }: any) => new Date(row.original.end_date).toLocaleDateString(),
+            } as Col,
+            {
+                id: 'duration',
+                accessorKey: 'end_date',
+                header: 'Duration',
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const h: Holiday = row.original;
+                    return (
+                        <>{Math.ceil((new Date(h.end_date).getTime() - new Date(h.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1} day(s)</>
+                    );
+                },
+            } as Col,
+            {
+                id: 'type',
+                accessorKey: 'type',
+                header: 'Type',
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const h: Holiday = row.original;
+                    return (
+                        <Badge variant={getTypeBadge(h.type)}>
+                            {h.type}
+                        </Badge>
+                    );
+                },
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const holiday: Holiday = row.original;
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => router.get(`/holidays/${holiday.id}`)}>
+                                    <Eye className="mr-2 size-4" />
+                                    View
+                                </DropdownMenuItem>
+                                {isAdmin && (
+                                    <>
+                                        <DropdownMenuItem onClick={() => router.get(`/holidays/${holiday.id}/edit`)}>
+                                            <Pencil className="mr-2 size-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(holiday)}>
+                                            <Trash2 className="mr-2 size-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title="Holiday Calendar" />
@@ -103,164 +184,63 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
                         title="Holiday Calendar"
                         description="Manage center holidays and events"
                     />
-                    {isAdmin && (
-                        <Link href="/holidays/create">
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                Add Holiday
-                            </Button>
-                        </Link>
-                    )}
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({ only: ['holidays'], onFinish: () => setRefreshing(false) });
+                            }}
+                        />
+                        {isAdmin && (
+                            <Link href="/holidays/create">
+                                <Button>
+                                    <Plus className="mr-2 size-4" />
+                                    Add Holiday
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search holidays..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    className="pr-9 pl-9"
-                                />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get('/holidays', { type: typeFilter }, { preserveState: true });
-                                        }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex gap-2">
-                                <Select
-                                    value={typeFilter || 'all'}
-                                    onValueChange={(value) => {
-                                        const v = value === 'all' ? '' : value;
-                                        setTypeFilter(v);
-                                        router.get('/holidays', { search, type: v }, { preserveState: true });
-                                    }}
-                                >
-                                    <SelectTrigger className="w-[150px]">
-                                        <SelectValue placeholder="All Types" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Types</SelectItem>
-                                        <SelectItem value="holiday">Holiday</SelectItem>
-                                        <SelectItem value="exam">Exam</SelectItem>
-                                        <SelectItem value="event">Event</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Button variant="ghost" size="icon" disabled={refreshing} onClick={() => {
-                                    setRefreshing(true);
-                                    router.reload({ only: ['holidays'], onFinish: () => setRefreshing(false) });
-                                }}>
-                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                </Button>
-                            </div>
-                        </div>
-
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">Title</TableHead>
-                                    <TableHead>Start Date</TableHead>
-                                    <TableHead>End Date</TableHead>
-                                    <TableHead>Duration</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead className="w-[50px]"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <motion.tbody
-                                initial="hidden"
-                                animate="visible"
-                                variants={{
-                                    hidden: {},
-                                    visible: { transition: { staggerChildren: 0.03 } },
-                                }}
-                            >
-                                {pagination.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center">
-                                            <div className="flex flex-col items-center gap-2 py-4">
-                                                <Calendar className="size-8 text-muted-foreground" />
-                                                <p>No holidays found</p>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    pagination.data.map((holiday) => (
-                                        <motion.tr
-                                            key={holiday.id}
-                                            variants={{
-                                                hidden: { opacity: 0, x: -8 },
-                                                visible: { opacity: 1, x: 0 },
-                                            }}
-                                        >
-                                            <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium">
-                                                {holiday.title}
-                                            </TableCell>
-                                            <TableCell>
-                                                {new Date(holiday.start_date).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                {new Date(holiday.end_date).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                {Math.ceil((new Date(holiday.end_date).getTime() - new Date(holiday.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1} day(s)
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={getTypeBadge(holiday.type)}>
-                                                    {holiday.type}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <EllipsisVertical className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => router.get(`/holidays/${holiday.id}`)}>
-                                                            <Eye className="mr-2 size-4" />
-                                                            View
-                                                        </DropdownMenuItem>
-                                                        {isAdmin && (
-                                                            <>
-                                                                <DropdownMenuItem onClick={() => router.get(`/holidays/${holiday.id}/edit`)}>
-                                                                    <Pencil className="mr-2 size-4" />
-                                                                    Edit
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(holiday)}>
-                                                                    <Trash2 className="mr-2 size-4" />
-                                                                    Delete
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </motion.tr>
-                                    ))
-                                )}
-                            </motion.tbody>
-                        </Table>
-
-                        <Pagination
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            perPage={pagination.per_page}
                             itemName="holidays"
-                            baseUrl="/holidays"
+                            baseUrl={holidays.index().url}
                             preserveParams={{ search, type: typeFilter }}
+                            emptyMessage="No holidays found"
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder="Search holidays..."
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={activeFilterCount}
+                                    filters={[
+                                        {
+                                            id: 'type',
+                                            placeholder: 'All Types',
+                                            value: typeFilter,
+                                            options: [
+                                                { label: 'Holiday', value: 'holiday' },
+                                                { label: 'Exam', value: 'exam' },
+                                                { label: 'Event', value: 'event' },
+                                            ],
+                                            onValueChange: (value) => {
+                                                setTypeFilter(value);
+                                                router.get('/holidays', { search, type: value }, { preserveState: true });
+                                            },
+                                        },
+                                    ]}
+                                />
+                            }
                         />
                     </CardContent>
                 </Card>

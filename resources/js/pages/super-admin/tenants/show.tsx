@@ -2,7 +2,7 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import { router } from '@inertiajs/react';
 import { ArrowLeft, Building2, Users, GraduationCap, Layers, CreditCard, Eye } from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -82,6 +82,58 @@ export default function TenantShow({ tenant, stats, recentPayments }: PageProps)
                 return <Badge variant="secondary" className="whitespace-nowrap">{status}</Badge>;
         }
     };
+
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
+        return [
+            {
+                id: 'created_at',
+                accessorKey: 'created_at',
+                header: 'Date',
+                enableSorting: false,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">
+                        {new Date(row.original.created_at).toLocaleDateString()}
+                    </span>
+                ),
+            } as Col,
+            {
+                id: 'plan',
+                accessorKey: 'plan',
+                header: 'Plan',
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.plan?.name ?? '—',
+            } as Col,
+            {
+                id: 'amount',
+                accessorKey: 'amount',
+                header: 'Amount',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <div className="text-right font-semibold">
+                        {formatCurrency(row.original.amount)}
+                    </div>
+                ),
+            } as Col,
+            {
+                id: 'billing_type',
+                accessorKey: 'billing_type',
+                header: 'Billing',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span className="capitalize">{row.original.billing_type ?? '—'}</span>
+                ),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: 'Status',
+                enableSorting: false,
+                cell: ({ row }: any) => getStatusBadge(row.original.status),
+            } as Col,
+        ];
+    })();
 
     return (
         <>
@@ -228,36 +280,15 @@ export default function TenantShow({ tenant, stats, recentPayments }: PageProps)
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        {recentPayments.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="whitespace-nowrap">Date</TableHead>
-                                        <TableHead className="whitespace-nowrap">Plan</TableHead>
-                                        <TableHead className="whitespace-nowrap text-right">Amount</TableHead>
-                                        <TableHead className="whitespace-nowrap">Billing</TableHead>
-                                        <TableHead className="whitespace-nowrap">Status</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {recentPayments.map((payment) => (
-                                        <TableRow key={payment.id}>
-                                            <TableCell className="whitespace-nowrap">
-                                                {new Date(payment.created_at).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">{payment.plan?.name ?? '—'}</TableCell>
-                                            <TableCell className="text-right whitespace-nowrap font-semibold">
-                                                {formatCurrency(payment.amount)}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap capitalize">{payment.billing_type ?? '—'}</TableCell>
-                                            <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">No payments yet.</p>
-                        )}
+                        <DataTable
+                            columns={columns}
+                            data={recentPayments}
+                            showPagination={false}
+                            total={recentPayments.length}
+                            itemName="payments"
+                            emptyMessage="No payments yet."
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
             </div>

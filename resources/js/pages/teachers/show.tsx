@@ -14,14 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import teachers from '@/routes/teachers';
 import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
@@ -65,6 +58,83 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
         toast.success(t('toast.deactivated_successfully'));
         setDeleteDialog(false);
     };
+
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<Batch, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('batches.name'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'subject',
+                accessorKey: 'subject',
+                header: t('batches.subject'),
+                enableSorting: true,
+                cell: ({ row }: any) => row.original.subject || '-',
+            } as Col,
+            {
+                id: 'enrollments_count',
+                accessorKey: 'enrollments_count',
+                header: t('batches.enrolled'),
+                enableSorting: false,
+                cell: ({ row }: any) => <span>{row.original.enrollments_count}</span>,
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: t('students.status'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const batch: Batch = row.original;
+                    return (
+                        <Badge
+                            variant={
+                                batch.status === 'active'
+                                    ? 'default'
+                                    : batch.status === 'inactive'
+                                      ? 'secondary'
+                                      : 'destructive'
+                            }
+                        >
+                            {batch.status}
+                        </Badge>
+                    );
+                },
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const batch: Batch = row.original;
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={batches.show(batch.id)}>
+                                        {t('actions.view')}
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
 
     return (
         <>
@@ -132,77 +202,13 @@ export default function TeachersShow({ teacher }: TeachersShowProps) {
                         <CardTitle>{t('batches.title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {teacher.assigned_batches.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('batches.name')}
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('batches.subject')}
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('batches.enrolled')}
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('students.status')}
-                                        </TableHead>
-                                        <TableHead className="w-[50px]"></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {teacher.assigned_batches.map((batch) => (
-                                        <TableRow key={batch.id}>
-                                            <TableCell className="font-medium whitespace-nowrap">
-                                                {batch.name}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {batch.subject || '-'}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {batch.enrollments_count}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                <Badge
-                                                    variant={
-                                                        batch.status ===
-                                                        'active'
-                                                            ? 'default'
-                                                            : batch.status ===
-                                                                'inactive'
-                                                              ? 'secondary'
-                                                              : 'destructive'
-                                                    }
-                                                >
-                                                    {batch.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="p-1 text-center">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <EllipsisVertical className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={batches.show(batch.id)}>
-                                                                {t('actions.view')}
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">
-                                {t('batches.title')}
-                            </p>
-                        )}
+                        <DataTable
+                            columns={columns}
+                            data={teacher.assigned_batches}
+                            showPagination={false}
+                            emptyMessage={t('batches.title')}
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
             </div>

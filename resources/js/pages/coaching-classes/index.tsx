@@ -1,10 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState, useCallback } from 'react';
-import { Plus, RefreshCw, Search, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import Pagination from '@/components/pagination';
+import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -12,28 +14,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import coachingClasses from '@/routes/coaching-classes';
 import { useLocale } from '@/contexts/locale-context';
-
-function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
-    let timer: ReturnType<typeof setTimeout>;
-    const debounced = (...args: Parameters<T>) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), ms);
-    };
-    debounced.cancel = () => clearTimeout(timer);
-    return debounced;
-}
 
 type CoachingClass = {
     id: number;
@@ -70,16 +53,19 @@ export default function CoachingClassesIndex({
         item: any | null;
     }>({ open: false, item: null });
 
-    const debouncedSearch = useCallback(
-        debounce((value: string) => {
-            router.get(
-                coachingClasses.index(),
-                { search: value },
-                { preserveState: true },
-            );
-        }, 300),
-        [],
-    );
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get(
+            coachingClasses.index(),
+            { search: value },
+            { preserveState: true },
+        );
+    };
+
+    const clearAll = () => {
+        setSearch('');
+        router.get(coachingClasses.index(), {}, { preserveState: true });
+    };
 
     const handleDelete = (cls: CoachingClass) => {
         setDeleteDialog({ open: true, item: cls });
@@ -92,6 +78,74 @@ export default function CoachingClassesIndex({
             setDeleteDialog({ open: false, item: null });
         }
     };
+
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<CoachingClass, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('classes.name'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'default_fee',
+                accessorKey: 'default_fee',
+                header: t('classes.default_fee'),
+                enableSorting: true,
+                cell: ({ row }: any) => (
+                    <span>{Number(row.original.default_fee).toFixed(0)}</span>
+                ),
+            } as Col,
+            {
+                id: 'students_count',
+                accessorKey: 'students_count',
+                header: t('batches.enrolled'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span>{row.original.students_count}</span>
+                ),
+            } as Col,
+            ...(isAdmin
+                ? [
+                      {
+                          id: 'actions',
+                          header: '',
+                          enableSorting: false,
+                          enableHiding: false,
+                          cell: ({ row }: any) => {
+                              const cls: CoachingClass = row.original;
+                              return (
+                                  <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="sm" className="size-8 p-0">
+                                              <EllipsisVertical className="size-4" />
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                          <DropdownMenuItem asChild>
+                                              <Link href={coachingClasses.edit(cls.id)}>
+                                                  <Pencil className="mr-2 size-4" />
+                                                  {t('actions.edit')}
+                                              </Link>
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleDelete(cls)} className="text-destructive">
+                                              <Trash2 className="mr-2 size-4" />
+                                              {t('actions.delete')}
+                                          </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                  </DropdownMenu>
+                              );
+                          },
+                      } as Col,
+                  ]
+                : []),
+        ];
+    })();
 
     return (
         <>
@@ -107,150 +161,59 @@ export default function CoachingClassesIndex({
                             {t('classes.desc')}
                         </p>
                     </div>
-                    {isAdmin && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="size-8 p-0">
-                                    <EllipsisVertical className="size-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                    <Link href={coachingClasses.create()}>
-                                        <Plus className="mr-2 size-4" />
-                                        {t('classes.create')}
-                                    </Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({
+                                    only: ['classes'],
+                                    onFinish: () => setRefreshing(false),
+                                });
+                            }}
+                        />
+                        {isAdmin && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                        <EllipsisVertical className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <Link href={coachingClasses.create()}>
+                                            <Plus className="mr-2 size-4" />
+                                            {t('classes.create')}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex items-center gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t('actions.search') + '...'}
-                                    value={search}
-                                    onChange={(e) => {
-                                        setSearch(e.target.value);
-                                        debouncedSearch(e.target.value);
-                                    }}
-                                    className="pr-9 pl-9"
-                                />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get(
-                                                coachingClasses.index(),
-                                                {},
-                                                { preserveState: true },
-                                            );
-                                        }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                disabled={refreshing}
-                                onClick={() => {
-                                    setRefreshing(true);
-                                    router.reload({
-                                        only: ['classes'],
-                                        onFinish: () => setRefreshing(false),
-                                    });
-                                }}
-                            >
-                                <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                            </Button>
-                        </div>
-
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background whitespace-nowrap">
-                                        {t('classes.name')}
-                                    </TableHead>
-                                    <TableHead className="whitespace-nowrap">
-                                        {t('classes.default_fee')}
-                                    </TableHead>
-                                    <TableHead className="whitespace-nowrap">
-                                        {t('batches.enrolled')}
-                                    </TableHead>
-                                    {isAdmin && (
-                                        <TableHead className="w-[50px]"></TableHead>
-                                    )}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pagination.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={isAdmin ? 4 : 3}
-                                            className="text-center"
-                                        >
-                                            No coaching classes found
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    pagination.data.map((cls) => (
-                                        <TableRow key={cls.id}>
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium whitespace-nowrap">
-                                                {cls.name}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {Number(
-                                                    cls.default_fee,
-                                                ).toFixed(0)}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {cls.students_count}
-                                            </TableCell>
-                                            {isAdmin && (
-                                                <TableCell className="p-1 text-center">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                                <EllipsisVertical className="size-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={coachingClasses.edit(cls.id)}>
-                                                                    <Pencil className="mr-2 size-4" />
-                                                                    {t('actions.edit')}
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleDelete(cls)} className="text-destructive">
-                                                                <Trash2 className="mr-2 size-4" />
-                                                                {t('actions.delete')}
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-
-                        <Pagination
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            perPage={pagination.per_page}
                             itemName={t('classes.title').toLowerCase() + 's'}
-                            baseUrl={coachingClasses.index()}
+                            baseUrl={coachingClasses.index().url}
                             preserveParams={{ search }}
+                            emptyMessage="No coaching classes found"
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    onClearAll={clearAll}
+                                />
+                            }
                         />
                     </CardContent>
                 </Card>

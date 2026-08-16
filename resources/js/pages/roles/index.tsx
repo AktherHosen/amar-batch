@@ -1,7 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { EllipsisVertical, PenLine, Plus, Shield, Trash2 } from 'lucide-react';
+import { EllipsisVertical, PenLine, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
@@ -14,14 +13,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import roles from '@/routes/roles';
 
 type RoleItem = {
@@ -67,6 +59,99 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
         }
     };
 
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<RoleItem, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: 'Name',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => {
+                    const role: RoleItem = row.original;
+                    return (
+                        <span className="font-medium">
+                            {role.name}
+                            {role.is_system && (
+                                <Badge variant="secondary" className="ml-2">
+                                    System
+                                </Badge>
+                            )}
+                        </span>
+                    );
+                },
+            } as Col,
+            {
+                id: 'slug',
+                accessorKey: 'slug',
+                header: 'Slug',
+                enableSorting: false,
+                cell: ({ row }: any) => <span>{row.original.slug}</span>,
+            } as Col,
+            {
+                id: 'users_count',
+                accessorKey: 'users_count',
+                header: 'Users',
+                enableSorting: false,
+                cell: ({ row }: any) => <span>{row.original.users_count}</span>,
+            } as Col,
+            {
+                id: 'permissions',
+                accessorKey: 'permissions',
+                header: 'Permissions',
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const role: RoleItem = row.original;
+                    return (
+                        <span>
+                            {role.permissions.includes('*')
+                                ? 'All'
+                                : `${role.permissions.length} routes`}
+                        </span>
+                    );
+                },
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const role: RoleItem = row.original;
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {role.slug !== 'owner' && (
+                                    <DropdownMenuItem asChild>
+                                        <Link href={roles.edit(role.id)}>
+                                            <PenLine className="mr-2 size-4" />
+                                            Edit
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )}
+                                {!role.is_system && (
+                                    <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive"
+                                        onClick={() => handleDelete(role)}
+                                    >
+                                        <Trash2 className="mr-2 size-4" />
+                                        Delete
+                                    </DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title="Roles" />
@@ -100,92 +185,18 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
 
                 <Card>
                     <CardContent className="pt-6">
-                        {pagination.data.length === 0 ? (
-                            <div className="flex flex-col items-center gap-2 py-4">
-                                <Shield className="size-8 text-muted-foreground" />
-                                <p>No roles found.</p>
-                            </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background whitespace-nowrap">
-                                            Name
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">Slug</TableHead>
-                                        <TableHead className="whitespace-nowrap">Users</TableHead>
-                                        <TableHead className="whitespace-nowrap">Permissions</TableHead>
-                                        <TableHead className="w-[50px]"></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <motion.tbody
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={{
-                                        hidden: {},
-                                        visible: { transition: { staggerChildren: 0.03 } },
-                                    }}
-                                >
-                                    {pagination.data.map((role) => (
-                                        <motion.tr
-                                            key={role.id}
-                                            variants={{
-                                                hidden: { opacity: 0, x: -8 },
-                                                visible: { opacity: 1, x: 0 },
-                                            }}
-                                        >
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium whitespace-nowrap">
-                                                {role.name}
-                                                {role.is_system && (
-                                                    <Badge variant="secondary" className="ml-2">
-                                                        System
-                                                    </Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {role.slug}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {role.users_count}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {role.permissions.includes('*')
-                                                    ? 'All'
-                                                    : `${role.permissions.length} routes`}
-                                            </TableCell>
-                                            <TableCell className="p-1 text-center">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <EllipsisVertical className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        {role.slug !== 'owner' && (
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={roles.edit(role.id)}>
-                                                                    <PenLine className="mr-2 size-4" />
-                                                                    Edit
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                        )}
-                                                        {!role.is_system && (
-                                                            <DropdownMenuItem
-                                                                className="text-destructive focus:text-destructive"
-                                                                onClick={() => handleDelete(role)}
-                                                            >
-                                                                <Trash2 className="mr-2 size-4" />
-                                                                Delete
-                                                            </DropdownMenuItem>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </motion.tr>
-                                    ))}
-                                </motion.tbody>
-                            </Table>
-                        )}
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            currentPage={pagination.current_page}
+                            lastPage={pagination.last_page}
+                            total={pagination.total}
+                            itemName="roles"
+                            baseUrl={roles.index().url}
+                            preserveParams={{}}
+                            emptyMessage="No roles found."
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
             </div>

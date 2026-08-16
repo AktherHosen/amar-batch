@@ -1,10 +1,9 @@
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import {
     Building2,
-    Users,
     GraduationCap,
     Layers,
     CreditCard,
@@ -104,6 +103,198 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
         return <Badge className="bg-blue-600 text-white whitespace-nowrap">{planName}</Badge>;
     };
 
+    const revenueByPlanColumns = (() => {
+        type Col = NonNullable<DataTableProps<RevenueByPlan, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: 'Plan',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'successful_payments',
+                accessorKey: 'successful_payments',
+                header: 'Payments',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <div className="text-right">{row.original.successful_payments}</div>
+                ),
+            } as Col,
+            {
+                id: 'total_revenue',
+                accessorKey: 'total_revenue',
+                header: 'Revenue',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <div className="text-right font-semibold">
+                        {formatCurrency(row.original.total_revenue ?? 0)}
+                    </div>
+                ),
+            } as Col,
+        ];
+    })();
+
+    const recentPaymentsColumns = (() => {
+        type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
+        return [
+            {
+                id: 'tenant',
+                accessorKey: 'tenant',
+                header: 'Tenant',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.tenant?.name ?? '—'}</span>
+                ),
+            } as Col,
+            {
+                id: 'plan',
+                accessorKey: 'plan',
+                header: 'Plan',
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.plan?.name ?? '—',
+            } as Col,
+            {
+                id: 'amount',
+                accessorKey: 'amount',
+                header: 'Amount',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <div className="text-right">{formatCurrency(row.original.amount)}</div>
+                ),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: 'Status',
+                enableSorting: false,
+                cell: ({ row }: any) => getStatusBadge(row.original.status),
+            } as Col,
+        ];
+    })();
+
+    const contactMessagesColumns = (() => {
+        type Col = NonNullable<DataTableProps<ContactMessage, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: 'Name',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'email',
+                accessorKey: 'email',
+                header: 'Email',
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.email,
+            } as Col,
+            {
+                id: 'subject',
+                accessorKey: 'subject',
+                header: 'Subject',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span className="block max-w-[200px] truncate">{row.original.subject}</span>
+                ),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'is_read',
+                header: 'Status',
+                enableSorting: false,
+                cell: ({ row }: any) =>
+                    !row.original.is_read ? (
+                        <Badge className="bg-yellow-600 text-white whitespace-nowrap">Unread</Badge>
+                    ) : (
+                        <Badge variant="secondary" className="whitespace-nowrap">Read</Badge>
+                    ),
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: () => (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="size-8 p-0"
+                        onClick={() => router.get('/super-admin/contacts')}
+                    >
+                        <MessageSquareReply className="size-4" />
+                    </Button>
+                ),
+            } as Col,
+        ];
+    })();
+
+    const tenantColumns = (() => {
+        type Col = NonNullable<DataTableProps<TenantStat, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: 'Name',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'plan',
+                accessorKey: 'subscription',
+                header: 'Plan',
+                enableSorting: false,
+                cell: ({ row }: any) => getSubscriptionBadge(row.original as TenantStat),
+            } as Col,
+            {
+                id: 'batches_count',
+                accessorKey: 'batches_count',
+                header: 'Batches',
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.batches_count,
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'is_active',
+                header: 'Status',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <Badge variant={row.original.is_active ? 'default' : 'destructive'} className="whitespace-nowrap">
+                        {row.original.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                ),
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="size-8 p-0"
+                        onClick={() => router.get(`/super-admin/tenants/${row.original.id}/detail`)}
+                    >
+                        <Eye className="size-4" />
+                    </Button>
+                ),
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
@@ -165,30 +356,15 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
                             <CreditCard className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            {revenueByPlan.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="whitespace-nowrap">Plan</TableHead>
-                                            <TableHead className="whitespace-nowrap text-right">Payments</TableHead>
-                                            <TableHead className="whitespace-nowrap text-right">Revenue</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {revenueByPlan.map((plan) => (
-                                            <TableRow key={plan.id}>
-                                                <TableCell className="font-medium whitespace-nowrap">{plan.name}</TableCell>
-                                                <TableCell className="text-right whitespace-nowrap">{plan.successful_payments}</TableCell>
-                                                <TableCell className="text-right whitespace-nowrap font-semibold">
-                                                    {formatCurrency(plan.total_revenue ?? 0)}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No payment data yet.</p>
-                            )}
+                            <DataTable
+                                columns={revenueByPlanColumns}
+                                data={revenueByPlan}
+                                showPagination={false}
+                                total={revenueByPlan.length}
+                                itemName="plans"
+                                emptyMessage="No payment data yet."
+                                getRowId={(row) => String(row.id)}
+                            />
                         </CardContent>
                     </Card>
 
@@ -202,32 +378,15 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
                             </div>
                         </CardHeader>
                         <CardContent>
-                            {recentPayments.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="whitespace-nowrap">Tenant</TableHead>
-                                            <TableHead className="whitespace-nowrap">Plan</TableHead>
-                                            <TableHead className="whitespace-nowrap text-right">Amount</TableHead>
-                                            <TableHead className="whitespace-nowrap">Status</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {recentPayments.map((payment) => (
-                                            <TableRow key={payment.id}>
-                                                <TableCell className="font-medium whitespace-nowrap">
-                                                    {payment.tenant?.name ?? '—'}
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap">{payment.plan?.name ?? '—'}</TableCell>
-                                                <TableCell className="text-right whitespace-nowrap">{formatCurrency(payment.amount)}</TableCell>
-                                                <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No payments yet.</p>
-                            )}
+                            <DataTable
+                                columns={recentPaymentsColumns}
+                                data={recentPayments}
+                                showPagination={false}
+                                total={recentPayments.length}
+                                itemName="payments"
+                                emptyMessage="No payments yet."
+                                getRowId={(row) => String(row.id)}
+                            />
                         </CardContent>
                     </Card>
                 </div>
@@ -241,47 +400,15 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
                         </Link>
                     </CardHeader>
                     <CardContent>
-                        {recentContactMessages.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="whitespace-nowrap">Name</TableHead>
-                                        <TableHead className="whitespace-nowrap">Email</TableHead>
-                                        <TableHead className="whitespace-nowrap">Subject</TableHead>
-                                        <TableHead className="whitespace-nowrap">Status</TableHead>
-                                        <TableHead className="whitespace-nowrap w-[50px]"></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {recentContactMessages.map((message) => (
-                                        <TableRow key={message.id}>
-                                            <TableCell className="font-medium whitespace-nowrap">{message.name}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{message.email}</TableCell>
-                                            <TableCell className="max-w-[200px] truncate whitespace-nowrap">{message.subject}</TableCell>
-                                            <TableCell>
-                                                {!message.is_read ? (
-                                                    <Badge className="bg-yellow-600 text-white whitespace-nowrap">Unread</Badge>
-                                                ) : (
-                                                    <Badge variant="secondary" className="whitespace-nowrap">Read</Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="w-[50px]">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="size-8 p-0"
-                                                    onClick={() => router.get('/super-admin/contacts')}
-                                                >
-                                                    <MessageSquareReply className="size-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">No contact messages yet.</p>
-                        )}
+                        <DataTable
+                            columns={contactMessagesColumns}
+                            data={recentContactMessages}
+                            showPagination={false}
+                            total={recentContactMessages.length}
+                            itemName="messages"
+                            emptyMessage="No contact messages yet."
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
 
@@ -290,47 +417,15 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
                         <CardTitle>Coaching Centers</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {tenantStats.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="whitespace-nowrap sticky left-0 bg-background z-10 min-w-[150px]">Name</TableHead>
-                                        <TableHead className="whitespace-nowrap">Plan</TableHead>
-                                        <TableHead className="whitespace-nowrap">Batches</TableHead>
-                                        <TableHead className="whitespace-nowrap">Status</TableHead>
-                                        <TableHead className="whitespace-nowrap w-[50px]"></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {tenantStats.map((tenant) => (
-                                        <TableRow key={tenant.id}>
-                                            <TableCell className="font-medium whitespace-nowrap sticky left-0 bg-background z-10">
-                                                {tenant.name}
-                                            </TableCell>
-                                            <TableCell>{getSubscriptionBadge(tenant)}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{tenant.batches_count}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={tenant.is_active ? 'default' : 'destructive'} className="whitespace-nowrap">
-                                                    {tenant.is_active ? 'Active' : 'Inactive'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="w-[50px]">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="size-8 p-0"
-                                                    onClick={() => router.get(`/super-admin/tenants/${tenant.id}/detail`)}
-                                                >
-                                                    <Eye className="size-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">No coaching centers yet.</p>
-                        )}
+                        <DataTable
+                            columns={tenantColumns}
+                            data={tenantStats}
+                            showPagination={false}
+                            total={tenantStats.length}
+                            itemName="coaching centers"
+                            emptyMessage="No coaching centers yet."
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
             </div>

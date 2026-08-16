@@ -1,12 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
-import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Plus, Eye, EllipsisVertical, Pencil, Trash2, CheckCircle } from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import Heading from '@/components/heading';
-import Pagination from '@/components/pagination';
+import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -14,50 +14,26 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
 
-function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
-    let timer: ReturnType<typeof setTimeout>;
-    const debounced = (...args: Parameters<T>) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), ms);
-    };
-    debounced.cancel = () => clearTimeout(timer);
-    return debounced;
-}
+type BatchRow = {
+    id: number;
+    name: string;
+    subject: string | null;
+    capacity: number;
+    status: string;
+    enrollments_count: number;
+    start_date: string | null;
+    end_date: string | null;
+};
 
 type PageProps = {
     auth: { user: { role: string } };
     batches: {
-        data: Array<{
-            id: number;
-            name: string;
-            subject: string | null;
-            capacity: number;
-            status: string;
-            enrollments_count: number;
-            start_date: string | null;
-            end_date: string | null;
-        }>;
+        data: BatchRow[];
         current_page: number;
         last_page: number;
         per_page: number;
@@ -82,22 +58,23 @@ export default function BatchesIndex({
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
     const [completeDialog, setCompleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
 
-    const debouncedSearch = useCallback(
-        debounce((value: string, statusValue: string) => {
-            router.get(batches.index(), { search: value, status: statusValue }, { preserveState: true });
-        }, 300),
-        [],
-    );
-
-    useEffect(() => {
-        return () => debouncedSearch.cancel();
-    }, [debouncedSearch]);
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get(batches.index(), { search: value, status }, { preserveState: true });
+    };
 
     const handleStatusChange = (value: string) => {
-        const newStatus = value === 'all' ? '' : value;
-        setStatus(newStatus);
-        router.get(batches.index(), { search, status: newStatus }, { preserveState: true });
+        setStatus(value);
+        router.get(batches.index(), { search, status: value }, { preserveState: true });
     };
+
+    const clearAll = () => {
+        setSearch('');
+        setStatus('');
+        router.get(batches.index(), {}, { preserveState: true });
+    };
+
+    const activeFilterCount = status ? 1 : 0;
 
     const handleDelete = (batch: { id: number; name: string }) => {
         setDeleteDialog({ open: true, batch });
@@ -144,6 +121,124 @@ export default function BatchesIndex({
         return variants[status] || 'secondary';
     };
 
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<BatchRow, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('batches.name'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'subject',
+                accessorKey: 'subject',
+                header: t('batches.subject'),
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.subject || '-',
+            } as Col,
+            {
+                id: 'capacity',
+                accessorKey: 'capacity',
+                header: t('batches.capacity'),
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.capacity,
+            } as Col,
+            {
+                id: 'enrollments_count',
+                accessorKey: 'enrollments_count',
+                header: t('batches.enrolled'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const batch: BatchRow = row.original;
+                    return (
+                        <div className="flex items-center gap-2">
+                            <span>{batch.enrollments_count}</span>
+                            <div className="h-2 w-16 overflow-hidden rounded-full bg-muted">
+                                <div
+                                    className={`h-full rounded-full ${
+                                        batch.enrollments_count >= batch.capacity
+                                            ? 'bg-red-500'
+                                            : batch.enrollments_count >= batch.capacity * 0.8
+                                              ? 'bg-yellow-500'
+                                              : 'bg-green-500'
+                                    }`}
+                                    style={{
+                                        width: `${Math.min((batch.enrollments_count / batch.capacity) * 100, 100)}%`,
+                                    }}
+                                />
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                                {Math.round((batch.enrollments_count / batch.capacity) * 100)}%
+                            </span>
+                        </div>
+                    );
+                },
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: t('students.status'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <Badge variant={getStatusBadge(row.original.status)}>
+                        {row.original.status}
+                    </Badge>
+                ),
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const batch: BatchRow = row.original;
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={batches.show(batch.id)}>
+                                        <Eye className="mr-2 size-4" />
+                                        {t('actions.view')}
+                                    </Link>
+                                </DropdownMenuItem>
+                                {isAdmin && (
+                                    <>
+                                        <DropdownMenuItem asChild>
+                                            <Link href={batches.edit(batch.id)}>
+                                                <Pencil className="mr-2 size-4" />
+                                                {t('actions.edit')}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        {batch.status !== 'completed' && (
+                                            <DropdownMenuItem onClick={() => handleComplete(batch)}>
+                                                <CheckCircle className="mr-2 size-4" />
+                                                {t('actions.complete')}
+                                            </DropdownMenuItem>
+                                        )}
+                                        <DropdownMenuItem onClick={() => handleDelete(batch)} className="text-destructive">
+                                            <Trash2 className="mr-2 size-4" />
+                                            {t('actions.delete')}
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title={t('batches.title')} />
@@ -158,235 +253,74 @@ export default function BatchesIndex({
                             {t('batches.desc')}
                         </p>
                     </div>
-                    {isAdmin && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="size-8 p-0">
-                                    <EllipsisVertical className="size-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                    <Link href={batches.create()}>
-                                        <Plus className="mr-2 size-4" />
-                                        {t('batches.create')}
-                                    </Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({
+                                    only: ['batches'],
+                                    onFinish: () => setRefreshing(false),
+                                });
+                            }}
+                        />
+                        {isAdmin && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                        <EllipsisVertical className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <Link href={batches.create()}>
+                                            <Plus className="mr-2 size-4" />
+                                            {t('batches.create')}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t('actions.search') + '...'}
-                                    value={search}
-                                    onChange={(e) => {
-                                        setSearch(e.target.value);
-                                        debouncedSearch(e.target.value, status);
-                                    }}
-                                    className="pr-9 pl-9"
-                                />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get(batches.index(), { status }, { preserveState: true });
-                                        }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Select
-                                    value={status || 'all'}
-                                    onValueChange={handleStatusChange}
-                                >
-                                    <SelectTrigger className="w-full sm:w-[180px]">
-                                        <SelectValue placeholder={t('batches.all_status')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            {t('batches.all_status')}
-                                        </SelectItem>
-                                        <SelectItem value="active">
-                                            {t('students.active')}
-                                        </SelectItem>
-                                        <SelectItem value="inactive">
-                                            {t('students.inactive')}
-                                        </SelectItem>
-                                        <SelectItem value="completed">
-                                            {t('actions.complete')}
-                                        </SelectItem>
-                                        <SelectItem value="archived">
-                                            {t('batches.archived')}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={refreshing}
-                                    onClick={() => {
-                                        setRefreshing(true);
-                                        router.reload({
-                                            only: ['batches'],
-                                            onFinish: () => setRefreshing(false),
-                                        });
-                                    }}
-                                >
-                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                </Button>
-                            </div>
-                        </div>
-
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background whitespace-nowrap">
-                                        {t('batches.name')}
-                                    </TableHead>
-                                    <TableHead className="whitespace-nowrap">
-                                        {t('batches.subject')}
-                                    </TableHead>
-                                    <TableHead className="whitespace-nowrap">
-                                        {t('batches.capacity')}
-                                    </TableHead>
-                                    <TableHead className="whitespace-nowrap">
-                                        {t('batches.enrolled')}
-                                    </TableHead>
-                                    <TableHead className="whitespace-nowrap">
-                                        {t('students.status')}
-                                    </TableHead>
-                                    <TableHead className="w-[50px]"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            {pagination.data.length === 0 ? (
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={6}
-                                            className="text-center"
-                                        >
-                                            {t('batches.no_batches')}
-                                        </TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            ) : (
-                                <motion.tbody
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={{
-                                        hidden: {},
-                                        visible: { transition: { staggerChildren: 0.03 } },
-                                    }}
-                                >
-                                {pagination.data.map((batch) => (
-                                    <motion.tr
-                                        key={batch.id}
-                                        variants={{
-                                            hidden: { opacity: 0, x: -8 },
-                                            visible: { opacity: 1, x: 0 },
-                                        }}
-                                    >
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium whitespace-nowrap">
-                                                {batch.name}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {batch.subject || '-'}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {batch.capacity}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                <div className="flex items-center gap-2">
-                                                    <span>{batch.enrollments_count}</span>
-                                                    <div className="h-2 w-16 overflow-hidden rounded-full bg-muted">
-                                                        <div
-                                                            className={`h-full rounded-full ${
-                                                                batch.enrollments_count >= batch.capacity
-                                                                    ? 'bg-red-500'
-                                                                    : batch.enrollments_count >= batch.capacity * 0.8
-                                                                      ? 'bg-yellow-500'
-                                                                      : 'bg-green-500'
-                                                            }`}
-                                                            style={{
-                                                                width: `${Math.min((batch.enrollments_count / batch.capacity) * 100, 100)}%`,
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {Math.round((batch.enrollments_count / batch.capacity) * 100)}%
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                <Badge
-                                                    variant={getStatusBadge(
-                                                        batch.status,
-                                                    )}
-                                                >
-                                                    {batch.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="p-1 text-center">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <EllipsisVertical className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={batches.show(batch.id)}>
-                                                                <Eye className="mr-2 size-4" />
-                                                                {t('actions.view')}
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        {isAdmin && (
-                                                            <>
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={batches.edit(batch.id)}>
-                                                                        <Pencil className="mr-2 size-4" />
-                                                                        {t('actions.edit')}
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                                {batch.status !== 'completed' && (
-                                                                    <DropdownMenuItem onClick={() => handleComplete(batch)}>
-                                                                        <CheckCircle className="mr-2 size-4" />
-                                                                        {t('actions.complete')}
-                                                                    </DropdownMenuItem>
-                                                                )}
-                                                                <DropdownMenuItem onClick={() => handleDelete(batch)} className="text-destructive">
-                                                                    <Trash2 className="mr-2 size-4" />
-                                                                    {t('actions.delete')}
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </motion.tr>
-                                ))}
-                                </motion.tbody>
-                            )}
-                        </Table>
-
-                        <Pagination
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            perPage={pagination.per_page}
                             itemName={t('batches.title').toLowerCase() + 's'}
-                            baseUrl={batches.index()}
+                            baseUrl={batches.index().url}
                             preserveParams={{ search, status }}
+                            emptyMessage={t('batches.no_batches')}
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={activeFilterCount}
+                                    onClearAll={clearAll}
+                                    filters={[
+                                        {
+                                            id: 'status',
+                                            placeholder: t('batches.all_status'),
+                                            value: status,
+                                            options: [
+                                                { label: t('students.active'), value: 'active' },
+                                                { label: t('students.inactive'), value: 'inactive' },
+                                                { label: t('actions.complete'), value: 'completed' },
+                                                { label: t('batches.archived'), value: 'archived' },
+                                            ],
+                                            onValueChange: handleStatusChange,
+                                        },
+                                    ]}
+                                />
+                            }
                         />
                     </CardContent>
                 </Card>

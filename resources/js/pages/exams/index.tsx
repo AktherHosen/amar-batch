@@ -1,7 +1,5 @@
 import Heading from '@/components/heading';
 import { isOwner } from '@/lib/role';
-import Pagination from '@/components/pagination';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -10,29 +8,16 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Table,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
 import exams from '@/routes/exams';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, FileText, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { EllipsisVertical, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
 
 type Exam = {
     id: number;
@@ -80,8 +65,9 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
     const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Exam | null }>({ open: false, item: null });
 
-    const handleSearch = () => {
-        router.get(exams.index(), { search, batch_id: batchId }, { preserveState: true });
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get(exams.index(), { search: value, batch_id: batchId }, { preserveState: true });
     };
 
     const handleRefresh = () => {
@@ -103,6 +89,90 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
         }
     };
 
+    const activeFilterCount = batchId ? 1 : 0;
+
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<Exam, unknown>['columns']>[number];
+        return [
+            {
+                id: 'title',
+                accessorKey: 'title',
+                header: t('exams.title'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.title}</span>
+                ),
+            } as Col,
+            {
+                id: 'subject',
+                accessorKey: 'subject',
+                header: t('exams.subject'),
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.subject || '-',
+            } as Col,
+            {
+                id: 'batch',
+                accessorKey: 'batch.name',
+                header: t('exams.batch'),
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.batch?.name || '-',
+            } as Col,
+            {
+                id: 'date',
+                accessorKey: 'date',
+                header: t('exams.date'),
+                enableSorting: false,
+                cell: ({ row }: any) => formatDate(row.original.date),
+            } as Col,
+            {
+                id: 'marks',
+                accessorKey: 'total_marks',
+                header: t('exams.marks'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <>{row.original.total_marks} (pass: {row.original.passing_marks})</>
+                ),
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const exam: Exam = row.original;
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => router.get(exams.show(exam.id))}>
+                                    <Eye className="mr-2 size-4" />
+                                    {t('actions.view')}
+                                </DropdownMenuItem>
+                                {isAdmin && (
+                                    <>
+                                        <DropdownMenuItem onClick={() => router.get(exams.edit(exam.id))}>
+                                            <Pencil className="mr-2 size-4" />
+                                            {t('actions.edit')}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(exam)}>
+                                            <Trash2 className="mr-2 size-4" />
+                                            {t('actions.delete')}
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title={t('exams.title')} />
@@ -110,150 +180,56 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <Heading title={t('exams.title')} description={t('exams.desc')} />
-                    {isAdmin && (
-                        <Link href={exams.create()}>
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                {t('exams.create')}
-                            </Button>
-                        </Link>
-                    )}
+                    <div className="flex items-center gap-1">
+                        <RefreshButton refreshing={refreshing} onRefresh={handleRefresh} />
+                        {isAdmin && (
+                            <Link href={exams.create()}>
+                                <Button>
+                                    <Plus className="mr-2 size-4" />
+                                    {t('exams.create')}
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t('actions.search') + '...'}
-                                    className="pl-9"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                />
-                                {search && (
-                                    <button
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get(exams.index(), { batch_id: batchId }, { preserveState: true });
-                                        }}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2"
-                                    >
-                                        <X className="size-4 text-muted-foreground hover:text-foreground" />
-                                    </button>
-                                )}
-                            </div>
-                            <Select
-                                value={batchId || 'all'}
-                                onValueChange={(value) => {
-                                    const v = value === 'all' ? '' : value;
-                                    setBatchId(v);
-                                    router.get(exams.index(), { search, batch_id: v }, { preserveState: true });
-                                }}
-                            >
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder={t('exams.all_batches')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t('exams.all_batches')}</SelectItem>
-                                    {batches.map((batch) => (
-                                        <SelectItem key={batch.id} value={String(batch.id)}>
-                                            {batch.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Button variant="ghost" size="icon" disabled={refreshing} onClick={handleRefresh}>
-                                <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                            </Button>
-                        </div>
-
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">{t('exams.title')}</TableHead>
-                                    <TableHead>{t('exams.subject')}</TableHead>
-                                    <TableHead>{t('exams.batch')}</TableHead>
-                                    <TableHead>{t('exams.date')}</TableHead>
-                                    <TableHead>{t('exams.marks')}</TableHead>
-                                    <TableHead className="w-[50px]"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <motion.tbody
-                                initial="hidden"
-                                animate="visible"
-                                variants={{
-                                    hidden: {},
-                                    visible: { transition: { staggerChildren: 0.03 } },
-                                }}
-                            >
-                                {pagination.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center">
-                                            <div className="flex flex-col items-center gap-2 py-4">
-                                                <FileText className="size-8 text-muted-foreground" />
-                                                <p>{t('exams.no_exams')}</p>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    pagination.data.map((exam) => (
-                                        <motion.tr
-                                            key={exam.id}
-                                            variants={{
-                                                hidden: { opacity: 0, x: -8 },
-                                                visible: { opacity: 1, x: 0 },
-                                            }}
-                                        >
-                                            <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium">
-                                                {exam.title}
-                                            </TableCell>
-                                            <TableCell>{exam.subject || '-'}</TableCell>
-                                            <TableCell>{exam.batch?.name || '-'}</TableCell>
-                                            <TableCell>{formatDate(exam.date)}</TableCell>
-                                            <TableCell>{exam.total_marks} (pass: {exam.passing_marks})</TableCell>
-                                            <TableCell className="text-center">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <EllipsisVertical className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => router.get(exams.show(exam.id))}>
-                                                            <Eye className="mr-2 size-4" />
-                                                            {t('actions.view')}
-                                                        </DropdownMenuItem>
-                                                        {isAdmin && (
-                                                            <>
-                                                                <DropdownMenuItem onClick={() => router.get(exams.edit(exam.id))}>
-                                                                    <Pencil className="mr-2 size-4" />
-                                                                    {t('actions.edit')}
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(exam)}>
-                                                                    <Trash2 className="mr-2 size-4" />
-                                                                    {t('actions.delete')}
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </motion.tr>
-                                    ))
-                                )}
-                            </motion.tbody>
-                        </Table>
-
-                        <Pagination
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            perPage={pagination.per_page}
                             itemName={t('exams.title').toLowerCase() + 's'}
-                            baseUrl={exams.index()}
+                            baseUrl={exams.index().url}
                             preserveParams={{ search, batch_id: batchId }}
+                            emptyMessage={t('exams.no_exams')}
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={activeFilterCount}
+                                    filters={[
+                                        {
+                                            id: 'batch_id',
+                                            placeholder: t('exams.all_batches'),
+                                            value: batchId,
+                                            options: batches.map((batch) => ({
+                                                label: batch.name,
+                                                value: String(batch.id),
+                                            })),
+                                            onValueChange: (value) => {
+                                                setBatchId(value);
+                                                router.get(exams.index(), { search, batch_id: value }, { preserveState: true });
+                                            },
+                                        },
+                                    ]}
+                                />
+                            }
                         />
                     </CardContent>
                 </Card>

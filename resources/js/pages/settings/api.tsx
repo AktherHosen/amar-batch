@@ -1,22 +1,16 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { Copy, Eye, EyeOff, Plus, Trash2, Key } from 'lucide-react';
+import { useLocale } from '@/contexts/locale-context';
 
 type Token = {
     id: number;
@@ -31,6 +25,7 @@ type PageProps = {
 };
 
 export default function ApiSettings({ tokens }: PageProps) {
+    const { t } = useLocale();
     const { data, setData, post, processing, errors, reset } = useForm({ name: '' });
     const [newToken, setNewToken] = useState<string | null>(null);
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; token: Token | null }>({ open: false, token: null });
@@ -68,6 +63,81 @@ export default function ApiSettings({ tokens }: PageProps) {
             toast.success(t('toast.copied_to_clipboard'));
         }
     };
+
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<Token, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: 'Name',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'abilities',
+                accessorKey: 'abilities',
+                header: 'Abilities',
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const token: Token = row.original;
+                    return (
+                        <Badge variant="outline">{token.abilities.join(', ')}</Badge>
+                    );
+                },
+            } as Col,
+            {
+                id: 'last_used_at',
+                accessorKey: 'last_used_at',
+                header: 'Last Used',
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const token: Token = row.original;
+                    return (
+                        <span>
+                            {token.last_used_at
+                                ? new Date(token.last_used_at).toLocaleDateString()
+                                : 'Never'}
+                        </span>
+                    );
+                },
+            } as Col,
+            {
+                id: 'created_at',
+                accessorKey: 'created_at',
+                header: 'Created',
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const token: Token = row.original;
+                    return (
+                        <span>{new Date(token.created_at).toLocaleDateString()}</span>
+                    );
+                },
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const token: Token = row.original;
+                    return (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="size-8 p-0 text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(token)}
+                        >
+                            <Trash2 className="size-4" />
+                        </Button>
+                    );
+                },
+            } as Col,
+        ];
+    })();
 
     return (
         <>
@@ -137,49 +207,15 @@ export default function ApiSettings({ tokens }: PageProps) {
                         <CardTitle>Existing Tokens</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {tokens.length === 0 ? (
-                            <p className="text-center text-muted-foreground py-8">No API tokens yet.</p>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">Name</TableHead>
-                                        <TableHead>Abilities</TableHead>
-                                        <TableHead>Last Used</TableHead>
-                                        <TableHead>Created</TableHead>
-                                        <TableHead className="w-[50px]"></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {tokens.map((token) => (
-                                        <TableRow key={token.id}>
-                                            <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium whitespace-nowrap">
-                                                {token.name}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                <Badge variant="outline">{token.abilities.join(', ')}</Badge>
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {token.last_used_at ? new Date(token.last_used_at).toLocaleDateString() : 'Never'}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {new Date(token.created_at).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell className="p-1 text-center whitespace-nowrap">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="size-8 p-0 text-destructive hover:text-destructive"
-                                                    onClick={() => handleDelete(token)}
-                                                >
-                                                    <Trash2 className="size-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        )}
+                        <DataTable
+                            columns={columns}
+                            data={tokens}
+                            showPagination={false}
+                            total={tokens.length}
+                            itemName="tokens"
+                            emptyMessage="No API tokens yet."
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
             </div>

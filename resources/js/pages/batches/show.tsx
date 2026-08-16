@@ -14,14 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import {
     Select,
     SelectContent,
@@ -214,6 +207,212 @@ export default function BatchesShow({
                 t.email.toLowerCase().includes(teacherSearch.toLowerCase())),
     );
 
+    const teacherColumns = (() => {
+        type Col = NonNullable<DataTableProps<Teacher, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('teachers.name'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'email',
+                accessorKey: 'email',
+                header: t('teachers.email'),
+                enableSorting: true,
+                cell: ({ row }: any) => <span>{row.original.email}</span>,
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const teacher: Teacher = row.original;
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleRemoveTeacher(teacher.id)} className="text-destructive">
+                                    <UserMinus className="mr-2 size-4" />
+                                    {t('batches.remove')}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
+    const enrollmentColumns = (() => {
+        type Col = NonNullable<DataTableProps<Enrollment, unknown>['columns']>[number];
+        return [
+            {
+                id: 'student',
+                accessorKey: 'student.name',
+                header: t('students.name'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => {
+                    const enrollment: Enrollment = row.original;
+                    return (
+                        <Link href={studentsRoutes.show(enrollment.student.id)} className="hover:underline">
+                            <span className="font-medium">{enrollment.student.name}</span>
+                        </Link>
+                    );
+                },
+            } as Col,
+            {
+                id: 'class',
+                accessorKey: 'student.coaching_class.name',
+                header: t('students.class'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const enrollment: Enrollment = row.original;
+                    return enrollment.student.coaching_class?.name || '-';
+                },
+            } as Col,
+            {
+                id: 'enrolled_at',
+                accessorKey: 'enrolled_at',
+                header: t('batches.enrolled_at'),
+                enableSorting: true,
+                cell: ({ row }: any) => {
+                    const enrollment: Enrollment = row.original;
+                    return new Date(enrollment.enrolled_at).toLocaleDateString();
+                },
+            } as Col,
+            {
+                id: 'joined_at',
+                accessorKey: 'student.joined_at',
+                header: t('students.joined_at'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const enrollment: Enrollment = row.original;
+                    return enrollment.student.joined_at
+                        ? new Date(enrollment.student.joined_at).toLocaleDateString()
+                        : '-';
+                },
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: t('students.status'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const enrollment: Enrollment = row.original;
+                    return <Badge variant={getStatusBadge(enrollment.status)}>{enrollment.status}</Badge>;
+                },
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const enrollment: Enrollment = row.original;
+                    if (!(isAdmin || (auth.user.role as string) === 'teacher')) {
+                        return null;
+                    }
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {enrollment.status === 'active' && (
+                                    <>
+                                        <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'completed')}>
+                                            {t('actions.complete')}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'dropped')}>
+                                            {t('batches.drop')}
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                                <DropdownMenuItem onClick={() => handleUnenroll(enrollment.id)} className="text-destructive">
+                                    <UserMinus className="mr-2 size-4" />
+                                    {t('batches.unenroll')}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
+    const historyColumns = (() => {
+        type Col = NonNullable<DataTableProps<BatchHistory, unknown>['columns']>[number];
+        return [
+            {
+                id: 'date',
+                accessorKey: 'action_date',
+                header: t('batches.date'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => {
+                    const item: BatchHistory = row.original;
+                    return item.action_date
+                        ? new Date(item.action_date).toLocaleDateString()
+                        : new Date(item.created_at).toLocaleDateString();
+                },
+            } as Col,
+            {
+                id: 'student',
+                accessorKey: 'student.name',
+                header: t('batches.student'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const item: BatchHistory = row.original;
+                    return <span className="font-medium">{item.student?.name}</span>;
+                },
+            } as Col,
+            {
+                id: 'action',
+                accessorKey: 'action',
+                header: t('batches.action'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const item: BatchHistory = row.original;
+                    return (
+                        <Badge
+                            variant={
+                                item.action === 'enrolled' ? 'default' :
+                                item.action === 'completed' ? 'success' :
+                                'danger'
+                            }
+                        >
+                            {item.action}
+                        </Badge>
+                    );
+                },
+            } as Col,
+            {
+                id: 'by',
+                accessorKey: 'user.name',
+                header: t('batches.by'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const item: BatchHistory = row.original;
+                    return item.user?.name;
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title={batch.name} />
@@ -372,52 +571,13 @@ export default function BatchesShow({
                             <CardTitle>{t('teachers.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {batch.teachers.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('teachers.name')}
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('teachers.email')}
-                                        </TableHead>
-                                            <TableHead className="w-[50px]"></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {batch.teachers.map((teacher) => (
-                                            <TableRow key={teacher.id}>
-                                            <TableCell className="font-medium whitespace-nowrap">
-                                                {teacher.name}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {teacher.email}
-                                            </TableCell>
-                                                <TableCell className="p-1 text-center">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                                <EllipsisVertical className="size-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => handleRemoveTeacher(teacher.id)} className="text-destructive">
-                                                                    <UserMinus className="mr-2 size-4" />
-                                                                    {t('batches.remove')}
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">
-                                    {t('teachers.title')}
-                                </p>
-                            )}
+                            <DataTable
+                                columns={teacherColumns}
+                                data={batch.teachers}
+                                showPagination={false}
+                                emptyMessage={t('teachers.title')}
+                                getRowId={(row) => String(row.id)}
+                            />
 
                             {availableTeachers.length > 0 || teacherSearch ? (
                                 <div className="mt-4 space-y-2">
@@ -572,103 +732,13 @@ export default function BatchesShow({
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {batch.enrollments.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('students.name')}
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('students.class')}
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('batches.enrolled_at')}
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('students.joined_at')}
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('students.status')}
-                                        </TableHead>
-                                        {(isAdmin ||
-                                            isStaff(auth.user)) && (
-                                            <TableHead className="w-[50px]"></TableHead>
-                                        )}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {batch.enrollments.map((enrollment) => (
-                                        <TableRow key={enrollment.id}>
-                                            <TableCell className="font-medium">
-                                                <Link href={studentsRoutes.show(enrollment.student.id)} className="hover:underline">
-                                                    {enrollment.student.name}
-                                                </Link>
-                                            </TableCell>
-                                            <TableCell>
-                                                {enrollment.student
-                                                    .coaching_class?.name ||
-                                                    '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {new Date(
-                                                    enrollment.enrolled_at,
-                                                ).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                {enrollment.student.joined_at
-                                                    ? new Date(
-                                                          enrollment.student.joined_at,
-                                                      ).toLocaleDateString()
-                                                    : '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant={getStatusBadge(
-                                                        enrollment.status,
-                                                    )}
-                                                >
-                                                    {enrollment.status}
-                                                </Badge>
-                                            </TableCell>
-                                            {(isAdmin ||
-                                                auth.user.role ===
-                                                    'teacher') && (
-                                                <TableCell className="p-1 text-center">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                                <EllipsisVertical className="size-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            {enrollment.status === 'active' && (
-                                                                <>
-                                                                    <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'completed')}>
-                                                                        {t('actions.complete')}
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem onClick={() => handleUpdateEnrollmentStatus(enrollment.id, 'dropped')}>
-                                                                        {t('batches.drop')}
-                                                                    </DropdownMenuItem>
-                                                                </>
-                                                            )}
-                                                            <DropdownMenuItem onClick={() => handleUnenroll(enrollment.id)} className="text-destructive">
-                                                                <UserMinus className="mr-2 size-4" />
-                                                                {t('batches.unenroll')}
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">
-                                {t('batches.enrolled')}
-                            </p>
-                        )}
+                        <DataTable
+                            columns={enrollmentColumns}
+                            data={batch.enrollments}
+                            showPagination={false}
+                            emptyMessage={t('batches.enrolled')}
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
 
@@ -678,44 +748,13 @@ export default function BatchesShow({
                             <CardTitle>History</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="whitespace-nowrap">{t('batches.date')}</TableHead>
-                                        <TableHead className="whitespace-nowrap">{t('batches.student')}</TableHead>
-                                        <TableHead className="whitespace-nowrap">{t('batches.action')}</TableHead>
-                                        <TableHead className="whitespace-nowrap">{t('batches.by')}</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {batch.history.map((item) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell>
-                                                {item.action_date
-                                                    ? new Date(item.action_date).toLocaleDateString()
-                                                    : new Date(item.created_at).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {item.student?.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant={
-                                                        item.action === 'enrolled' ? 'default' :
-                                                        item.action === 'completed' ? 'success' :
-                                                        'danger'
-                                                    }
-                                                >
-                                                    {item.action}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                {item.user?.name}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                            <DataTable
+                                columns={historyColumns}
+                                data={batch.history}
+                                showPagination={false}
+                                emptyMessage="No history records"
+                                getRowId={(row) => String(row.id)}
+                            />
                         </CardContent>
                     </Card>
                 )}

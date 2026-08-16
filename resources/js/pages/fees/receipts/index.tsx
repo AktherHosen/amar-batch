@@ -1,21 +1,14 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, RefreshCw, Search, X, Eye, Trash2 } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
-import Pagination from '@/components/pagination';
+import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
 
 type Receipt = {
@@ -55,8 +48,14 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
     const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Receipt | null }>({ open: false, item: null });
 
-    const handleSearch = () => {
-        router.get('/fees/receipts', { search }, { preserveState: true });
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get('/fees/receipts', { search: value }, { preserveState: true });
+    };
+
+    const clearAll = () => {
+        setSearch('');
+        router.get('/fees/receipts', {}, { preserveState: true });
     };
 
     const handleDelete = (receipt: Receipt) => {
@@ -72,6 +71,100 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
         }
     };
 
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<Receipt, unknown>['columns']>[number];
+        return [
+            {
+                id: 'receipt_number',
+                accessorKey: 'receipt_number',
+                header: 'Receipt #',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.receipt_number}</span>
+                ),
+            } as Col,
+            {
+                id: 'student',
+                accessorKey: 'student.name',
+                header: 'Student',
+                enableSorting: true,
+                cell: ({ row }: any) => <span>{row.original.student.name}</span>,
+            } as Col,
+            {
+                id: 'batch',
+                accessorKey: 'batch.name',
+                header: 'Batch',
+                enableSorting: false,
+                cell: ({ row }: any) => <span>{row.original.batch.name}</span>,
+            } as Col,
+            {
+                id: 'period',
+                accessorKey: 'month',
+                header: 'Period',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span>
+                        {MONTHS[row.original.month - 1]} {row.original.year}
+                    </span>
+                ),
+            } as Col,
+            {
+                id: 'amount_paid',
+                accessorKey: 'amount_paid',
+                header: 'Amount Paid',
+                enableSorting: true,
+                cell: ({ row }: any) => (
+                    <span>{formatCurrency(Number(row.original.amount_paid))}</span>
+                ),
+            } as Col,
+            {
+                id: 'amount_due',
+                accessorKey: 'amount_due',
+                header: 'Amount Due',
+                enableSorting: true,
+                cell: ({ row }: any) => (
+                    <span>{formatCurrency(Number(row.original.amount_due))}</span>
+                ),
+            } as Col,
+            {
+                id: 'date',
+                accessorKey: 'created_at',
+                header: 'Date',
+                enableSorting: true,
+                cell: ({ row }: any) => (
+                    <span>{new Date(row.original.created_at).toLocaleDateString()}</span>
+                ),
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const receipt: Receipt = row.original;
+                    return (
+                        <div className="flex gap-1">
+                            <Link href={`/fees/receipts/${receipt.id}`}>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <Eye className="size-4" />
+                                </Button>
+                            </Link>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="size-8 p-0 text-destructive hover:text-destructive"
+                                onClick={() => handleDelete(receipt)}
+                            >
+                                <Trash2 className="size-4" />
+                            </Button>
+                        </div>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title="Fee Receipts" />
@@ -82,130 +175,42 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
                         title="Fee Receipts"
                         description="Manage and generate fee receipts"
                     />
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({
+                                    only: ['receipts'],
+                                    onFinish: () => setRefreshing(false),
+                                });
+                            }}
+                        />
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search receipts..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    className="pr-9 pl-9"
-                                />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get('/fees/receipts', {}, { preserveState: true });
-                                        }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex gap-2">
-                                <Button variant="secondary" onClick={handleSearch}>
-                                    <Search className="size-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Search</span>
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={refreshing}
-                                    onClick={() => {
-                                        setRefreshing(true);
-                                        router.reload({
-                                            only: ['receipts'],
-                                            onFinish: () => setRefreshing(false),
-                                        });
-                                    }}
-                                >
-                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                </Button>
-                            </div>
-                        </div>
-
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="whitespace-nowrap">Receipt #</TableHead>
-                                    <TableHead className="whitespace-nowrap">Student</TableHead>
-                                    <TableHead className="whitespace-nowrap">Batch</TableHead>
-                                    <TableHead className="whitespace-nowrap">Period</TableHead>
-                                    <TableHead className="whitespace-nowrap">Amount Paid</TableHead>
-                                    <TableHead className="whitespace-nowrap">Amount Due</TableHead>
-                                    <TableHead className="whitespace-nowrap">Date</TableHead>
-                                    <TableHead className="w-[80px]"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pagination.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={8} className="text-center">
-                                            No receipts found
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    pagination.data.map((receipt) => (
-                                        <TableRow key={receipt.id}>
-                                            <TableCell className="whitespace-nowrap font-medium">
-                                                {receipt.receipt_number}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {receipt.student.name}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {receipt.batch.name}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {MONTHS[receipt.month - 1]} {receipt.year}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {formatCurrency(Number(receipt.amount_paid))}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {formatCurrency(Number(receipt.amount_due))}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {new Date(receipt.created_at).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                <div className="flex gap-1">
-                                                    <Link href={`/fees/receipts/${receipt.id}`}>
-                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <Eye className="size-4" />
-                                                        </Button>
-                                                    </Link>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="size-8 p-0 text-destructive hover:text-destructive"
-                                                        onClick={() => handleDelete(receipt)}
-                                                    >
-                                                        <Trash2 className="size-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-
-                        <Pagination
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            perPage={pagination.per_page}
                             itemName="receipts"
                             baseUrl="/fees/receipts"
                             preserveParams={{ search }}
+                            emptyMessage="No receipts found"
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder="Search receipts..."
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    onClearAll={clearAll}
+                                />
+                            }
                         />
                     </CardContent>
                 </Card>

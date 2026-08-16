@@ -7,14 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import InputError from '@/components/input-error';
 import exams from '@/routes/exams';
 import { useLocale } from '@/contexts/locale-context';
@@ -104,6 +97,77 @@ export default function ExamsShow({ exam, students, enrolledStudentIds }: PagePr
         });
     };
 
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<Student, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('exams.student'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'marks_obtained',
+                accessorKey: 'marks_obtained',
+                header: t('exams.marks_obtained'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const student: Student = row.original;
+                    return (
+                        <Input
+                            type="number"
+                            min="0"
+                            max={exam.total_marks}
+                            className="w-24"
+                            value={results[student.id]?.marks || ''}
+                            onChange={(e) => handleMarksChange(student.id, e.target.value)}
+                        />
+                    );
+                },
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: t('exams.status'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const student: Student = row.original;
+                    const obtained = Number(results[student.id]?.marks || 0);
+                    const passed = obtained >= exam.passing_marks;
+                    const hasResult = results[student.id]?.marks !== undefined && results[student.id]?.marks !== '';
+                    return (
+                        hasResult && (
+                            <Badge className={passed ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}>
+                                {passed ? t('exams.pass') : t('exams.fail')}
+                            </Badge>
+                        )
+                    );
+                },
+            } as Col,
+            {
+                id: 'notes',
+                accessorKey: 'notes',
+                header: t('exams.notes'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const student: Student = row.original;
+                    return (
+                        <Input
+                            className="w-48"
+                            placeholder={t('exams.notes_placeholder')}
+                            value={results[student.id]?.notes || ''}
+                            onChange={(e) => handleNotesChange(student.id, e.target.value)}
+                        />
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title={exam.title} />
@@ -164,64 +228,13 @@ export default function ExamsShow({ exam, students, enrolledStudentIds }: PagePr
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">{t('exams.student')}</TableHead>
-                                    <TableHead>{t('exams.marks_obtained')}</TableHead>
-                                    <TableHead>{t('exams.status')}</TableHead>
-                                    <TableHead>{t('exams.notes')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {displayStudents.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="text-center text-muted-foreground">
-                                            {t('exams.no_students')}
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    displayStudents.map((student) => {
-                                        const obtained = Number(results[student.id]?.marks || 0);
-                                        const passed = obtained >= exam.passing_marks;
-                                        const hasResult = results[student.id]?.marks !== undefined && results[student.id]?.marks !== '';
-
-                                        return (
-                                            <TableRow key={student.id}>
-                                                <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium whitespace-nowrap">
-                                                    {student.name}
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap">
-                                                    <Input
-                                                        type="number"
-                                                        min="0"
-                                                        max={exam.total_marks}
-                                                        className="w-24"
-                                                        value={results[student.id]?.marks || ''}
-                                                        onChange={(e) => handleMarksChange(student.id, e.target.value)}
-                                                    />
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap">
-                                                    {hasResult && (
-                                                        <Badge className={passed ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}>
-                                                            {passed ? t('exams.pass') : t('exams.fail')}
-                                                        </Badge>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap">
-                                                    <Input
-                                                        className="w-48"
-                                                        placeholder={t('exams.notes_placeholder')}
-                                                        value={results[student.id]?.notes || ''}
-                                                        onChange={(e) => handleNotesChange(student.id, e.target.value)}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })
-                                )}
-                            </TableBody>
-                        </Table>
+                        <DataTable
+                            columns={columns}
+                            data={displayStudents}
+                            showPagination={false}
+                            emptyMessage={t('exams.no_students')}
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
             </div>

@@ -10,14 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import students from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -28,6 +21,32 @@ type PageProps = {
 type StudentsShowProps = {
     student: Student;
     attendanceSummary: Record<number, Record<number, Record<string, number>>>;
+};
+
+type StudentEnrollment = {
+    id: number;
+    batch: { id: number; name: string; subject: string | null } | null;
+    enrolled_at: string;
+    status: string;
+};
+
+type FeeStatus = {
+    id: number;
+    batch: { id: number; name: string };
+    month: number;
+    year: number;
+    amount_paid: number;
+    notes: string | null;
+};
+
+type AttendanceRow = {
+    key: string;
+    year: string;
+    month: string;
+    monthName: string;
+    present: number;
+    absent: number;
+    late: number;
 };
 
 const MONTH_NAMES = [
@@ -82,6 +101,186 @@ export default function StudentsShow({
             setDeleteDialog({ open: false, item: null });
         }
     };
+
+    const attendanceRows: AttendanceRow[] = Object.entries(attendanceSummary)
+        .sort(([a], [b]) => Number(b) - Number(a))
+        .flatMap(([year, months]) =>
+            Object.entries(months)
+                .sort(([a], [b]) => Number(b) - Number(a))
+                .map(([month, counts]) => ({
+                    key: `${year}-${month}`,
+                    year,
+                    month,
+                    monthName: MONTH_NAMES[Number(month)],
+                    present: counts.present || 0,
+                    absent: counts.absent || 0,
+                    late: counts.late || 0,
+                })),
+        );
+
+    const enrollmentColumns = (() => {
+        type Col = NonNullable<DataTableProps<StudentEnrollment, unknown>['columns']>[number];
+        return [
+            {
+                id: 'batch_name',
+                accessorKey: 'batch.name',
+                header: t('batches.name'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => {
+                    const enrollment: StudentEnrollment = row.original;
+                    return <span className="font-medium">{enrollment.batch?.name}</span>;
+                },
+            } as Col,
+            {
+                id: 'subject',
+                accessorKey: 'batch.subject',
+                header: t('batches.subject'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const enrollment: StudentEnrollment = row.original;
+                    return enrollment.batch?.subject || '-';
+                },
+            } as Col,
+            {
+                id: 'enrolled_at',
+                accessorKey: 'enrolled_at',
+                header: t('students.joined_at'),
+                enableSorting: true,
+                cell: ({ row }: any) => formatDate(row.original.enrolled_at),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: t('students.status'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const enrollment: StudentEnrollment = row.original;
+                    return (
+                        <Badge
+                            variant={
+                                enrollment.status === 'active'
+                                    ? 'default'
+                                    : enrollment.status === 'completed'
+                                      ? 'secondary'
+                                      : 'destructive'
+                            }
+                        >
+                            {enrollment.status}
+                        </Badge>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
+    const attendanceColumns = (() => {
+        type Col = NonNullable<DataTableProps<AttendanceRow, unknown>['columns']>[number];
+        return [
+            {
+                id: 'month',
+                accessorKey: 'monthName',
+                header: t('fees.month'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.monthName}</span>
+                ),
+            } as Col,
+            {
+                id: 'year',
+                accessorKey: 'year',
+                header: t('fees.year'),
+                enableSorting: true,
+                cell: ({ row }: any) => <span>{row.original.year}</span>,
+            } as Col,
+            {
+                id: 'present',
+                accessorKey: 'present',
+                header: t('attendance.present'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span className="text-center text-green-600">{row.original.present}</span>
+                ),
+            } as Col,
+            {
+                id: 'absent',
+                accessorKey: 'absent',
+                header: t('attendance.absent'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span className="text-center text-red-600">{row.original.absent}</span>
+                ),
+            } as Col,
+            {
+                id: 'late',
+                accessorKey: 'late',
+                header: t('attendance.late'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span className="text-center text-yellow-600">{row.original.late}</span>
+                ),
+            } as Col,
+        ];
+    })();
+
+    const feeColumns = (() => {
+        type Col = NonNullable<DataTableProps<FeeStatus, unknown>['columns']>[number];
+        return [
+            {
+                id: 'month',
+                accessorKey: 'month',
+                header: t('fees.month'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => {
+                    const fee: FeeStatus = row.original;
+                    return <span className="font-medium">{MONTH_NAMES[fee.month]}</span>;
+                },
+            } as Col,
+            {
+                id: 'year',
+                accessorKey: 'year',
+                header: t('fees.year'),
+                enableSorting: true,
+                cell: ({ row }: any) => <span>{row.original.year}</span>,
+            } as Col,
+            {
+                id: 'batch_name',
+                accessorKey: 'batch.name',
+                header: t('batches.name'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const fee: FeeStatus = row.original;
+                    return fee.batch?.name || '-';
+                },
+            } as Col,
+            {
+                id: 'amount_paid',
+                accessorKey: 'amount_paid',
+                header: t('fees.amount_paid'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const fee: FeeStatus = row.original;
+                    return (
+                        <span className="text-right font-medium">
+                            {Number(fee.amount_paid).toFixed(0)}
+                        </span>
+                    );
+                },
+            } as Col,
+            {
+                id: 'notes',
+                accessorKey: 'notes',
+                header: t('attendance.notes'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const fee: FeeStatus = row.original;
+                    return fee.notes || '-';
+                },
+            } as Col,
+        ];
+    })();
 
     return (
         <>
@@ -257,57 +456,13 @@ export default function StudentsShow({
                             <CardTitle>{t('students.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>
-                                            {t('batches.name')}
-                                        </TableHead>
-                                        <TableHead>
-                                            {t('batches.subject')}
-                                        </TableHead>
-                                        <TableHead>
-                                            {t('students.joined_at')}
-                                        </TableHead>
-                                        <TableHead>
-                                            {t('students.status')}
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {student.enrollments.map((enrollment) => (
-                                        <TableRow key={enrollment.id}>
-                                            <TableCell className="font-medium">
-                                                {enrollment.batch?.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {enrollment.batch?.subject ||
-                                                    '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatDate(
-                                                    enrollment.enrolled_at,
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant={
-                                                        enrollment.status ===
-                                                        'active'
-                                                            ? 'default'
-                                                            : enrollment.status ===
-                                                                'completed'
-                                                              ? 'secondary'
-                                                              : 'destructive'
-                                                    }
-                                                >
-                                                    {enrollment.status}
-                                                </Badge>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                            <DataTable
+                                columns={enrollmentColumns}
+                                data={student.enrollments ?? []}
+                                showPagination={false}
+                                emptyMessage={t('students.no_enrollments')}
+                                getRowId={(row) => String(row.id)}
+                            />
                         </CardContent>
                     </Card>
                 )}
@@ -317,70 +472,13 @@ export default function StudentsShow({
                         <CardTitle>{t('attendance.title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {Object.keys(attendanceSummary).length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>{t('fees.month')}</TableHead>
-                                        <TableHead>{t('fees.year')}</TableHead>
-                                        <TableHead className="text-center">
-                                            {t('attendance.present')}
-                                        </TableHead>
-                                        <TableHead className="text-center">
-                                            {t('attendance.absent')}
-                                        </TableHead>
-                                        <TableHead className="text-center">
-                                            {t('attendance.late')}
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {Object.entries(attendanceSummary)
-                                        .sort(
-                                            ([a], [b]) => Number(b) - Number(a),
-                                        )
-                                        .flatMap(([year, months]) =>
-                                            Object.entries(months)
-                                                .sort(
-                                                    ([a], [b]) =>
-                                                        Number(b) - Number(a),
-                                                )
-                                                .map(([month, counts]) => (
-                                                    <TableRow
-                                                        key={`${year}-${month}`}
-                                                    >
-                                                        <TableCell className="font-medium">
-                                                            {
-                                                                MONTH_NAMES[
-                                                                    Number(
-                                                                        month,
-                                                                    )
-                                                                ]
-                                                            }
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {year}
-                                                        </TableCell>
-                                                        <TableCell className="text-center text-green-600">
-                                                            {counts.present ||
-                                                                0}
-                                                        </TableCell>
-                                                        <TableCell className="text-center text-red-600">
-                                                            {counts.absent || 0}
-                                                        </TableCell>
-                                                        <TableCell className="text-center text-yellow-600">
-                                                            {counts.late || 0}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )),
-                                        )}
-                                </TableBody>
-                            </Table>
-                        ) : (
-                            <p className="py-4 text-center text-sm text-muted-foreground">
-                                {t('students.no_attendance')}
-                            </p>
-                        )}
+                        <DataTable
+                            columns={attendanceColumns}
+                            data={attendanceRows}
+                            showPagination={false}
+                            emptyMessage={t('students.no_attendance')}
+                            getRowId={(row) => row.key}
+                        />
                     </CardContent>
                 </Card>
 
@@ -405,59 +503,21 @@ export default function StudentsShow({
                             )}
                     </CardHeader>
                     <CardContent>
-                        {student.fee_statuses &&
-                        student.fee_statuses.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>{t('fees.month')}</TableHead>
-                                        <TableHead>{t('fees.year')}</TableHead>
-                                        <TableHead>
-                                            {t('batches.name')}
-                                        </TableHead>
-                                        <TableHead className="text-right">
-                                            {t('fees.amount_paid')}
-                                        </TableHead>
-                                        <TableHead>
-                                            {t('attendance.notes')}
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {student.fee_statuses
-                                        .sort(
-                                            (a, b) =>
-                                                b.year - a.year ||
-                                                b.month - a.month,
-                                        )
-                                        .map((fee) => (
-                                            <TableRow key={fee.id}>
-                                                <TableCell className="font-medium">
-                                                    {MONTH_NAMES[fee.month]}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {fee.year}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {fee.batch?.name || '-'}
-                                                </TableCell>
-                                                <TableCell className="text-right font-medium">
-                                                    {Number(
-                                                        fee.amount_paid,
-                                                    ).toFixed(0)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {fee.notes || '-'}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                </TableBody>
-                            </Table>
-                        ) : (
-                            <p className="py-4 text-center text-sm text-muted-foreground">
-                                {t('students.no_payments')}
-                            </p>
-                        )}
+                        <DataTable
+                            columns={feeColumns}
+                            data={
+                                student.fee_statuses
+                                    ? [...student.fee_statuses].sort(
+                                          (a, b) =>
+                                              b.year - a.year ||
+                                              b.month - a.month,
+                                      )
+                                    : []
+                            }
+                            showPagination={false}
+                            emptyMessage={t('students.no_payments')}
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
             </div>

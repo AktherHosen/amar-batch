@@ -10,14 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import { useLocale } from '@/contexts/locale-context';
 import reports from '@/routes/reports';
 import {
@@ -209,6 +202,38 @@ export default function ReportsIndex({
 
     const totalAttendance = attendanceSummary.present + attendanceSummary.absent + attendanceSummary.late;
 
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<BatchPerformance, unknown>['columns']>[number];
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('reports.batch_name'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'active_students',
+                accessorKey: 'active_students',
+                header: t('reports.active_students'),
+                enableSorting: false,
+                cell: ({ row }: any) => <span>{row.original.active_students}</span>,
+            } as Col,
+            {
+                id: 'total_fees_collected',
+                accessorKey: 'total_fees_collected',
+                header: t('reports.fees_collected'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span>{formatCurrency(row.original.total_fees_collected)}</span>
+                ),
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title={t('reports.title')} />
@@ -376,34 +401,15 @@ export default function ReportsIndex({
                         <CardTitle className="text-base">{t('reports.batch_performance')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">{t('reports.batch_name')}</TableHead>
-                                    <TableHead>{t('reports.active_students')}</TableHead>
-                                    <TableHead>{t('reports.fees_collected')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {batchPerformance.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={3} className="text-center text-muted-foreground">
-                                            {t('reports.no_batches')}
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    batchPerformance.map((batch) => (
-                                        <TableRow key={batch.id}>
-                                            <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium whitespace-nowrap">
-                                                {batch.name}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">{batch.active_students}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{formatCurrency(batch.total_fees_collected)}</TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
+                        <DataTable
+                            columns={columns}
+                            data={batchPerformance}
+                            showPagination={false}
+                            total={batchPerformance.length}
+                            itemName="batches"
+                            emptyMessage={t('reports.no_batches')}
+                            getRowId={(row) => String(row.id)}
+                        />
                     </CardContent>
                 </Card>
             </div>

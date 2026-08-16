@@ -1,14 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, RefreshCw, Search, X, EllipsisVertical, Eye, Pencil, Trash2, Megaphone } from 'lucide-react';
+import { Plus, EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
-import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -17,22 +14,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
+import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
+import notices from '@/routes/notices';
 
 type Notice = {
     id: number;
@@ -74,8 +60,9 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
     const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Notice | null }>({ open: false, item: null });
 
-    const handleSearch = () => {
-        router.get('/notices', { search, batch_id: batchId }, { preserveState: true });
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get('/notices', { search: value, batch_id: batchId }, { preserveState: true });
     };
 
     const handleDelete = (notice: Notice) => {
@@ -91,6 +78,102 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
         }
     };
 
+    const activeFilterCount = batchId ? 1 : 0;
+
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<Notice, unknown>['columns']>[number];
+        return [
+            {
+                id: 'title',
+                accessorKey: 'title',
+                header: 'Title',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.title}</span>
+                ),
+            } as Col,
+            {
+                id: 'batch',
+                accessorKey: 'batch.name',
+                header: 'Batch',
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const notice: Notice = row.original;
+                    return notice.batch ? (
+                        <Badge variant="secondary">{notice.batch.name}</Badge>
+                    ) : (
+                        <Badge variant="outline">Center-wide</Badge>
+                    );
+                },
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'is_active',
+                header: 'Status',
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const notice: Notice = row.original;
+                    return (
+                        <Badge variant={notice.is_active ? 'success' : 'secondary'}>
+                            {notice.is_active ? 'Active' : 'Draft'}
+                        </Badge>
+                    );
+                },
+            } as Col,
+            {
+                id: 'creator',
+                accessorKey: 'creator.name',
+                header: 'Posted by',
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.creator.name,
+            } as Col,
+            {
+                id: 'date',
+                accessorKey: 'created_at',
+                header: 'Date',
+                enableSorting: false,
+                cell: ({ row }: any) => new Date(row.original.created_at).toLocaleDateString(),
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const notice: Notice = row.original;
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => router.get(`/notices/${notice.id}`)}>
+                                    <Eye className="mr-2 size-4" />
+                                    View
+                                </DropdownMenuItem>
+                                {isAdmin && (
+                                    <>
+                                        <DropdownMenuItem onClick={() => router.get(`/notices/${notice.id}/edit`)}>
+                                            <Pencil className="mr-2 size-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(notice)}>
+                                            <Trash2 className="mr-2 size-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title="Notice Board" />
@@ -101,171 +184,65 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
                         title="Notice Board"
                         description="Post and manage announcements"
                     />
-                    {isAdmin && (
-                        <Link href="/notices/create">
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                New Notice
-                            </Button>
-                        </Link>
-                    )}
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({ only: ['notices'], onFinish: () => setRefreshing(false) });
+                            }}
+                        />
+                        {isAdmin && (
+                            <Link href="/notices/create">
+                                <Button>
+                                    <Plus className="mr-2 size-4" />
+                                    New Notice
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search notices..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    className="pr-9 pl-9"
-                                />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get('/notices', { batch_id: batchId }, { preserveState: true });
-                                        }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex gap-2">
-                                <Select
-                                    value={batchId || 'all'}
-                                    onValueChange={(value) => {
-                                        const v = value === 'all' ? '' : value;
-                                        setBatchId(v);
-                                        router.get('/notices', { search, batch_id: v }, { preserveState: true });
-                                    }}
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="All Batches" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Batches</SelectItem>
-                                        <SelectItem value="center">Center-wide</SelectItem>
-                                        {batches.map((batch) => (
-                                            <SelectItem key={batch.id} value={String(batch.id)}>
-                                                {batch.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <Button variant="ghost" size="icon" disabled={refreshing} onClick={() => {
-                                    setRefreshing(true);
-                                    router.reload({ only: ['notices'], onFinish: () => setRefreshing(false) });
-                                }}>
-                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                </Button>
-                            </div>
-                        </div>
-
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">Title</TableHead>
-                                    <TableHead>Batch</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Posted by</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead className="w-[50px]"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <motion.tbody
-                                initial="hidden"
-                                animate="visible"
-                                variants={{
-                                    hidden: {},
-                                    visible: { transition: { staggerChildren: 0.03 } },
-                                }}
-                            >
-                                {pagination.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center">
-                                            <div className="flex flex-col items-center gap-2 py-4">
-                                                <Megaphone className="size-8 text-muted-foreground" />
-                                                <p>No notices found</p>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    pagination.data.map((notice) => (
-                                        <motion.tr
-                                            key={notice.id}
-                                            variants={{
-                                                hidden: { opacity: 0, x: -8 },
-                                                visible: { opacity: 1, x: 0 },
-                                            }}
-                                        >
-                                            <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium">
-                                                {notice.title}
-                                            </TableCell>
-                                            <TableCell>
-                                                {notice.batch ? (
-                                                    <Badge variant="secondary">{notice.batch.name}</Badge>
-                                                ) : (
-                                                    <Badge variant="outline">Center-wide</Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={notice.is_active ? 'success' : 'secondary'}>
-                                                    {notice.is_active ? 'Active' : 'Draft'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                {notice.creator.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {new Date(notice.created_at).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <EllipsisVertical className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => router.get(`/notices/${notice.id}`)}>
-                                                            <Eye className="mr-2 size-4" />
-                                                            View
-                                                        </DropdownMenuItem>
-                                                        {isAdmin && (
-                                                            <>
-                                                                <DropdownMenuItem onClick={() => router.get(`/notices/${notice.id}/edit`)}>
-                                                                    <Pencil className="mr-2 size-4" />
-                                                                    Edit
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(notice)}>
-                                                                    <Trash2 className="mr-2 size-4" />
-                                                                    Delete
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </motion.tr>
-                                    ))
-                                )}
-                            </motion.tbody>
-                        </Table>
-
-                        <Pagination
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            perPage={pagination.per_page}
                             itemName="notices"
-                            baseUrl="/notices"
+                            baseUrl={notices.index().url}
                             preserveParams={{ search, batch_id: batchId }}
+                            emptyMessage="No notices found"
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder="Search notices..."
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={activeFilterCount}
+                                    filters={[
+                                        {
+                                            id: 'batch_id',
+                                            placeholder: 'All Batches',
+                                            value: batchId,
+                                            options: [
+                                                { label: 'Center-wide', value: 'center' },
+                                                ...batches.map((batch) => ({
+                                                    label: batch.name,
+                                                    value: String(batch.id),
+                                                })),
+                                            ],
+                                            onValueChange: (value) => {
+                                                setBatchId(value);
+                                                router.get('/notices', { search, batch_id: value }, { preserveState: true });
+                                            },
+                                        },
+                                    ]}
+                                />
+                            }
                         />
                     </CardContent>
                 </Card>

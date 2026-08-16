@@ -1,19 +1,20 @@
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, X, RefreshCw, CreditCard, TrendingUp, Clock, CheckCircle, XCircle, EllipsisVertical, Check, Ban, Eye } from 'lucide-react';
+import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
+import { CreditCard, TrendingUp, Clock, CheckCircle, XCircle, EllipsisVertical, Check, Ban, Eye } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
-import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
 type PaymentRecord = {
     id: number;
+    tenant_id: number;
     txid: string | null;
     amount: number;
     status: string;
@@ -51,9 +52,11 @@ type PageProps = {
 export default function SuperAdminPayments({ payments, stats, filters }: PageProps) {
     const { formatCurrency, t } = useLocale();
     const [search, setSearch] = useState(filters.search ?? '');
+    const [refreshing, setRefreshing] = useState(false);
 
-    const handleSearch = () => {
-        router.get('/super-admin/payments', { search, status: filters.status ?? 'all' }, { preserveState: true });
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get('/super-admin/payments', { search: value, status: filters.status ?? 'all' }, { preserveState: true });
     };
 
     const handleReset = () => {
@@ -90,13 +93,138 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
         }
     };
 
+    const activeFilterCount = filters.status && filters.status !== 'all' ? 1 : 0;
+
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
+        return [
+            {
+                id: 'tenant',
+                accessorKey: 'tenant',
+                header: 'Tenant',
+                enableSorting: false,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.tenant?.name ?? '—'}</span>
+                ),
+            } as Col,
+            {
+                id: 'plan',
+                accessorKey: 'plan',
+                header: 'Plan',
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.plan?.name ?? '—',
+            } as Col,
+            {
+                id: 'txid',
+                accessorKey: 'txid',
+                header: 'TX ID',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span className="font-mono text-xs">{row.original.txid ?? '—'}</span>
+                ),
+            } as Col,
+            {
+                id: 'amount',
+                accessorKey: 'amount',
+                header: 'Amount',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <div className="text-right font-semibold">
+                        {formatCurrency(row.original.amount)}
+                    </div>
+                ),
+            } as Col,
+            {
+                id: 'billing_type',
+                accessorKey: 'billing_type',
+                header: 'Billing',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span className="capitalize">{row.original.billing_type ?? '—'}</span>
+                ),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: 'Status',
+                enableSorting: false,
+                cell: ({ row }: any) => getStatusBadge(row.original.status),
+            } as Col,
+            {
+                id: 'payment_method',
+                accessorKey: 'payment_method',
+                header: 'Method',
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.payment_method ?? '—',
+            } as Col,
+            {
+                id: 'paid_at',
+                accessorKey: 'paid_at',
+                header: 'Paid At',
+                enableSorting: false,
+                cell: ({ row }: any) =>
+                    row.original.paid_at
+                        ? new Date(row.original.paid_at).toLocaleDateString()
+                        : '—',
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const payment: PaymentRecord = row.original;
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => router.get(`/super-admin/tenants/${payment.tenant_id}/detail`)}>
+                                    <Eye className="mr-2 size-4" />
+                                    View Tenant
+                                </DropdownMenuItem>
+                                {payment.status === 'pending' && (
+                                    <>
+                                        <DropdownMenuItem onClick={() => handleApprove(payment.id)}>
+                                            <Check className="mr-2 size-4 text-green-600" />
+                                            Approve
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleCancel(payment.id)}>
+                                            <Ban className="mr-2 size-4" />
+                                            Cancel
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading
-                    title="Payment History"
-                    description="All transactions across coaching centers"
-                />
+                <div className="flex items-start justify-between">
+                    <Heading
+                        title="Payment History"
+                        description="All transactions across coaching centers"
+                    />
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({ onFinish: () => setRefreshing(false) });
+                            }}
+                        />
+                    </div>
+                </div>
 
                 <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
                     <Card className="py-3">
@@ -150,129 +278,46 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
                     </Card>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-2">
-                        {['all', 'success', 'pending', 'failed'].map((status) => (
-                            <Button
-                                key={status}
-                                variant={(filters.status ?? 'all') === status ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => handleStatusFilter(status)}
-                                className="capitalize"
-                            >
-                                {status}
-                            </Button>
-                        ))}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search tenant or TX ID..."
-                                className="pl-8 w-[250px]"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            />
-                        </div>
-                        <Button variant="ghost" size="sm" className="size-8 p-0" onClick={handleSearch}>
-                            <RefreshCw className="size-4" />
-                        </Button>
-                        {(filters.search || (filters.status && filters.status !== 'all')) && (
-                            <Button variant="ghost" size="sm" className="size-8 p-0" onClick={handleReset}>
-                                <X className="size-4" />
-                            </Button>
-                        )}
-                    </div>
-                </div>
-
                 <Card>
-                    <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="whitespace-nowrap sticky left-0 bg-background z-10 min-w-[150px]">Tenant</TableHead>
-                                    <TableHead className="whitespace-nowrap">Plan</TableHead>
-                                    <TableHead className="whitespace-nowrap">TX ID</TableHead>
-                                    <TableHead className="whitespace-nowrap text-right">Amount</TableHead>
-                                    <TableHead className="whitespace-nowrap">Billing</TableHead>
-                                    <TableHead className="whitespace-nowrap">Status</TableHead>
-                                    <TableHead className="whitespace-nowrap">Method</TableHead>
-                                    <TableHead className="whitespace-nowrap">Paid At</TableHead>
-                                    <TableHead className="whitespace-nowrap w-[50px]"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {payments.data.length > 0 ? (
-                                    payments.data.map((payment) => (
-                                        <TableRow key={payment.id}>
-                                            <TableCell className="font-medium whitespace-nowrap sticky left-0 bg-background z-10">
-                                                {payment.tenant?.name ?? '—'}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">{payment.plan?.name ?? '—'}</TableCell>
-                                            <TableCell className="whitespace-nowrap font-mono text-xs">{payment.txid ?? '—'}</TableCell>
-                                            <TableCell className="text-right whitespace-nowrap font-semibold">
-                                                {formatCurrency(payment.amount)}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap capitalize">{payment.billing_type ?? '—'}</TableCell>
-                                            <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{payment.payment_method ?? '—'}</TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                {payment.paid_at
-                                                    ? new Date(payment.paid_at).toLocaleDateString()
-                                                    : '—'}
-                                            </TableCell>
-                                            <TableCell className="w-[50px]">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <EllipsisVertical className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => router.get(`/super-admin/tenants/${payment.tenant_id}/detail`)}>
-                                                            <Eye className="mr-2 size-4" />
-                                                            View Tenant
-                                                        </DropdownMenuItem>
-                                                        {payment.status === 'pending' && (
-                                                            <>
-                                                                <DropdownMenuItem onClick={() => handleApprove(payment.id)}>
-                                                                    <Check className="mr-2 size-4 text-green-600" />
-                                                                    Approve
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleCancel(payment.id)}>
-                                                                    <Ban className="mr-2 size-4" />
-                                                                    Cancel
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
-                                            No payments found.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                    <CardContent className="pt-6">
+                        <DataTable
+                            columns={columns}
+                            data={payments.data}
+                            loading={refreshing}
+                            currentPage={payments.current_page}
+                            lastPage={payments.last_page}
+                            total={payments.total}
+                            itemName="payments"
+                            baseUrl="/super-admin/payments"
+                            preserveParams={{ search, status: filters.status ?? 'all' }}
+                            emptyMessage="No payments found."
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder="Search tenant or TX ID..."
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={activeFilterCount}
+                                    onClearAll={handleReset}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        {['all', 'success', 'pending', 'failed'].map((status) => (
+                                            <Button
+                                                key={status}
+                                                variant={(filters.status ?? 'all') === status ? 'default' : 'outline'}
+                                                size="sm"
+                                                onClick={() => handleStatusFilter(status)}
+                                                className="capitalize"
+                                            >
+                                                {status}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </FilterBar>
+                            }
+                        />
                     </CardContent>
                 </Card>
-
-                {payments.last_page > 1 && (
-                    <Pagination
-                        currentPage={payments.current_page}
-                        lastPage={payments.last_page}
-                        onPageChange={(page) =>
-                            router.get('/super-admin/payments', { page, status: filters.status ?? 'all', search }, { preserveState: true })
-                        }
-                    />
-                )}
             </div>
         </>
     );

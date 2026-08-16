@@ -1,55 +1,29 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef } from 'react';
 import { isOwner } from '@/lib/role';
 import {
     Plus,
-    RefreshCw,
-    Search,
     Trash2,
     EllipsisVertical,
     Download,
-    X,
-    Wallet,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
+import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    Table,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import fees from '@/routes/fees';
 import { useLocale } from '@/contexts/locale-context';
-
-function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
-    let timer: ReturnType<typeof setTimeout>;
-    const debounced = (...args: Parameters<T>) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), ms);
-    };
-    debounced.cancel = () => clearTimeout(timer);
-    return debounced;
-}
 
 type Student = {
     id: number;
@@ -224,21 +198,17 @@ export default function FeesIndex({
     const [search, setSearch] = useState(filters.search || '');
     const [selectedYear, setSelectedYear] = useState(year);
     const [refreshing, setRefreshing] = useState(false);
-
-    const debouncedSearch = useCallback(
-        debounce((value: string, yearValue: number) => {
-            router.get(fees.index.url(), { search: value, year: yearValue }, { preserveState: true });
-        }, 300),
-        [],
-    );
-
-    useEffect(() => {
-        return () => debouncedSearch.cancel();
-    }, [debouncedSearch]);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: { studentId: number; batchId: number } | null;
     }>({ open: false, item: null });
+
+    const currentYear = new Date().getFullYear();
+    const yearOptions = [];
+
+    for (let y = currentYear - 2; y <= currentYear + 1; y++) {
+        yearOptions.push(y);
+    }
 
     const isMonthDisabled = (
         enrolledAt: string | null,
@@ -286,15 +256,17 @@ export default function FeesIndex({
         }
     };
 
-    const handleSearch = () => {
+    const handleSearch = (value: string) => {
+        setSearch(value);
         router.get(
             fees.index.url(),
-            { search, year: selectedYear },
+            { search: value, year: selectedYear },
             { preserveState: true },
         );
     };
 
-    const handleYearChange = (newYear: number) => {
+    const handleYearChange = (value: string) => {
+        const newYear = value ? Number(value) : currentYear;
         setSelectedYear(newYear);
         router.get(
             fees.index.url(),
@@ -302,6 +274,14 @@ export default function FeesIndex({
             { preserveState: true },
         );
     };
+
+    const clearAll = () => {
+        setSearch('');
+        setSelectedYear(currentYear);
+        router.get(fees.index.url(), {}, { preserveState: true });
+    };
+
+    const activeFilterCount = selectedYear !== currentYear ? 1 : 0;
 
     const exportToExcel = () => {
         const headers = [
@@ -340,12 +320,99 @@ export default function FeesIndex({
         URL.revokeObjectURL(url);
     };
 
-    const yearOptions = [];
-    const currentYear = new Date().getFullYear();
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<FeeGridItem, unknown>['columns']>[number];
+        const cols: Col[] = [
+            {
+                id: 'student',
+                accessorKey: 'student.name',
+                header: t('fees.student'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.student.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'class',
+                accessorKey: 'student.coaching_class.name',
+                header: t('students.class'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const item: FeeGridItem = row.original;
+                    return (
+                        <span>
+                            {item.student.coaching_class?.name || '-'}
+                        </span>
+                    );
+                },
+            } as Col,
+            {
+                id: 'batch',
+                accessorKey: 'batch.name',
+                header: t('batches.name'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span>{row.original.batch.name}</span>
+                ),
+            } as Col,
+            ...months.map(
+                (m) =>
+                    ({
+                        id: `month_${m}`,
+                        accessorKey: `months.${m}`,
+                        header: monthNames[m].slice(0, 3),
+                        enableSorting: false,
+                        cell: ({ row }: any) => {
+                            const item: FeeGridItem = row.original;
+                            return (
+                                <div className="flex justify-center">
+                                    <FeeCell
+                                        fee={item.months[m]}
+                                        studentId={item.student.id}
+                                        batchId={item.batch.id}
+                                        month={m}
+                                        year={year}
+                                        isAdmin={isAdmin}
+                                        disabled={isMonthDisabled(
+                                            item.enrolled_at,
+                                            m,
+                                            year,
+                                        )}
+                                    />
+                                </div>
+                            );
+                        },
+                    }) as Col,
+            ),
+        ];
 
-    for (let y = currentYear - 2; y <= currentYear + 1; y++) {
-        yearOptions.push(y);
-    }
+        if (isAdmin) {
+            cols.push({
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const item: FeeGridItem = row.original;
+                    return (
+                        <div className="flex justify-center">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                onClick={() => handleDeleteRow(item.student.id, item.batch.id)}
+                            >
+                                <Trash2 className="size-4" />
+                            </Button>
+                        </div>
+                    );
+                },
+            } as Col);
+        }
+
+        return cols;
+    })();
 
     return (
         <>
@@ -361,200 +428,78 @@ export default function FeesIndex({
                             {t('fees.desc')}
                         </p>
                     </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="size-8 p-0">
-                                <EllipsisVertical className="size-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            {isAdmin && (
-                                <DropdownMenuItem asChild>
-                                    <Link href={fees.create.url()}>
-                                        <Plus className="mr-2 size-4" />
-                                        {t('fees.create')}
-                                    </Link>
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({
+                                    only: ['feeGrid'],
+                                    onFinish: () => setRefreshing(false),
+                                });
+                            }}
+                        />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {isAdmin && (
+                                    <DropdownMenuItem asChild>
+                                        <Link href={fees.create.url()}>
+                                            <Plus className="mr-2 size-4" />
+                                            {t('fees.create')}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem onClick={exportToExcel}>
+                                    <Download className="mr-2 size-4" />
+                                    {t('fees.export')}
                                 </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={exportToExcel}>
-                                <Download className="mr-2 size-4" />
-                                {t('fees.export')}
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t('actions.search') + '...'}
-                                    value={search}
-                                    onChange={(e) => {
-                                        setSearch(e.target.value);
-                                        debouncedSearch(e.target.value, selectedYear);
-                                    }}
-                                    className="pr-9 pl-9"
+                        <DataTable
+                            columns={columns}
+                            data={feeGrid}
+                            loading={refreshing}
+                            currentPage={1}
+                            lastPage={1}
+                            total={feeGrid.length}
+                            itemName={t('fees.title').toLowerCase()}
+                            baseUrl={fees.index.url()}
+                            preserveParams={{ search, year: selectedYear }}
+                            showPagination={false}
+                            emptyMessage={t('fees.no_records')}
+                            getRowId={(row) => `${row.student.id}_${row.batch.id}`}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={activeFilterCount}
+                                    onClearAll={clearAll}
+                                    filters={[
+                                        {
+                                            id: 'year',
+                                            placeholder: t('fees.year'),
+                                            value: String(selectedYear),
+                                            options: yearOptions.map((y) => ({
+                                                label: String(y),
+                                                value: String(y),
+                                            })),
+                                            onValueChange: handleYearChange,
+                                        },
+                                    ]}
                                 />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get(
-                                                fees.index.url(),
-                                                { search: '', year: selectedYear },
-                                                { preserveState: true },
-                                            );
-                                        }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Select
-                                    value={String(selectedYear)}
-                                    onValueChange={(value) => handleYearChange(Number(value))}
-                                >
-                                    <SelectTrigger className="w-full sm:w-[120px]">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {yearOptions.map((y) => (
-                                            <SelectItem key={y} value={String(y)}>
-                                                {y}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={refreshing}
-                                    onClick={() => {
-                                        setRefreshing(true);
-                                        router.reload({
-                                            only: ['feeGrid'],
-                                            onFinish: () => setRefreshing(false),
-                                        });
-                                    }}
-                                >
-                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
-                                            {t('fees.student')}
-                                        </TableHead>
-                                        <TableHead className="min-w-[100px]">
-                                            {t('students.class')}
-                                        </TableHead>
-                                        <TableHead className="min-w-[100px]">
-                                            {t('batches.name')}
-                                        </TableHead>
-                                        {months.map((m) => (
-                                            <TableHead
-                                                key={m}
-                                                className="min-w-[80px] text-center"
-                                            >
-                                                {monthNames[m].slice(0, 3)}
-                                            </TableHead>
-                                        ))}
-                                        {isAdmin && (
-                                            <TableHead className="w-[50px]"></TableHead>
-                                        )}
-                                    </TableRow>
-                                </TableHeader>
-                                <motion.tbody
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={{
-                                        hidden: {},
-                                        visible: { transition: { staggerChildren: 0.03 } },
-                                    }}
-                                >
-                                    {feeGrid.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={months.length + 4}
-                                                className="text-center"
-                                            >
-                                                <div className="flex flex-col items-center gap-2 py-4">
-                                                    <Wallet className="size-8 text-muted-foreground" />
-                                                    <p>{t('fees.no_records')}</p>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        feeGrid.map((item, idx) => (
-                                            <motion.tr
-                                                key={idx}
-                                                variants={{
-                                                    hidden: { opacity: 0, x: -8 },
-                                                    visible: { opacity: 1, x: 0 },
-                                                }}
-                                            >
-                                                <TableCell className="sticky left-0 z-10 min-w-[150px] bg-background font-medium">
-                                                    {item.student.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.student.coaching_class
-                                                        ?.name || '-'}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.batch.name}
-                                                </TableCell>
-                                                {months.map((m) => (
-                                                    <TableCell
-                                                        key={m}
-                                                        className="p-1 text-center"
-                                                    >
-                                                        <FeeCell
-                                                            fee={item.months[m]}
-                                                            studentId={
-                                                                item.student.id
-                                                            }
-                                                            batchId={
-                                                                item.batch.id
-                                                            }
-                                                            month={m}
-                                                            year={year}
-                                                            isAdmin={isAdmin}
-                                                            disabled={isMonthDisabled(
-                                                                item.enrolled_at,
-                                                                m,
-                                                                year,
-                                                            )}
-                                                        />
-                                                    </TableCell>
-                                                ))}
-                                                {isAdmin && (
-                                                    <TableCell className="p-1 text-center">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                            onClick={() => handleDeleteRow(item.student.id, item.batch.id)}
-                                                        >
-                                                            <Trash2 className="size-4" />
-                                                        </Button>
-                                                    </TableCell>
-                                                )}
-                                            </motion.tr>
-                                        ))
-                                    )}
-                                </motion.tbody>
-                            </Table>
-                        </div>
+                            }
+                        />
                     </CardContent>
                 </Card>
             </div>
