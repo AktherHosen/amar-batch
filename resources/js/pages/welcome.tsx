@@ -1,34 +1,33 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import {
-    Users,
-    Calendar,
-    Wallet,
-    GraduationCap,
-    BarChart3,
-    Shield,
-    Check,
-    HelpCircle,
-    ArrowRight,
-    Zap,
-    Globe,
-    Clock,
-} from 'lucide-react';
-import PlanBadge from '@/components/plan-badge';
 import LanguageSwitcher from '@/components/language-switcher';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
+import PlanBadge from '@/components/plan-badge';
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { dashboard, login, register } from '@/routes';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { useLocale } from '@/contexts/locale-context';
+import { dashboard, login, register } from '@/routes';
+import { Head, Link, usePage } from '@inertiajs/react';
+import {
+    ArrowRight,
+    BarChart3,
+    Calendar,
+    Check,
+    Clock,
+    Globe,
+    GraduationCap,
+    Shield,
+    Users,
+    Wallet,
+    Zap,
+} from 'lucide-react';
+import { useState } from 'react';
 
 type Plan = {
     id: number;
@@ -102,10 +101,26 @@ export default function Welcome({ stats, plans }: Props) {
     ];
 
     const displayStats = [
-        { number: `${formatNumber(safeStats.total_students)}+`, label: t('welcome.stat_students'), icon: Users },
-        { number: `${formatNumber(safeStats.active_batches)}+`, label: t('welcome.stat_batches'), icon: GraduationCap },
-        { number: `${formatNumber(safeStats.total_enrollments)}+`, label: t('welcome.stat_enrollments'), icon: BarChart3 },
-        { number: `${formatNumber(100)}%`, label: t('welcome.stat_fees'), icon: Wallet },
+        {
+            number: `${formatNumber(safeStats.total_students)}+`,
+            label: t('welcome.stat_students'),
+            icon: Users,
+        },
+        {
+            number: `${formatNumber(safeStats.active_batches)}+`,
+            label: t('welcome.stat_batches'),
+            icon: GraduationCap,
+        },
+        {
+            number: `${formatNumber(safeStats.total_enrollments)}+`,
+            label: t('welcome.stat_enrollments'),
+            icon: BarChart3,
+        },
+        {
+            number: `${formatNumber(100)}%`,
+            label: t('welcome.stat_fees'),
+            icon: Wallet,
+        },
     ];
 
     const steps = [
@@ -160,20 +175,34 @@ export default function Welcome({ stats, plans }: Props) {
                 <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                     <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
                         <div className="flex items-center gap-2">
-                            <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-lg object-cover" />
-                            <span className="hidden text-xl font-bold sm:inline-block">{t('app.name')}</span>
+                            <img
+                                src="/logo.png"
+                                alt={t('app.name')}
+                                className="h-8 w-8 rounded-lg object-cover"
+                            />
+                            <span className="hidden text-xl font-bold sm:inline-block">
+                                {t('app.name')}
+                            </span>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-2">
                             <LanguageSwitcher />
                             {auth.user ? (
-                                <Button asChild size="sm" className="px-2.5 sm:px-3">
+                                <Button
+                                    asChild
+                                    size="sm"
+                                    className="px-2.5 sm:px-3"
+                                >
                                     <Link href={dashboard()}>
                                         {t('nav.dashboard')}
                                         <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
                                     </Link>
                                 </Button>
                             ) : (
-                                <Button size="sm" asChild className="px-2.5 sm:px-3">
+                                <Button
+                                    size="sm"
+                                    asChild
+                                    className="px-2.5 sm:px-3"
+                                >
                                     <Link href={register()}>
                                         {t('auth.sign_up_free')}
                                         <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
@@ -199,7 +228,7 @@ export default function Welcome({ stats, plans }: Props) {
                             <p className="mb-3 text-sm leading-relaxed text-muted-foreground sm:mb-4 sm:text-xl sm:leading-relaxed">
                                 {t('welcome.hero_subtitle')}
                             </p>
-                            <p className="mb-6 mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:mb-10 sm:text-base">
+                            <p className="mx-auto mb-6 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:mb-10 sm:text-base">
                                 {t('welcome.hero_description')}
                             </p>
                             <div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
@@ -218,8 +247,14 @@ export default function Welcome({ stats, plans }: Props) {
                                                 <ArrowRight className="ml-2 h-4 w-4" />
                                             </Link>
                                         </Button>
-                                        <Button size="lg" variant="outline" asChild>
-                                            <Link href={login()}>{t('welcome.contact')}</Link>
+                                        <Button
+                                            size="lg"
+                                            variant="outline"
+                                            asChild
+                                        >
+                                            <Link href={login()}>
+                                                {t('welcome.contact')}
+                                            </Link>
                                         </Button>
                                     </>
                                 )}
@@ -229,12 +264,16 @@ export default function Welcome({ stats, plans }: Props) {
                 </section>
                 <section className="border-b bg-muted/30 py-8 sm:py-16">
                     <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-2 gap-2 md:grid-cols-4 sm:gap-6">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-6 md:grid-cols-4">
                             {displayStats.map((stat) => (
                                 <div key={stat.label} className="text-center">
                                     <stat.icon className="mx-auto mb-1.5 h-5 w-5 text-primary sm:mb-2 sm:h-6 sm:w-6" />
-                                    <div className="text-xl font-bold sm:text-4xl">{stat.number}</div>
-                                    <div className="mt-1 text-xs text-muted-foreground sm:text-sm">{stat.label}</div>
+                                    <div className="text-xl font-bold sm:text-4xl">
+                                        {stat.number}
+                                    </div>
+                                    <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                                        {stat.label}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -245,7 +284,9 @@ export default function Welcome({ stats, plans }: Props) {
                 <section id="features" className="py-12 sm:py-28">
                     <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
                         <div className="mb-8 text-center sm:mb-16">
-                            <Badge variant="outline" className="mb-3 sm:mb-4">Features</Badge>
+                            <Badge variant="outline" className="mb-3 sm:mb-4">
+                                Features
+                            </Badge>
                             <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-4xl lg:text-5xl">
                                 {t('welcome.about_title')}
                             </h2>
@@ -255,15 +296,22 @@ export default function Welcome({ stats, plans }: Props) {
                         </div>
                         <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {features.map((feature) => (
-                                <Card key={feature.title} className="group transition-all hover:shadow-lg hover:shadow-primary/5">
+                                <Card
+                                    key={feature.title}
+                                    className="group transition-all hover:shadow-lg hover:shadow-primary/5"
+                                >
                                     <CardHeader className="flex flex-col items-start gap-1.5">
-                                        <div className="mb-1 flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:size-12 sm:mb-2">
+                                        <div className="mb-1 flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:mb-2 sm:size-12">
                                             <feature.icon className="size-5 sm:h-6 sm:w-6" />
                                         </div>
-                                        <CardTitle className="text-base font-bold tracking-tight sm:text-xl">{feature.title}</CardTitle>
+                                        <CardTitle className="text-base font-bold tracking-tight sm:text-xl">
+                                            {feature.title}
+                                        </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{feature.description}</p>
+                                        <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                            {feature.description}
+                                        </p>
                                     </CardContent>
                                 </Card>
                             ))}
@@ -275,7 +323,9 @@ export default function Welcome({ stats, plans }: Props) {
                 <section className="border-y bg-muted/30 py-12 sm:py-28">
                     <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
                         <div className="mb-8 text-center sm:mb-16">
-                            <Badge variant="outline" className="mb-3 sm:mb-4">How it Works</Badge>
+                            <Badge variant="outline" className="mb-3 sm:mb-4">
+                                How it Works
+                            </Badge>
                             <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-4xl lg:text-5xl">
                                 {t('welcome.how_it_works_title')}
                             </h2>
@@ -285,15 +335,22 @@ export default function Welcome({ stats, plans }: Props) {
                         </div>
                         <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
                             {steps.map((step, index) => (
-                                <div key={step.number} className="relative text-center">
+                                <div
+                                    key={step.number}
+                                    className="relative text-center"
+                                >
                                     {index < steps.length - 1 && (
                                         <div className="absolute top-8 left-[calc(50%+40px)] hidden h-[2px] w-[calc(100%-80px)] bg-border md:block" />
                                     )}
                                     <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full border-2 border-primary bg-background sm:mb-6 sm:size-16">
-                                        <step.icon className="size-6 sm:h-7 sm:w-7 text-primary" />
+                                        <step.icon className="size-6 text-primary sm:h-7 sm:w-7" />
                                     </div>
-                                    <h3 className="mb-2 text-base font-bold tracking-tight sm:text-xl">{step.title}</h3>
-                                    <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{step.description}</p>
+                                    <h3 className="mb-2 text-base font-bold tracking-tight sm:text-xl">
+                                        {step.title}
+                                    </h3>
+                                    <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                        {step.description}
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -305,7 +362,12 @@ export default function Welcome({ stats, plans }: Props) {
                     <section id="pricing" className="py-12 sm:py-28">
                         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
                             <div className="mb-8 text-center sm:mb-16">
-                                <Badge variant="outline" className="mb-3 sm:mb-4">Pricing</Badge>
+                                <Badge
+                                    variant="outline"
+                                    className="mb-3 sm:mb-4"
+                                >
+                                    Pricing
+                                </Badge>
                                 <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-4xl lg:text-5xl">
                                     {t('welcome.pricing_title')}
                                 </h2>
@@ -313,98 +375,159 @@ export default function Welcome({ stats, plans }: Props) {
                                     {t('welcome.pricing_desc')}
                                 </p>
                                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
-                                    <span className={`text-sm ${!annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{t('plan.monthly')}</span>
-                                    <Switch checked={annual} onCheckedChange={setAnnual} />
-                                    <span className={`text-sm ${annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{t('plan.yearly')}</span>
-                                    {annual && <Badge variant="secondary" className="ml-1 text-green-600 dark:text-green-400">Save 17%</Badge>}
+                                    <span
+                                        className={`text-sm ${!annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}
+                                    >
+                                        {t('plan.monthly')}
+                                    </span>
+                                    <Switch
+                                        checked={annual}
+                                        onCheckedChange={setAnnual}
+                                    />
+                                    <span
+                                        className={`text-sm ${annual ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}
+                                    >
+                                        {t('plan.yearly')}
+                                    </span>
+                                    {annual && (
+                                        <Badge
+                                            variant="secondary"
+                                            className="ml-1 text-green-600 dark:text-green-400"
+                                        >
+                                            Save 17%
+                                        </Badge>
+                                    )}
                                 </div>
                             </div>
                             <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
                                 {safePlans.map((plan) => {
                                     const isPopular = plan.slug === 'pro';
-                                    const price = annual ? plan.price_yearly : plan.price_monthly;
-                                    const period = annual ? t('plan.year') : t('plan.month');
+                                    const price = annual
+                                        ? plan.price_yearly
+                                        : plan.price_monthly;
+                                    const period = annual
+                                        ? t('plan.year')
+                                        : t('plan.month');
 
                                     return (
                                         <Card
                                             key={plan.id}
                                             className={`relative flex flex-col ${
                                                 isPopular
-                                                    ? 'border-primary shadow-lg shadow-primary/10 scale-[1.02]'
+                                                    ? 'scale-[1.02] border-primary shadow-lg shadow-primary/10'
                                                     : plan.is_default
-                                                        ? 'border-muted'
-                                                        : ''
+                                                      ? 'border-muted'
+                                                      : ''
                                             }`}
                                         >
                                             <PlanBadge
                                                 isPopular={isPopular}
-                                                isDefault={plan.is_default && !isPopular}
+                                                isDefault={
+                                                    plan.is_default &&
+                                                    !isPopular
+                                                }
                                                 popularLabel={t('plan.popular')}
-                                                defaultLabel={t('plan.free_trial')}
+                                                defaultLabel={t(
+                                                    'plan.free_trial',
+                                                )}
                                             />
                                             <CardHeader className="flex flex-col items-start gap-1.5">
-                                                <CardTitle className="text-xl font-bold tracking-tight">{plan.name}</CardTitle>
+                                                <CardTitle className="text-xl font-bold tracking-tight">
+                                                    {plan.name}
+                                                </CardTitle>
                                                 {plan.description && (
-                                                    <p className="text-sm leading-relaxed text-muted-foreground">{plan.description}</p>
+                                                    <p className="text-sm leading-relaxed text-muted-foreground">
+                                                        {plan.description}
+                                                    </p>
                                                 )}
                                             </CardHeader>
                                             <CardContent className="flex flex-1 flex-col">
                                                 <div className="mb-6">
                                                     {price === 0 ? (
-                                                        <div className="text-4xl font-bold">{t('plan.free')}</div>
+                                                        <div className="text-4xl font-bold">
+                                                            {t('plan.free')}
+                                                        </div>
                                                     ) : (
                                                         <div className="text-4xl font-bold">
-                                                            {formatCurrency(price)}
-                                                            <span className="text-sm font-normal text-muted-foreground">/{period}</span>
+                                                            {formatCurrency(
+                                                                price,
+                                                            )}
+                                                            <span className="text-sm font-normal text-muted-foreground">
+                                                                /{period}
+                                                            </span>
                                                         </div>
                                                     )}
                                                 </div>
 
-                                            <Separator className="mb-6" />
+                                                <Separator className="mb-6" />
 
-                                            <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                                {t('plan.limits')}
-                                            </div>
-                                            <ul className="mb-6 space-y-3 text-sm">
-                                                <li className="flex items-center gap-2">
-                                                    <Check className="h-4 w-4 text-green-500" />
-                                                    {plan.max_students === -1 ? t('plan.unlimited_students') : `${plan.max_students} ${t('plan.students')}`}
-                                                </li>
-                                                <li className="flex items-center gap-2">
-                                                    <Check className="h-4 w-4 text-green-500" />
-                                                    {plan.max_staff === -1 ? t('plan.unlimited_staff') : `${plan.max_staff} ${t('plan.staff')}`}
-                                                </li>
-                                                <li className="flex items-center gap-2">
-                                                    <Check className="h-4 w-4 text-green-500" />
-                                                    {plan.max_batches === -1 ? t('plan.unlimited_batches') : `${plan.max_batches} ${t('plan.batches')}`}
-                                                </li>
-                                            </ul>
-
-                                            <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                                {t('plan.includes')}
-                                            </div>
-                                            <ul className="mb-6 flex-1 space-y-3 text-sm">
-                                                {plan.features.map((feature) => (
-                                                    <li key={feature} className="flex items-center gap-2">
+                                                <div className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                                                    {t('plan.limits')}
+                                                </div>
+                                                <ul className="mb-6 space-y-3 text-sm">
+                                                    <li className="flex items-center gap-2">
                                                         <Check className="h-4 w-4 text-green-500" />
-                                                        {featureLabels[feature] || feature}
+                                                        {plan.max_students ===
+                                                        -1
+                                                            ? t(
+                                                                  'plan.unlimited_students',
+                                                              )
+                                                            : `${plan.max_students} ${t('plan.students')}`}
                                                     </li>
-                                                ))}
-                                            </ul>
+                                                    <li className="flex items-center gap-2">
+                                                        <Check className="h-4 w-4 text-green-500" />
+                                                        {plan.max_staff === -1
+                                                            ? t(
+                                                                  'plan.unlimited_staff',
+                                                              )
+                                                            : `${plan.max_staff} ${t('plan.staff')}`}
+                                                    </li>
+                                                    <li className="flex items-center gap-2">
+                                                        <Check className="h-4 w-4 text-green-500" />
+                                                        {plan.max_batches === -1
+                                                            ? t(
+                                                                  'plan.unlimited_batches',
+                                                              )
+                                                            : `${plan.max_batches} ${t('plan.batches')}`}
+                                                    </li>
+                                                </ul>
 
-                                            <Button
-                                                className="w-full"
-                                                variant={isPopular ? 'default' : 'outline'}
-                                                asChild
-                                            >
-                                                <Link href={register()}>
-                                                    {t('welcome.cta')}
-                                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-                                );
+                                                <div className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                                                    {t('plan.includes')}
+                                                </div>
+                                                <ul className="mb-6 flex-1 space-y-3 text-sm">
+                                                    {plan.features.map(
+                                                        (feature) => (
+                                                            <li
+                                                                key={feature}
+                                                                className="flex items-center gap-2"
+                                                            >
+                                                                <Check className="h-4 w-4 text-green-500" />
+                                                                {featureLabels[
+                                                                    feature
+                                                                ] || feature}
+                                                            </li>
+                                                        ),
+                                                    )}
+                                                </ul>
+
+                                                <Button
+                                                    className="w-full"
+                                                    variant={
+                                                        isPopular
+                                                            ? 'default'
+                                                            : 'outline'
+                                                    }
+                                                    asChild
+                                                >
+                                                    <Link href={register()}>
+                                                        {t('welcome.cta')}
+                                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    );
                                 })}
                             </div>
                         </div>
@@ -412,10 +535,15 @@ export default function Welcome({ stats, plans }: Props) {
                 )}
 
                 {/* FAQ Section */}
-                <section id="faq" className="border-t bg-muted/30 py-12 sm:py-28">
+                <section
+                    id="faq"
+                    className="border-t bg-muted/30 py-12 sm:py-28"
+                >
                     <div className="mx-auto max-w-3xl px-3 sm:px-6 lg:px-8">
                         <div className="mb-8 text-center sm:mb-16">
-                            <Badge variant="outline" className="mb-3 sm:mb-4">FAQ</Badge>
+                            <Badge variant="outline" className="mb-3 sm:mb-4">
+                                FAQ
+                            </Badge>
                             <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-4xl lg:text-5xl">
                                 {t('welcome.faq_title')}
                             </h2>
@@ -426,7 +554,9 @@ export default function Welcome({ stats, plans }: Props) {
                         <Accordion type="single" collapsible className="w-full">
                             {faqs.map((faq, i) => (
                                 <AccordionItem key={i} value={`item-${i}`}>
-                                    <AccordionTrigger className="text-left">{faq.q}</AccordionTrigger>
+                                    <AccordionTrigger className="text-left">
+                                        {faq.q}
+                                    </AccordionTrigger>
                                     <AccordionContent className="text-muted-foreground">
                                         {faq.a}
                                     </AccordionContent>
@@ -448,7 +578,11 @@ export default function Welcome({ stats, plans }: Props) {
                                     {t('welcome.cta_desc')}
                                 </p>
                                 {!auth.user && (
-                                    <Button size="lg" variant="secondary" asChild>
+                                    <Button
+                                        size="lg"
+                                        variant="secondary"
+                                        asChild
+                                    >
                                         <Link href={register()}>
                                             {t('welcome.cta_button')}
                                             <ArrowRight className="ml-2 h-4 w-4" />
@@ -466,40 +600,104 @@ export default function Welcome({ stats, plans }: Props) {
                         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <img src="/logo.png" alt={t('app.name')} className="h-8 w-8 rounded-lg object-cover" />
-                                    <span className="font-bold">{t('app.name')}</span>
+                                    <img
+                                        src="/logo.png"
+                                        alt={t('app.name')}
+                                        className="h-8 w-8 rounded-lg object-cover"
+                                    />
+                                    <span className="font-bold">
+                                        {t('app.name')}
+                                    </span>
                                 </div>
                                 <p className="mt-3 text-sm text-muted-foreground">
                                     {t('welcome.hero_subtitle')}
                                 </p>
                             </div>
                             <div>
-                                <h4 className="mb-4 text-sm font-semibold">{t('footer.product')}</h4>
+                                <h4 className="mb-4 text-sm font-semibold">
+                                    {t('footer.product')}
+                                </h4>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
-                                    <li><a href="#features" className="hover:text-primary">{t('welcome.about_title')}</a></li>
-                                    <li><a href="#pricing" className="hover:text-primary">{t('welcome.pricing_title')}</a></li>
-                                    <li><Link href={register()} className="hover:text-primary">{t('welcome.cta_button')}</Link></li>
+                                    <li>
+                                        <a
+                                            href="#features"
+                                            className="hover:text-primary"
+                                        >
+                                            {t('welcome.about_title')}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            href="#pricing"
+                                            className="hover:text-primary"
+                                        >
+                                            {t('welcome.pricing_title')}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href={register()}
+                                            className="hover:text-primary"
+                                        >
+                                            {t('welcome.cta_button')}
+                                        </Link>
+                                    </li>
                                 </ul>
                             </div>
                             <div>
-                                <h4 className="mb-4 text-sm font-semibold">{t('footer.support')}</h4>
+                                <h4 className="mb-4 text-sm font-semibold">
+                                    {t('footer.support')}
+                                </h4>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
-                                    <li><Link href="/contact" className="hover:text-primary">{t('footer.contact_us')}</Link></li>
-                                    <li><Link href="/docs" className="hover:text-primary">{t('footer.documentation')}</Link></li>
-                                    <li><a href="#faq" className="hover:text-primary">{t('welcome.faq_title')}</a></li>
+                                    <li>
+                                        <Link
+                                            href="/contact"
+                                            className="hover:text-primary"
+                                        >
+                                            {t('footer.contact_us')}
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/docs"
+                                            className="hover:text-primary"
+                                        >
+                                            {t('footer.documentation')}
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <a
+                                            href="#faq"
+                                            className="hover:text-primary"
+                                        >
+                                            {t('welcome.faq_title')}
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                             <div>
-                                <h4 className="mb-4 text-sm font-semibold">{t('footer.legal')}</h4>
+                                <h4 className="mb-4 text-sm font-semibold">
+                                    {t('footer.legal')}
+                                </h4>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
-                                    <li><Link href="/terms" className="hover:text-primary">{t('footer.terms')}</Link></li>
-                                    <li><Link href="/privacy" className="hover:text-primary">{t('footer.privacy')}</Link></li>
+                                    <li>
+                                        <Link
+                                            href="/terms"
+                                            className="hover:text-primary"
+                                        >
+                                            {t('footer.terms')}
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/privacy"
+                                            className="hover:text-primary"
+                                        >
+                                            {t('footer.privacy')}
+                                        </Link>
+                                    </li>
                                 </ul>
                             </div>
-                        </div>
-                        <Separator className="my-8" />
-                        <div className="text-center text-sm text-muted-foreground">
-                            &copy; {formatNumber(new Date().getFullYear())} {t('app.name')}. {t('welcome.copyright')}
                         </div>
                     </div>
                 </footer>
