@@ -460,6 +460,8 @@ export default function StudentsShow({
                                 columns={enrollmentColumns}
                                 data={student.enrollments ?? []}
                                 showPagination={false}
+                                searchable
+                                searchPlaceholder={t('students.title') + '...'}
                                 emptyMessage={t('students.no_enrollments')}
                                 getRowId={(row) => String(row.id)}
                             />
@@ -476,6 +478,8 @@ export default function StudentsShow({
                             columns={attendanceColumns}
                             data={attendanceRows}
                             showPagination={false}
+                            searchable
+                            searchPlaceholder={t('attendance.title') + '...'}
                             emptyMessage={t('students.no_attendance')}
                             getRowId={(row) => row.key}
                         />
@@ -515,6 +519,8 @@ export default function StudentsShow({
                                     : []
                             }
                             showPagination={false}
+                            searchable
+                            searchPlaceholder={t('fees.payment_history') + '...'}
                             emptyMessage={t('students.no_payments')}
                             getRowId={(row) => String(row.id)}
                         />
