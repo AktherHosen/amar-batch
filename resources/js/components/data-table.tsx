@@ -223,7 +223,7 @@ export function DataTable<TData, TValue>({
                                         key={header.id}
                                         className={`whitespace-nowrap ${
                                             header.column.columnDef.meta?.sticky
-                                                ? 'sticky left-0 z-10 min-w-[150px] bg-background'
+                                                ? 'sticky left-0 z-10 min-w-[150px] rounded-tl-md bg-background'
                                                 : ''
                                         }`}
                                         colSpan={header.colSpan}
@@ -300,7 +300,7 @@ export function DataTable<TData, TValue>({
                                 visible: { transition: { staggerChildren: 0.03 } },
                             }}
                         >
-                            {table.getRowModel().rows.map((row) => (
+                            {table.getRowModel().rows.map((row, rowIndex) => (
                                 <motion.tr
                                     key={getRowId ? getRowId(row.original) : row.id}
                                     variants={{
@@ -314,7 +314,12 @@ export function DataTable<TData, TValue>({
                                             key={cell.id}
                                             className={`whitespace-nowrap ${
                                                 cell.column.columnDef.meta?.sticky
-                                                    ? 'sticky left-0 z-10 bg-background'
+                                                    ? `sticky left-0 z-10 bg-background ${
+                                                          rowIndex ===
+                                                          table.getRowModel().rows.length - 1
+                                                              ? 'rounded-bl-md'
+                                                              : ''
+                                                      }`
                                                     : ''
                                             }`}
                                         >
