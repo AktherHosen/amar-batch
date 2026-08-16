@@ -17,15 +17,75 @@ import {
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem, NavItemGroup } from '@/types';
 
+function GroupItems({ items }: { items: NavItem[] }) {
+    const { isCurrentUrl } = useCurrentUrl();
+
+    return (
+        <SidebarMenu>
+            <motion.ul
+                initial="hidden"
+                animate="visible"
+                variants={{
+                    hidden: {},
+                    visible: { transition: { staggerChildren: 0.03 } },
+                }}
+                className="space-y-0.5"
+            >
+                {items.map((item) => (
+                    <motion.li
+                        key={item.title}
+                        variants={{
+                            hidden: { opacity: 0, x: -12 },
+                            visible: { opacity: 1, x: 0 },
+                        }}
+                    >
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={isCurrentUrl(item.href)}
+                                tooltip={{ children: item.title }}
+                            >
+                                <Link href={item.href} prefetch>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </motion.li>
+                ))}
+            </motion.ul>
+        </SidebarMenu>
+    );
+}
+
+function GroupLabel({ label }: { label: string }) {
+    return <SidebarGroupLabel>{label}</SidebarGroupLabel>;
+}
+
 export function NavMain({ groups }: { groups: NavItemGroup[] }) {
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
         <>
             {groups.map((group) => {
+                const collapsible = group.items.length > 1;
                 const anyActive = group.items.some((item) =>
                     isCurrentUrl(item.href),
                 );
+
+                if (!collapsible) {
+                    return (
+                        <SidebarGroup
+                            key={group.label}
+                            className="px-2 py-0"
+                        >
+                            <GroupLabel label={group.label} />
+                            <SidebarGroupContent>
+                                <GroupItems items={group.items} />
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    );
+                }
 
                 return (
                     <SidebarGroup
@@ -44,62 +104,7 @@ export function NavMain({ groups }: { groups: NavItemGroup[] }) {
                             </SidebarGroupLabel>
                             <CollapsibleContent>
                                 <SidebarGroupContent>
-                                    <SidebarMenu>
-                                        <motion.ul
-                                            initial="hidden"
-                                            animate="visible"
-                                            variants={{
-                                                hidden: {},
-                                                visible: {
-                                                    transition: {
-                                                        staggerChildren: 0.03,
-                                                    },
-                                                },
-                                            }}
-                                            className="space-y-0.5"
-                                        >
-                                            {group.items.map((item) => (
-                                                <motion.li
-                                                    key={item.title}
-                                                    variants={{
-                                                        hidden: {
-                                                            opacity: 0,
-                                                            x: -12,
-                                                        },
-                                                        visible: {
-                                                            opacity: 1,
-                                                            x: 0,
-                                                        },
-                                                    }}
-                                                >
-                                                    <SidebarMenuItem>
-                                                        <SidebarMenuButton
-                                                            asChild
-                                                            isActive={isCurrentUrl(
-                                                                item.href,
-                                                            )}
-                                                            tooltip={{
-                                                                children:
-                                                                    item.title,
-                                                            }}
-                                                        >
-                                                            <Link
-                                                                href={item.href}
-                                                                prefetch
-                                                            >
-                                                                {item.icon && (
-                                                                    <item.icon />
-                                                                )}
-                                                                <span>
-                                                                    {item.title}
-                                                                </span>
-                                                            </Link>
-                                                        </SidebarMenuButton>
-                                                    </SidebarMenuItem>
-                                                </motion.li>
-                                            ))}
-                                        </motion.ul>
-                                    </SidebarMenu>
+                                    <GroupItems items={group.items} />
                                 </SidebarGroupContent>
                             </CollapsibleContent>
                         </Collapsible>

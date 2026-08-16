@@ -57,7 +57,7 @@ export function formatTime(date: string | Date, locale: Locale): string {
 export const translations: Record<Locale, Record<string, string>> = {
     bn: {
         // Common
-        'app.name': 'কর্ণফুলী আলফা একাডেমি',
+        'app.name': 'আমার ব্যাচ',
         'app.tagline': 'কোচিং সেন্টার ব্যবস্থাপনা',
 
         // Navigation
@@ -77,6 +77,15 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.roles': 'ভুমিকা ও অনুমতি',
         'nav.coaching_center': 'কোচিং সেন্টার',
         'nav.api_settings': 'API সেটিংস',
+
+        // Navigation groups
+        'nav.group.academic': 'একাডেমিক',
+        'nav.group.finance': 'আর্থিক',
+        'nav.group.tracking': 'ট্র্যাকিং',
+        'nav.group.communication': 'যোগাযোগ',
+        'nav.group.insights': 'ইনসাইট',
+        'nav.group.administration': 'প্রশাসন',
+        'nav.group.settings': 'সেটিংস',
 
         // Dashboard
         'dashboard.title': 'ড্যাশবোর্ড',
@@ -738,6 +747,15 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.roles': 'Roles & Permissions',
         'nav.coaching_center': 'Coaching Center',
         'nav.api_settings': 'API Settings',
+
+        // Navigation groups
+        'nav.group.academic': 'Academic',
+        'nav.group.finance': 'Finance',
+        'nav.group.tracking': 'Tracking',
+        'nav.group.communication': 'Communication',
+        'nav.group.insights': 'Insights',
+        'nav.group.administration': 'Administration',
+        'nav.group.settings': 'Settings',
 
         // Dashboard
         'dashboard.title': 'Dashboard',

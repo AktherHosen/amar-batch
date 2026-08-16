@@ -21,12 +21,14 @@ import { NavMain } from '@/components/nav-main';
 import {
     Sidebar,
     SidebarContent,
+    SidebarGroup,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useLocale } from '@/contexts/locale-context';
+import { useCurrentUrl } from '@/hooks/use-current-url';
 import { isOwner } from '@/lib/role';
 import { useHasFeature } from '@/lib/features';
 import { dashboard } from '@/routes';
@@ -46,6 +48,7 @@ import type { NavItem, NavItemGroup } from '@/types';
 
 export function AppSidebar() {
     const { t } = useLocale();
+    const { isCurrentUrl } = useCurrentUrl();
     const { auth } = usePage().props;
     const isUserOwner = isOwner(auth.user);
     const hasExams = useHasFeature('exams');
@@ -64,52 +67,51 @@ export function AppSidebar() {
 
     const groups: NavItemGroup[] = [
         {
-            label: 'Overview',
+            label: t('nav.group.administration'),
             items: [
-                { title: t('nav.dashboard'), href: dashboard(), icon: LayoutGrid },
+                { title: t('nav.users'), href: users.index(), icon: UsersRound },
+                { title: t('nav.roles'), href: roles.index(), icon: Shield, ownerOnly: true },
             ],
         },
         {
-            label: 'Academic',
+            label: t('nav.group.academic'),
             items: [
                 { title: t('nav.students'), href: students.index(), icon: Users },
                 { title: t('nav.coaching_classes'), href: coachingClasses.index(), icon: School },
-                { title: t('nav.users'), href: users.index(), icon: UsersRound },
                 { title: t('nav.batches'), href: batches.index(), icon: Layers },
             ],
         },
         {
-            label: 'Finance',
+            label: t('nav.group.finance'),
             items: [
                 { title: t('nav.fees'), href: fees.index(), icon: Wallet, ownerOnly: true },
                 { title: t('nav.subscription'), href: subscription.index(), icon: CreditCard, ownerOnly: true },
             ],
         },
         {
-            label: 'Tracking',
+            label: t('nav.group.tracking'),
             items: [
                 { title: t('nav.attendance'), href: attendance.index(), icon: CheckSquare },
                 { title: t('nav.exams'), href: exams.index(), icon: FileText, featureRequired: 'exams' },
             ],
         },
         {
-            label: 'Communication',
+            label: t('nav.group.communication'),
             items: [
                 { title: 'Notices', href: '/notices', icon: Megaphone },
                 { title: 'Holidays', href: '/holidays', icon: Calendar },
             ],
         },
         {
-            label: 'Insights',
+            label: t('nav.group.insights'),
             items: [
                 { title: t('nav.reports'), href: reports.index(), icon: BarChart3, featureRequired: 'reports' },
                 { title: t('nav.branches'), href: branches.index(), icon: Building2, featureRequired: 'multi_branch' },
             ],
         },
         {
-            label: 'Administration',
+            label: t('nav.group.settings'),
             items: [
-                { title: t('nav.roles'), href: roles.index(), icon: Shield, ownerOnly: true },
                 { title: t('nav.coaching_center'), href: settings.tenant.edit(), icon: Building2, ownerOnly: true },
                 { title: t('nav.api_settings'), href: settings.api.index(), icon: Key, ownerOnly: true, featureRequired: 'api_access' },
             ],
@@ -138,6 +140,22 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
+                <SidebarGroup className="px-2 py-0">
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={isCurrentUrl(dashboard())}
+                                tooltip={{ children: t('nav.dashboard') }}
+                            >
+                                <Link href={dashboard()} prefetch>
+                                    <LayoutGrid />
+                                    <span>{t('nav.dashboard')}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
                 <NavMain groups={filteredGroups} />
             </SidebarContent>
         </Sidebar>
