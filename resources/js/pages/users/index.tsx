@@ -324,28 +324,21 @@ export default function UsersIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const user: UserRow = row.original;
-                    return (
-                        <>
-                            <Badge
-                                variant={
-                                    user.role === 'inactive'
-                                        ? 'danger'
-                                        : 'success'
-                                }
-                            >
-                                {user.role === 'inactive'
-                                    ? t('users.inactive')
-                                    : t('users.active')}
+                    if (user.role === 'inactive') {
+                        return (
+                            <Badge variant="danger">
+                                {t('users.inactive')}
                             </Badge>
-                            {user.role !== 'inactive' &&
-                                !user.is_owner &&
-                                !user.is_approved && (
-                                    <Badge variant="secondary" className="ml-2">
-                                        {t('users.pending_approval')}
-                                    </Badge>
-                                )}
-                        </>
-                    );
+                        );
+                    }
+                    if (!user.is_owner && !user.is_approved) {
+                        return (
+                            <Badge variant="secondary">
+                                {t('users.pending_approval')}
+                            </Badge>
+                        );
+                    }
+                    return <Badge variant="success">{t('users.active')}</Badge>;
                 },
             } as Col,
             {

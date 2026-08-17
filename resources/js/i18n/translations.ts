@@ -639,6 +639,24 @@ export const translations: Record<Locale, Record<string, string>> = {
         'actions.complete': 'সম্পন্ন',
         'actions.back': 'পিছনে',
 
+        // Errors
+        'errors.403_title': 'অননুমোদিত',
+        'errors.403_message':
+            'এই পৃষ্ঠাটি দেখার অনুমতি আপনার নেই। মনে করলে এটি একটি ভুল, তাহলে প্রশাসকের সাথে যোগাযোগ করুন।',
+        'errors.404_title': 'পৃষ্ঠাটি খুঁজে পাওয়া যায়নি',
+        'errors.404_message':
+            'আপনি যে পৃষ্ঠাটি খুঁজছেন সেটি বিদ্যমান নেই বা সরিয়ে দেওয়া হয়েছে।',
+        'errors.419_title': 'সেশন মেয়াদোত্তীর্ণ',
+        'errors.419_message':
+            'আপনার সেশনের মেয়াদ শেষ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+        'errors.500_title': 'সার্ভার ত্রুটি',
+        'errors.500_message':
+            'অভ্যন্তরীণ একটি ত্রুটি ঘটেছে। অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন।',
+        'errors.generic_title': 'ত্রুটি',
+        'errors.generic_message': 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে।',
+        'errors.back_to_dashboard': 'ড্যাশবোর্ডে ফিরে যান',
+        'errors.go_home': 'হোম পেজে যান',
+
         // Confirm Dialogs
         'confirm.delete': 'মুছুন',
         'confirm.are_you_sure': 'আপনি কি নিশ্চিত?',
@@ -1263,6 +1281,23 @@ export const translations: Record<Locale, Record<string, string>> = {
         'actions.export_csv': 'Export CSV',
         'actions.complete': 'Complete',
         'actions.back': 'Back',
+
+        // Errors
+        'errors.403_title': 'Forbidden',
+        'errors.403_message':
+            'You do not have permission to access this page. If you believe this is a mistake, please contact your administrator.',
+        'errors.404_title': 'Page Not Found',
+        'errors.404_message':
+            'The page you are looking for does not exist or has been moved.',
+        'errors.419_title': 'Session Expired',
+        'errors.419_message': 'Your session has expired. Please try again.',
+        'errors.500_title': 'Server Error',
+        'errors.500_message':
+            'Something went wrong on our end. Please try again later.',
+        'errors.generic_title': 'Error',
+        'errors.generic_message': 'An unexpected error occurred.',
+        'errors.back_to_dashboard': 'Back to Dashboard',
+        'errors.go_home': 'Go Home',
 
         // Confirm Dialogs
         'confirm.delete': 'Delete',
