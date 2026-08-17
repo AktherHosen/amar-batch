@@ -6,7 +6,6 @@ import { LocaleProvider } from '@/contexts/locale-context';
 import '@/i18n';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
-import SettingsLayout from '@/layouts/settings/layout';
 import SuperAdminLayout from '@/layouts/super-admin-layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Amar Batch';
@@ -25,8 +24,6 @@ createInertiaApp({
                 return AuthLayout;
             case name.startsWith('super-admin/'):
                 return SuperAdminLayout;
-            case name.startsWith('settings/'):
-                return [AppLayout, SettingsLayout];
             default:
                 return AppLayout;
         }

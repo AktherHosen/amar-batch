@@ -1,5 +1,6 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import DeleteUser from '@/components/delete-user';
+import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,91 +27,101 @@ export default function Profile({
         <>
             <Head title="Profile settings" />
 
-            <Card>
-                <CardContent className="pt-6">
-                    <Form
-                        action="/settings/profile"
-                        method="patch"
-                        options={{
-                            preserveScroll: true,
-                        }}
-                        className="space-y-6"
-                    >
-                        {({ processing, errors }) => (
-                            <>
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Name</Label>
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+                <Heading
+                    title="Profile settings"
+                    description="Manage your account profile and email address."
+                />
 
-                                    <Input
-                                        id="name"
-                                        defaultValue={auth.user.name}
-                                        name="name"
-                                        required
-                                        autoComplete="name"
-                                        placeholder="Full name"
-                                    />
+                <Card>
+                    <CardContent className="pt-6">
+                        <Form
+                            action="/settings/profile"
+                            method="patch"
+                            options={{
+                                preserveScroll: true,
+                            }}
+                            className="space-y-6"
+                        >
+                            {({ processing, errors }) => (
+                                <>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Name</Label>
 
-                                    <InputError message={errors.name} />
-                                </div>
+                                        <Input
+                                            id="name"
+                                            defaultValue={auth.user.name}
+                                            name="name"
+                                            required
+                                            autoComplete="name"
+                                            placeholder="Full name"
+                                        />
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email address</Label>
+                                        <InputError message={errors.name} />
+                                    </div>
 
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        defaultValue={auth.user.email}
-                                        name="email"
-                                        required
-                                        autoComplete="username"
-                                        placeholder="Email address"
-                                    />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">
+                                            Email address
+                                        </Label>
 
-                                    <InputError message={errors.email} />
-                                </div>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            defaultValue={auth.user.email}
+                                            name="email"
+                                            required
+                                            autoComplete="username"
+                                            placeholder="Email address"
+                                        />
 
-                                {mustVerifyEmail &&
-                                    auth.user.email_verified_at === null && (
-                                        <div>
-                                            <p className="-mt-4 text-sm text-muted-foreground">
-                                                Your email address is
-                                                unverified.{' '}
-                                                <Link
-                                                    href={send()}
-                                                    as="button"
-                                                    className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                                >
-                                                    Click here to re-send the
-                                                    verification email.
-                                                </Link>
-                                            </p>
+                                        <InputError message={errors.email} />
+                                    </div>
 
-                                            {status ===
-                                                'verification-link-sent' && (
-                                                <div className="mt-2 text-sm font-medium text-green-600">
-                                                    A new verification link has
-                                                    been sent to your email
-                                                    address.
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                    {mustVerifyEmail &&
+                                        auth.user.email_verified_at ===
+                                            null && (
+                                            <div>
+                                                <p className="-mt-4 text-sm text-muted-foreground">
+                                                    Your email address is
+                                                    unverified.{' '}
+                                                    <Link
+                                                        href={send()}
+                                                        as="button"
+                                                        className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                                    >
+                                                        Click here to re-send
+                                                        the verification email.
+                                                    </Link>
+                                                </p>
 
-                                <div className="flex justify-end">
-                                    <Button
-                                        disabled={processing}
-                                        data-test="update-profile-button"
-                                    >
-                                        {processing ? 'Saving...' : 'Save'}
-                                    </Button>
-                                </div>
-                            </>
-                        )}
-                    </Form>
-                </CardContent>
-            </Card>
+                                                {status ===
+                                                    'verification-link-sent' && (
+                                                    <div className="mt-2 text-sm font-medium text-green-600">
+                                                        A new verification link
+                                                        has been sent to your
+                                                        email address.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
 
-            <DeleteUser />
+                                    <div className="flex justify-end">
+                                        <Button
+                                            disabled={processing}
+                                            data-test="update-profile-button"
+                                        >
+                                            {processing ? 'Saving...' : 'Save'}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+                        </Form>
+                    </CardContent>
+                </Card>
+
+                <DeleteUser />
+            </div>
         </>
     );
 }

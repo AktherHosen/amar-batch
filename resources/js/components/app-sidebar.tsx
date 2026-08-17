@@ -15,7 +15,10 @@ import {
     Megaphone,
     Calendar,
     Shield,
-    Settings2,
+    User,
+    ShieldCheck,
+    Palette,
+    KeyRound,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -46,6 +49,10 @@ import branches from '@/routes/branches';
 import subscription from '@/routes/subscription';
 import roles from '@/routes/roles';
 import { edit as profileEdit } from '@/routes/profile';
+import { edit as securityEdit } from '@/routes/security';
+import { edit as appearanceEdit } from '@/routes/appearance';
+import tenant from '@/routes/settings/tenant';
+import api from '@/routes/settings/api';
 import type { NavItem, NavItemGroup } from '@/types';
 
 export function AppSidebar() {
@@ -214,9 +221,32 @@ export function AppSidebar() {
             label: t('nav.group.settings'),
             items: [
                 {
-                    title: t('nav.settings'),
+                    title: t('nav.coaching_center'),
+                    href: tenant.edit(),
+                    icon: Building2,
+                    ownerOnly: true,
+                },
+                {
+                    title: t('nav.profile'),
                     href: profileEdit(),
-                    icon: Settings2,
+                    icon: User,
+                },
+                {
+                    title: t('nav.security'),
+                    href: securityEdit(),
+                    icon: ShieldCheck,
+                },
+                {
+                    title: t('nav.appearance'),
+                    href: appearanceEdit(),
+                    icon: Palette,
+                },
+                {
+                    title: t('nav.api_access'),
+                    href: api.index(),
+                    icon: KeyRound,
+                    ownerOnly: true,
+                    featureRequired: 'api_access',
                 },
             ],
         },

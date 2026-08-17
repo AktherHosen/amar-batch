@@ -21,12 +21,18 @@ class ApiTokenController extends Controller
 
     public function index(Request $request)
     {
-        $tokens = $request->user()->tokens()
-            ->select('id', 'name', 'abilities', 'last_used_at', 'created_at')
-            ->get();
+        $search = $request->string('search')->toString();
+
+        $query = $request->user()->tokens()
+            ->select('id', 'name', 'abilities', 'last_used_at', 'created_at');
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
 
         return inertia('settings/api', [
-            'tokens' => $tokens,
+            'tokens' => $query->get(),
+            'filters' => ['search' => $search],
         ]);
     }
 

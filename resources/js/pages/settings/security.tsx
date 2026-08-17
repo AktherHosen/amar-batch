@@ -1,5 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import { useRef } from 'react';
+import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -24,110 +25,119 @@ export default function Security(props: Props) {
         <>
             <Head title="Security settings" />
 
-            <Card>
-                <CardContent className="pt-6">
-                    <Form
-                        action="/settings/password"
-                        method="put"
-                        options={{
-                            preserveScroll: true,
-                        }}
-                        resetOnError={[
-                            'password',
-                            'password_confirmation',
-                            'current_password',
-                        ]}
-                        resetOnSuccess
-                        onError={(errors) => {
-                            if (errors.password) {
-                                passwordInput.current?.focus();
-                            }
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+                <Heading
+                    title="Security settings"
+                    description="Manage your password, two-factor authentication and passkeys."
+                />
 
-                            if (errors.current_password) {
-                                currentPasswordInput.current?.focus();
-                            }
-                        }}
-                        className="space-y-6"
-                    >
-                        {({ errors, processing }) => (
-                            <>
-                                <div className="space-y-2">
-                                    <Label htmlFor="current_password">
-                                        Current password
-                                    </Label>
+                <Card>
+                    <CardContent className="pt-6">
+                        <Form
+                            action="/settings/password"
+                            method="put"
+                            options={{
+                                preserveScroll: true,
+                            }}
+                            resetOnError={[
+                                'password',
+                                'password_confirmation',
+                                'current_password',
+                            ]}
+                            resetOnSuccess
+                            onError={(errors) => {
+                                if (errors.password) {
+                                    passwordInput.current?.focus();
+                                }
 
-                                    <PasswordInput
-                                        id="current_password"
-                                        ref={currentPasswordInput}
-                                        name="current_password"
-                                        autoComplete="current-password"
-                                        placeholder="Current password"
-                                    />
+                                if (errors.current_password) {
+                                    currentPasswordInput.current?.focus();
+                                }
+                            }}
+                            className="space-y-6"
+                        >
+                            {({ errors, processing }) => (
+                                <>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="current_password">
+                                            Current password
+                                        </Label>
 
-                                    <InputError
-                                        message={errors.current_password}
-                                    />
-                                </div>
+                                        <PasswordInput
+                                            id="current_password"
+                                            ref={currentPasswordInput}
+                                            name="current_password"
+                                            autoComplete="current-password"
+                                            placeholder="Current password"
+                                        />
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">
-                                        New password
-                                    </Label>
+                                        <InputError
+                                            message={errors.current_password}
+                                        />
+                                    </div>
 
-                                    <PasswordInput
-                                        id="password"
-                                        ref={passwordInput}
-                                        name="password"
-                                        autoComplete="new-password"
-                                        placeholder="New password"
-                                        passwordrules={props.passwordRules}
-                                    />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="password">
+                                            New password
+                                        </Label>
 
-                                    <InputError message={errors.password} />
-                                </div>
+                                        <PasswordInput
+                                            id="password"
+                                            ref={passwordInput}
+                                            name="password"
+                                            autoComplete="new-password"
+                                            placeholder="New password"
+                                            passwordrules={props.passwordRules}
+                                        />
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="password_confirmation">
-                                        Confirm password
-                                    </Label>
+                                        <InputError message={errors.password} />
+                                    </div>
 
-                                    <PasswordInput
-                                        id="password_confirmation"
-                                        name="password_confirmation"
-                                        autoComplete="new-password"
-                                        placeholder="Confirm password"
-                                        passwordrules={props.passwordRules}
-                                    />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="password_confirmation">
+                                            Confirm password
+                                        </Label>
 
-                                    <InputError
-                                        message={errors.password_confirmation}
-                                    />
-                                </div>
+                                        <PasswordInput
+                                            id="password_confirmation"
+                                            name="password_confirmation"
+                                            autoComplete="new-password"
+                                            placeholder="Confirm password"
+                                            passwordrules={props.passwordRules}
+                                        />
 
-                                <div className="flex justify-end">
-                                    <Button
-                                        disabled={processing}
-                                        data-test="update-password-button"
-                                    >
-                                        {processing ? 'Saving...' : 'Save'}
-                                    </Button>
-                                </div>
-                            </>
-                        )}
-                    </Form>
-                </CardContent>
-            </Card>
+                                        <InputError
+                                            message={
+                                                errors.password_confirmation
+                                            }
+                                        />
+                                    </div>
 
-            <ManageTwoFactor
-                canManageTwoFactor={props.canManageTwoFactor}
-                requiresConfirmation={props.requiresConfirmation}
-                twoFactorEnabled={props.twoFactorEnabled}
-            />
+                                    <div className="flex justify-end">
+                                        <Button
+                                            disabled={processing}
+                                            data-test="update-password-button"
+                                        >
+                                            {processing ? 'Saving...' : 'Save'}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+                        </Form>
+                    </CardContent>
+                </Card>
 
-            <ManagePasskeys
-                canManagePasskeys={props.canManagePasskeys}
-                passkeys={props.passkeys}
-            />
+                <ManageTwoFactor
+                    canManageTwoFactor={props.canManageTwoFactor}
+                    requiresConfirmation={props.requiresConfirmation}
+                    twoFactorEnabled={props.twoFactorEnabled}
+                />
+
+                <ManagePasskeys
+                    canManagePasskeys={props.canManagePasskeys}
+                    passkeys={props.passkeys}
+                />
+            </div>
         </>
     );
 }
