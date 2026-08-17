@@ -15,21 +15,22 @@ import {
     Megaphone,
     Calendar,
     Shield,
-    Settings2,
+    User,
+    Palette,
+    Key,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import {
     Sidebar,
     SidebarContent,
-    SidebarGroup,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarRail,
 } from '@/components/ui/sidebar';
 import { useLocale } from '@/contexts/locale-context';
-import { useCurrentUrl } from '@/hooks/use-current-url';
 import { isOwner } from '@/lib/role';
 import { useHasFeature } from '@/lib/features';
 import { usePermissions } from '@/lib/permissions';
@@ -47,11 +48,14 @@ import branches from '@/routes/branches';
 import subscription from '@/routes/subscription';
 import roles from '@/routes/roles';
 import settings from '@/routes/settings';
+import { edit as profileEdit } from '@/routes/profile';
+import { edit as securityEdit } from '@/routes/security';
+import { edit as appearanceEdit } from '@/routes/appearance';
+import apiSettings from '@/routes/settings/api';
 import type { NavItem, NavItemGroup } from '@/types';
 
 export function AppSidebar() {
     const { t } = useLocale();
-    const { isCurrentUrl } = useCurrentUrl();
     const { auth } = usePage().props;
     const isUserOwner = isOwner(auth.user);
     const hasExams = useHasFeature('exams');
@@ -75,13 +79,25 @@ export function AppSidebar() {
         if (item.ownerOnly && !isUserOwner) return false;
         if (item.featureRequired === 'exams' && !hasExams) return false;
         if (item.featureRequired === 'reports' && !hasReports) return false;
-        if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
-        if (item.featureRequired === 'api_access' && !hasApiAccess) return false;
+        if (item.featureRequired === 'multi_branch' && !hasMultiBranch)
+            return false;
+        if (item.featureRequired === 'api_access' && !hasApiAccess)
+            return false;
         if (item.permission && !hasPermission(item.permission)) return false;
         return true;
     };
 
     const groups: NavItemGroup[] = [
+        {
+            label: t('nav.group.main'),
+            items: [
+                {
+                    title: t('nav.dashboard'),
+                    href: dashboard(),
+                    icon: LayoutGrid,
+                },
+            ],
+        },
         {
             label: t('nav.group.administration'),
             items: [
@@ -204,9 +220,19 @@ export function AppSidebar() {
             label: t('nav.group.settings'),
             items: [
                 {
-                    title: t('nav.settings'),
-                    href: '/settings/profile',
-                    icon: Settings2,
+                    title: t('nav.profile'),
+                    href: profileEdit(),
+                    icon: User,
+                },
+                {
+                    title: t('nav.security'),
+                    href: securityEdit(),
+                    icon: Shield,
+                },
+                {
+                    title: t('nav.appearance'),
+                    href: appearanceEdit(),
+                    icon: Palette,
                 },
                 {
                     title: t('nav.coaching_center'),
@@ -214,6 +240,13 @@ export function AppSidebar() {
                     icon: Building2,
                     ownerOnly: true,
                     permission: 'settings.tenant.edit',
+                },
+                {
+                    title: t('nav.api_access'),
+                    href: apiSettings.index(),
+                    icon: Key,
+                    ownerOnly: true,
+                    featureRequired: 'api_access',
                 },
             ],
         },
@@ -241,24 +274,10 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <SidebarGroup className="px-2 py-0">
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                asChild
-                                isActive={isCurrentUrl(dashboard())}
-                                tooltip={{ children: t('nav.dashboard') }}
-                            >
-                                <Link href={dashboard()} prefetch>
-                                    <LayoutGrid />
-                                    <span>{t('nav.dashboard')}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroup>
                 <NavMain groups={filteredGroups} />
             </SidebarContent>
+
+            <SidebarRail />
         </Sidebar>
     );
 }

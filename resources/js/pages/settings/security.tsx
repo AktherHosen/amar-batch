@@ -1,6 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
 import { useRef } from 'react';
-import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -25,8 +24,6 @@ export default function Security(props: Props) {
     return (
         <>
             <Head title="Security settings" />
-
-            <h1 className="sr-only">Security settings</h1>
 
             <Card>
                 <CardHeader>
@@ -72,11 +69,15 @@ export default function Security(props: Props) {
                                         placeholder="Current password"
                                     />
 
-                                    <InputError message={errors.current_password} />
+                                    <InputError
+                                        message={errors.current_password}
+                                    />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="password">New password</Label>
+                                    <Label htmlFor="password">
+                                        New password
+                                    </Label>
 
                                     <PasswordInput
                                         id="password"

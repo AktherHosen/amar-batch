@@ -4,12 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import settings from '@/routes/settings';
 
-type Tenant = {
+type Center = {
     id: number;
     name: string;
     email: string | null;
@@ -21,18 +27,18 @@ type Tenant = {
 };
 
 type PageProps = {
-    tenant: Tenant;
+    center: Center;
 };
 
-export default function TenantSettings({ tenant }: PageProps) {
+export default function TenantSettings({ center }: PageProps) {
     const { data, setData, post, processing, errors } = useForm({
-        name: tenant.name,
-        email: tenant.email || '',
-        phone: tenant.phone || '',
-        address: tenant.address || '',
+        name: center.name,
+        email: center.email || '',
+        phone: center.phone || '',
+        address: center.address || '',
         logo: null as File | null,
-        timezone: tenant.timezone,
-        currency: tenant.currency,
+        timezone: center.timezone,
+        currency: center.currency,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -72,11 +78,15 @@ export default function TenantSettings({ tenant }: PageProps) {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Coaching Center Name *</Label>
+                                <Label htmlFor="name">
+                                    Coaching Center Name *
+                                </Label>
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     required
                                 />
                                 <InputError message={errors.name} />
@@ -88,7 +98,9 @@ export default function TenantSettings({ tenant }: PageProps) {
                                     id="email"
                                     type="email"
                                     value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('email', e.target.value)
+                                    }
                                 />
                                 <InputError message={errors.email} />
                             </div>
@@ -98,7 +110,9 @@ export default function TenantSettings({ tenant }: PageProps) {
                                 <Input
                                     id="phone"
                                     value={data.phone}
-                                    onChange={(e) => setData('phone', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('phone', e.target.value)
+                                    }
                                 />
                                 <InputError message={errors.phone} />
                             </div>
@@ -108,7 +122,9 @@ export default function TenantSettings({ tenant }: PageProps) {
                                 <Input
                                     id="address"
                                     value={data.address}
-                                    onChange={(e) => setData('address', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('address', e.target.value)
+                                    }
                                 />
                                 <InputError message={errors.address} />
                             </div>
@@ -117,7 +133,9 @@ export default function TenantSettings({ tenant }: PageProps) {
                                 <Label htmlFor="timezone">Timezone</Label>
                                 <Select
                                     value={data.timezone}
-                                    onValueChange={(value) => setData('timezone', value)}
+                                    onValueChange={(value) =>
+                                        setData('timezone', value)
+                                    }
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
@@ -137,14 +155,19 @@ export default function TenantSettings({ tenant }: PageProps) {
                                 <Label htmlFor="currency">Currency</Label>
                                 <Select
                                     value={data.currency}
-                                    onValueChange={(value) => setData('currency', value)}
+                                    onValueChange={(value) =>
+                                        setData('currency', value)
+                                    }
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {currencies.map((c) => (
-                                            <SelectItem key={c.code} value={c.code}>
+                                            <SelectItem
+                                                key={c.code}
+                                                value={c.code}
+                                            >
                                                 {c.symbol} {c.name}
                                             </SelectItem>
                                         ))}
@@ -160,13 +183,15 @@ export default function TenantSettings({ tenant }: PageProps) {
                                 id="logo"
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) => setData('logo', e.target.files?.[0] || null)}
+                                onChange={(e) =>
+                                    setData('logo', e.target.files?.[0] || null)
+                                }
                             />
                             <InputError message={errors.logo} />
-                            {tenant.logo && (
+                            {center.logo && (
                                 <div className="mt-2">
                                     <img
-                                        src={`/storage/${tenant.logo}`}
+                                        src={`/storage/${center.logo}`}
                                         alt="Current logo"
                                         className="h-16 w-16 rounded-lg object-cover"
                                     />
@@ -182,13 +207,11 @@ export default function TenantSettings({ tenant }: PageProps) {
                         </div>
                     </form>
                 </CardContent>
-                </Card>
+            </Card>
         </>
     );
 }
 
 TenantSettings.layout = {
-    breadcrumbs: [
-        { title: 'Coaching Center', href: settings.tenant.edit() },
-    ],
+    breadcrumbs: [{ title: 'Coaching Center', href: settings.tenant.edit() }],
 };

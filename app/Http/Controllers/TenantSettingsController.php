@@ -20,7 +20,7 @@ class TenantSettingsController extends Controller
         }
 
         return Inertia::render('settings/tenant', [
-            'tenant' => [
+            'center' => [
                 'id' => $tenant->id,
                 'name' => $tenant->name,
                 'email' => $tenant->email,

@@ -11,6 +11,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarRail,
 } from '@/components/ui/sidebar';
 import type { NavItemGroup } from '@/types';
 
@@ -49,6 +50,8 @@ export function SuperAdminSidebar() {
             <SidebarFooter>
                 <NavUser />
             </SidebarFooter>
+
+            <SidebarRail />
         </Sidebar>
     );
 }

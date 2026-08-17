@@ -25,9 +25,14 @@ type PageProps = {
 
 export default function ApiSettings({ tokens }: PageProps) {
     const { t } = useLocale();
-    const { data, setData, post, processing, errors, reset } = useForm({ name: '' });
+    const { data, setData, post, processing, errors, reset } = useForm({
+        name: '',
+    });
     const [newToken, setNewToken] = useState<string | null>(null);
-    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; token: Token | null }>({ open: false, token: null });
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        token: Token | null;
+    }>({ open: false, token: null });
     const [showToken, setShowToken] = useState(false);
 
     const handleCreate = (e: React.FormEvent) => {
@@ -64,7 +69,9 @@ export default function ApiSettings({ tokens }: PageProps) {
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<Token, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<Token, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -84,7 +91,9 @@ export default function ApiSettings({ tokens }: PageProps) {
                 cell: ({ row }: any) => {
                     const token: Token = row.original;
                     return (
-                        <Badge variant="outline">{token.abilities.join(', ')}</Badge>
+                        <Badge variant="outline">
+                            {token.abilities.join(', ')}
+                        </Badge>
                     );
                 },
             } as Col,
@@ -98,7 +107,9 @@ export default function ApiSettings({ tokens }: PageProps) {
                     return (
                         <span>
                             {token.last_used_at
-                                ? new Date(token.last_used_at).toLocaleDateString()
+                                ? new Date(
+                                      token.last_used_at,
+                                  ).toLocaleDateString()
                                 : 'Never'}
                         </span>
                     );
@@ -112,7 +123,9 @@ export default function ApiSettings({ tokens }: PageProps) {
                 cell: ({ row }: any) => {
                     const token: Token = row.original;
                     return (
-                        <span>{new Date(token.created_at).toLocaleDateString()}</span>
+                        <span>
+                            {new Date(token.created_at).toLocaleDateString()}
+                        </span>
                     );
                 },
             } as Col,
@@ -143,81 +156,113 @@ export default function ApiSettings({ tokens }: PageProps) {
             <Head title="API Settings" />
 
             {newToken && (
-                    <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
-                        <CardContent className="pt-6">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <h3 className="text-sm font-semibold text-green-800 dark:text-green-200">New Token Created</h3>
-                                    <p className="mt-1 text-sm text-green-700 dark:text-green-300">
-                                        Copy this token now. It won't be shown again.
-                                    </p>
-                                    <div className="mt-2 flex items-center gap-2">
-                                        <code className="rounded bg-green-100 px-2 py-1 text-sm font-mono dark:bg-green-900">
-                                            {showToken ? newToken : '••••••••••••••••'}
-                                        </code>
-                                        <Button variant="ghost" size="sm" onClick={() => setShowToken(!showToken)}>
-                                            {showToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                                        </Button>
-                                        <Button variant="ghost" size="sm" onClick={copyToken}>
-                                            <Copy className="size-4" />
-                                        </Button>
-                                    </div>
+                <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+                    <CardContent className="pt-6">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <h3 className="text-sm font-semibold text-green-800 dark:text-green-200">
+                                    New Token Created
+                                </h3>
+                                <p className="mt-1 text-sm text-green-700 dark:text-green-300">
+                                    Copy this token now. It won't be shown
+                                    again.
+                                </p>
+                                <div className="mt-2 flex items-center gap-2">
+                                    <code className="rounded bg-green-100 px-2 py-1 font-mono text-sm dark:bg-green-900">
+                                        {showToken
+                                            ? newToken
+                                            : '••••••••••••••••'}
+                                    </code>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowToken(!showToken)}
+                                    >
+                                        {showToken ? (
+                                            <EyeOff className="size-4" />
+                                        ) : (
+                                            <Eye className="size-4" />
+                                        )}
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={copyToken}
+                                    >
+                                        <Copy className="size-4" />
+                                    </Button>
                                 </div>
-                                <Button variant="ghost" size="sm" onClick={() => setNewToken(null)}>
-                                    Dismiss
-                                </Button>
                             </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Key className="size-5" />
-                            Create New Token
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleCreate} className="flex items-end gap-3">
-                            <div className="flex-1 space-y-2">
-                                <Label htmlFor="name">Token Name</Label>
-                                <Input
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    placeholder="e.g. Mobile App, CI/CD Pipeline"
-                                />
-                                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
-                            </div>
-                            <Button type="submit" disabled={processing}>
-                                <Plus className="mr-2 size-4" />
-                                Create
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setNewToken(null)}
+                            >
+                                Dismiss
                             </Button>
-                        </form>
+                        </div>
                     </CardContent>
                 </Card>
+            )}
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Existing Tokens</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <DataTable
-                            columns={columns}
-                            data={tokens}
-                            showPagination={false}
-                            total={tokens.length}
-                            itemName="tokens"
-                            emptyMessage="No API tokens yet."
-                            getRowId={(row) => String(row.id)}
-                        />
-                    </CardContent>
-                </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Key className="size-5" />
+                        Create New Token
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <form
+                        onSubmit={handleCreate}
+                        className="flex items-end gap-3"
+                    >
+                        <div className="flex-1 space-y-2">
+                            <Label htmlFor="name">Token Name</Label>
+                            <Input
+                                id="name"
+                                value={data.name}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
+                                placeholder="e.g. Mobile App, CI/CD Pipeline"
+                            />
+                            {errors.name && (
+                                <p className="text-sm text-destructive">
+                                    {errors.name}
+                                </p>
+                            )}
+                        </div>
+                        <Button type="submit" disabled={processing}>
+                            <Plus className="mr-2 size-4" />
+                            Create
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Existing Tokens</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <DataTable
+                        columns={columns}
+                        data={tokens}
+                        showPagination={false}
+                        total={tokens.length}
+                        itemName="tokens"
+                        emptyMessage="No API tokens yet."
+                        getRowId={(row) => String(row.id)}
+                    />
+                </CardContent>
+            </Card>
 
             <ConfirmDialog
                 open={deleteDialog.open}
-                onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ ...deleteDialog, open })
+                }
                 title="Revoke Token"
                 description="Are you sure you want to revoke this token? Any application using it will lose access."
                 confirmText="Revoke"

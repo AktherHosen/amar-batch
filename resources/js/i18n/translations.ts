@@ -79,6 +79,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.api_settings': 'API সেটিংস',
 
         // Navigation groups
+        'nav.group.main': 'সাধারণ',
         'nav.group.academic': 'একাডেমিক',
         'nav.group.finance': 'আর্থিক',
         'nav.group.tracking': 'ট্র্যাকিং',
@@ -86,6 +87,10 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.group.insights': 'ইনসাইট',
         'nav.group.administration': 'প্রশাসন',
         'nav.group.settings': 'সেটিংস',
+        'nav.profile': 'প্রোফাইল',
+        'nav.security': 'নিরাপত্তা',
+        'nav.appearance': 'চেহারা',
+        'nav.api_access': 'API অ্যাক্সেস',
 
         // Dashboard
         'dashboard.title': 'ড্যাশবোর্ড',
@@ -728,7 +733,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'contact.address': 'ঠিকানা',
         'contact.address_value': 'চট্টগ্রাম, বাংলাদেশ',
         'contact.hours': 'কাজের সময়',
-        'contact.hours_value': 'রবি - বৃহস্পতি, সকাল ৯:০০ - বিকাল ৬:০০ (বিএসটি)',
+        'contact.hours_value':
+            'রবি - বৃহস্পতি, সকাল ৯:০০ - বিকাল ৬:০০ (বিএসটি)',
         'contact.form_name': 'আপনার নাম',
         'contact.form_email': 'ইমেইল ঠিকানা',
         'contact.form_subject': 'বিষয়',
@@ -762,6 +768,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.api_settings': 'API Settings',
 
         // Navigation groups
+        'nav.group.main': 'General',
         'nav.group.academic': 'Academic',
         'nav.group.finance': 'Finance',
         'nav.group.tracking': 'Tracking',
@@ -769,6 +776,10 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.group.insights': 'Insights',
         'nav.group.administration': 'Administration',
         'nav.group.settings': 'Settings',
+        'nav.profile': 'Profile',
+        'nav.security': 'Security',
+        'nav.appearance': 'Appearance',
+        'nav.api_access': 'API Access',
 
         // Dashboard
         'dashboard.title': 'Dashboard',

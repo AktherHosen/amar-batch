@@ -1,107 +1,91 @@
-import { Link, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { isOwner } from '@/lib/role';
 import { useHasFeature } from '@/lib/features';
-import { cn, toUrl } from '@/lib/utils';
+import { toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import tenant from '@/routes/settings/tenant';
 import api from '@/routes/settings/api';
 import type { NavItem } from '@/types';
-import { Building2, Key, Palette, Shield, User } from 'lucide-react';
+
+type SettingsTab = NavItem & {
+    value: string;
+};
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
-    const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { isCurrentUrl } = useCurrentUrl();
     const { auth } = usePage().props as {
         auth: { user: { role: string } | null };
     };
     const isUserOwner = isOwner(auth.user);
     const hasApiAccess = useHasFeature('api_access');
 
-    const sidebarNavItems: NavItem[] = [
+    const tabs: SettingsTab[] = [
         {
-            title: 'Profile',
-            href: edit(),
-            icon: User,
-        },
-        {
-            title: 'Security',
-            href: editSecurity(),
-            icon: Shield,
-        },
-        {
-            title: 'Appearance',
-            href: editAppearance(),
-            icon: Palette,
-        },
-        {
+            value: toUrl(tenant.edit()),
             title: 'Coaching Center',
             href: tenant.edit(),
-            icon: Building2,
             ownerOnly: true,
         },
         {
+            value: toUrl(edit()),
+            title: 'Profile',
+            href: edit(),
+        },
+        {
+            value: toUrl(editSecurity()),
+            title: 'Security',
+            href: editSecurity(),
+        },
+        {
+            value: toUrl(editAppearance()),
+            title: 'Appearance',
+            href: editAppearance(),
+        },
+        {
+            value: toUrl(api.index()),
             title: 'API Access',
             href: api.index(),
-            icon: Key,
             ownerOnly: true,
         },
     ];
 
-    const visibleNavItems = sidebarNavItems.filter((item) => {
-        if (item.ownerOnly && !isUserOwner) return false;
-        if (item.title === 'API Access' && !hasApiAccess) return false;
+    const visibleTabs = tabs.filter((tab) => {
+        if (tab.ownerOnly && !isUserOwner) return false;
+        if (tab.title === 'API Access' && !hasApiAccess) return false;
 
         return true;
     });
+
+    const activeValue =
+        visibleTabs.find((tab) => isCurrentUrl(tab.href))?.value ?? '';
 
     return (
         <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <Heading
                 title="Settings"
-                description="Manage your profile and account settings"
+                description="Manage your account preferences and options. Customize your experience to fit your needs. Configure notifications, security, and themes."
             />
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
-                    <nav
-                        className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Settings"
-                    >
-                        {visibleNavItems.map((item, index) => (
-                            <Button
-                                key={`${toUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentOrParentUrl(item.href),
-                                })}
-                            >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
-                                    )}
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
-                    </nav>
-                </aside>
+            <Tabs
+                value={activeValue}
+                onValueChange={(value) => router.get(value)}
+            >
+                <TabsList className="h-9 w-full justify-start overflow-x-auto sm:w-fit">
+                    {visibleTabs.map((tab) => (
+                        <TabsTrigger key={tab.value} value={tab.value}>
+                            {tab.title}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+            </Tabs>
 
-                <Separator className="my-6 lg:hidden" />
-
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-6">
-                        {children}
-                    </section>
-                </div>
-            </div>
+            <div className="max-w-2xl">{children}</div>
         </div>
     );
 }
