@@ -1,7 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -11,7 +11,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import settings from '@/routes/settings';
 
@@ -71,13 +70,10 @@ export default function TenantSettings({ center }: PageProps) {
             <Head title="Coaching Center Settings" />
 
             <Card>
-                <CardHeader className="pt-4">
-                    <CardTitle>Basic Information</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-3">
+                <CardContent className="pt-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid gap-4 md:grid-cols-2">
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 <Label htmlFor="name">
                                     Coaching Center Name *
                                 </Label>
@@ -92,7 +88,7 @@ export default function TenantSettings({ center }: PageProps) {
                                 <InputError message={errors.name} />
                             </div>
 
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
@@ -105,7 +101,7 @@ export default function TenantSettings({ center }: PageProps) {
                                 <InputError message={errors.email} />
                             </div>
 
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 <Label htmlFor="phone">Phone</Label>
                                 <Input
                                     id="phone"
@@ -117,7 +113,7 @@ export default function TenantSettings({ center }: PageProps) {
                                 <InputError message={errors.phone} />
                             </div>
 
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 <Label htmlFor="address">Address</Label>
                                 <Input
                                     id="address"
@@ -129,7 +125,7 @@ export default function TenantSettings({ center }: PageProps) {
                                 <InputError message={errors.address} />
                             </div>
 
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 <Label htmlFor="timezone">Timezone</Label>
                                 <Select
                                     value={data.timezone}
@@ -151,7 +147,7 @@ export default function TenantSettings({ center }: PageProps) {
                                 <InputError message={errors.timezone} />
                             </div>
 
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 <Label htmlFor="currency">Currency</Label>
                                 <Select
                                     value={data.currency}
@@ -177,7 +173,7 @@ export default function TenantSettings({ center }: PageProps) {
                             </div>
                         </div>
 
-                        <div className="grid gap-2">
+                        <div className="space-y-2">
                             <Label htmlFor="logo">Logo</Label>
                             <Input
                                 id="logo"
@@ -201,8 +197,7 @@ export default function TenantSettings({ center }: PageProps) {
 
                         <div className="flex justify-end">
                             <Button type="submit" disabled={processing}>
-                                {processing && <Spinner />}
-                                Save Changes
+                                {processing ? 'Saving...' : 'Save Changes'}
                             </Button>
                         </div>
                     </form>

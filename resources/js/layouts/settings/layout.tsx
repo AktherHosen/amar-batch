@@ -69,7 +69,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <Heading
                 title="Settings"
-                description="Manage your account preferences and options. Customize your experience to fit your needs. Configure notifications, security, and themes."
+                description="Manage your account preferences and options."
             />
 
             <Tabs
@@ -85,7 +85,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 </TabsList>
             </Tabs>
 
-            <div className="max-w-2xl">{children}</div>
+            <div className="max-w-2xl space-y-6">{children}</div>
         </div>
     );
 }

@@ -3,9 +3,8 @@ import { useRef } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { edit } from '@/routes/security';
 import type { Props as ManagePasskeysProps } from '@/components/manage-passkeys';
 import ManagePasskeys from '@/components/manage-passkeys';
@@ -26,10 +25,7 @@ export default function Security(props: Props) {
             <Head title="Security settings" />
 
             <Card>
-                <CardHeader>
-                    <CardTitle>Update password</CardTitle>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                     <Form
                         action="/settings/password"
                         method="put"
@@ -55,7 +51,7 @@ export default function Security(props: Props) {
                     >
                         {({ errors, processing }) => (
                             <>
-                                <div className="grid gap-2">
+                                <div className="space-y-2">
                                     <Label htmlFor="current_password">
                                         Current password
                                     </Label>
@@ -64,7 +60,6 @@ export default function Security(props: Props) {
                                         id="current_password"
                                         ref={currentPasswordInput}
                                         name="current_password"
-                                        className="mt-1 block w-full"
                                         autoComplete="current-password"
                                         placeholder="Current password"
                                     />
@@ -74,7 +69,7 @@ export default function Security(props: Props) {
                                     />
                                 </div>
 
-                                <div className="grid gap-2">
+                                <div className="space-y-2">
                                     <Label htmlFor="password">
                                         New password
                                     </Label>
@@ -83,7 +78,6 @@ export default function Security(props: Props) {
                                         id="password"
                                         ref={passwordInput}
                                         name="password"
-                                        className="mt-1 block w-full"
                                         autoComplete="new-password"
                                         placeholder="New password"
                                         passwordrules={props.passwordRules}
@@ -92,7 +86,7 @@ export default function Security(props: Props) {
                                     <InputError message={errors.password} />
                                 </div>
 
-                                <div className="grid gap-2">
+                                <div className="space-y-2">
                                     <Label htmlFor="password_confirmation">
                                         Confirm password
                                     </Label>
@@ -100,7 +94,6 @@ export default function Security(props: Props) {
                                     <PasswordInput
                                         id="password_confirmation"
                                         name="password_confirmation"
-                                        className="mt-1 block w-full"
                                         autoComplete="new-password"
                                         placeholder="Confirm password"
                                         passwordrules={props.passwordRules}
@@ -116,8 +109,7 @@ export default function Security(props: Props) {
                                         disabled={processing}
                                         data-test="update-password-button"
                                     >
-                                        {processing && <Spinner />}
-                                        Save
+                                        {processing ? 'Saving...' : 'Save'}
                                     </Button>
                                 </div>
                             </>

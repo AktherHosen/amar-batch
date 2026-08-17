@@ -1,12 +1,10 @@
-import { Form, Head, usePage } from '@inertiajs/react';
-import { Link } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import DeleteUser from '@/components/delete-user';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { edit } from '@/routes/profile';
 import type { Auth } from '@/types';
 import { send } from '@/routes/verification';
@@ -29,10 +27,7 @@ export default function Profile({
             <Head title="Profile settings" />
 
             <Card>
-                <CardHeader>
-                    <CardTitle>Profile</CardTitle>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                     <Form
                         action="/settings/profile"
                         method="patch"
@@ -43,12 +38,11 @@ export default function Profile({
                     >
                         {({ processing, errors }) => (
                             <>
-                                <div className="grid gap-2">
+                                <div className="space-y-2">
                                     <Label htmlFor="name">Name</Label>
 
                                     <Input
                                         id="name"
-                                        className="mt-1 block w-full"
                                         defaultValue={auth.user.name}
                                         name="name"
                                         required
@@ -56,19 +50,15 @@ export default function Profile({
                                         placeholder="Full name"
                                     />
 
-                                    <InputError
-                                        className="mt-2"
-                                        message={errors.name}
-                                    />
+                                    <InputError message={errors.name} />
                                 </div>
 
-                                <div className="grid gap-2">
+                                <div className="space-y-2">
                                     <Label htmlFor="email">Email address</Label>
 
                                     <Input
                                         id="email"
                                         type="email"
-                                        className="mt-1 block w-full"
                                         defaultValue={auth.user.email}
                                         name="email"
                                         required
@@ -76,10 +66,7 @@ export default function Profile({
                                         placeholder="Email address"
                                     />
 
-                                    <InputError
-                                        className="mt-2"
-                                        message={errors.email}
-                                    />
+                                    <InputError message={errors.email} />
                                 </div>
 
                                 {mustVerifyEmail &&
@@ -114,8 +101,7 @@ export default function Profile({
                                         disabled={processing}
                                         data-test="update-profile-button"
                                     >
-                                        {processing && <Spinner />}
-                                        Save
+                                        {processing ? 'Saving...' : 'Save'}
                                     </Button>
                                 </div>
                             </>

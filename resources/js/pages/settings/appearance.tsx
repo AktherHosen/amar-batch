@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import AppearanceTabs from '@/components/appearance-tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { edit as editAppearance } from '@/routes/appearance';
 
 export default function Appearance() {
@@ -9,10 +9,7 @@ export default function Appearance() {
             <Head title="Appearance settings" />
 
             <Card>
-                <CardHeader>
-                    <CardTitle>Appearance</CardTitle>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                     <AppearanceTabs />
                 </CardContent>
             </Card>

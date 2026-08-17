@@ -15,9 +15,7 @@ import {
     Megaphone,
     Calendar,
     Shield,
-    User,
-    Palette,
-    Key,
+    Settings2,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -47,11 +45,7 @@ import reports from '@/routes/reports';
 import branches from '@/routes/branches';
 import subscription from '@/routes/subscription';
 import roles from '@/routes/roles';
-import settings from '@/routes/settings';
 import { edit as profileEdit } from '@/routes/profile';
-import { edit as securityEdit } from '@/routes/security';
-import { edit as appearanceEdit } from '@/routes/appearance';
-import apiSettings from '@/routes/settings/api';
 import type { NavItem, NavItemGroup } from '@/types';
 
 export function AppSidebar() {
@@ -220,33 +214,9 @@ export function AppSidebar() {
             label: t('nav.group.settings'),
             items: [
                 {
-                    title: t('nav.profile'),
+                    title: t('nav.settings'),
                     href: profileEdit(),
-                    icon: User,
-                },
-                {
-                    title: t('nav.security'),
-                    href: securityEdit(),
-                    icon: Shield,
-                },
-                {
-                    title: t('nav.appearance'),
-                    href: appearanceEdit(),
-                    icon: Palette,
-                },
-                {
-                    title: t('nav.coaching_center'),
-                    href: settings.tenant.edit(),
-                    icon: Building2,
-                    ownerOnly: true,
-                    permission: 'settings.tenant.edit',
-                },
-                {
-                    title: t('nav.api_access'),
-                    href: apiSettings.index(),
-                    icon: Key,
-                    ownerOnly: true,
-                    featureRequired: 'api_access',
+                    icon: Settings2,
                 },
             ],
         },
