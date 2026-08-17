@@ -11,12 +11,20 @@ import {
     type SortingState,
     type VisibilityState,
 } from '@tanstack/react-table';
-import { Check, ChevronDown, ChevronUp, ChevronsUpDown, Columns3, Search, X } from 'lucide-react';
+import {
+    ChevronDown,
+    ChevronUp,
+    ChevronsUpDown,
+    Columns3,
+    Search,
+    X,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
+    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
@@ -30,7 +38,6 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import Pagination from '@/components/pagination';
-import { cn } from '@/lib/utils';
 
 export type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -106,7 +113,10 @@ export function DataTable<TData, TValue>({
     });
 
     useEffect(() => {
-        setPagination({ pageIndex: currentPage - 1, pageSize: pagination.pageSize });
+        setPagination({
+            pageIndex: currentPage - 1,
+            pageSize: pagination.pageSize,
+        });
     }, [currentPage]);
 
     useEffect(() => {
@@ -137,7 +147,10 @@ export function DataTable<TData, TValue>({
                     typeof updater === 'function' ? updater(prev) : updater;
                 if (resolvedStorageKey) {
                     try {
-                        localStorage.setItem(resolvedStorageKey, JSON.stringify(next));
+                        localStorage.setItem(
+                            resolvedStorageKey,
+                            JSON.stringify(next),
+                        );
                     } catch {
                         // ignore storage errors
                     }
@@ -149,7 +162,9 @@ export function DataTable<TData, TValue>({
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
-        getPaginationRowModel: showPagination ? getPaginationRowModel() : undefined,
+        getPaginationRowModel: showPagination
+            ? getPaginationRowModel()
+            : undefined,
         manualPagination: showPagination,
         manualSorting: !!onSortingChange,
     });
@@ -163,10 +178,12 @@ export function DataTable<TData, TValue>({
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                         <div className="min-w-0 flex-1">
                             {toolbar &&
-                                enableColumnVisibility &&
-                                React.isValidElement(toolbar)
+                            enableColumnVisibility &&
+                            React.isValidElement(toolbar)
                                 ? React.cloneElement(
-                                      toolbar as React.ReactElement<{ children?: ReactNode }>,
+                                      toolbar as React.ReactElement<{
+                                          children?: ReactNode;
+                                      }>,
                                       {
                                           children: (
                                               <>
@@ -184,13 +201,17 @@ export function DataTable<TData, TValue>({
                                         <Input
                                             placeholder={searchPlaceholder}
                                             value={globalFilter}
-                                            onChange={(e) => setGlobalFilter(e.target.value)}
+                                            onChange={(e) =>
+                                                setGlobalFilter(e.target.value)
+                                            }
                                             className="h-9 pr-9 pl-9"
                                         />
                                         {globalFilter && (
                                             <button
                                                 type="button"
-                                                onClick={() => setGlobalFilter('')}
+                                                onClick={() =>
+                                                    setGlobalFilter('')
+                                                }
                                                 className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                             >
                                                 <X className="size-4" />
@@ -204,11 +225,13 @@ export function DataTable<TData, TValue>({
                                     )}
                                 </div>
                             )}
-                            {!toolbar && !searchable && enableColumnVisibility && (
-                                <div className="flex w-full sm:w-auto">
-                                    <ColumnToggle table={table} />
-                                </div>
-                            )}
+                            {!toolbar &&
+                                !searchable &&
+                                enableColumnVisibility && (
+                                    <div className="flex w-full sm:w-auto">
+                                        <ColumnToggle table={table} />
+                                    </div>
+                                )}
                         </div>
                     </div>
                 </div>
@@ -227,7 +250,8 @@ export function DataTable<TData, TValue>({
                                                 ? 'sticky left-0 z-10 min-w-[150px] rounded-tl-md bg-background'
                                                 : ''
                                         } ${
-                                            header.column.columnDef.meta?.stickyRight
+                                            header.column.columnDef.meta
+                                                ?.stickyRight
                                                 ? 'sticky right-0 z-10 min-w-[100px] rounded-tr-md bg-background'
                                                 : ''
                                         }`}
@@ -242,19 +266,26 @@ export function DataTable<TData, TValue>({
                                                         : undefined
                                                 }
                                             >
-                                                {header.column.getCanSort() && enableSorting ? (
+                                                {header.column.getCanSort() &&
+                                                enableSorting ? (
                                                     <button
                                                         type="button"
                                                         onClick={header.column.getToggleSortingHandler()}
                                                         className="flex items-center gap-1 hover:text-foreground"
                                                     >
                                                         {flexRender(
-                                                            header.column.columnDef.header,
+                                                            header.column
+                                                                .columnDef
+                                                                .header,
                                                             header.getContext(),
                                                         )}
                                                         {{
-                                                            asc: <ChevronUp className="size-3.5" />,
-                                                            desc: <ChevronDown className="size-3.5" />,
+                                                            asc: (
+                                                                <ChevronUp className="size-3.5" />
+                                                            ),
+                                                            desc: (
+                                                                <ChevronDown className="size-3.5" />
+                                                            ),
                                                         }[
                                                             header.column.getIsSorted() as string
                                                         ] ?? (
@@ -263,7 +294,8 @@ export function DataTable<TData, TValue>({
                                                     </button>
                                                 ) : (
                                                     flexRender(
-                                                        header.column.columnDef.header,
+                                                        header.column.columnDef
+                                                            .header,
                                                         header.getContext(),
                                                     )
                                                 )}
@@ -302,35 +334,49 @@ export function DataTable<TData, TValue>({
                             animate="visible"
                             variants={{
                                 hidden: {},
-                                visible: { transition: { staggerChildren: 0.03 } },
+                                visible: {
+                                    transition: { staggerChildren: 0.03 },
+                                },
                             }}
                         >
                             {table.getRowModel().rows.map((row, rowIndex) => (
                                 <motion.tr
-                                    key={getRowId ? getRowId(row.original) : row.id}
+                                    key={
+                                        getRowId
+                                            ? getRowId(row.original)
+                                            : row.id
+                                    }
                                     variants={{
                                         hidden: { opacity: 0, x: -8 },
                                         visible: { opacity: 1, x: 0 },
                                     }}
-                                    data-state={row.getIsSelected() && 'selected'}
+                                    data-state={
+                                        row.getIsSelected() && 'selected'
+                                    }
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell
                                             key={cell.id}
                                             className={`whitespace-nowrap ${
-                                                cell.column.columnDef.meta?.sticky
+                                                cell.column.columnDef.meta
+                                                    ?.sticky
                                                     ? `sticky left-0 z-10 bg-background ${
                                                           rowIndex ===
-                                                          table.getRowModel().rows.length - 1
+                                                          table.getRowModel()
+                                                              .rows.length -
+                                                              1
                                                               ? 'rounded-bl-md'
                                                               : ''
                                                       }`
                                                     : ''
                                             } ${
-                                                cell.column.columnDef.meta?.stickyRight
+                                                cell.column.columnDef.meta
+                                                    ?.stickyRight
                                                     ? `sticky right-0 z-10 bg-background ${
                                                           rowIndex ===
-                                                          table.getRowModel().rows.length - 1
+                                                          table.getRowModel()
+                                                              .rows.length -
+                                                              1
                                                               ? 'rounded-br-md'
                                                               : ''
                                                       }`
@@ -384,39 +430,62 @@ export function ColumnToggle<TData>({
         .getAllColumns()
         .filter((col) => col.getCanHide());
 
+    const [visibility, setVisibility] = useState<Record<string, boolean>>(() =>
+        Object.fromEntries(
+            hideableColumns.map((column) => [column.id, column.getIsVisible()]),
+        ),
+    );
+
+    const handleOpenChange = (nextOpen: boolean) => {
+        setOpen(nextOpen);
+        if (nextOpen) {
+            setVisibility(
+                Object.fromEntries(
+                    hideableColumns.map((column) => [
+                        column.id,
+                        column.getIsVisible(),
+                    ]),
+                ),
+            );
+        }
+    };
+
+    const handleCheckedChange = (
+        column: (typeof hideableColumns)[number],
+        value: boolean,
+    ) => {
+        setVisibility((prev) => ({ ...prev, [column.id]: value }));
+        column.toggleVisibility(!!value);
+    };
+
     return (
-        <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenu open={open} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 flex-1 gap-2 sm:flex-none">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 flex-1 gap-2 sm:flex-none"
+                >
                     <Columns3 className="size-4" />
-                    Columns
+                    View
                     <ChevronDown className="size-3.5 opacity-60" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" key={open ? 'open' : 'closed'}>
-                {hideableColumns.map((column) => {
-                    const isVisible = column.getIsVisible();
-
-                    return (
-                        <DropdownMenuItem
-                            key={column.id}
-                            onSelect={(e) => e.preventDefault()}
-                            onClick={() => column.toggleVisibility()}
-                        >
-                            <span
-                                className={cn(
-                                    'flex size-4 items-center justify-center text-primary',
-                                    !isVisible && 'opacity-0',
-                                )}
-                            >
-                                <Check className="size-4" />
-                            </span>
-                            {typeof column.columnDef.header === 'string'
-                                ? column.columnDef.header
-                                : String(column.columnDef.id)}
-                        </DropdownMenuItem>
-                    );
-                })}
+            <DropdownMenuContent align="end">
+                {hideableColumns.map((column) => (
+                    <DropdownMenuCheckboxItem
+                        key={column.id}
+                        checked={visibility[column.id] ?? true}
+                        onCheckedChange={(value) =>
+                            handleCheckedChange(column, !!value)
+                        }
+                        onSelect={(e) => e.preventDefault()}
+                    >
+                        {typeof column.columnDef.header === 'string'
+                            ? column.columnDef.header
+                            : String(column.columnDef.id)}
+                    </DropdownMenuCheckboxItem>
+                ))}
             </DropdownMenuContent>
         </DropdownMenu>
     );

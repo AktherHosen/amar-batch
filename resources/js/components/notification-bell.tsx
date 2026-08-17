@@ -159,8 +159,8 @@ export function NotificationBell() {
                 <Button variant="ghost" size="icon" className="relative size-9">
                     <Bell className="size-4" />
                     {unreadCount > 0 && (
-                        <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-medium text-white">
-                            {unreadCount > 9 ? '9+' : unreadCount}
+                        <span className="absolute -top-0.5 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] leading-none font-medium text-white">
+                            {unreadCount}
                         </span>
                     )}
                 </Button>
@@ -198,13 +198,19 @@ export function NotificationBell() {
                                 <DropdownMenuItem
                                     key={notification.id}
                                     className={`cursor-pointer gap-3 px-4 py-3 ${isUnread ? 'bg-muted/50' : ''}`}
-                                    onClick={() => handleMarkAsRead(notification)}
+                                    onClick={() =>
+                                        handleMarkAsRead(notification)
+                                    }
                                 >
-                                    <div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${isUnread ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                    <div
+                                        className={`flex size-8 shrink-0 items-center justify-center rounded-full ${isUnread ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}
+                                    >
                                         <Icon className="size-4" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className={`truncate text-sm ${isUnread ? 'font-medium' : ''}`}>
+                                        <p
+                                            className={`truncate text-sm ${isUnread ? 'font-medium' : ''}`}
+                                        >
                                             {notification.title}
                                         </p>
                                         {notification.message && (

@@ -44,7 +44,6 @@ type UserRow = {
     role: string;
     is_approved: boolean;
     is_owner: boolean;
-    assigned_batches_count: number;
     branch: { id: number; name: string } | null;
 };
 
@@ -101,7 +100,11 @@ export default function UsersIndex({
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get(users.index(), { search: value, status, role: roleFilter }, { preserveState: true });
+        router.get(
+            users.index(),
+            { search: value, status, role: roleFilter },
+            { preserveState: true },
+        );
     };
 
     const clearAll = () => {
@@ -111,18 +114,24 @@ export default function UsersIndex({
         router.get(users.index(), {}, { preserveState: true });
     };
 
-    const activeFilterCount =
-        (status ? 1 : 0) + (roleFilter ? 1 : 0);
+    const activeFilterCount = (status ? 1 : 0) + (roleFilter ? 1 : 0);
 
-    const handleRoleChange = (user: { id: number; role: string; name: string }, value: string) => {
+    const handleRoleChange = (
+        user: { id: number; role: string; name: string },
+        value: string,
+    ) => {
         if (value === user.role) return;
-        router.post(users.role(user.id).url, { role: value }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success(`${user.name} → ${roleName(value)}`);
-                router.reload({ only: ['users'] });
+        router.post(
+            users.role(user.id).url,
+            { role: value },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success(`${user.name} → ${roleName(value)}`);
+                    router.reload({ only: ['users'] });
+                },
             },
-        });
+        );
     };
 
     const [revokeDialog, setRevokeDialog] = useState<{
@@ -144,13 +153,17 @@ export default function UsersIndex({
 
     const confirmRevoke = () => {
         if (revokeDialog.item) {
-            router.post(users.deactivate(revokeDialog.item.id).url, {}, {
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.success(t('users.access_revoked'));
-                    router.reload({ only: ['users'] });
+            router.post(
+                users.deactivate(revokeDialog.item.id).url,
+                {},
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        toast.success(t('users.access_revoked'));
+                        router.reload({ only: ['users'] });
+                    },
                 },
-            });
+            );
             setRevokeDialog({ open: false, item: null });
         }
     };
@@ -161,13 +174,17 @@ export default function UsersIndex({
 
     const confirmApprove = () => {
         if (approveDialog.item) {
-            router.post(users.approve(approveDialog.item.id).url, {}, {
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.success(t('users.approved'));
-                    router.reload({ only: ['users'] });
+            router.post(
+                users.approve(approveDialog.item.id).url,
+                {},
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        toast.success(t('users.approved'));
+                        router.reload({ only: ['users'] });
+                    },
                 },
-            });
+            );
             setApproveDialog({ open: false, item: null });
         }
     };
@@ -178,29 +195,39 @@ export default function UsersIndex({
 
     const confirmReject = () => {
         if (rejectDialog.item) {
-            router.post(users.reject(rejectDialog.item.id).url, {}, {
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.success(t('users.approval_revoked'));
-                    router.reload({ only: ['users'] });
+            router.post(
+                users.reject(rejectDialog.item.id).url,
+                {},
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        toast.success(t('users.approval_revoked'));
+                        router.reload({ only: ['users'] });
+                    },
                 },
-            });
+            );
             setRejectDialog({ open: false, item: null });
         }
     };
 
     const handleReactivate = (item: { id: number }) => {
-        router.post(users.reactivate(item.id).url, {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success(t('users.access_restored'));
-                router.reload({ only: ['users'] });
+        router.post(
+            users.reactivate(item.id).url,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success(t('users.access_restored'));
+                    router.reload({ only: ['users'] });
+                },
             },
-        });
+        );
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<UserRow, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<UserRow, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -228,7 +255,9 @@ export default function UsersIndex({
                           enableSorting: false,
                           cell: ({ row }: any) =>
                               row.original.branch?.name ?? (
-                                  <span className="text-muted-foreground">All</span>
+                                  <span className="text-muted-foreground">
+                                      All
+                                  </span>
                               ),
                       } as Col,
                   ]
@@ -241,7 +270,11 @@ export default function UsersIndex({
                 cell: ({ row }: any) => {
                     const user: UserRow = row.original;
                     if (user.role === 'inactive') {
-                        return <Badge variant="danger">{t('users.inactive')}</Badge>;
+                        return (
+                            <Badge variant="danger">
+                                {t('users.inactive')}
+                            </Badge>
+                        );
                     }
                     if (user.is_owner) {
                         return (
@@ -255,14 +288,21 @@ export default function UsersIndex({
                         return (
                             <Select
                                 value={user.role}
-                                onValueChange={(value) => handleRoleChange(user, value)}
+                                onValueChange={(value) =>
+                                    handleRoleChange(user, value)
+                                }
                             >
                                 <SelectTrigger className="h-7 w-auto min-w-[110px]">
-                                    <SelectValue>{roleName(user.role)}</SelectValue>
+                                    <SelectValue>
+                                        {roleName(user.role)}
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {assignableRoles.map((role) => (
-                                        <SelectItem key={role.id} value={role.slug}>
+                                        <SelectItem
+                                            key={role.id}
+                                            value={role.slug}
+                                        >
                                             {role.name}
                                         </SelectItem>
                                     ))}
@@ -270,7 +310,11 @@ export default function UsersIndex({
                             </Select>
                         );
                     }
-                    return <span className="capitalize">{roleName(user.role)}</span>;
+                    return (
+                        <span className="capitalize">
+                            {roleName(user.role)}
+                        </span>
+                    );
                 },
             } as Col,
             {
@@ -282,27 +326,25 @@ export default function UsersIndex({
                     const user: UserRow = row.original;
                     return (
                         <>
-                            <Badge variant={user.role === 'inactive' ? 'danger' : 'success'}>
-                                {user.role === 'inactive' ? t('users.inactive') : t('users.active')}
+                            <Badge
+                                variant={
+                                    user.role === 'inactive'
+                                        ? 'danger'
+                                        : 'success'
+                                }
+                            >
+                                {user.role === 'inactive'
+                                    ? t('users.inactive')
+                                    : t('users.active')}
                             </Badge>
-                            {user.role !== 'inactive' && !user.is_owner && !user.is_approved && (
-                                <Badge variant="secondary" className="ml-2">
-                                    {t('users.pending_approval')}
-                                </Badge>
-                            )}
+                            {user.role !== 'inactive' &&
+                                !user.is_owner &&
+                                !user.is_approved && (
+                                    <Badge variant="secondary" className="ml-2">
+                                        {t('users.pending_approval')}
+                                    </Badge>
+                                )}
                         </>
-                    );
-                },
-            } as Col,
-            {
-                id: 'assigned_batches_count',
-                accessorKey: 'assigned_batches_count',
-                header: t('batches.title'),
-                enableSorting: false,
-                cell: ({ row }: any) => {
-                    const user: UserRow = row.original;
-                    return (
-                        <span className="text-center">{user.is_owner ? '-' : user.assigned_batches_count}</span>
                     );
                 },
             } as Col,
@@ -316,7 +358,11 @@ export default function UsersIndex({
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -329,18 +375,28 @@ export default function UsersIndex({
                                 </DropdownMenuItem>
                                 {isAdmin && !user.is_owner && (
                                     <>
-                                        {user.role !== 'inactive' && !user.is_approved && (
-                                            <DropdownMenuItem onClick={() => handleApprove(user)}>
-                                                <CheckCircle className="mr-2 size-4 text-green-600" />
-                                                {t('users.approve')}
-                                            </DropdownMenuItem>
-                                        )}
-                                        {user.role !== 'inactive' && user.is_approved && (
-                                            <DropdownMenuItem onClick={() => handleReject(user)}>
-                                                <XCircle className="mr-2 size-4 text-yellow-600" />
-                                                {t('users.revoke_approval')}
-                                            </DropdownMenuItem>
-                                        )}
+                                        {user.role !== 'inactive' &&
+                                            !user.is_approved && (
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleApprove(user)
+                                                    }
+                                                >
+                                                    <CheckCircle className="mr-2 size-4 text-green-600" />
+                                                    {t('users.approve')}
+                                                </DropdownMenuItem>
+                                            )}
+                                        {user.role !== 'inactive' &&
+                                            user.is_approved && (
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleReject(user)
+                                                    }
+                                                >
+                                                    <XCircle className="mr-2 size-4 text-yellow-600" />
+                                                    {t('users.revoke_approval')}
+                                                </DropdownMenuItem>
+                                            )}
                                         <DropdownMenuItem asChild>
                                             <Link href={users.edit(user.id)}>
                                                 <Pencil className="mr-2 size-4" />
@@ -348,14 +404,20 @@ export default function UsersIndex({
                                             </Link>
                                         </DropdownMenuItem>
                                         {user.role === 'inactive' ? (
-                                            <DropdownMenuItem onClick={() => handleReactivate(user)}>
+                                            <DropdownMenuItem
+                                                onClick={() =>
+                                                    handleReactivate(user)
+                                                }
+                                            >
                                                 <Shield className="mr-2 size-4 text-green-600" />
                                                 {t('users.reactivate')}
                                             </DropdownMenuItem>
                                         ) : (
                                             <DropdownMenuItem
                                                 className="text-destructive focus:text-destructive"
-                                                onClick={() => handleRevoke(user)}
+                                                onClick={() =>
+                                                    handleRevoke(user)
+                                                }
                                             >
                                                 <ShieldOff className="mr-2 size-4" />
                                                 {t('users.revoke_access')}
@@ -397,7 +459,11 @@ export default function UsersIndex({
                         {isAdmin && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 p-0"
+                                    >
                                         <EllipsisVertical className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -425,12 +491,18 @@ export default function UsersIndex({
                             total={pagination.total}
                             itemName={t('users.title').toLowerCase() + 's'}
                             baseUrl={users.index().url}
-                            preserveParams={{ search, status, role: roleFilter }}
+                            preserveParams={{
+                                search,
+                                status,
+                                role: roleFilter,
+                            }}
                             emptyMessage={t('users.no_users')}
                             getRowId={(row) => String(row.id)}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -441,8 +513,14 @@ export default function UsersIndex({
                                             placeholder: t('users.all_status'),
                                             value: status,
                                             options: [
-                                                { label: t('users.active'), value: 'active' },
-                                                { label: t('users.inactive'), value: 'inactive' },
+                                                {
+                                                    label: t('users.active'),
+                                                    value: 'active',
+                                                },
+                                                {
+                                                    label: t('users.inactive'),
+                                                    value: 'inactive',
+                                                },
                                             ],
                                             onValueChange: (value) => {
                                                 setStatus(value);
@@ -476,7 +554,10 @@ export default function UsersIndex({
                     setRevokeDialog({ open, item: revokeDialog.item })
                 }
                 title={t('users.revoke_title')}
-                description={t('users.revoke_confirm').replace('{name}', revokeDialog.item?.name ?? '')}
+                description={t('users.revoke_confirm').replace(
+                    '{name}',
+                    revokeDialog.item?.name ?? '',
+                )}
                 confirmText={t('users.revoke_access')}
                 cancelText={t('actions.cancel')}
                 variant="destructive"
@@ -489,7 +570,10 @@ export default function UsersIndex({
                     setApproveDialog({ open, item: approveDialog.item })
                 }
                 title={t('users.approve_title')}
-                description={t('users.approve_confirm').replace('{name}', approveDialog.item?.name ?? '')}
+                description={t('users.approve_confirm').replace(
+                    '{name}',
+                    approveDialog.item?.name ?? '',
+                )}
                 confirmText={t('users.approve')}
                 cancelText={t('actions.cancel')}
                 onConfirm={confirmApprove}
@@ -501,7 +585,10 @@ export default function UsersIndex({
                     setRejectDialog({ open, item: rejectDialog.item })
                 }
                 title={t('users.revoke_approval_title')}
-                description={t('users.revoke_approval_confirm').replace('{name}', rejectDialog.item?.name ?? '')}
+                description={t('users.revoke_approval_confirm').replace(
+                    '{name}',
+                    rejectDialog.item?.name ?? '',
+                )}
                 confirmText={t('users.revoke_approval')}
                 cancelText={t('actions.cancel')}
                 variant="destructive"
