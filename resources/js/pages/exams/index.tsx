@@ -57,18 +57,29 @@ function formatDate(dateStr: string | null): string {
     return `${day}/${month}/${year}`;
 }
 
-export default function ExamsIndex({ exams: pagination, batches, filters }: PageProps) {
+export default function ExamsIndex({
+    exams: pagination,
+    batches,
+    filters,
+}: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage().props;
     const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
     const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [refreshing, setRefreshing] = useState(false);
-    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Exam | null }>({ open: false, item: null });
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: Exam | null;
+    }>({ open: false, item: null });
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get(exams.index(), { search: value, batch_id: batchId }, { preserveState: true });
+        router.get(
+            exams.index(),
+            { search: value, batch_id: batchId },
+            { preserveState: true },
+        );
     };
 
     const handleRefresh = () => {
@@ -93,7 +104,9 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
     const activeFilterCount = batchId ? 1 : 0;
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<Exam, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<Exam, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'title',
@@ -135,7 +148,10 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                 header: t('exams.marks'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
-                    <>{row.original.total_marks} (pass: {row.original.passing_marks})</>
+                    <>
+                        {row.original.total_marks} (pass:{' '}
+                        {row.original.passing_marks})
+                    </>
                 ),
             } as Col,
             {
@@ -148,22 +164,37 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.get(exams.show(exam.id))}>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        router.get(exams.show(exam.id))
+                                    }
+                                >
                                     <Eye className="mr-2 size-4" />
                                     {t('actions.view')}
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                     <>
-                                        <DropdownMenuItem onClick={() => router.get(exams.edit(exam.id))}>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                router.get(exams.edit(exam.id))
+                                            }
+                                        >
                                             <Pencil className="mr-2 size-4" />
                                             {t('actions.edit')}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(exam)}>
+                                        <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onClick={() => handleDelete(exam)}
+                                        >
                                             <Trash2 className="mr-2 size-4" />
                                             {t('actions.delete')}
                                         </DropdownMenuItem>
@@ -183,18 +214,32 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title={t('exams.title')} description={t('exams.desc')} />
+                    <Heading
+                        title={t('exams.title')}
+                        description={t('exams.desc')}
+                    />
                     <div className="flex items-center gap-1">
-                        <RefreshButton refreshing={refreshing} onRefresh={handleRefresh} />
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                        />
                         {isAdmin && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="size-8 p-0"
+                                    >
                                         <EllipsisVertical className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => router.get(exams.create())}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            router.get(exams.create())
+                                        }
+                                    >
                                         <Plus className="mr-2 size-4" />
                                         {t('exams.create')}
                                     </DropdownMenuItem>
@@ -213,14 +258,16 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            itemName={t('exams.title').toLowerCase() + 's'}
+                            itemName={t('exams.title').toLowerCase()}
                             baseUrl={exams.index().url}
                             preserveParams={{ search, batch_id: batchId }}
                             emptyMessage={t('exams.no_exams')}
                             getRowId={(row) => String(row.id)}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -235,7 +282,11 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                                             })),
                                             onValueChange: (value) => {
                                                 setBatchId(value);
-                                                router.get(exams.index(), { search, batch_id: value }, { preserveState: true });
+                                                router.get(
+                                                    exams.index(),
+                                                    { search, batch_id: value },
+                                                    { preserveState: true },
+                                                );
                                             },
                                         },
                                     ]}
@@ -248,7 +299,9 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
 
             <ConfirmDialog
                 open={deleteDialog.open}
-                onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ ...deleteDialog, open })
+                }
                 title={t('confirm.are_you_sure')}
                 description={t('exams.delete_confirm')}
                 confirmText={t('confirm.delete')}

@@ -397,7 +397,9 @@ export function DataTable<TData, TValue>({
             </div>
 
             <div className="flex items-center justify-between gap-2 py-4">
-                {showPagination && onPaginationChange ? (
+                {showPagination &&
+                (baseUrl || onPaginationChange) &&
+                lastPage > 1 ? (
                     <Pagination
                         currentPage={currentPage}
                         lastPage={lastPage}

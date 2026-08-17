@@ -53,16 +53,19 @@ $middleware->alias([
         );
 
         $exceptions->render(function (HttpException $e, Request $request) {
-            if (! $request->inertia() || $request->expectsJson()) {
+            if (! $request->inertia() || $request->expectsJson() || ! $request->user()) {
                 return null;
             }
 
             $status = $e->getStatusCode();
 
-            $message = $e->getMessage();
-            $defaultMessage = SymfonyResponse::$statusTexts[$status] ?? null;
-            if (! $message || ($defaultMessage && strtolower($message) === strtolower($defaultMessage))) {
-                $message = null;
+            $message = null;
+            if ($status === 403) {
+                $message = $e->getMessage();
+                $defaultMessage = SymfonyResponse::$statusTexts[$status] ?? null;
+                if (! $message || $message === $defaultMessage || in_array($message, ['Unauthorized.', 'This action is unauthorized.'], true)) {
+                    $message = null;
+                }
             }
 
             return Inertia::render('errors/error', [

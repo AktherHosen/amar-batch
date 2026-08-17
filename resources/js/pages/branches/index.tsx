@@ -42,17 +42,27 @@ type PageProps = {
     filters: { search?: string };
 };
 
-export default function BranchesIndex({ branches: pagination, filters }: PageProps) {
+export default function BranchesIndex({
+    branches: pagination,
+    filters,
+}: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage().props;
     const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
     const [refreshing, setRefreshing] = useState(false);
-    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Branch | null }>({ open: false, item: null });
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: Branch | null;
+    }>({ open: false, item: null });
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get(branches.index(), { search: value }, { preserveState: true });
+        router.get(
+            branches.index(),
+            { search: value },
+            { preserveState: true },
+        );
     };
 
     const handleRefresh = () => {
@@ -78,7 +88,9 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<Branch, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<Branch, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -122,8 +134,12 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
                 cell: ({ row }: any) => {
                     const branch: Branch = row.original;
                     return (
-                        <Badge variant={branch.is_active ? 'success' : 'danger'}>
-                            {branch.is_active ? t('branches.active') : t('branches.inactive')}
+                        <Badge
+                            variant={branch.is_active ? 'success' : 'danger'}
+                        >
+                            {branch.is_active
+                                ? t('branches.active')
+                                : t('branches.inactive')}
                         </Badge>
                     );
                 },
@@ -138,22 +154,39 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.get(branches.show(branch.id))}>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        router.get(branches.show(branch.id))
+                                    }
+                                >
                                     <Eye className="mr-2 size-4" />
                                     {t('actions.view')}
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                     <>
-                                        <DropdownMenuItem onClick={() => router.get(branches.edit(branch.id))}>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                router.get(
+                                                    branches.edit(branch.id),
+                                                )
+                                            }
+                                        >
                                             <Pencil className="mr-2 size-4" />
                                             {t('actions.edit')}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(branch)}>
+                                        <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onClick={() => handleDelete(branch)}
+                                        >
                                             <Trash2 className="mr-2 size-4" />
                                             {t('actions.delete')}
                                         </DropdownMenuItem>
@@ -173,13 +206,23 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title={t('branches.title')} description={t('branches.desc')} />
+                    <Heading
+                        title={t('branches.title')}
+                        description={t('branches.desc')}
+                    />
                     <div className="flex items-center gap-1">
-                        <RefreshButton refreshing={refreshing} onRefresh={handleRefresh} />
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                        />
                         {isAdmin && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 p-0"
+                                    >
                                         <EllipsisVertical className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -205,14 +248,16 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            itemName={t('branches.title').toLowerCase() + 'es'}
+                            itemName={t('branches.title').toLowerCase()}
                             baseUrl={branches.index().url}
                             preserveParams={{ search }}
                             emptyMessage={t('branches.no_branches')}
                             getRowId={(row) => String(row.id)}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={search ? 1 : 0}
@@ -226,7 +271,9 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
 
             <ConfirmDialog
                 open={deleteDialog.open}
-                onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ ...deleteDialog, open })
+                }
                 title={t('confirm.are_you_sure')}
                 description={t('branches.delete_confirm')}
                 confirmText={t('confirm.delete')}

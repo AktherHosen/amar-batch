@@ -163,7 +163,9 @@ export default function AttendanceIndex({
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<AttendanceRecord, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<AttendanceRecord, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'student',
@@ -176,15 +178,20 @@ export default function AttendanceIndex({
                     const cls = record.student.coaching_class
                         ? record.student.coaching_class.name
                         : '';
-                    const clsWithSection = cls && record.student.section
-                        ? `${cls} - ${record.student.section}`
-                        : cls;
+                    const clsWithSection =
+                        cls && record.student.section
+                            ? `${cls} - ${record.student.section}`
+                            : cls;
 
                     return (
                         <div className="flex flex-col">
-                            <span className="font-medium">{record.student.name}</span>
+                            <span className="font-medium">
+                                {record.student.name}
+                            </span>
                             <span className="text-xs text-muted-foreground">
-                                {[clsWithSection, record.batch.name].filter(Boolean).join(' • ')}
+                                {[clsWithSection, record.batch.name]
+                                    .filter(Boolean)
+                                    .join(' • ')}
                             </span>
                         </div>
                     );
@@ -270,35 +277,52 @@ export default function AttendanceIndex({
             } as Col,
             ...(isAdmin || isTeacher
                 ? [
-                    {
-                        id: 'actions',
-                        header: '',
-                        enableSorting: false,
-                        enableHiding: false,
-                        cell: ({ row }: any) => {
-                            const record: AttendanceRecord = row.original;
-                            return (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                            <EllipsisVertical className="size-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => router.get(attendance.edit(record.id))}>
-                                            <Pencil className="mr-2 size-4" />
-                                            Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(record)}>
-                                            <Trash2 className="mr-2 size-4" />
-                                            Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            );
-                        },
-                    } as Col,
-                ]
+                      {
+                          id: 'actions',
+                          header: '',
+                          enableSorting: false,
+                          enableHiding: false,
+                          cell: ({ row }: any) => {
+                              const record: AttendanceRecord = row.original;
+                              return (
+                                  <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="size-8 p-0"
+                                          >
+                                              <EllipsisVertical className="size-4" />
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                          <DropdownMenuItem
+                                              onClick={() =>
+                                                  router.get(
+                                                      attendance.edit(
+                                                          record.id,
+                                                      ),
+                                                  )
+                                              }
+                                          >
+                                              <Pencil className="mr-2 size-4" />
+                                              Edit
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                              className="text-destructive focus:text-destructive"
+                                              onClick={() =>
+                                                  handleDelete(record)
+                                              }
+                                          >
+                                              <Trash2 className="mr-2 size-4" />
+                                              Delete
+                                          </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                  </DropdownMenu>
+                              );
+                          },
+                      } as Col,
+                  ]
                 : []),
         ];
     })();
@@ -327,7 +351,11 @@ export default function AttendanceIndex({
                         {(isAdmin || isTeacher) && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 p-0"
+                                    >
                                         <EllipsisVertical className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -353,14 +381,16 @@ export default function AttendanceIndex({
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            itemName={t('attendance.title').toLowerCase() + 's'}
+                            itemName={t('attendance.title').toLowerCase()}
                             baseUrl={attendance.index().url}
                             preserveParams={{ search, batch_id: batchId, date }}
                             emptyMessage="No attendance records found"
                             getRowId={(row) => String(row.id)}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -389,7 +419,9 @@ export default function AttendanceIndex({
                                                         setDate(value);
                                                         handleFilter(value);
                                                     }}
-                                                    placeholder={t('attendance.date')}
+                                                    placeholder={t(
+                                                        'attendance.date',
+                                                    )}
                                                 />
                                                 {date && (
                                                     <button
@@ -398,8 +430,14 @@ export default function AttendanceIndex({
                                                             setDate('');
                                                             router.get(
                                                                 attendance.index(),
-                                                                { search, batch_id: batchId },
-                                                                { preserveState: true },
+                                                                {
+                                                                    search,
+                                                                    batch_id:
+                                                                        batchId,
+                                                                },
+                                                                {
+                                                                    preserveState: true,
+                                                                },
                                                             );
                                                         }}
                                                         className="absolute top-1/2 right-9 -translate-y-1/2 text-muted-foreground hover:text-foreground"
@@ -410,8 +448,7 @@ export default function AttendanceIndex({
                                             </div>
                                         </div>
                                     }
-                                >
-                                </FilterBar>
+                                ></FilterBar>
                             }
                         />
                     </CardContent>

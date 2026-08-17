@@ -15,7 +15,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Download, EllipsisVertical, Eye, PenLine, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+    Download,
+    EllipsisVertical,
+    Eye,
+    PenLine,
+    Pencil,
+    Plus,
+    Trash2,
+} from 'lucide-react';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
@@ -125,7 +133,9 @@ export default function StudentsIndex({
     const activeFilterCount = status ? 1 : 0;
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<Student, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<Student, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -225,7 +235,11 @@ export default function StudentsIndex({
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -284,7 +298,11 @@ export default function StudentsIndex({
                         />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -297,7 +315,12 @@ export default function StudentsIndex({
                                         </Link>
                                     </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem onClick={() => window.location.href = '/students/export'}>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        (window.location.href =
+                                            '/students/export')
+                                    }
+                                >
                                     <Download className="mr-2 size-4" />
                                     {t('actions.export_csv')}
                                 </DropdownMenuItem>
@@ -315,14 +338,16 @@ export default function StudentsIndex({
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            itemName={t('students.title').toLowerCase() + 's'}
+                            itemName={t('students.title').toLowerCase()}
                             baseUrl={students.index().url}
                             preserveParams={{ search, status }}
                             emptyMessage="No students found"
                             getRowId={(row) => String(row.id)}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -330,11 +355,21 @@ export default function StudentsIndex({
                                     filters={[
                                         {
                                             id: 'status',
-                                            placeholder: t('students.all_status'),
+                                            placeholder: t(
+                                                'students.all_status',
+                                            ),
                                             value: status,
                                             options: [
-                                                { label: t('students.active'), value: 'active' },
-                                                { label: t('students.inactive'), value: 'inactive' },
+                                                {
+                                                    label: t('students.active'),
+                                                    value: 'active',
+                                                },
+                                                {
+                                                    label: t(
+                                                        'students.inactive',
+                                                    ),
+                                                    value: 'inactive',
+                                                },
                                             ],
                                             onValueChange: handleStatusChange,
                                         },

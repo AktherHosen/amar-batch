@@ -482,7 +482,7 @@ export default function UsersIndex({
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            itemName={t('users.title').toLowerCase() + 's'}
+                            itemName={t('users.title').toLowerCase()}
                             baseUrl={users.index().url}
                             preserveParams={{
                                 search,

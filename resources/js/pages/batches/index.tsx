@@ -2,7 +2,14 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
-import { Plus, Eye, EllipsisVertical, Pencil, Trash2, CheckCircle } from 'lucide-react';
+import {
+    Plus,
+    Eye,
+    EllipsisVertical,
+    Pencil,
+    Trash2,
+    CheckCircle,
+} from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
@@ -56,17 +63,31 @@ export default function BatchesIndex({
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [refreshing, setRefreshing] = useState(false);
-    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
-    const [completeDialog, setCompleteDialog] = useState<{ open: boolean; batch: { id: number; name: string } | null }>({ open: false, batch: null });
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        batch: { id: number; name: string } | null;
+    }>({ open: false, batch: null });
+    const [completeDialog, setCompleteDialog] = useState<{
+        open: boolean;
+        batch: { id: number; name: string } | null;
+    }>({ open: false, batch: null });
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get(batches.index(), { search: value, status }, { preserveState: true });
+        router.get(
+            batches.index(),
+            { search: value, status },
+            { preserveState: true },
+        );
     };
 
     const handleStatusChange = (value: string) => {
         setStatus(value);
-        router.get(batches.index(), { search, status: value }, { preserveState: true });
+        router.get(
+            batches.index(),
+            { search, status: value },
+            { preserveState: true },
+        );
     };
 
     const clearAll = () => {
@@ -98,13 +119,17 @@ export default function BatchesIndex({
 
     const confirmComplete = () => {
         if (completeDialog.batch) {
-            router.put(`/batches/${completeDialog.batch.id}/complete`, {}, {
-                only: ['batches'],
-                onSuccess: () => {
-                    toast.success(t('toast.completed_successfully'));
-                    setCompleteDialog({ open: false, batch: null });
+            router.put(
+                `/batches/${completeDialog.batch.id}/complete`,
+                {},
+                {
+                    only: ['batches'],
+                    onSuccess: () => {
+                        toast.success(t('toast.completed_successfully'));
+                        setCompleteDialog({ open: false, batch: null });
+                    },
                 },
-            });
+            );
         }
     };
 
@@ -123,7 +148,9 @@ export default function BatchesIndex({
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<BatchRow, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<BatchRow, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -162,9 +189,11 @@ export default function BatchesIndex({
                             <div className="h-2 w-16 overflow-hidden rounded-full bg-muted">
                                 <div
                                     className={`h-full rounded-full ${
-                                        batch.enrollments_count >= batch.capacity
+                                        batch.enrollments_count >=
+                                        batch.capacity
                                             ? 'bg-red-500'
-                                            : batch.enrollments_count >= batch.capacity * 0.8
+                                            : batch.enrollments_count >=
+                                                batch.capacity * 0.8
                                               ? 'bg-yellow-500'
                                               : 'bg-green-500'
                                     }`}
@@ -174,7 +203,11 @@ export default function BatchesIndex({
                                 />
                             </div>
                             <span className="text-xs text-muted-foreground">
-                                {Math.round((batch.enrollments_count / batch.capacity) * 100)}%
+                                {Math.round(
+                                    (batch.enrollments_count / batch.capacity) *
+                                        100,
+                                )}
+                                %
                             </span>
                         </div>
                     );
@@ -201,7 +234,11 @@ export default function BatchesIndex({
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -221,12 +258,19 @@ export default function BatchesIndex({
                                             </Link>
                                         </DropdownMenuItem>
                                         {batch.status !== 'completed' && (
-                                            <DropdownMenuItem onClick={() => handleComplete(batch)}>
+                                            <DropdownMenuItem
+                                                onClick={() =>
+                                                    handleComplete(batch)
+                                                }
+                                            >
                                                 <CheckCircle className="mr-2 size-4" />
                                                 {t('actions.complete')}
                                             </DropdownMenuItem>
                                         )}
-                                        <DropdownMenuItem onClick={() => handleDelete(batch)} className="text-destructive">
+                                        <DropdownMenuItem
+                                            onClick={() => handleDelete(batch)}
+                                            className="text-destructive"
+                                        >
                                             <Trash2 className="mr-2 size-4" />
                                             {t('actions.delete')}
                                         </DropdownMenuItem>
@@ -264,7 +308,11 @@ export default function BatchesIndex({
                         {isAdmin && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 p-0"
+                                    >
                                         <EllipsisVertical className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -290,14 +338,16 @@ export default function BatchesIndex({
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            itemName={t('batches.title').toLowerCase() + 's'}
+                            itemName={t('batches.title').toLowerCase()}
                             baseUrl={batches.index().url}
                             preserveParams={{ search, status }}
                             emptyMessage={t('batches.no_batches')}
                             getRowId={(row) => String(row.id)}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -305,13 +355,32 @@ export default function BatchesIndex({
                                     filters={[
                                         {
                                             id: 'status',
-                                            placeholder: t('batches.all_status'),
+                                            placeholder:
+                                                t('batches.all_status'),
                                             value: status,
                                             options: [
-                                                { label: t('students.active'), value: 'active' },
-                                                { label: t('students.inactive'), value: 'inactive' },
-                                                { label: t('actions.complete'), value: 'completed' },
-                                                { label: t('batches.archived'), value: 'archived' },
+                                                {
+                                                    label: t('students.active'),
+                                                    value: 'active',
+                                                },
+                                                {
+                                                    label: t(
+                                                        'students.inactive',
+                                                    ),
+                                                    value: 'inactive',
+                                                },
+                                                {
+                                                    label: t(
+                                                        'actions.complete',
+                                                    ),
+                                                    value: 'completed',
+                                                },
+                                                {
+                                                    label: t(
+                                                        'batches.archived',
+                                                    ),
+                                                    value: 'archived',
+                                                },
                                             ],
                                             onValueChange: handleStatusChange,
                                         },
@@ -327,7 +396,10 @@ export default function BatchesIndex({
                 open={deleteDialog.open}
                 onOpenChange={(open) => setDeleteDialog({ open, batch: null })}
                 title={t('batches.delete_title')}
-                description={t('batches.delete_confirm').replace('{name}', deleteDialog.batch?.name ?? '')}
+                description={t('batches.delete_confirm').replace(
+                    '{name}',
+                    deleteDialog.batch?.name ?? '',
+                )}
                 confirmText={t('actions.delete')}
                 cancelText={t('actions.cancel')}
                 variant="destructive"
@@ -336,9 +408,14 @@ export default function BatchesIndex({
 
             <ConfirmDialog
                 open={completeDialog.open}
-                onOpenChange={(open) => setCompleteDialog({ open, batch: null })}
+                onOpenChange={(open) =>
+                    setCompleteDialog({ open, batch: null })
+                }
                 title={t('batches.complete_title')}
-                description={t('batches.complete_confirm').replace('{name}', completeDialog.batch?.name ?? '')}
+                description={t('batches.complete_confirm').replace(
+                    '{name}',
+                    completeDialog.batch?.name ?? '',
+                )}
                 confirmText={t('actions.complete')}
                 cancelText={t('actions.cancel')}
                 onConfirm={confirmComplete}

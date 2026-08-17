@@ -81,7 +81,9 @@ export default function CoachingClassesIndex({
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<CoachingClass, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<CoachingClass, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -123,18 +125,29 @@ export default function CoachingClassesIndex({
                               return (
                                   <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" size="sm" className="size-8 p-0">
+                                          <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="size-8 p-0"
+                                          >
                                               <EllipsisVertical className="size-4" />
                                           </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
                                           <DropdownMenuItem asChild>
-                                              <Link href={coachingClasses.edit(cls.id)}>
+                                              <Link
+                                                  href={coachingClasses.edit(
+                                                      cls.id,
+                                                  )}
+                                              >
                                                   <Pencil className="mr-2 size-4" />
                                                   {t('actions.edit')}
                                               </Link>
                                           </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleDelete(cls)} className="text-destructive">
+                                          <DropdownMenuItem
+                                              onClick={() => handleDelete(cls)}
+                                              className="text-destructive"
+                                          >
                                               <Trash2 className="mr-2 size-4" />
                                               {t('actions.delete')}
                                           </DropdownMenuItem>
@@ -172,7 +185,11 @@ export default function CoachingClassesIndex({
                         {isAdmin && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 p-0"
+                                    >
                                         <EllipsisVertical className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -198,14 +215,16 @@ export default function CoachingClassesIndex({
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            itemName={t('classes.title').toLowerCase() + 's'}
+                            itemName={t('classes.title').toLowerCase()}
                             baseUrl={coachingClasses.index().url}
                             preserveParams={{ search }}
                             emptyMessage="No coaching classes found"
                             getRowId={(row) => String(row.id)}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     onClearAll={clearAll}
@@ -222,7 +241,10 @@ export default function CoachingClassesIndex({
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
                 title={t('classes.delete_title')}
-                description={t('classes.delete_confirm').replace('{name}', deleteDialog.item?.name || '')}
+                description={t('classes.delete_confirm').replace(
+                    '{name}',
+                    deleteDialog.item?.name || '',
+                )}
                 confirmText={t('actions.delete')}
                 cancelText={t('actions.cancel')}
                 variant="destructive"

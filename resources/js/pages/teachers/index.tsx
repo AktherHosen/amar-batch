@@ -1,6 +1,14 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { EllipsisVertical, Eye, Pencil, Trash2, CheckCircle, XCircle, Plus } from 'lucide-react';
+import {
+    EllipsisVertical,
+    Eye,
+    Pencil,
+    Trash2,
+    CheckCircle,
+    XCircle,
+    Plus,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -77,12 +85,20 @@ export default function TeachersIndex({
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get(teachers.index(), { search: value, status }, { preserveState: true });
+        router.get(
+            teachers.index(),
+            { search: value, status },
+            { preserveState: true },
+        );
     };
 
     const handleStatusChange = (value: string) => {
         setStatus(value);
-        router.get(teachers.index(), { search, status: value }, { preserveState: true });
+        router.get(
+            teachers.index(),
+            { search, status: value },
+            { preserveState: true },
+        );
     };
 
     const clearAll = () => {
@@ -106,14 +122,22 @@ export default function TeachersIndex({
         item: any | null;
     }>({ open: false, item: null });
 
-    const handleDelete = (teacher: { id: number; name: string; role: string }) => {
+    const handleDelete = (teacher: {
+        id: number;
+        name: string;
+        role: string;
+    }) => {
         setDeleteDialog({ open: true, item: teacher });
     };
 
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(teachers.destroy(deleteDialog.item.id));
-            toast.success(deleteDialog.item.role === 'inactive' ? t('toast.updated_successfully') : t('toast.deactivated_successfully'));
+            toast.success(
+                deleteDialog.item.role === 'inactive'
+                    ? t('toast.updated_successfully')
+                    : t('toast.deactivated_successfully'),
+            );
             setDeleteDialog({ open: false, item: null });
         }
     };
@@ -124,12 +148,18 @@ export default function TeachersIndex({
 
     const confirmApprove = () => {
         if (approveDialog.item) {
-            router.post(teachers.approve(approveDialog.item.id).url, {}, {
-                onSuccess: () => {
-                    toast.success(`${approveDialog.item.name} ${t('toast.approved_successfully')}`);
-                    router.reload({ only: ['teachers'] });
+            router.post(
+                teachers.approve(approveDialog.item.id).url,
+                {},
+                {
+                    onSuccess: () => {
+                        toast.success(
+                            `${approveDialog.item.name} ${t('toast.approved_successfully')}`,
+                        );
+                        router.reload({ only: ['teachers'] });
+                    },
                 },
-            });
+            );
             setApproveDialog({ open: false, item: null });
         }
     };
@@ -140,12 +170,18 @@ export default function TeachersIndex({
 
     const confirmReject = () => {
         if (rejectDialog.item) {
-            router.post(teachers.reject(rejectDialog.item.id).url, {}, {
-                onSuccess: () => {
-                    toast.success(`${rejectDialog.item.name} ${t('toast.revoked_successfully')}`);
-                    router.reload({ only: ['teachers'] });
+            router.post(
+                teachers.reject(rejectDialog.item.id).url,
+                {},
+                {
+                    onSuccess: () => {
+                        toast.success(
+                            `${rejectDialog.item.name} ${t('toast.revoked_successfully')}`,
+                        );
+                        router.reload({ only: ['teachers'] });
+                    },
                 },
-            });
+            );
             setRejectDialog({ open: false, item: null });
         }
     };
@@ -176,7 +212,9 @@ export default function TeachersIndex({
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<TeacherRow, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<TeacherRow, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -204,7 +242,9 @@ export default function TeachersIndex({
                           enableSorting: false,
                           cell: ({ row }: any) =>
                               row.original.branch?.name ?? (
-                                  <span className="text-muted-foreground">All</span>
+                                  <span className="text-muted-foreground">
+                                      All
+                                  </span>
                               ),
                       } as Col,
                   ]
@@ -215,7 +255,9 @@ export default function TeachersIndex({
                 header: t('teachers.role'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
-                    <span className="capitalize">{roleName(row.original.role)}</span>
+                    <span className="capitalize">
+                        {roleName(row.original.role)}
+                    </span>
                 ),
             } as Col,
             {
@@ -282,7 +324,11 @@ export default function TeachersIndex({
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -295,27 +341,52 @@ export default function TeachersIndex({
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                     <>
-                                        {teacher.role === 'teacher' && !teacher.is_approved && (
-                                            <DropdownMenuItem onClick={() => handleApprove(teacher)}>
-                                                <CheckCircle className="mr-2 size-4 text-green-600" />
-                                                {t('teachers.approve')}
-                                            </DropdownMenuItem>
-                                        )}
-                                        {teacher.role === 'teacher' && teacher.is_approved && (
-                                            <DropdownMenuItem onClick={() => handleReject(teacher)}>
-                                                <XCircle className="mr-2 size-4 text-yellow-600" />
-                                                {t('teachers.revoke_approval')}
-                                            </DropdownMenuItem>
-                                        )}
+                                        {teacher.role === 'teacher' &&
+                                            !teacher.is_approved && (
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleApprove(teacher)
+                                                    }
+                                                >
+                                                    <CheckCircle className="mr-2 size-4 text-green-600" />
+                                                    {t('teachers.approve')}
+                                                </DropdownMenuItem>
+                                            )}
+                                        {teacher.role === 'teacher' &&
+                                            teacher.is_approved && (
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleReject(teacher)
+                                                    }
+                                                >
+                                                    <XCircle className="mr-2 size-4 text-yellow-600" />
+                                                    {t(
+                                                        'teachers.revoke_approval',
+                                                    )}
+                                                </DropdownMenuItem>
+                                            )}
                                         <DropdownMenuItem asChild>
-                                            <Link href={teachers.edit(teacher.id)}>
+                                            <Link
+                                                href={teachers.edit(teacher.id)}
+                                            >
                                                 <Pencil className="mr-2 size-4" />
                                                 {t('actions.edit')}
                                             </Link>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleDelete(teacher)} className={teacher.role === 'inactive' ? '' : 'text-destructive'}>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                handleDelete(teacher)
+                                            }
+                                            className={
+                                                teacher.role === 'inactive'
+                                                    ? ''
+                                                    : 'text-destructive'
+                                            }
+                                        >
                                             <Trash2 className="mr-2 size-4" />
-                                            {teacher.role === 'inactive' ? t('teachers.reactivate') : t('actions.delete')}
+                                            {teacher.role === 'inactive'
+                                                ? t('teachers.reactivate')
+                                                : t('actions.delete')}
                                         </DropdownMenuItem>
                                     </>
                                 )}
@@ -351,7 +422,11 @@ export default function TeachersIndex({
                         {isAdmin && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 p-0"
+                                    >
                                         <EllipsisVertical className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -377,14 +452,16 @@ export default function TeachersIndex({
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            itemName={t('teachers.title').toLowerCase() + 's'}
+                            itemName={t('teachers.title').toLowerCase()}
                             baseUrl={teachers.index().url}
                             preserveParams={{ search, status }}
                             emptyMessage={t('teachers.no_teachers')}
                             getRowId={(row) => String(row.id)}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder={t('actions.search') + '...'}
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -392,11 +469,21 @@ export default function TeachersIndex({
                                     filters={[
                                         {
                                             id: 'status',
-                                            placeholder: t('teachers.all_status'),
+                                            placeholder: t(
+                                                'teachers.all_status',
+                                            ),
                                             value: status,
                                             options: [
-                                                { label: t('teachers.active'), value: 'active' },
-                                                { label: t('teachers.inactive'), value: 'inactive' },
+                                                {
+                                                    label: t('teachers.active'),
+                                                    value: 'active',
+                                                },
+                                                {
+                                                    label: t(
+                                                        'teachers.inactive',
+                                                    ),
+                                                    value: 'inactive',
+                                                },
                                             ],
                                             onValueChange: handleStatusChange,
                                         },
@@ -413,11 +500,26 @@ export default function TeachersIndex({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title={deleteDialog.item?.role === 'inactive' ? t('teachers.reactivate_title') : t('teachers.deactivate_title')}
-                description={(deleteDialog.item?.role === 'inactive' ? t('teachers.reactivate_confirm') : t('teachers.deactivate_confirm')).replace('{name}', deleteDialog.item?.name ?? '')}
-                confirmText={deleteDialog.item?.role === 'inactive' ? t('teachers.reactivate') : t('teachers.deactivate')}
+                title={
+                    deleteDialog.item?.role === 'inactive'
+                        ? t('teachers.reactivate_title')
+                        : t('teachers.deactivate_title')
+                }
+                description={(deleteDialog.item?.role === 'inactive'
+                    ? t('teachers.reactivate_confirm')
+                    : t('teachers.deactivate_confirm')
+                ).replace('{name}', deleteDialog.item?.name ?? '')}
+                confirmText={
+                    deleteDialog.item?.role === 'inactive'
+                        ? t('teachers.reactivate')
+                        : t('teachers.deactivate')
+                }
                 cancelText={t('actions.cancel')}
-                variant={deleteDialog.item?.role === 'inactive' ? 'default' : 'destructive'}
+                variant={
+                    deleteDialog.item?.role === 'inactive'
+                        ? 'default'
+                        : 'destructive'
+                }
                 onConfirm={confirmDelete}
             />
 
@@ -427,7 +529,10 @@ export default function TeachersIndex({
                     setApproveDialog({ open, item: approveDialog.item })
                 }
                 title={t('teachers.approve_title')}
-                description={t('teachers.approve_confirm').replace('{name}', approveDialog.item?.name ?? '')}
+                description={t('teachers.approve_confirm').replace(
+                    '{name}',
+                    approveDialog.item?.name ?? '',
+                )}
                 confirmText={t('teachers.approve')}
                 cancelText={t('actions.cancel')}
                 onConfirm={confirmApprove}
@@ -439,7 +544,10 @@ export default function TeachersIndex({
                     setRejectDialog({ open, item: rejectDialog.item })
                 }
                 title={t('teachers.revoke_title')}
-                description={t('teachers.revoke_confirm').replace('{name}', rejectDialog.item?.name ?? '')}
+                description={t('teachers.revoke_confirm').replace(
+                    '{name}',
+                    rejectDialog.item?.name ?? '',
+                )}
                 confirmText={t('teachers.revoke_approval')}
                 cancelText={t('actions.cancel')}
                 variant="destructive"
