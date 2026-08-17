@@ -3,32 +3,21 @@ import { useSyncExternalStore } from 'react';
 export type ResolvedAppearance = 'light' | 'dark';
 export type Appearance = ResolvedAppearance | 'system';
 
-export type AccentKey =
-    | 'neutral'
-    | 'blue'
-    | 'indigo'
-    | 'violet'
-    | 'green'
-    | 'teal'
-    | 'orange'
-    | 'rose'
-    | 'red';
-
-export type RadiusKey = 'sharp' | 'normal' | 'rounded';
-
 export type AccentDefinition = {
     label: string;
     light: string;
     dark: string;
 };
 
-export type RadiusDefinition = {
+export type RadiusPresetKey = 'sharp' | 'normal' | 'rounded';
+
+export type RadiusPreset = {
     label: string;
-    value: string;
+    value: number;
     preview: string;
 };
 
-export const ACCENTS: Record<AccentKey, AccentDefinition> = {
+export const ACCENTS: Record<string, AccentDefinition> = {
     neutral: {
         label: 'Neutral',
         light: 'oklch(0.205 0 0)',
@@ -76,29 +65,37 @@ export const ACCENTS: Record<AccentKey, AccentDefinition> = {
     },
 };
 
-export const RADIUS_OPTIONS: Record<RadiusKey, RadiusDefinition> = {
-    sharp: { label: 'Sharp', value: '0rem', preview: 'rounded-none' },
-    normal: { label: 'Normal', value: '0.625rem', preview: 'rounded-md' },
-    rounded: { label: 'Rounded', value: '1rem', preview: 'rounded-xl' },
+export const RADIUS_PRESETS: Record<RadiusPresetKey, RadiusPreset> = {
+    sharp: { label: 'Sharp', value: 0, preview: 'rounded-none' },
+    normal: { label: 'Normal', value: 10, preview: 'rounded-md' },
+    rounded: { label: 'Rounded', value: 16, preview: 'rounded-xl' },
 };
 
-export const ACCENT_KEYS = Object.keys(ACCENTS) as AccentKey[];
-export const RADIUS_KEYS = Object.keys(RADIUS_OPTIONS) as RadiusKey[];
+export const ACCENT_KEYS = Object.keys(ACCENTS);
+export const RADIUS_PRESET_KEYS = Object.keys(
+    RADIUS_PRESETS,
+) as RadiusPresetKey[];
+
+export const MIN_RADIUS = 0;
+export const MAX_RADIUS = 16;
+export const DEFAULT_ACCENT = 'neutral';
+export const DEFAULT_RADIUS = 10;
+export const DEFAULT_CUSTOM_COLOR = '#6366f1';
 
 export type UseAppearanceReturn = {
     readonly appearance: Appearance;
     readonly resolvedAppearance: ResolvedAppearance;
-    readonly accent: AccentKey;
-    readonly radius: RadiusKey;
+    readonly accent: string;
+    readonly radius: number;
     readonly updateAppearance: (mode: Appearance) => void;
-    readonly updateAccent: (accent: AccentKey) => void;
-    readonly updateRadius: (radius: RadiusKey) => void;
+    readonly updateAccent: (accent: string) => void;
+    readonly updateRadius: (radius: number) => void;
 };
 
 const listeners = new Set<() => void>();
 let currentAppearance: Appearance = 'system';
-let currentAccent: AccentKey = 'neutral';
-let currentRadius: RadiusKey = 'normal';
+let currentAccent: string = DEFAULT_ACCENT;
+let currentRadius: number = DEFAULT_RADIUS;
 
 const prefersDark = (): boolean => {
     if (typeof window === 'undefined') {
@@ -125,30 +122,65 @@ const getStoredAppearance = (): Appearance => {
     return (localStorage.getItem('appearance') as Appearance) || 'system';
 };
 
-const getStoredAccent = (): AccentKey => {
+const isHexColor = (value: string): boolean => /^#[0-9a-fA-F]{6}$/.test(value);
+
+const getStoredAccent = (): string => {
     if (typeof window === 'undefined') {
-        return 'neutral';
+        return DEFAULT_ACCENT;
     }
 
     const stored = localStorage.getItem('accent');
 
-    return stored && stored in ACCENTS ? (stored as AccentKey) : 'neutral';
+    if (stored && (stored in ACCENTS || isHexColor(stored))) {
+        return stored;
+    }
+
+    return DEFAULT_ACCENT;
 };
 
-const getStoredRadius = (): RadiusKey => {
+const getStoredRadius = (): number => {
     if (typeof window === 'undefined') {
-        return 'normal';
+        return DEFAULT_RADIUS;
     }
 
     const stored = localStorage.getItem('radius');
 
-    return stored && stored in RADIUS_OPTIONS
-        ? (stored as RadiusKey)
-        : 'normal';
+    if (stored === null) {
+        return DEFAULT_RADIUS;
+    }
+
+    if (stored in RADIUS_PRESETS) {
+        return RADIUS_PRESETS[stored as RadiusPresetKey].value;
+    }
+
+    const parsed = Number(stored);
+
+    if (!Number.isNaN(parsed)) {
+        return Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, Math.round(parsed)));
+    }
+
+    return DEFAULT_RADIUS;
 };
 
 const isDarkMode = (appearance: Appearance): boolean => {
     return appearance === 'dark' || (appearance === 'system' && prefersDark());
+};
+
+const getContrastText = (hex: string): string => {
+    const normalized = hex.replace('#', '');
+    const full =
+        normalized.length === 3
+            ? normalized
+                  .split('')
+                  .map((c) => c + c)
+                  .join('')
+            : normalized;
+    const r = parseInt(full.slice(0, 2), 16) / 255;
+    const g = parseInt(full.slice(2, 4), 16) / 255;
+    const b = parseInt(full.slice(4, 6), 16) / 255;
+    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+    return luminance > 0.5 ? 'oklch(0.205 0 0)' : 'oklch(0.985 0 0)';
 };
 
 const applyThemeSettings = (): void => {
@@ -158,10 +190,18 @@ const applyThemeSettings = (): void => {
 
     const root = document.documentElement;
     const isDark = isDarkMode(currentAppearance);
-    const accent = ACCENTS[currentAccent];
-    const radius = RADIUS_OPTIONS[currentRadius].value;
-    const primaryForeground = isDark ? 'oklch(0.205 0 0)' : 'oklch(0.985 0 0)';
-    const accentColor = isDark ? accent.dark : accent.light;
+    const isPreset = currentAccent in ACCENTS;
+    const accentColor = isPreset
+        ? isDark
+            ? ACCENTS[currentAccent].dark
+            : ACCENTS[currentAccent].light
+        : currentAccent;
+    const primaryForeground = isPreset
+        ? isDark
+            ? 'oklch(0.205 0 0)'
+            : 'oklch(0.985 0 0)'
+        : getContrastText(currentAccent);
+    const radius = `${currentRadius}px`;
 
     root.style.setProperty('--primary', accentColor);
     root.style.setProperty('--primary-foreground', primaryForeground);
@@ -217,13 +257,13 @@ export function initializeTheme(): void {
     }
 
     if (!localStorage.getItem('accent')) {
-        localStorage.setItem('accent', 'neutral');
-        setCookie('accent', 'neutral');
+        localStorage.setItem('accent', DEFAULT_ACCENT);
+        setCookie('accent', DEFAULT_ACCENT);
     }
 
     if (!localStorage.getItem('radius')) {
-        localStorage.setItem('radius', 'normal');
-        setCookie('radius', 'normal');
+        localStorage.setItem('radius', String(DEFAULT_RADIUS));
+        setCookie('radius', String(DEFAULT_RADIUS));
     }
 
     currentAppearance = getStoredAppearance();
@@ -242,16 +282,16 @@ export function useAppearance(): UseAppearanceReturn {
         () => 'system',
     );
 
-    const accent: AccentKey = useSyncExternalStore(
+    const accent: string = useSyncExternalStore(
         subscribe,
         () => currentAccent,
-        () => 'neutral',
+        () => DEFAULT_ACCENT,
     );
 
-    const radius: RadiusKey = useSyncExternalStore(
+    const radius: number = useSyncExternalStore(
         subscribe,
         () => currentRadius,
-        () => 'normal',
+        () => DEFAULT_RADIUS,
     );
 
     const resolvedAppearance: ResolvedAppearance = isDarkMode(appearance)
@@ -271,7 +311,7 @@ export function useAppearance(): UseAppearanceReturn {
         notify();
     };
 
-    const updateAccent = (accentKey: AccentKey): void => {
+    const updateAccent = (accentKey: string): void => {
         currentAccent = accentKey;
 
         localStorage.setItem('accent', accentKey);
@@ -281,11 +321,16 @@ export function useAppearance(): UseAppearanceReturn {
         notify();
     };
 
-    const updateRadius = (radiusKey: RadiusKey): void => {
-        currentRadius = radiusKey;
+    const updateRadius = (radiusValue: number): void => {
+        const clamped = Math.min(
+            MAX_RADIUS,
+            Math.max(MIN_RADIUS, Math.round(radiusValue)),
+        );
 
-        localStorage.setItem('radius', radiusKey);
-        setCookie('radius', radiusKey);
+        currentRadius = clamped;
+
+        localStorage.setItem('radius', String(clamped));
+        setCookie('radius', String(clamped));
 
         applyThemeSettings();
         notify();

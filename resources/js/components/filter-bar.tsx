@@ -132,8 +132,8 @@ export function FilterBar({
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent
-                            align="center"
-                            className={`w-fit max-w-[calc(100vw-2rem)] p-4`}
+                            align="end"
+                            className="w-[min(24rem,calc(100vw-2rem))] p-4"
                         >
                             <div
                                 className={`grid grid-cols-1 gap-3 ${filters.length > 1 ? 'sm:grid-cols-2' : ''}`}
@@ -156,7 +156,7 @@ export function FilterBar({
                                                 )
                                             }
                                         >
-                                            <SelectTrigger className="h-9 w-auto min-w-[7rem]">
+                                            <SelectTrigger className="h-9 w-full">
                                                 <SelectValue
                                                     placeholder={
                                                         filter.placeholder

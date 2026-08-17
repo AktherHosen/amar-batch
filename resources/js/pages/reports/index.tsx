@@ -1,18 +1,11 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
 import { useLocale } from '@/contexts/locale-context';
+import { useHasFeature } from '@/lib/features';
 import reports from '@/routes/reports';
 import {
     Chart as ChartJS,
@@ -86,8 +79,14 @@ type Batch = {
     name: string;
 };
 
+type Branch = {
+    id: number;
+    name: string;
+};
+
 type PageProps = {
     batches: Batch[];
+    branches: Branch[];
     attendanceSummary: AttendanceSummary;
     feeSummary: FeeSummary;
     enrollmentSummary: EnrollmentSummary;
@@ -96,18 +95,34 @@ type PageProps = {
     feeTrend: TrendData[];
     enrollmentTrend: TrendData[];
     batchPerformance: BatchPerformance[];
-    filters: { batch_id?: string; month?: string; year?: string };
+    filters: {
+        branch_id?: string;
+        batch_id?: string;
+        month?: string;
+        year?: string;
+    };
 };
 
 const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
 ];
 
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
 export default function ReportsIndex({
     batches,
+    branches,
     attendanceSummary,
     feeSummary,
     enrollmentSummary,
@@ -119,9 +134,16 @@ export default function ReportsIndex({
     filters,
 }: PageProps) {
     const { t, formatCurrency } = useLocale();
+    const hasMultiBranch = useHasFeature('multi_branch');
+    const [branchId, setBranchId] = useState(filters.branch_id || '');
     const [batchId, setBatchId] = useState(filters.batch_id || '');
-    const [month, setMonth] = useState(filters.month || String(new Date().getMonth() + 1));
-    const [year, setYear] = useState(filters.year || String(new Date().getFullYear()));
+    const [search, setSearch] = useState('');
+    const [month, setMonth] = useState(
+        filters.month || String(new Date().getMonth() + 1),
+    );
+    const [year, setYear] = useState(
+        filters.year || String(new Date().getFullYear()),
+    );
     const [refreshing, setRefreshing] = useState(false);
 
     const handleRefresh = () => {
@@ -141,13 +163,27 @@ export default function ReportsIndex({
         });
     };
 
-    const applyFilters = (newBatchId?: string, newMonth?: string, newYear?: string) => {
+    const applyFilters = (
+        newBranchId?: string,
+        newBatchId?: string,
+        newMonth?: string,
+        newYear?: string,
+    ) => {
         const params: Record<string, string> = {};
+        if (newBranchId ?? branchId) params.branch_id = newBranchId ?? branchId;
         if (newBatchId ?? batchId) params.batch_id = newBatchId ?? batchId;
         params.month = newMonth ?? month;
         params.year = newYear ?? year;
         router.get(reports.index(), params, { preserveState: true });
     };
+
+    const filteredBatchPerformance = search
+        ? batchPerformance.filter((b) =>
+              b.name.toLowerCase().includes(search.toLowerCase()),
+          )
+        : batchPerformance;
+
+    const activeFilterCount = (branchId ? 1 : 0) + (batchId ? 1 : 0);
 
     const attendanceChartData = {
         labels: attendanceTrend.map((d) => d.month),
@@ -205,8 +241,16 @@ export default function ReportsIndex({
         labels: ['Present', 'Absent', 'Late'],
         datasets: [
             {
-                data: [attendanceSummary.present, attendanceSummary.absent, attendanceSummary.late],
-                backgroundColor: ['rgba(34, 197, 94, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(234, 179, 8, 0.8)'],
+                data: [
+                    attendanceSummary.present,
+                    attendanceSummary.absent,
+                    attendanceSummary.late,
+                ],
+                backgroundColor: [
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(234, 179, 8, 0.8)',
+                ],
             },
         ],
     };
@@ -219,10 +263,15 @@ export default function ReportsIndex({
         },
     };
 
-    const totalAttendance = attendanceSummary.present + attendanceSummary.absent + attendanceSummary.late;
+    const totalAttendance =
+        attendanceSummary.present +
+        attendanceSummary.absent +
+        attendanceSummary.late;
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<BatchPerformance, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<BatchPerformance, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -239,7 +288,9 @@ export default function ReportsIndex({
                 accessorKey: 'active_students',
                 header: t('reports.active_students'),
                 enableSorting: false,
-                cell: ({ row }: any) => <span>{row.original.active_students}</span>,
+                cell: ({ row }: any) => (
+                    <span>{row.original.active_students}</span>
+                ),
             } as Col,
             {
                 id: 'total_fees_collected',
@@ -247,7 +298,9 @@ export default function ReportsIndex({
                 header: t('reports.fees_collected'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
-                    <span>{formatCurrency(row.original.total_fees_collected)}</span>
+                    <span>
+                        {formatCurrency(row.original.total_fees_collected)}
+                    </span>
                 ),
             } as Col,
         ];
@@ -259,72 +312,100 @@ export default function ReportsIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title={t('reports.title')} description={t('reports.desc')} />
+                    <Heading
+                        title={t('reports.title')}
+                        description={t('reports.desc')}
+                    />
                     <div className="flex items-center gap-1">
-                        <RefreshButton refreshing={refreshing} onRefresh={handleRefresh} />
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                        />
                     </div>
                 </div>
 
                 {/* Filters */}
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                            <Select
-                                value={batchId}
-                                onValueChange={(value) => {
-                                    setBatchId(value === 'all' ? '' : value);
-                                    applyFilters(value === 'all' ? '' : value);
-                                }}
-                            >
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder={t('reports.all_batches')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t('reports.all_batches')}</SelectItem>
-                                    {batches.map((batch) => (
-                                        <SelectItem key={batch.id} value={String(batch.id)}>
-                                            {batch.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select
-                                value={month}
-                                onValueChange={(value) => {
-                                    setMonth(value);
-                                    applyFilters(undefined, value);
-                                }}
-                            >
-                                <SelectTrigger className="w-[150px]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {months.map((m, i) => (
-                                        <SelectItem key={i} value={String(i + 1)}>
-                                            {m}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select
-                                value={year}
-                                onValueChange={(value) => {
-                                    setYear(value);
-                                    applyFilters(undefined, undefined, value);
-                                }}
-                            >
-                                <SelectTrigger className="w-[100px]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {years.map((y) => (
-                                        <SelectItem key={y} value={String(y)}>
-                                            {y}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        <FilterBar
+                            searchPlaceholder="Search batches..."
+                            searchValue={search}
+                            onSearchChange={setSearch}
+                            activeFilterCount={activeFilterCount}
+                            filters={[
+                                ...(hasMultiBranch
+                                    ? [
+                                          {
+                                              id: 'branch_id',
+                                              placeholder: t(
+                                                  'reports.all_branches',
+                                              ),
+                                              value: branchId,
+                                              options: branches.map(
+                                                  (branch) => ({
+                                                      label: branch.name,
+                                                      value: String(branch.id),
+                                                  }),
+                                              ),
+                                              onValueChange: (
+                                                  value: string,
+                                              ) => {
+                                                  setBranchId(value);
+                                                  applyFilters(value);
+                                              },
+                                          },
+                                      ]
+                                    : []),
+                                {
+                                    id: 'batch_id',
+                                    placeholder: t('reports.all_batches'),
+                                    value: batchId,
+                                    options: batches.map((batch) => ({
+                                        label: batch.name,
+                                        value: String(batch.id),
+                                    })),
+                                    onValueChange: (value: string) => {
+                                        setBatchId(value);
+                                        applyFilters(undefined, value);
+                                    },
+                                },
+                                {
+                                    id: 'month',
+                                    placeholder: 'Month',
+                                    value: month,
+                                    options: months.map((m, i) => ({
+                                        label: m,
+                                        value: String(i + 1),
+                                    })),
+                                    onValueChange: (value: string) => {
+                                        setMonth(value);
+                                        applyFilters(
+                                            undefined,
+                                            undefined,
+                                            value,
+                                        );
+                                    },
+                                },
+                                {
+                                    id: 'year',
+                                    placeholder: 'Year',
+                                    value: year,
+                                    options: years.map((y) => ({
+                                        label: String(y),
+                                        value: String(y),
+                                    })),
+                                    onValueChange: (value: string) => {
+                                        setYear(value);
+                                        applyFilters(
+                                            undefined,
+                                            undefined,
+                                            undefined,
+                                            value,
+                                        );
+                                    },
+                                },
+                            ]}
+                        />
                     </CardContent>
                 </Card>
 
@@ -332,39 +413,64 @@ export default function ReportsIndex({
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <Card>
                         <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('reports.total_students')}</div>
-                            <div className="text-2xl font-bold">{studentSummary.total}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">
-                                {studentSummary.active} active, {studentSummary.inactive} inactive
+                            <div className="text-sm text-muted-foreground">
+                                {t('reports.total_students')}
                             </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('reports.attendance_rate')}</div>
                             <div className="text-2xl font-bold">
-                                {totalAttendance > 0 ? Math.round((attendanceSummary.present / totalAttendance) * 100) : 0}%
+                                {studentSummary.total}
                             </div>
                             <div className="mt-1 text-xs text-muted-foreground">
-                                {attendanceSummary.present} present / {totalAttendance} total
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('reports.fees_collected')}</div>
-                            <div className="text-2xl font-bold">{formatCurrency(feeSummary.total_collected)}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">
-                                {formatCurrency(feeSummary.total_due)} due, {feeSummary.unpaid} unpaid
+                                {studentSummary.active} active,{' '}
+                                {studentSummary.inactive} inactive
                             </div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('reports.active_enrollments')}</div>
-                            <div className="text-2xl font-bold">{enrollmentSummary.active}</div>
+                            <div className="text-sm text-muted-foreground">
+                                {t('reports.attendance_rate')}
+                            </div>
+                            <div className="text-2xl font-bold">
+                                {totalAttendance > 0
+                                    ? Math.round(
+                                          (attendanceSummary.present /
+                                              totalAttendance) *
+                                              100,
+                                      )
+                                    : 0}
+                                %
+                            </div>
                             <div className="mt-1 text-xs text-muted-foreground">
-                                {enrollmentSummary.completed} completed, {enrollmentSummary.dropped} dropped
+                                {attendanceSummary.present} present /{' '}
+                                {totalAttendance} total
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="text-sm text-muted-foreground">
+                                {t('reports.fees_collected')}
+                            </div>
+                            <div className="text-2xl font-bold">
+                                {formatCurrency(feeSummary.total_collected)}
+                            </div>
+                            <div className="mt-1 text-xs text-muted-foreground">
+                                {formatCurrency(feeSummary.total_due)} due,{' '}
+                                {feeSummary.unpaid} unpaid
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="text-sm text-muted-foreground">
+                                {t('reports.active_enrollments')}
+                            </div>
+                            <div className="text-2xl font-bold">
+                                {enrollmentSummary.active}
+                            </div>
+                            <div className="mt-1 text-xs text-muted-foreground">
+                                {enrollmentSummary.completed} completed,{' '}
+                                {enrollmentSummary.dropped} dropped
                             </div>
                         </CardContent>
                     </Card>
@@ -374,21 +480,31 @@ export default function ReportsIndex({
                 <div className="grid gap-4 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">{t('reports.attendance_trend')}</CardTitle>
+                            <CardTitle className="text-base">
+                                {t('reports.attendance_trend')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[300px]">
-                                <Bar data={attendanceChartData} options={chartOptions} />
+                                <Bar
+                                    data={attendanceChartData}
+                                    options={chartOptions}
+                                />
                             </div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">{t('reports.fee_collection_trend')}</CardTitle>
+                            <CardTitle className="text-base">
+                                {t('reports.fee_collection_trend')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[300px]">
-                                <Line data={feeChartData} options={chartOptions} />
+                                <Line
+                                    data={feeChartData}
+                                    options={chartOptions}
+                                />
                             </div>
                         </CardContent>
                     </Card>
@@ -397,21 +513,31 @@ export default function ReportsIndex({
                 <div className="grid gap-4 lg:grid-cols-3">
                     <Card className="lg:col-span-2">
                         <CardHeader>
-                            <CardTitle className="text-base">{t('reports.enrollment_trend')}</CardTitle>
+                            <CardTitle className="text-base">
+                                {t('reports.enrollment_trend')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[250px]">
-                                <Bar data={enrollmentChartData} options={chartOptions} />
+                                <Bar
+                                    data={enrollmentChartData}
+                                    options={chartOptions}
+                                />
                             </div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">{t('reports.attendance_breakdown')}</CardTitle>
+                            <CardTitle className="text-base">
+                                {t('reports.attendance_breakdown')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="h-[250px]">
-                                <Doughnut data={attendanceDoughnutData} options={chartOptions} />
+                                <Doughnut
+                                    data={attendanceDoughnutData}
+                                    options={chartOptions}
+                                />
                             </div>
                         </CardContent>
                     </Card>
@@ -420,15 +546,17 @@ export default function ReportsIndex({
                 {/* Batch Performance */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">{t('reports.batch_performance')}</CardTitle>
+                        <CardTitle className="text-base">
+                            {t('reports.batch_performance')}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <DataTable
                             columns={columns}
-                            data={batchPerformance}
+                            data={filteredBatchPerformance}
                             loading={refreshing}
                             showPagination={false}
-                            total={batchPerformance.length}
+                            total={filteredBatchPerformance.length}
                             itemName="batches"
                             emptyMessage={t('reports.no_batches')}
                             getRowId={(row) => String(row.id)}

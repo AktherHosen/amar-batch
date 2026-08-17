@@ -1,4 +1,3 @@
-import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,17 +11,21 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import type { Appearance } from '@/hooks/use-appearance';
 import {
     ACCENTS,
     ACCENT_KEYS,
-    RADIUS_KEYS,
-    RADIUS_OPTIONS,
+    DEFAULT_CUSTOM_COLOR,
+    MAX_RADIUS,
+    MIN_RADIUS,
+    RADIUS_PRESETS,
+    RADIUS_PRESET_KEYS,
     useAppearance,
-    type Appearance,
 } from '@/hooks/use-appearance';
-import { Check, Monitor, Moon, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
+import { Head } from '@inertiajs/react';
+import { Check, Monitor, Moon, Pipette, Sun } from 'lucide-react';
 
 const MODES: {
     value: Appearance;
@@ -60,6 +63,9 @@ export default function Appearance() {
         updateRadius,
     } = useAppearance();
 
+    const accentIsPreset = ACCENT_KEYS.includes(accent);
+    const customColor = accentIsPreset ? DEFAULT_CUSTOM_COLOR : accent;
+
     return (
         <>
             <Head title="Appearance settings" />
@@ -67,7 +73,7 @@ export default function Appearance() {
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <Heading
                     title="Appearance settings"
-                    description="Customize how the app looks and feels. Changes apply instantly."
+                    description="Customize how the app looks and feels."
                 />
 
                 <Card>
@@ -143,7 +149,7 @@ export default function Appearance() {
                             </CardDescription>
                         </div>
                     </CardHeader>
-                    <CardContent className="pt-4">
+                    <CardContent className="space-y-4 pt-4">
                         <div className="flex flex-wrap gap-3">
                             {ACCENT_KEYS.map((key) => {
                                 const active = accent === key;
@@ -176,6 +182,36 @@ export default function Appearance() {
                                     </button>
                                 );
                             })}
+
+                            <label
+                                title="Custom color"
+                                aria-label="Custom color"
+                                className={cn(
+                                    'relative flex size-9 cursor-pointer items-center justify-center overflow-hidden rounded-full transition-transform focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background focus-within:outline-none hover:scale-110',
+                                    !accentIsPreset
+                                        ? 'ring-2 ring-ring ring-offset-2 ring-offset-background'
+                                        : '',
+                                )}
+                            >
+                                <span
+                                    className="flex size-7 items-center justify-center rounded-full"
+                                    style={{ backgroundColor: customColor }}
+                                >
+                                    {!accentIsPreset ? (
+                                        <Check className="size-3.5 text-white" />
+                                    ) : (
+                                        <Pipette className="size-3.5 text-muted-foreground" />
+                                    )}
+                                </span>
+                                <input
+                                    type="color"
+                                    value={customColor}
+                                    onChange={(e) =>
+                                        updateAccent(e.target.value)
+                                    }
+                                    className="absolute inset-0 size-full cursor-pointer opacity-0"
+                                />
+                            </label>
                         </div>
                     </CardContent>
                 </Card>
@@ -191,36 +227,80 @@ export default function Appearance() {
                             </CardDescription>
                         </div>
                     </CardHeader>
-                    <CardContent className="pt-4">
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                            {RADIUS_KEYS.map((key) => {
-                                const option = RADIUS_OPTIONS[key];
-                                const active = radius === key;
+                    <CardContent className="space-y-5 pt-4">
+                        <div className="flex justify-center">
+                            <div
+                                className="flex h-20 w-32 items-center justify-center border border-border bg-muted/50 transition-[border-radius] duration-150"
+                                style={{ borderRadius: `${radius}px` }}
+                            >
+                                <span className="text-xs font-medium text-muted-foreground tabular-nums">
+                                    {radius}px
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1">
+                            {RADIUS_PRESET_KEYS.map((key) => {
+                                const preset = RADIUS_PRESETS[key];
+                                const active = radius === preset.value;
 
                                 return (
                                     <button
                                         key={key}
                                         type="button"
-                                        onClick={() => updateRadius(key)}
+                                        onClick={() =>
+                                            updateRadius(preset.value)
+                                        }
                                         className={cn(
-                                            'flex flex-col items-center gap-2.5 rounded-xl border-2 p-3 transition-colors',
+                                            'flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors',
                                             active
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-border hover:border-muted-foreground/40',
+                                                ? 'bg-background text-foreground shadow-sm'
+                                                : 'text-muted-foreground hover:text-foreground',
                                         )}
                                     >
                                         <span
-                                            className={cn(
-                                                'h-9 w-14 border-2 border-current bg-muted',
-                                                option.preview,
-                                            )}
+                                            className="size-3 shrink-0 border border-current"
+                                            style={{
+                                                borderRadius: `${preset.value}px`,
+                                            }}
                                         />
-                                        <span className="text-sm font-medium">
-                                            {option.label}
-                                        </span>
+                                        {preset.label}
                                     </button>
                                 );
                             })}
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label
+                                    htmlFor="radius-slider"
+                                    className="text-sm font-medium"
+                                >
+                                    Custom size
+                                </Label>
+                                <Badge
+                                    variant="outline"
+                                    className="tabular-nums"
+                                >
+                                    {radius}px
+                                </Badge>
+                            </div>
+                            <input
+                                id="radius-slider"
+                                type="range"
+                                min={MIN_RADIUS}
+                                max={MAX_RADIUS}
+                                step="1"
+                                value={radius}
+                                onChange={(e) =>
+                                    updateRadius(Number(e.target.value))
+                                }
+                                className="w-full accent-primary"
+                            />
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>Sharp</span>
+                                <span>Rounded</span>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Batch;
+use App\Models\Branch;
 use App\Models\Enrollment;
 use App\Models\FeeStatus;
 use App\Models\Student;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,16 +19,31 @@ class ReportController extends Controller
         $this->authorize('viewAny', \App\Models\Student::class);
 
         $tenantId = $request->user()->tenant_id;
+        $branchId = $request->input('branch_id');
         $batchId = $request->input('batch_id');
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
 
-        $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $batches = Batch::where('tenant_id', $tenantId)
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->orderBy('name')
+            ->get();
+
+        $branches = Branch::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $scopeByBranch = fn ($q) => $q->whereHas(
+            'batch',
+            fn ($b) => $b->where('branch_id', $branchId),
+        );
 
         // Attendance summary
         $attendanceQuery = Attendance::where('tenant_id', $tenantId)
             ->whereMonth('date', $month)
-            ->whereYear('date', $year);
+            ->whereYear('date', $year)
+            ->when($branchId, $scopeByBranch);
 
         if ($batchId) {
             $attendanceQuery->where('batch_id', $batchId);
@@ -43,7 +58,8 @@ class ReportController extends Controller
         // Fee collection summary
         $feeQuery = FeeStatus::where('tenant_id', $tenantId)
             ->where('month', $month)
-            ->where('year', $year);
+            ->where('year', $year)
+            ->when($branchId, $scopeByBranch);
 
         if ($batchId) {
             $feeQuery->where('batch_id', $batchId);
@@ -57,6 +73,10 @@ class ReportController extends Controller
             ->where('fee_statuses.year', $year)
             ->join('students', 'fee_statuses.student_id', '=', 'students.id')
             ->leftJoin('coaching_classes', 'students.coaching_class_id', '=', 'coaching_classes.id');
+
+        if ($branchId) {
+            $feeDueQuery->whereHas('batch', fn ($b) => $b->where('branch_id', $branchId));
+        }
 
         if ($batchId) {
             $feeDueQuery->where('fee_statuses.batch_id', $batchId);
@@ -72,7 +92,9 @@ class ReportController extends Controller
         ];
 
         // Enrollment summary
-        $enrollmentQuery = Enrollment::where('tenant_id', $tenantId);
+        $enrollmentQuery = Enrollment::where('tenant_id', $tenantId)
+            ->when($branchId, $scopeByBranch);
+
         if ($batchId) {
             $enrollmentQuery->where('batch_id', $batchId);
         }
@@ -85,7 +107,9 @@ class ReportController extends Controller
         ];
 
         // Student stats
-        $studentQuery = Student::where('tenant_id', $tenantId);
+        $studentQuery = Student::where('tenant_id', $tenantId)
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId));
+
         $studentSummary = [
             'total' => (clone $studentQuery)->count(),
             'active' => (clone $studentQuery)->where('status', 'active')->count(),
@@ -93,11 +117,12 @@ class ReportController extends Controller
         ];
 
         // Attendance trend (12 months)
-        $attendanceTrend = collect(range(11, 0))->map(function ($i) use ($tenantId, $batchId) {
+        $attendanceTrend = collect(range(11, 0))->map(function ($i) use ($tenantId, $branchId, $batchId, $scopeByBranch) {
             $date = now()->subMonths($i);
             $query = Attendance::where('tenant_id', $tenantId)
                 ->whereMonth('date', $date->month)
-                ->whereYear('date', $date->year);
+                ->whereYear('date', $date->year)
+                ->when($branchId, $scopeByBranch);
 
             if ($batchId) {
                 $query->where('batch_id', $batchId);
@@ -112,11 +137,12 @@ class ReportController extends Controller
         });
 
         // Fee trend (12 months)
-        $feeTrend = collect(range(11, 0))->map(function ($i) use ($tenantId, $batchId) {
+        $feeTrend = collect(range(11, 0))->map(function ($i) use ($tenantId, $branchId, $batchId, $scopeByBranch) {
             $date = now()->subMonths($i);
             $query = FeeStatus::where('tenant_id', $tenantId)
                 ->whereMonth('created_at', $date->month)
-                ->whereYear('created_at', $date->year);
+                ->whereYear('created_at', $date->year)
+                ->when($branchId, $scopeByBranch);
 
             if ($batchId) {
                 $query->where('batch_id', $batchId);
@@ -129,6 +155,10 @@ class ReportController extends Controller
                 ->whereYear('fee_statuses.created_at', $date->year)
                 ->join('students', 'fee_statuses.student_id', '=', 'students.id')
                 ->leftJoin('coaching_classes', 'students.coaching_class_id', '=', 'coaching_classes.id');
+
+            if ($branchId) {
+                $dueQuery->whereHas('batch', fn ($b) => $b->where('branch_id', $branchId));
+            }
 
             if ($batchId) {
                 $dueQuery->where('fee_statuses.batch_id', $batchId);
@@ -144,11 +174,12 @@ class ReportController extends Controller
         });
 
         // Enrollment trend (12 months)
-        $enrollmentTrend = collect(range(11, 0))->map(function ($i) use ($tenantId, $batchId) {
+        $enrollmentTrend = collect(range(11, 0))->map(function ($i) use ($tenantId, $branchId, $batchId, $scopeByBranch) {
             $date = now()->subMonths($i);
             $query = Enrollment::where('tenant_id', $tenantId)
                 ->whereMonth('created_at', $date->month)
-                ->whereYear('created_at', $date->year);
+                ->whereYear('created_at', $date->year)
+                ->when($branchId, $scopeByBranch);
 
             if ($batchId) {
                 $query->where('batch_id', $batchId);
@@ -176,6 +207,7 @@ class ReportController extends Controller
 
         return Inertia::render('reports/index', [
             'batches' => $batches,
+            'branches' => $branches,
             'attendanceSummary' => $attendanceSummary,
             'feeSummary' => $feeSummary,
             'enrollmentSummary' => $enrollmentSummary,
@@ -184,7 +216,7 @@ class ReportController extends Controller
             'feeTrend' => $feeTrend,
             'enrollmentTrend' => $enrollmentTrend,
             'batchPerformance' => $batchPerformance,
-            'filters' => $request->only(['batch_id', 'month', 'year']),
+            'filters' => $request->only(['branch_id', 'batch_id', 'month', 'year']),
         ]);
     }
 }
