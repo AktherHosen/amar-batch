@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { FormActions } from '@/components/form-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,8 +36,11 @@ export default function CoachingClassEdit({
             <Head title={`${t('actions.edit')} ${coachingClass.name}`} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4 min-w-0">
-                    <Link href={coachingClasses.index().url} className="shrink-0">
+                <div className="flex min-w-0 items-center gap-4">
+                    <Link
+                        href={coachingClasses.index().url}
+                        className="shrink-0"
+                    >
                         <Button variant="ghost" size="icon" className="size-9">
                             <ArrowLeft className="size-4" />
                         </Button>
@@ -83,12 +87,11 @@ export default function CoachingClassEdit({
                                 <InputError message={errors.default_fee} />
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-4 border-t">
-                                <Button type="submit" disabled={processing}>
-                                    {processing
-                                        ? t('actions.save') + '...'
-                                        : t('classes.update_class')}
-                                </Button>
+                            <div className="flex justify-end gap-2 border-t pt-4">
+                                <FormActions
+                                    cancelHref={coachingClasses.index().url}
+                                    processing={processing}
+                                />
                             </div>
                         </form>
                     </CardContent>

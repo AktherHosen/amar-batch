@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import { FormActions } from '@/components/form-actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import InputError from '@/components/input-error';
+import batches from '@/routes/batches';
 
 type Batch = {
     id?: number;
@@ -179,21 +180,18 @@ export default function BatchForm({
                         </SelectContent>
                     </Select>
                     {batch?.status === 'completed' && (
-                        <p className="text-xs text-muted-foreground">Completed batches cannot be reopened.</p>
+                        <p className="text-xs text-muted-foreground">
+                            Completed batches cannot be reopened.
+                        </p>
                     )}
                     <InputError message={errors.status} />
                 </div>
             </div>
 
-            <div className="flex justify-end gap-2">
-                <Button type="submit" disabled={processing}>
-                    {processing
-                        ? 'Saving...'
-                        : batch
-                          ? 'Update Batch'
-                          : 'Create Batch'}
-                </Button>
-            </div>
+            <FormActions
+                cancelHref={batches.index().url}
+                processing={processing}
+            />
         </form>
     );
 }

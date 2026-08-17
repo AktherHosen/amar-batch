@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import RolePermissionsForm from '@/components/role-permissions-form';
+import { FormActions } from '@/components/form-actions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,7 +40,9 @@ export default function RolesEdit({ role, groups = {} }: Props) {
 
     const handleToggle = (route: string) => {
         setSelected((prev) =>
-            prev.includes(route) ? prev.filter((r) => r !== route) : [...prev, route],
+            prev.includes(route)
+                ? prev.filter((r) => r !== route)
+                : [...prev, route],
         );
     };
 
@@ -54,7 +57,9 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                     toast.success(t('roles.updated'));
                 },
                 onError: (errs) => {
-                    toast.error(Object.values(errs)[0] || t('roles.save_error'));
+                    toast.error(
+                        Object.values(errs)[0] || t('roles.save_error'),
+                    );
                     setProcessing(false);
                 },
             },
@@ -71,14 +76,17 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                 transition={{ duration: 0.3 }}
                 className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
             >
-                <div className="flex items-center gap-4 min-w-0">
+                <div className="flex min-w-0 items-center gap-4">
                     <Link href={roles.index()} className="shrink-0">
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="size-4" />
                         </Button>
                     </Link>
                     <div className="min-w-0">
-                        <Heading title={`${t('actions.edit')} ${role.name}`} description="Choose which routes this role can access." />
+                        <Heading
+                            title={`${t('actions.edit')} ${role.name}`}
+                            description="Choose which routes this role can access."
+                        />
                     </div>
                 </div>
 
@@ -99,7 +107,11 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                                 <Label htmlFor="slug">Slug</Label>
                                 <div className="flex h-9 items-center justify-between rounded-md border bg-muted px-3 text-sm">
                                     <span>{role.slug}</span>
-                                    {role.is_system && <Badge variant="secondary">System</Badge>}
+                                    {role.is_system && (
+                                        <Badge variant="secondary">
+                                            System
+                                        </Badge>
+                                    )}
                                 </div>
                             </div>
                             <div className="space-y-2 md:col-span-2">
@@ -108,7 +120,9 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                                     id="description"
                                     rows={2}
                                     value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
+                                    onChange={(e) =>
+                                        setDescription(e.target.value)
+                                    }
                                 />
                             </div>
                         </CardContent>
@@ -116,7 +130,9 @@ export default function RolesEdit({ role, groups = {} }: Props) {
 
                     <Card>
                         <CardContent className="pt-6">
-                            <h3 className="mb-4 font-semibold">Route Permissions</h3>
+                            <h3 className="mb-4 font-semibold">
+                                Route Permissions
+                            </h3>
                             <RolePermissionsForm
                                 groups={groups}
                                 selected={selected}
@@ -127,12 +143,10 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                     </Card>
 
                     <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" asChild>
-                            <Link href={roles.index()}>{t('actions.cancel')}</Link>
-                        </Button>
-                        <Button type="submit" disabled={processing}>
-                            {processing ? t('roles.saving') : t('roles.update')}
-                        </Button>
+                        <FormActions
+                            cancelHref={roles.index().url}
+                            processing={processing}
+                        />
                     </div>
                 </form>
             </motion.div>

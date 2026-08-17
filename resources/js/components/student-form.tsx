@@ -1,6 +1,5 @@
 import { useForm } from '@inertiajs/react';
 import type { Student } from '@/types';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,9 +12,20 @@ import {
 } from '@/components/ui/select';
 import InputError from '@/components/input-error';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Camera, X, User, Phone, BookOpen, Calendar, Shield, MapPin } from 'lucide-react';
+import {
+    Camera,
+    X,
+    User,
+    Phone,
+    BookOpen,
+    Calendar,
+    Shield,
+    MapPin,
+} from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useLocale } from '@/contexts/locale-context';
+import { FormActions } from '@/components/form-actions';
+import students from '@/routes/students';
 
 type CoachingClass = {
     id: number;
@@ -31,11 +41,19 @@ type StudentFormProps = {
     errors: Record<string, string>;
 };
 
-function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
+function SectionHeader({
+    icon: Icon,
+    title,
+}: {
+    icon: React.ElementType;
+    title: string;
+}) {
     return (
-        <div className="flex items-center gap-2 pb-2 border-b">
+        <div className="flex items-center gap-2 border-b pb-2">
             <Icon className="size-4 text-muted-foreground" />
-            <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+                {title}
+            </h3>
         </div>
     );
 }
@@ -154,7 +172,10 @@ export default function StudentForm({
             </div>
 
             <div className="space-y-4">
-                <SectionHeader icon={User} title={t('students.personal_info')} />
+                <SectionHeader
+                    icon={User}
+                    title={t('students.personal_info')}
+                />
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                         <Label htmlFor="name">{t('students.name')} *</Label>
@@ -179,7 +200,9 @@ export default function StudentForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="date_of_birth">{t('students.date_of_birth')}</Label>
+                        <Label htmlFor="date_of_birth">
+                            {t('students.date_of_birth')}
+                        </Label>
                         <DatePicker
                             value={data.date_of_birth}
                             onValueChange={(value) =>
@@ -200,8 +223,12 @@ export default function StudentForm({
                                 <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="male">{t('students.male')}</SelectItem>
-                                <SelectItem value="female">{t('students.female')}</SelectItem>
+                                <SelectItem value="male">
+                                    {t('students.male')}
+                                </SelectItem>
+                                <SelectItem value="female">
+                                    {t('students.female')}
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                         <InputError message={errors.gender} />
@@ -210,10 +237,15 @@ export default function StudentForm({
             </div>
 
             <div className="space-y-4">
-                <SectionHeader icon={BookOpen} title={t('students.academic_info')} />
+                <SectionHeader
+                    icon={BookOpen}
+                    title={t('students.academic_info')}
+                />
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="coaching_class_id">{t('students.class')}</Label>
+                        <Label htmlFor="coaching_class_id">
+                            {t('students.class')}
+                        </Label>
                         <Select
                             value={data.coaching_class_id}
                             onValueChange={(value) =>
@@ -225,7 +257,10 @@ export default function StudentForm({
                             </SelectTrigger>
                             <SelectContent>
                                 {coachingClasses.map((cls) => (
-                                    <SelectItem key={cls.id} value={String(cls.id)}>
+                                    <SelectItem
+                                        key={cls.id}
+                                        value={String(cls.id)}
+                                    >
                                         {cls.name}
                                     </SelectItem>
                                 ))}
@@ -258,8 +293,12 @@ export default function StudentForm({
                             <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="active">{t('students.active')}</SelectItem>
-                            <SelectItem value="inactive">{t('students.inactive')}</SelectItem>
+                            <SelectItem value="active">
+                                {t('students.active')}
+                            </SelectItem>
+                            <SelectItem value="inactive">
+                                {t('students.inactive')}
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                     <InputError message={errors.status} />
@@ -270,10 +309,14 @@ export default function StudentForm({
                 <SectionHeader icon={Calendar} title={t('students.dates')} />
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="joined_at">{t('students.joined_at')}</Label>
+                        <Label htmlFor="joined_at">
+                            {t('students.joined_at')}
+                        </Label>
                         <DatePicker
                             value={data.joined_at}
-                            onValueChange={(value) => setData('joined_at', value)}
+                            onValueChange={(value) =>
+                                setData('joined_at', value)
+                            }
                             placeholder={t('students.joined_at')}
                         />
                         <InputError message={errors.joined_at} />
@@ -281,10 +324,14 @@ export default function StudentForm({
 
                     {student && (
                         <div className="space-y-2">
-                            <Label htmlFor="left_at">{t('students.left_at')}</Label>
+                            <Label htmlFor="left_at">
+                                {t('students.left_at')}
+                            </Label>
                             <DatePicker
                                 value={data.left_at}
-                                onValueChange={(value) => setData('left_at', value)}
+                                onValueChange={(value) =>
+                                    setData('left_at', value)
+                                }
                                 placeholder={t('students.left_at')}
                             />
                             <InputError message={errors.left_at} />
@@ -308,10 +355,15 @@ export default function StudentForm({
             </div>
 
             <div className="space-y-4">
-                <SectionHeader icon={Shield} title={t('students.guardian_info')} />
+                <SectionHeader
+                    icon={Shield}
+                    title={t('students.guardian_info')}
+                />
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="guardian_name">{t('students.guardian_name')}</Label>
+                        <Label htmlFor="guardian_name">
+                            {t('students.guardian_name')}
+                        </Label>
                         <Input
                             id="guardian_name"
                             value={data.guardian_name}
@@ -324,7 +376,9 @@ export default function StudentForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="guardian_phone">{t('students.guardian_phone')}</Label>
+                        <Label htmlFor="guardian_phone">
+                            {t('students.guardian_phone')}
+                        </Label>
                         <Input
                             id="guardian_phone"
                             value={data.guardian_phone}
@@ -338,14 +392,11 @@ export default function StudentForm({
                 </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t">
-                <Button type="submit" disabled={processing}>
-                    {processing
-                        ? t('actions.save') + '...'
-                        : student
-                          ? t('students.update')
-                          : t('students.create')}
-                </Button>
+            <div className="flex justify-end gap-2 border-t pt-4">
+                <FormActions
+                    cancelHref={students.index().url}
+                    processing={processing}
+                />
             </div>
         </form>
     );

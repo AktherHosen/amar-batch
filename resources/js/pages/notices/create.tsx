@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import InputError from '@/components/input-error';
-import { Spinner } from '@/components/ui/spinner';
+import { FormActions } from '@/components/form-actions';
 
 type Batch = {
     id: number;
@@ -50,7 +50,7 @@ export default function NoticesCreate({ batches }: PageProps) {
                 transition={{ duration: 0.3 }}
                 className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
             >
-                <div className="flex items-center gap-4 min-w-0">
+                <div className="flex min-w-0 items-center gap-4">
                     <Link href="/notices" className="shrink-0">
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="size-4" />
@@ -72,7 +72,9 @@ export default function NoticesCreate({ batches }: PageProps) {
                                 <Input
                                     id="title"
                                     value={data.title}
-                                    onChange={(e) => setData('title', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('title', e.target.value)
+                                    }
                                     placeholder="Enter notice title"
                                 />
                                 <InputError message={errors.title} />
@@ -83,7 +85,9 @@ export default function NoticesCreate({ batches }: PageProps) {
                                 <Textarea
                                     id="content"
                                     value={data.content}
-                                    onChange={(e) => setData('content', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('content', e.target.value)
+                                    }
                                     placeholder="Enter notice content"
                                     rows={6}
                                 />
@@ -92,18 +96,27 @@ export default function NoticesCreate({ batches }: PageProps) {
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="batch_id">Batch (optional)</Label>
+                                    <Label htmlFor="batch_id">
+                                        Batch (optional)
+                                    </Label>
                                     <Select
                                         value={data.batch_id}
-                                        onValueChange={(value) => setData('batch_id', value)}
+                                        onValueChange={(value) =>
+                                            setData('batch_id', value)
+                                        }
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Center-wide (all batches)" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="center">Center-wide (all batches)</SelectItem>
+                                            <SelectItem value="center">
+                                                Center-wide (all batches)
+                                            </SelectItem>
                                             {batches.map((batch) => (
-                                                <SelectItem key={batch.id} value={String(batch.id)}>
+                                                <SelectItem
+                                                    key={batch.id}
+                                                    value={String(batch.id)}
+                                                >
                                                     {batch.name}
                                                 </SelectItem>
                                             ))}
@@ -117,25 +130,24 @@ export default function NoticesCreate({ batches }: PageProps) {
                                     <div className="flex items-center gap-2">
                                         <Switch
                                             checked={data.is_active}
-                                            onCheckedChange={(checked) => setData('is_active', checked)}
+                                            onCheckedChange={(checked) =>
+                                                setData('is_active', checked)
+                                            }
                                         />
                                         <span className="text-sm text-muted-foreground">
-                                            {data.is_active ? 'Active (published)' : 'Draft'}
+                                            {data.is_active
+                                                ? 'Active (published)'
+                                                : 'Draft'}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex justify-end gap-2">
-                                <Link href="/notices">
-                                    <Button type="button" variant="outline">
-                                        Cancel
-                                    </Button>
-                                </Link>
-                                <Button type="submit" disabled={processing}>
-                                    {processing && <Spinner />}
-                                    Create Notice
-                                </Button>
+                                <FormActions
+                                    cancelHref="/notices"
+                                    processing={processing}
+                                />
                             </div>
                         </form>
                     </CardContent>

@@ -15,6 +15,7 @@ import {
 import { ListFilter, Search, SlidersHorizontal, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
     let timer: ReturnType<typeof setTimeout>;
@@ -64,6 +65,7 @@ export function FilterBar({
     customFilters,
 }: FilterBarProps) {
     const [localSearch, setLocalSearch] = useState(searchValue);
+    const isMobile = useIsMobile();
 
     useEffect(() => setLocalSearch(searchValue), [searchValue]);
 
@@ -132,8 +134,8 @@ export function FilterBar({
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent
-                            align="end"
-                            className="w-[min(24rem,calc(100vw-2rem))] p-4"
+                            align={isMobile ? 'center' : 'end'}
+                            className="w-[calc(100vw-3.5rem)] p-4 sm:w-[24rem]"
                         >
                             <div
                                 className={`grid grid-cols-1 gap-3 ${filters.length > 1 ? 'sm:grid-cols-2' : ''}`}

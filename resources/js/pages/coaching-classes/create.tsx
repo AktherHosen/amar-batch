@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { FormActions } from '@/components/form-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -73,12 +74,11 @@ export default function CoachingClassCreate() {
                                 <InputError message={errors.default_fee} />
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-4 border-t">
-                                <Button type="submit" disabled={processing}>
-                                    {processing
-                                        ? t('actions.save') + '...'
-                                        : t('classes.create')}
-                                </Button>
+                            <div className="flex justify-end gap-2 border-t pt-4">
+                                <FormActions
+                                    cancelHref={coachingClasses.index().url}
+                                    processing={processing}
+                                />
                             </div>
                         </form>
                     </CardContent>

@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { FormActions } from '@/components/form-actions';
 import Heading from '@/components/heading';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -68,7 +69,10 @@ export default function ExamsEdit({ exam, batches }: PageProps) {
                             {t('actions.back')}
                         </Button>
                     </Link>
-                    <Heading title={t('exams.edit')} description={t('exams.update_details')} />
+                    <Heading
+                        title={t('exams.edit')}
+                        description={t('exams.update_details')}
+                    />
                 </div>
 
                 <Card>
@@ -76,20 +80,28 @@ export default function ExamsEdit({ exam, batches }: PageProps) {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="title">{t('exams.title')} *</Label>
+                                    <Label htmlFor="title">
+                                        {t('exams.title')} *
+                                    </Label>
                                     <Input
                                         id="title"
                                         value={data.title}
-                                        onChange={(e) => setData('title', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('title', e.target.value)
+                                        }
                                     />
                                     <InputError message={errors.title} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="subject">{t('exams.subject')}</Label>
+                                    <Label htmlFor="subject">
+                                        {t('exams.subject')}
+                                    </Label>
                                     <Input
                                         id="subject"
                                         value={data.subject}
-                                        onChange={(e) => setData('subject', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('subject', e.target.value)
+                                        }
                                     />
                                     <InputError message={errors.subject} />
                                 </div>
@@ -98,13 +110,25 @@ export default function ExamsEdit({ exam, batches }: PageProps) {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label>{t('exams.batch')}</Label>
-                                    <Select value={data.batch_id} onValueChange={(value) => setData('batch_id', value)}>
+                                    <Select
+                                        value={data.batch_id}
+                                        onValueChange={(value) =>
+                                            setData('batch_id', value)
+                                        }
+                                    >
                                         <SelectTrigger>
-                                            <SelectValue placeholder={t('exams.select_batch')} />
+                                            <SelectValue
+                                                placeholder={t(
+                                                    'exams.select_batch',
+                                                )}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {batches.map((batch) => (
-                                                <SelectItem key={batch.id} value={String(batch.id)}>
+                                                <SelectItem
+                                                    key={batch.id}
+                                                    value={String(batch.id)}
+                                                >
                                                     {batch.name}
                                                 </SelectItem>
                                             ))}
@@ -113,10 +137,14 @@ export default function ExamsEdit({ exam, batches }: PageProps) {
                                     <InputError message={errors.batch_id} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="date">{t('exams.date')}</Label>
+                                    <Label htmlFor="date">
+                                        {t('exams.date')}
+                                    </Label>
                                     <DatePicker
                                         value={data.date}
-                                        onValueChange={(value) => setData('date', value)}
+                                        onValueChange={(value) =>
+                                            setData('date', value)
+                                        }
                                         placeholder={t('exams.date')}
                                     />
                                     <InputError message={errors.date} />
@@ -125,43 +153,64 @@ export default function ExamsEdit({ exam, batches }: PageProps) {
 
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="total_marks">{t('exams.total_marks')} *</Label>
+                                    <Label htmlFor="total_marks">
+                                        {t('exams.total_marks')} *
+                                    </Label>
                                     <Input
                                         id="total_marks"
                                         type="number"
                                         min="1"
                                         value={data.total_marks}
-                                        onChange={(e) => setData('total_marks', e.target.value)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'total_marks',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
                                     <InputError message={errors.total_marks} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="passing_marks">{t('exams.passing_marks')} *</Label>
+                                    <Label htmlFor="passing_marks">
+                                        {t('exams.passing_marks')} *
+                                    </Label>
                                     <Input
                                         id="passing_marks"
                                         type="number"
                                         min="0"
                                         value={data.passing_marks}
-                                        onChange={(e) => setData('passing_marks', e.target.value)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'passing_marks',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
-                                    <InputError message={errors.passing_marks} />
+                                    <InputError
+                                        message={errors.passing_marks}
+                                    />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="notes">{t('exams.notes')}</Label>
+                                <Label htmlFor="notes">
+                                    {t('exams.notes')}
+                                </Label>
                                 <Textarea
                                     id="notes"
                                     value={data.notes}
-                                    onChange={(e) => setData('notes', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('notes', e.target.value)
+                                    }
                                 />
                                 <InputError message={errors.notes} />
                             </div>
 
                             <div className="flex justify-end">
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? t('classes.saving') : t('actions.save')}
-                                </Button>
+                                <FormActions
+                                    cancelHref={exams.index().url}
+                                    processing={processing}
+                                />
                             </div>
                         </form>
                     </CardContent>

@@ -628,6 +628,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
         // Actions
         'actions.save': 'সংরক্ষণ',
+        'actions.saving': 'সংরক্ষণ হচ্ছে...',
         'actions.cancel': 'বাতিল',
         'actions.edit': 'আপডেট',
         'actions.delete': 'মুছুন',
@@ -1252,6 +1253,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
         // Actions
         'actions.save': 'Save',
+        'actions.saving': 'Saving...',
         'actions.cancel': 'Cancel',
         'actions.edit': 'Edit',
         'actions.delete': 'Delete',

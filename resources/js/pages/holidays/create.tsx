@@ -2,6 +2,7 @@ import { Head, useForm, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Heading from '@/components/heading';
+import { FormActions } from '@/components/form-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,7 +17,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import InputError from '@/components/input-error';
-import { Spinner } from '@/components/ui/spinner';
 
 export default function HolidaysCreate() {
     const { data, setData, post, processing, errors } = useForm({
@@ -42,7 +42,7 @@ export default function HolidaysCreate() {
                 transition={{ duration: 0.3 }}
                 className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
             >
-                <div className="flex items-center gap-4 min-w-0">
+                <div className="flex min-w-0 items-center gap-4">
                     <Link href="/holidays" className="shrink-0">
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="size-4" />
@@ -64,7 +64,9 @@ export default function HolidaysCreate() {
                                 <Input
                                     id="title"
                                     value={data.title}
-                                    onChange={(e) => setData('title', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('title', e.target.value)
+                                    }
                                     placeholder="Enter holiday title"
                                 />
                                 <InputError message={errors.title} />
@@ -75,7 +77,9 @@ export default function HolidaysCreate() {
                                 <Textarea
                                     id="description"
                                     value={data.description}
-                                    onChange={(e) => setData('description', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('description', e.target.value)
+                                    }
                                     placeholder="Enter holiday description"
                                     rows={3}
                                 />
@@ -84,10 +88,14 @@ export default function HolidaysCreate() {
 
                             <div className="grid gap-4 md:grid-cols-3">
                                 <div className="space-y-2">
-                                    <Label htmlFor="start_date">Start Date *</Label>
+                                    <Label htmlFor="start_date">
+                                        Start Date *
+                                    </Label>
                                     <DatePicker
                                         value={data.start_date}
-                                        onValueChange={(value) => setData('start_date', value)}
+                                        onValueChange={(value) =>
+                                            setData('start_date', value)
+                                        }
                                         placeholder="Select start date"
                                     />
                                     <InputError message={errors.start_date} />
@@ -97,7 +105,9 @@ export default function HolidaysCreate() {
                                     <Label htmlFor="end_date">End Date *</Label>
                                     <DatePicker
                                         value={data.end_date}
-                                        onValueChange={(value) => setData('end_date', value)}
+                                        onValueChange={(value) =>
+                                            setData('end_date', value)
+                                        }
                                         placeholder="Select end date"
                                     />
                                     <InputError message={errors.end_date} />
@@ -107,15 +117,23 @@ export default function HolidaysCreate() {
                                     <Label htmlFor="type">Type *</Label>
                                     <Select
                                         value={data.type}
-                                        onValueChange={(value) => setData('type', value)}
+                                        onValueChange={(value) =>
+                                            setData('type', value)
+                                        }
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select type" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="holiday">Holiday</SelectItem>
-                                            <SelectItem value="exam">Exam Period</SelectItem>
-                                            <SelectItem value="other">Other</SelectItem>
+                                            <SelectItem value="holiday">
+                                                Holiday
+                                            </SelectItem>
+                                            <SelectItem value="exam">
+                                                Exam Period
+                                            </SelectItem>
+                                            <SelectItem value="other">
+                                                Other
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <InputError message={errors.type} />
@@ -123,15 +141,10 @@ export default function HolidaysCreate() {
                             </div>
 
                             <div className="flex justify-end gap-2">
-                                <Link href="/holidays">
-                                    <Button type="button" variant="outline">
-                                        Cancel
-                                    </Button>
-                                </Link>
-                                <Button type="submit" disabled={processing}>
-                                    {processing && <Spinner />}
-                                    Add Holiday
-                                </Button>
+                                <FormActions
+                                    cancelHref="/holidays"
+                                    processing={processing}
+                                />
                             </div>
                         </form>
                     </CardContent>

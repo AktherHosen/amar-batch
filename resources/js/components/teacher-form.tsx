@@ -1,5 +1,4 @@
 import { useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
@@ -14,6 +13,8 @@ import { AvatarUpload } from '@/components/avatar-upload';
 import { useState } from 'react';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
+import { FormActions } from '@/components/form-actions';
+import teachers from '@/routes/teachers';
 
 type Role = {
     id: number;
@@ -59,7 +60,10 @@ export default function TeacherForm({
         email: teacher?.email || '',
         password: '',
         password_confirmation: '',
-        role: teacher?.role && teacher.role !== 'inactive' ? teacher.role : 'teacher',
+        role:
+            teacher?.role && teacher.role !== 'inactive'
+                ? teacher.role
+                : 'teacher',
         branch_id: teacher?.branch_id ? String(teacher.branch_id) : '',
     });
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -119,7 +123,9 @@ export default function TeacherForm({
                             onValueChange={(value) => setData('role', value)}
                         >
                             <SelectTrigger id="role" className="w-full">
-                                <SelectValue placeholder={t('teachers.select_role')} />
+                                <SelectValue
+                                    placeholder={t('teachers.select_role')}
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 {roles.map((role) => (
@@ -139,16 +145,24 @@ export default function TeacherForm({
                         <Select
                             value={data.branch_id || 'all'}
                             onValueChange={(value) =>
-                                setData('branch_id', value === 'all' ? '' : value)
+                                setData(
+                                    'branch_id',
+                                    value === 'all' ? '' : value,
+                                )
                             }
                         >
                             <SelectTrigger id="branch_id" className="w-full">
                                 <SelectValue placeholder="Select branch" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All branches</SelectItem>
+                                <SelectItem value="all">
+                                    All branches
+                                </SelectItem>
                                 {branches.map((branch) => (
-                                    <SelectItem key={branch.id} value={String(branch.id)}>
+                                    <SelectItem
+                                        key={branch.id}
+                                        value={String(branch.id)}
+                                    >
                                         {branch.name}
                                     </SelectItem>
                                 ))}
@@ -190,13 +204,10 @@ export default function TeacherForm({
             </div>
 
             <div className="flex justify-end gap-2">
-                <Button type="submit" disabled={processing}>
-                    {processing
-                        ? t('teachers.saving')
-                        : teacher
-                          ? t('teachers.update')
-                          : t('teachers.create')}
-                </Button>
+                <FormActions
+                    cancelHref={teachers.index().url}
+                    processing={processing}
+                />
             </div>
         </form>
     );

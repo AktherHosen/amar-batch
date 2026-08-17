@@ -1,5 +1,6 @@
 import { Head, router, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { FormActions } from '@/components/form-actions';
 import Heading from '@/components/heading';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +37,10 @@ export default function BranchesCreate() {
                             {t('actions.back')}
                         </Button>
                     </Link>
-                    <Heading title={t('branches.create')} description={t('branches.create')} />
+                    <Heading
+                        title={t('branches.create')}
+                        description={t('branches.create')}
+                    />
                 </div>
 
                 <Card>
@@ -44,35 +48,85 @@ export default function BranchesCreate() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">{t('branches.name')} *</Label>
-                                    <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} placeholder={t('branches.name_placeholder')} />
+                                    <Label htmlFor="name">
+                                        {t('branches.name')} *
+                                    </Label>
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) =>
+                                            setData('name', e.target.value)
+                                        }
+                                        placeholder={t(
+                                            'branches.name_placeholder',
+                                        )}
+                                    />
                                     <InputError message={errors.name} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="code">{t('branches.code')}</Label>
-                                    <Input id="code" value={data.code} onChange={(e) => setData('code', e.target.value)} placeholder={t('branches.code_placeholder')} />
+                                    <Label htmlFor="code">
+                                        {t('branches.code')}
+                                    </Label>
+                                    <Input
+                                        id="code"
+                                        value={data.code}
+                                        onChange={(e) =>
+                                            setData('code', e.target.value)
+                                        }
+                                        placeholder={t(
+                                            'branches.code_placeholder',
+                                        )}
+                                    />
                                     <InputError message={errors.code} />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="address">{t('branches.address')}</Label>
-                                <Input id="address" value={data.address} onChange={(e) => setData('address', e.target.value)} />
+                                <Label htmlFor="address">
+                                    {t('branches.address')}
+                                </Label>
+                                <Input
+                                    id="address"
+                                    value={data.address}
+                                    onChange={(e) =>
+                                        setData('address', e.target.value)
+                                    }
+                                />
                                 <InputError message={errors.address} />
                             </div>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone">{t('branches.phone')}</Label>
-                                    <Input id="phone" value={data.phone} onChange={(e) => setData('phone', e.target.value)} />
+                                    <Label htmlFor="phone">
+                                        {t('branches.phone')}
+                                    </Label>
+                                    <Input
+                                        id="phone"
+                                        value={data.phone}
+                                        onChange={(e) =>
+                                            setData('phone', e.target.value)
+                                        }
+                                    />
                                     <InputError message={errors.phone} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">{t('branches.email')}</Label>
-                                    <Input id="email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} />
+                                    <Label htmlFor="email">
+                                        {t('branches.email')}
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(e) =>
+                                            setData('email', e.target.value)
+                                        }
+                                    />
                                     <InputError message={errors.email} />
                                 </div>
                             </div>
                             <div className="flex justify-end">
-                                <Button type="submit" disabled={processing}>{t('branches.create')}</Button>
+                                <FormActions
+                                    cancelHref={branches.index().url}
+                                    processing={processing}
+                                />
                             </div>
                         </form>
                     </CardContent>

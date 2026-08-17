@@ -1,4 +1,5 @@
 import Heading from '@/components/heading';
+import { FormActions } from '@/components/form-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,8 +12,16 @@ import { FormEvent, useState } from 'react';
 import { toast } from 'sonner';
 
 const AVAILABLE_FEATURES = [
-    'students', 'batches', 'attendance', 'fees', 'exams',
-    'reports', 'notifications', 'custom_branding', 'multi_branch', 'api_access',
+    'students',
+    'batches',
+    'attendance',
+    'fees',
+    'exams',
+    'reports',
+    'notifications',
+    'custom_branding',
+    'multi_branch',
+    'api_access',
 ];
 
 export default function PlanCreate() {
@@ -42,7 +51,10 @@ export default function PlanCreate() {
     };
 
     const generateSlug = (name: string) => {
-        return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
     };
 
     const toggleFeature = (feature: string) => {
@@ -58,10 +70,17 @@ export default function PlanCreate() {
         <>
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.history.back()}
+                    >
                         <ArrowLeft className="size-4" />
                     </Button>
-                    <Heading title="Create Plan" description="Add a new subscription plan" />
+                    <Heading
+                        title="Create Plan"
+                        description="Add a new subscription plan"
+                    />
                 </div>
 
                 <form onSubmit={handleSubmit} className="max-w-2xl">
@@ -77,7 +96,11 @@ export default function PlanCreate() {
                                     value={form.name}
                                     onChange={(e) => {
                                         const name = e.target.value;
-                                        setForm((prev) => ({ ...prev, name, slug: generateSlug(name) }));
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            name,
+                                            slug: generateSlug(name),
+                                        }));
                                     }}
                                     required
                                 />
@@ -88,7 +111,12 @@ export default function PlanCreate() {
                                 <Input
                                     id="slug"
                                     value={form.slug}
-                                    onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
+                                    onChange={(e) =>
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            slug: e.target.value,
+                                        }))
+                                    }
                                     required
                                 />
                             </div>
@@ -98,62 +126,112 @@ export default function PlanCreate() {
                                 <Textarea
                                     id="description"
                                     value={form.description}
-                                    onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                                    onChange={(e) =>
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            description: e.target.value,
+                                        }))
+                                    }
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="price_monthly">Monthly Price (৳)</Label>
+                                    <Label htmlFor="price_monthly">
+                                        Monthly Price (৳)
+                                    </Label>
                                     <Input
                                         id="price_monthly"
                                         type="number"
                                         min={0}
                                         value={form.price_monthly}
-                                        onChange={(e) => setForm((prev) => ({ ...prev, price_monthly: Number(e.target.value) }))}
+                                        onChange={(e) =>
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                price_monthly: Number(
+                                                    e.target.value,
+                                                ),
+                                            }))
+                                        }
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="price_yearly">Yearly Price (৳)</Label>
+                                    <Label htmlFor="price_yearly">
+                                        Yearly Price (৳)
+                                    </Label>
                                     <Input
                                         id="price_yearly"
                                         type="number"
                                         min={0}
                                         value={form.price_yearly}
-                                        onChange={(e) => setForm((prev) => ({ ...prev, price_yearly: Number(e.target.value) }))}
+                                        onChange={(e) =>
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                price_yearly: Number(
+                                                    e.target.value,
+                                                ),
+                                            }))
+                                        }
                                     />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="max_students">Max Students (-1 = unlimited)</Label>
+                                    <Label htmlFor="max_students">
+                                        Max Students (-1 = unlimited)
+                                    </Label>
                                     <Input
                                         id="max_students"
                                         type="number"
                                         min={-1}
                                         value={form.max_students}
-                                        onChange={(e) => setForm((prev) => ({ ...prev, max_students: Number(e.target.value) }))}
+                                        onChange={(e) =>
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                max_students: Number(
+                                                    e.target.value,
+                                                ),
+                                            }))
+                                        }
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="max_staff">Max Staff (-1 = unlimited)</Label>
+                                    <Label htmlFor="max_staff">
+                                        Max Staff (-1 = unlimited)
+                                    </Label>
                                     <Input
                                         id="max_staff"
                                         type="number"
                                         min={-1}
                                         value={form.max_staff}
-                                        onChange={(e) => setForm((prev) => ({ ...prev, max_staff: Number(e.target.value) }))}
+                                        onChange={(e) =>
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                max_staff: Number(
+                                                    e.target.value,
+                                                ),
+                                            }))
+                                        }
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="max_batches">Max Batches (-1 = unlimited)</Label>
+                                    <Label htmlFor="max_batches">
+                                        Max Batches (-1 = unlimited)
+                                    </Label>
                                     <Input
                                         id="max_batches"
                                         type="number"
                                         min={-1}
                                         value={form.max_batches}
-                                        onChange={(e) => setForm((prev) => ({ ...prev, max_batches: Number(e.target.value) }))}
+                                        onChange={(e) =>
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                max_batches: Number(
+                                                    e.target.value,
+                                                ),
+                                            }))
+                                        }
                                     />
                                 </div>
                             </div>
@@ -165,9 +243,15 @@ export default function PlanCreate() {
                                         <Button
                                             key={feature}
                                             type="button"
-                                            variant={form.features.includes(feature) ? 'default' : 'outline'}
+                                            variant={
+                                                form.features.includes(feature)
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
                                             size="sm"
-                                            onClick={() => toggleFeature(feature)}
+                                            onClick={() =>
+                                                toggleFeature(feature)
+                                            }
                                         >
                                             {feature}
                                         </Button>
@@ -180,7 +264,12 @@ export default function PlanCreate() {
                                     <Switch
                                         id="is_active"
                                         checked={form.is_active}
-                                        onCheckedChange={(checked) => setForm((prev) => ({ ...prev, is_active: checked }))}
+                                        onCheckedChange={(checked) =>
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                is_active: checked,
+                                            }))
+                                        }
                                     />
                                     <Label htmlFor="is_active">Active</Label>
                                 </div>
@@ -188,19 +277,24 @@ export default function PlanCreate() {
                                     <Switch
                                         id="is_default"
                                         checked={form.is_default}
-                                        onCheckedChange={(checked) => setForm((prev) => ({ ...prev, is_default: checked }))}
+                                        onCheckedChange={(checked) =>
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                is_default: checked,
+                                            }))
+                                        }
                                     />
-                                    <Label htmlFor="is_default">Default Plan</Label>
+                                    <Label htmlFor="is_default">
+                                        Default Plan
+                                    </Label>
                                 </div>
                             </div>
 
                             <div className="flex justify-end gap-2">
-                                <Button type="button" variant="outline" onClick={() => window.history.back()}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? 'Creating...' : 'Create Plan'}
-                                </Button>
+                                <FormActions
+                                    cancelHref="/super-admin/plans"
+                                    processing={processing}
+                                />
                             </div>
                         </CardContent>
                     </Card>
