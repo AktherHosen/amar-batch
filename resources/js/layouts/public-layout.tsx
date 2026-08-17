@@ -1,7 +1,7 @@
 import LanguageSwitcher from '@/components/language-switcher';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/contexts/locale-context';
-import { dashboard, register } from '@/routes';
+import { dashboard, login, register } from '@/routes';
 import { Link, usePage } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
 
@@ -49,8 +49,8 @@ export default function PublicLayout({ children }: Props) {
                                 asChild
                                 className="px-2.5 sm:px-3"
                             >
-                                <Link href={register()}>
-                                    {t('auth.sign_up_free')}
+                                <Link href={login()}>
+                                    {t('auth.login')}
                                     <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
                                 </Link>
                             </Button>

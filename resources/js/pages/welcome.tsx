@@ -203,8 +203,8 @@ export default function Welcome({ stats, plans }: Props) {
                                     asChild
                                     className="px-2.5 sm:px-3"
                                 >
-                                    <Link href={register()}>
-                                        {t('auth.sign_up_free')}
+                                    <Link href={login()}>
+                                        {t('auth.login')}
                                         <ArrowRight className="ml-1.5 hidden h-4 w-4 sm:ml-2 sm:inline" />
                                     </Link>
                                 </Button>
