@@ -18,6 +18,7 @@ import { useLocale } from '@/contexts/locale-context';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import CellTitle from '@/components/cell-title';
 import notices from '@/routes/notices';
 
 type Notice = {
@@ -90,7 +91,10 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
                 enableSorting: true,
                 meta: { sticky: true },
                 cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.title}</span>
+                    <CellTitle
+                        title={row.original.title}
+                        href={`/notices/${row.original.id}`}
+                    />
                 ),
             } as Col,
             {
@@ -193,12 +197,21 @@ export default function NoticesIndex({ notices: pagination, batches, filters }: 
                             }}
                         />
                         {isAdmin && (
-                            <Link href="/notices/create">
-                                <Button>
-                                    <Plus className="mr-2 size-4" />
-                                    New Notice
-                                </Button>
-                            </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                        <EllipsisVertical className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/notices/create">
+                                            <Plus className="mr-2 size-4" />
+                                            New Notice
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
                 </div>

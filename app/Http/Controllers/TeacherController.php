@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTeacherRequest;
 use App\Http\Requests\UpdateTeacherRequest;
+use App\Models\Branch;
 use App\Models\Role;
 use App\Models\User;
 use App\Policies\PlanLimitsPolicy;
@@ -15,9 +16,9 @@ use Inertia\Response;
 
 class TeacherController extends Controller
 {
-    public function index(Request $request): Response
+public function index(Request $request): Response
     {
-        if (! $request->user()->isAdmin()) {
+        if (! $request->user()->hasRoutePermission('teachers.index')) {
             abort(403);
         }
 
@@ -40,7 +41,7 @@ class TeacherController extends Controller
             });
         }
 
-        $teachers = $query->withCount('assignedBatches')->latest()->paginate(10)->withQueryString();
+        $teachers = $query->withCount('assignedBatches')->with('branch')->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('teachers/index', [
             'teachers' => $teachers,
@@ -49,9 +50,9 @@ class TeacherController extends Controller
         ]);
     }
 
-    public function create(Request $request): Response|RedirectResponse
+public function create(Request $request): Response|RedirectResponse
     {
-        if (! $request->user()->isAdmin()) {
+        if (! $request->user()->hasRoutePermission('teachers.create')) {
             abort(403);
         }
 
@@ -73,12 +74,13 @@ class TeacherController extends Controller
                 'limit' => $limit,
             ],
             'roles' => Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get(['id', 'name', 'slug']),
+            'branches' => Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
-    public function store(StoreTeacherRequest $request): RedirectResponse
+public function store(StoreTeacherRequest $request): RedirectResponse
     {
-        if (! $request->user()->isAdmin()) {
+        if (! $request->user()->hasRoutePermission('teachers.store')) {
             abort(403);
         }
 
@@ -102,6 +104,7 @@ class TeacherController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'teacher',
             'tenant_id' => $request->user()->tenant_id,
+            'branch_id' => $request->branch_id,
             'avatar' => $data['avatar'] ?? null,
         ]);
 
@@ -142,12 +145,13 @@ public function show(User $teacher): Response
         return Inertia::render('teachers/edit', [
             'teacher' => $teacher,
             'roles' => Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get(['id', 'name', 'slug']),
+            'branches' => Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
-    public function update(UpdateTeacherRequest $request, User $teacher): RedirectResponse
+public function update(UpdateTeacherRequest $request, User $teacher): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['teacher', 'inactive'])) {
+        if (! in_array($teacher->role, ['teacher', 'inactive']) || ! $request->user()->hasRoutePermission('teachers.update')) {
             abort(403);
         }
 
@@ -171,9 +175,9 @@ $data = $request->validated();
         return to_route('teachers.show', $teacher)->with('toast', ['type' => 'success', 'message' => 'Staff member updated successfully.']);
     }
 
-    public function destroy(Request $request, User $teacher): RedirectResponse
+public function destroy(Request $request, User $teacher): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['teacher', 'inactive'])) {
+        if (! in_array($teacher->role, ['teacher', 'inactive']) || ! $request->user()->hasRoutePermission('teachers.destroy')) {
             abort(403);
         }
 
@@ -190,7 +194,7 @@ $data = $request->validated();
 
     public function updateStatus(Request $request, User $teacher): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['teacher', 'inactive'])) {
+        if (! in_array($teacher->role, ['teacher', 'inactive']) || ! $request->user()->hasRoutePermission('teachers.approve')) {
             abort(403);
         }
 
@@ -213,9 +217,9 @@ $data = $request->validated();
         return back()->with('toast', ['type' => 'success', 'message' => $message]);
     }
 
-    public function approve(Request $request, User $teacher): RedirectResponse
+public function approve(Request $request, User $teacher): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['teacher', 'inactive'])) {
+        if (! in_array($teacher->role, ['teacher', 'inactive']) || ! $request->user()->hasRoutePermission('teachers.approve')) {
             abort(403);
         }
 
@@ -224,9 +228,9 @@ $data = $request->validated();
         return back()->with('toast', ['type' => 'success', 'message' => 'Staff member approved successfully.']);
     }
 
-    public function reject(Request $request, User $teacher): RedirectResponse
+public function reject(Request $request, User $teacher): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || ! in_array($teacher->role, ['teacher', 'inactive'])) {
+        if (! in_array($teacher->role, ['teacher', 'inactive']) || ! $request->user()->hasRoutePermission('teachers.reject')) {
             abort(403);
         }
 

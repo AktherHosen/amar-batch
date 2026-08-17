@@ -10,9 +10,7 @@ import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
-    SidebarMenu,
     SidebarMenuButton,
-    SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem, NavItemGroup } from '@/types';
@@ -21,40 +19,41 @@ function GroupItems({ items }: { items: NavItem[] }) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
-        <SidebarMenu>
-            <motion.ul
-                initial="hidden"
-                animate="visible"
-                variants={{
-                    hidden: {},
-                    visible: { transition: { staggerChildren: 0.03 } },
-                }}
-                className="space-y-0.5"
-            >
-                {items.map((item) => (
-                    <motion.li
-                        key={item.title}
-                        variants={{
-                            hidden: { opacity: 0, x: -12 },
-                            visible: { opacity: 1, x: 0 },
-                        }}
+        <motion.ul
+            data-slot="sidebar-menu"
+            data-sidebar="menu"
+            initial="hidden"
+            animate="visible"
+            variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.03 } },
+            }}
+            className="w-full min-w-0 space-y-0.5"
+        >
+            {items.map((item) => (
+                <motion.li
+                    key={item.title}
+                    data-slot="sidebar-menu-item"
+                    data-sidebar="menu-item"
+                    className="group/menu-item relative"
+                    variants={{
+                        hidden: { opacity: 0, x: -12 },
+                        visible: { opacity: 1, x: 0 },
+                    }}
+                >
+                    <SidebarMenuButton
+                        asChild
+                        isActive={isCurrentOrParentUrl(item.href)}
+                        tooltip={{ children: item.title }}
                     >
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                asChild
-                                isActive={isCurrentOrParentUrl(item.href)}
-                                tooltip={{ children: item.title }}
-                            >
-                                <Link href={item.href} prefetch>
-                                    {item.icon && <item.icon />}
-                                    <span>{item.title}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </motion.li>
-                ))}
-            </motion.ul>
-        </SidebarMenu>
+                        <Link href={item.href} prefetch>
+                            {item.icon && <item.icon />}
+                            <span>{item.title}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </motion.li>
+            ))}
+        </motion.ul>
     );
 }
 

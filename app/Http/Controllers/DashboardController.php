@@ -30,7 +30,14 @@ class DashboardController extends Controller
             return $this->adminDashboard($request);
         }
 
-        if ($user->isTeacher() && ! $user->is_approved) {
+        // Custom tenant roles (created via the role editor) with dashboard
+        // access should get the admin dashboard rather than an empty teacher
+        // dashboard. Teachers keep their scoped dashboard below.
+        if (! $user->isTeacher()) {
+            return $this->adminDashboard($request);
+        }
+
+        if (! $user->is_approved) {
             return Inertia::render('dashboard', [
                 'isPendingApproval' => true,
                 'pendingTeacher' => [

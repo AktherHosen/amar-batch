@@ -8,7 +8,12 @@ import { Button } from '@/components/ui/button';
 import teachers from '@/routes/teachers';
 import { useLocale } from '@/contexts/locale-context';
 
-export default function TeachersCreate({ roles = [] }: { roles?: { id: number; name: string; slug: string }[] }) {
+type Branch = {
+    id: number;
+    name: string;
+};
+
+export default function TeachersCreate({ roles = [], branches = [] }: { roles?: { id: number; name: string; slug: string }[]; branches?: Branch[] }) {
     const { t } = useLocale();
     const { errors } = usePage().props;
     const handleSubmit = (data: FormData) => {
@@ -45,6 +50,7 @@ export default function TeachersCreate({ roles = [] }: { roles?: { id: number; n
                     <CardContent className="pt-6">
                         <TeacherForm
                             roles={roles}
+                            branches={branches}
                             onSubmit={handleSubmit}
                             processing={false}
                             errors={errors}

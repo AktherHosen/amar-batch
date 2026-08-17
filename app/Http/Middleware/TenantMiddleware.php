@@ -20,6 +20,7 @@ class TenantMiddleware
         // Super admin doesn't need tenant context
         if ($user->role === 'super_admin') {
             App::instance('tenant_id', null);
+            App::instance('branch_id', null);
 
             return $next($request);
         }
@@ -34,6 +35,8 @@ class TenantMiddleware
         }
 
         App::instance('tenant_id', $user->tenant_id);
+
+        App::instance('branch_id', $user->isBranchScoped() ? $user->branch_id : null);
 
         return $next($request);
     }

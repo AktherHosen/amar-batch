@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Batch;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -39,6 +40,16 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $tenant = $user?->tenant;
+
+        // Surface the legacy session `toast` flash through Inertia's flash
+        // channel so controllers using `->with('toast', [...])` render toasts.
+        if ($toast = $request->session()->get('toast')) {
+            Inertia::flash('toast', $toast);
+        }
+
+        if ($token = $request->session()->get('token')) {
+            Inertia::flash('token', $token);
+        }
 
         return [
             ...parent::share($request),

@@ -9,11 +9,15 @@ class ExamPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isTeacher();
+        return $user->hasRoutePermission('exams.index');
     }
 
     public function view(User $user, Exam $exam): bool
     {
+        if (! $user->hasRoutePermission('exams.show')) {
+            return false;
+        }
+
         if ($user->isAdmin()) {
             return true;
         }
@@ -27,16 +31,16 @@ class ExamPolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasRoutePermission('exams.create');
     }
 
     public function update(User $user, Exam $exam): bool
     {
-        return $user->isAdmin();
+        return $user->hasRoutePermission('exams.update');
     }
 
     public function delete(User $user, Exam $exam): bool
     {
-        return $user->isAdmin();
+        return $user->hasRoutePermission('exams.destroy');
     }
 }

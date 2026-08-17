@@ -165,7 +165,11 @@ export function NotificationBell() {
                     )}
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 p-0">
+            <DropdownMenuContent
+                align="end"
+                collisionPadding={8}
+                className="w-[min(20rem,calc(100vw-2rem))] overflow-x-hidden p-0 sm:w-80"
+            >
                 <div className="flex items-center justify-between border-b px-4 py-2.5">
                     <span className="text-sm font-semibold">Notifications</span>
                     {unreadCount > 0 && (
@@ -200,7 +204,7 @@ export function NotificationBell() {
                                         <Icon className="size-4" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className={`text-sm ${isUnread ? 'font-medium' : ''}`}>
+                                        <p className={`truncate text-sm ${isUnread ? 'font-medium' : ''}`}>
                                             {notification.title}
                                         </p>
                                         {notification.message && (

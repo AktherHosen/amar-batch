@@ -193,12 +193,21 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
                             }}
                         />
                         {isAdmin && (
-                            <Link href="/holidays/create">
-                                <Button>
-                                    <Plus className="mr-2 size-4" />
-                                    Add Holiday
-                                </Button>
-                            </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                        <EllipsisVertical className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/holidays/create">
+                                            <Plus className="mr-2 size-4" />
+                                            Add Holiday
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
                 </div>

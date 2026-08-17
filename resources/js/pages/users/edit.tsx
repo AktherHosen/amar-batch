@@ -13,6 +13,7 @@ type User = {
     name: string;
     email: string;
     role: string;
+    branch_id?: number | null;
     avatar?: string | null;
 };
 
@@ -22,12 +23,18 @@ type Role = {
     slug: string;
 };
 
+type Branch = {
+    id: number;
+    name: string;
+};
+
 type UsersEditProps = {
     user: User;
     roles?: Role[];
+    branches?: Branch[];
 };
 
-export default function UsersEdit({ user, roles = [] }: UsersEditProps) {
+export default function UsersEdit({ user, roles = [], branches = [] }: UsersEditProps) {
     const { t } = useLocale();
     const { errors } = usePage().props;
     const handleSubmit = (data: FormData) => {
@@ -65,6 +72,7 @@ export default function UsersEdit({ user, roles = [] }: UsersEditProps) {
                         <UserForm
                             user={user}
                             roles={roles}
+                            branches={branches}
                             onSubmit={handleSubmit}
                             processing={false}
                             errors={errors}

@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -24,6 +25,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import teachers from '@/routes/teachers';
 import { useLocale } from '@/contexts/locale-context';
+import { useHasFeature } from '@/lib/features';
 
 type TeacherRow = {
     id: number;
@@ -32,6 +34,7 @@ type TeacherRow = {
     role: string;
     is_approved: boolean;
     assigned_batches_count: number;
+    branch: { id: number; name: string } | null;
 };
 
 type PageProps = {
@@ -62,6 +65,7 @@ export default function TeachersIndex({
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = isOwner(auth.user);
+    const hasMultiBranch = useHasFeature('multi_branch');
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [refreshing, setRefreshing] = useState(false);
@@ -191,6 +195,20 @@ export default function TeachersIndex({
                 enableSorting: true,
                 cell: ({ row }: any) => <span>{row.original.email}</span>,
             } as Col,
+            ...(hasMultiBranch
+                ? [
+                      {
+                          id: 'branch',
+                          accessorKey: 'branch.name',
+                          header: 'Branch',
+                          enableSorting: false,
+                          cell: ({ row }: any) =>
+                              row.original.branch?.name ?? (
+                                  <span className="text-muted-foreground">All</span>
+                              ),
+                      } as Col,
+                  ]
+                : []),
             {
                 id: 'role',
                 accessorKey: 'role',
@@ -315,14 +333,10 @@ export default function TeachersIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-start justify-between">
-                    <div className="space-y-0.5">
-                        <h2 className="text-xl font-semibold tracking-tight">
-                            {t('teachers.title')}
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            {t('teachers.desc')}
-                        </p>
-                    </div>
+                    <Heading
+                        title={t('teachers.title')}
+                        description={t('teachers.desc')}
+                    />
                     <div className="flex items-center gap-1">
                         <RefreshButton
                             refreshing={refreshing}

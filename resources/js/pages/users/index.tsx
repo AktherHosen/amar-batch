@@ -16,6 +16,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -34,6 +35,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import users from '@/routes/users';
 import { useLocale } from '@/contexts/locale-context';
+import { useHasFeature } from '@/lib/features';
 
 type UserRow = {
     id: number;
@@ -43,6 +45,7 @@ type UserRow = {
     is_approved: boolean;
     is_owner: boolean;
     assigned_batches_count: number;
+    branch: { id: number; name: string } | null;
 };
 
 type PageProps = {
@@ -74,6 +77,7 @@ export default function UsersIndex({
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = isOwner(auth.user);
+    const hasMultiBranch = useHasFeature('multi_branch');
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [roleFilter, setRoleFilter] = useState(filters.role || '');
@@ -215,6 +219,20 @@ export default function UsersIndex({
                 enableSorting: true,
                 cell: ({ row }: any) => <span>{row.original.email}</span>,
             } as Col,
+            ...(hasMultiBranch
+                ? [
+                      {
+                          id: 'branch',
+                          accessorKey: 'branch.name',
+                          header: 'Branch',
+                          enableSorting: false,
+                          cell: ({ row }: any) =>
+                              row.original.branch?.name ?? (
+                                  <span className="text-muted-foreground">All</span>
+                              ),
+                      } as Col,
+                  ]
+                : []),
             {
                 id: 'role',
                 accessorKey: 'role',
@@ -359,14 +377,10 @@ export default function UsersIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-start justify-between">
-                    <div className="space-y-0.5">
-                        <h2 className="text-xl font-semibold tracking-tight">
-                            {t('users.title')}
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            {t('users.desc')}
-                        </p>
-                    </div>
+                    <Heading
+                        title={t('users.title')}
+                        description={t('users.desc')}
+                    />
                     <div className="flex items-center gap-1">
                         {isAdmin && (
                             <RefreshButton

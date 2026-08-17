@@ -1,5 +1,6 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,17 +36,24 @@ export default function HolidaysCreate() {
         <>
             <Head title="Add Holiday" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4">
-                    <Link href="/holidays">
-                        <Button variant="ghost" size="icon" className="size-9">
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+            >
+                <div className="flex items-center gap-4 min-w-0">
+                    <Link href="/holidays" className="shrink-0">
+                        <Button variant="ghost" size="sm">
                             <ArrowLeft className="size-4" />
                         </Button>
                     </Link>
-                    <Heading
-                        title="Add Holiday"
-                        description="Add a new holiday or event"
-                    />
+                    <div className="min-w-0">
+                        <Heading
+                            title="Add Holiday"
+                            description="Add a new holiday or event"
+                        />
+                    </div>
                 </div>
 
                 <Card>
@@ -128,7 +136,7 @@ export default function HolidaysCreate() {
                         </form>
                     </CardContent>
                 </Card>
-            </div>
+            </motion.div>
         </>
     );
 }

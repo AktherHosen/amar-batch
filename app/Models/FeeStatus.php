@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToBranch;
 use App\Concerns\BelongsToTenant;
 use Database\Factories\FeeStatusFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FeeStatus extends Model
 {
     /** @use HasFactory<FeeStatusFactory> */
-    use BelongsToTenant, HasFactory;
+    use BelongsToBranch, BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'tenant_id', 'student_id', 'batch_id', 'month', 'year', 'amount_paid', 'notes',
@@ -24,6 +26,11 @@ class FeeStatus extends Model
             'month' => 'integer',
             'year' => 'integer',
         ];
+    }
+
+    public function branchScopeQuery(Builder $query, int $branchId): void
+    {
+        $query->whereHas('batch', fn ($q) => $q->where('branch_id', $branchId));
     }
 
     /** @return BelongsTo<Student, $this> */

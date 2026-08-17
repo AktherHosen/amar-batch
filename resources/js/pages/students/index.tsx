@@ -19,6 +19,7 @@ import { Download, EllipsisVertical, Eye, PenLine, Pencil, Plus, Trash2 } from '
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import Heading from '@/components/heading';
 import { useLocale } from '@/contexts/locale-context';
 import students from '@/routes/students';
 import type { Student } from '@/types';
@@ -132,20 +133,26 @@ export default function StudentsIndex({
                 header: t('students.name'),
                 enableSorting: true,
                 meta: { sticky: true },
-                cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.name}</span>
-                ),
-            } as Col,
-            {
-                id: 'class',
-                accessorKey: 'coaching_class.name',
-                header: t('students.class'),
-                enableSorting: false,
                 cell: ({ row }: any) => {
                     const s: Student = row.original;
-                    return s.coaching_class
+                    const className = s.coaching_class
                         ? `${s.coaching_class.name}${s.section ? ` - ${s.section}` : ''}`
-                        : s.section || '-';
+                        : s.section || '';
+                    return (
+                        <div className="min-w-0">
+                            <Link
+                                href={students.show(s.id)}
+                                className="font-medium hover:underline"
+                            >
+                                {s.name}
+                            </Link>
+                            {className && (
+                                <div className="text-xs text-muted-foreground">
+                                    {className}
+                                </div>
+                            )}
+                        </div>
+                    );
                 },
             } as Col,
             {
@@ -154,13 +161,6 @@ export default function StudentsIndex({
                 header: t('students.phone'),
                 enableSorting: false,
                 cell: ({ row }: any) => row.original.phone || '-',
-            } as Col,
-            {
-                id: 'guardian_name',
-                accessorKey: 'guardian_name',
-                header: t('students.guardian_name'),
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.guardian_name || '-',
             } as Col,
             {
                 id: 'joined_at',
@@ -180,7 +180,7 @@ export default function StudentsIndex({
                         return (
                             <Badge
                                 variant={
-                                    s.status === 'active' ? 'default' : 'warning'
+                                    s.status === 'active' ? 'default' : 'danger'
                                 }
                             >
                                 {s.status}
@@ -267,14 +267,10 @@ export default function StudentsIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-start justify-between">
-                    <div className="space-y-0.5">
-                        <h2 className="text-xl font-semibold tracking-tight">
-                            {t('students.title')}
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            {t('students.desc')}
-                        </p>
-                    </div>
+                    <Heading
+                        title={t('students.title')}
+                        description={t('students.desc')}
+                    />
                     <div className="flex items-center gap-1">
                         <RefreshButton
                             refreshing={refreshing}

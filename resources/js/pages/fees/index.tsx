@@ -16,6 +16,7 @@ import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -655,14 +656,10 @@ export default function FeesIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-start justify-between">
-                    <div className="space-y-0.5">
-                        <h2 className="text-xl font-semibold tracking-tight">
-                            {t('fees.title')}
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            {t('fees.desc')}
-                        </p>
-                    </div>
+                    <Heading
+                        title={t('fees.title')}
+                        description={t('fees.desc')}
+                    />
                     <div className="flex items-center gap-1">
                         <RefreshButton
                             refreshing={refreshing}

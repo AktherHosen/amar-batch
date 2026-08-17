@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { DataTable, type DataTableProps } from '@/components/data-table';
+import { RefreshButton } from '@/components/refresh-button';
 import { useLocale } from '@/contexts/locale-context';
 import reports from '@/routes/reports';
 import {
@@ -121,6 +122,24 @@ export default function ReportsIndex({
     const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [month, setMonth] = useState(filters.month || String(new Date().getMonth() + 1));
     const [year, setYear] = useState(filters.year || String(new Date().getFullYear()));
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = () => {
+        setRefreshing(true);
+        router.reload({
+            only: [
+                'attendanceSummary',
+                'feeSummary',
+                'enrollmentSummary',
+                'studentSummary',
+                'attendanceTrend',
+                'feeTrend',
+                'enrollmentTrend',
+                'batchPerformance',
+            ],
+            onFinish: () => setRefreshing(false),
+        });
+    };
 
     const applyFilters = (newBatchId?: string, newMonth?: string, newYear?: string) => {
         const params: Record<string, string> = {};
@@ -241,6 +260,9 @@ export default function ReportsIndex({
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <Heading title={t('reports.title')} description={t('reports.desc')} />
+                    <div className="flex items-center gap-1">
+                        <RefreshButton refreshing={refreshing} onRefresh={handleRefresh} />
+                    </div>
                 </div>
 
                 {/* Filters */}
@@ -404,6 +426,7 @@ export default function ReportsIndex({
                         <DataTable
                             columns={columns}
                             data={batchPerformance}
+                            loading={refreshing}
                             showPagination={false}
                             total={batchPerformance.length}
                             itemName="batches"

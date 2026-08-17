@@ -11,14 +11,14 @@ import {
     type SortingState,
     type VisibilityState,
 } from '@tanstack/react-table';
-import { ChevronDown, ChevronUp, ChevronsUpDown, Columns3, Search, X } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, ChevronsUpDown, Columns3, Search, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
-    DropdownMenuCheckboxItem,
     DropdownMenuContent,
+    DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -30,6 +30,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import Pagination from '@/components/pagination';
+import { cn } from '@/lib/utils';
 
 export type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -377,8 +378,14 @@ export function ColumnToggle<TData>({
 }: {
     table: ReturnType<typeof useReactTable<TData>>;
 }) {
+    const [open, setOpen] = useState(false);
+
+    const hideableColumns = table
+        .getAllColumns()
+        .filter((col) => col.getCanHide());
+
     return (
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="h-9 flex-1 gap-2 sm:flex-none">
                     <Columns3 className="size-4" />
@@ -386,23 +393,30 @@ export function ColumnToggle<TData>({
                     <ChevronDown className="size-3.5 opacity-60" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                {table
-                    .getAllColumns()
-                    .filter((col) => col.getCanHide())
-                    .map((column) => (
-                        <DropdownMenuCheckboxItem
+            <DropdownMenuContent align="end" key={open ? 'open' : 'closed'}>
+                {hideableColumns.map((column) => {
+                    const isVisible = column.getIsVisible();
+
+                    return (
+                        <DropdownMenuItem
                             key={column.id}
-                            checked={column.getIsVisible()}
-                            onCheckedChange={(value) =>
-                                column.toggleVisibility(!!value)
-                            }
+                            onSelect={(e) => e.preventDefault()}
+                            onClick={() => column.toggleVisibility()}
                         >
+                            <span
+                                className={cn(
+                                    'flex size-4 items-center justify-center text-primary',
+                                    !isVisible && 'opacity-0',
+                                )}
+                            >
+                                <Check className="size-4" />
+                            </span>
                             {typeof column.columnDef.header === 'string'
                                 ? column.columnDef.header
                                 : String(column.columnDef.id)}
-                        </DropdownMenuCheckboxItem>
-                    ))}
+                        </DropdownMenuItem>
+                    );
+                })}
             </DropdownMenuContent>
         </DropdownMenu>
     );

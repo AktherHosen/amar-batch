@@ -161,14 +161,10 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-start justify-between">
-                    <div className="space-y-0.5">
-                        <h2 className="text-xl font-semibold tracking-tight">
-                            Roles & Permissions
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            Manage roles and the routes each role can access.
-                        </p>
-                    </div>
+                    <Heading
+                        title="Roles & Permissions"
+                        description="Manage roles and the routes each role can access."
+                    />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8 p-0">

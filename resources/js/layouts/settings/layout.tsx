@@ -1,35 +1,64 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { isOwner } from '@/lib/role';
+import { useHasFeature } from '@/lib/features';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
+import tenant from '@/routes/settings/tenant';
+import api from '@/routes/settings/api';
 import type { NavItem } from '@/types';
-
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Security',
-        href: editSecurity(),
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
-];
+import { Building2, Key, Palette, Shield, User } from 'lucide-react';
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { auth } = usePage().props as {
+        auth: { user: { role: string } | null };
+    };
+    const isUserOwner = isOwner(auth.user);
+    const hasApiAccess = useHasFeature('api_access');
+
+    const sidebarNavItems: NavItem[] = [
+        {
+            title: 'Profile',
+            href: edit(),
+            icon: User,
+        },
+        {
+            title: 'Security',
+            href: editSecurity(),
+            icon: Shield,
+        },
+        {
+            title: 'Appearance',
+            href: editAppearance(),
+            icon: Palette,
+        },
+        {
+            title: 'Coaching Center',
+            href: tenant.edit(),
+            icon: Building2,
+            ownerOnly: true,
+        },
+        {
+            title: 'API Access',
+            href: api.index(),
+            icon: Key,
+            ownerOnly: true,
+        },
+    ];
+
+    const visibleNavItems = sidebarNavItems.filter((item) => {
+        if (item.ownerOnly && !isUserOwner) return false;
+        if (item.title === 'API Access' && !hasApiAccess) return false;
+
+        return true;
+    });
 
     return (
         <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
@@ -44,7 +73,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                         className="flex flex-col space-y-1 space-x-0"
                         aria-label="Settings"
                     >
-                        {sidebarNavItems.map((item, index) => (
+                        {visibleNavItems.map((item, index) => (
                             <Button
                                 key={`${toUrl(item.href)}-${index}`}
                                 size="sm"

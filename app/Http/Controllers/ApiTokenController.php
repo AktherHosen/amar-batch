@@ -8,6 +8,17 @@ use Illuminate\Support\Str;
 
 class ApiTokenController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (! $request->user()->isAdmin()) {
+                abort(403);
+            }
+
+            return $next($request);
+        });
+    }
+
     public function index(Request $request)
     {
         $tokens = $request->user()->tokens()

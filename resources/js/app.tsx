@@ -25,8 +25,6 @@ createInertiaApp({
                 return AuthLayout;
             case name.startsWith('super-admin/'):
                 return SuperAdminLayout;
-            case name === 'settings/tenant':
-                return AppLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             default:

@@ -1,5 +1,4 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -143,10 +142,7 @@ export default function ApiSettings({ tokens }: PageProps) {
         <>
             <Head title="API Settings" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title="API Access" description="Manage API tokens for external integrations" />
-
-                {newToken && (
+            {newToken && (
                     <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
                         <CardContent className="pt-6">
                             <div className="flex items-start justify-between">
@@ -218,7 +214,6 @@ export default function ApiSettings({ tokens }: PageProps) {
                         />
                     </CardContent>
                 </Card>
-            </div>
 
             <ConfirmDialog
                 open={deleteDialog.open}

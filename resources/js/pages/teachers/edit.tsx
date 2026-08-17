@@ -12,6 +12,7 @@ type Teacher = {
     id: number;
     name: string;
     email: string;
+    branch_id?: number | null;
     avatar?: string | null;
 };
 
@@ -21,12 +22,18 @@ type Role = {
     slug: string;
 };
 
+type Branch = {
+    id: number;
+    name: string;
+};
+
 type TeachersEditProps = {
     teacher: Teacher;
     roles?: Role[];
+    branches?: Branch[];
 };
 
-export default function TeachersEdit({ teacher, roles = [] }: TeachersEditProps) {
+export default function TeachersEdit({ teacher, roles = [], branches = [] }: TeachersEditProps) {
     const { t } = useLocale();
     const { errors } = usePage().props;
     const handleSubmit = (data: FormData) => {
@@ -64,6 +71,7 @@ export default function TeachersEdit({ teacher, roles = [] }: TeachersEditProps)
                         <TeacherForm
                             teacher={teacher}
                             roles={roles}
+                            branches={branches}
                             onSubmit={handleSubmit}
                             processing={false}
                             errors={errors}

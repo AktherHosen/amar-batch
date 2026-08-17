@@ -13,6 +13,7 @@ import {
 import { AvatarUpload } from '@/components/avatar-upload';
 import { useState } from 'react';
 import { useLocale } from '@/contexts/locale-context';
+import { useHasFeature } from '@/lib/features';
 
 type Role = {
     id: number;
@@ -20,17 +21,24 @@ type Role = {
     slug: string;
 };
 
+type Branch = {
+    id: number;
+    name: string;
+};
+
 type Teacher = {
     id?: number;
     name: string;
     email: string;
     role?: string;
+    branch_id?: number | null;
     avatar?: string | null;
 };
 
 type TeacherFormProps = {
     teacher?: Teacher;
     roles?: Role[];
+    branches?: Branch[];
     onSubmit: (data: FormData) => void;
     processing: boolean;
     errors: Record<string, string>;
@@ -39,17 +47,20 @@ type TeacherFormProps = {
 export default function TeacherForm({
     teacher,
     roles = [],
+    branches = [],
     onSubmit,
     processing,
     errors,
 }: TeacherFormProps) {
     const { t } = useLocale();
+    const hasMultiBranch = useHasFeature('multi_branch');
     const { data, setData } = useForm({
         name: teacher?.name || '',
         email: teacher?.email || '',
         password: '',
         password_confirmation: '',
         role: teacher?.role && teacher.role !== 'inactive' ? teacher.role : 'teacher',
+        branch_id: teacher?.branch_id ? String(teacher.branch_id) : '',
     });
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
@@ -119,6 +130,31 @@ export default function TeacherForm({
                             </SelectContent>
                         </Select>
                         <InputError message={errors.role} />
+                    </div>
+                )}
+
+                {hasMultiBranch && branches.length > 0 && (
+                    <div className="space-y-2">
+                        <Label htmlFor="branch_id">Branch</Label>
+                        <Select
+                            value={data.branch_id || 'all'}
+                            onValueChange={(value) =>
+                                setData('branch_id', value === 'all' ? '' : value)
+                            }
+                        >
+                            <SelectTrigger id="branch_id" className="w-full">
+                                <SelectValue placeholder="Select branch" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All branches</SelectItem>
+                                {branches.map((branch) => (
+                                    <SelectItem key={branch.id} value={String(branch.id)}>
+                                        {branch.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors.branch_id} />
                     </div>
                 )}
 

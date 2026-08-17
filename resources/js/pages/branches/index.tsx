@@ -12,6 +12,7 @@ import {
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import CellTitle from '@/components/cell-title';
 import { useLocale } from '@/contexts/locale-context';
 import branches from '@/routes/branches';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -86,7 +87,10 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
                 enableSorting: true,
                 meta: { sticky: true },
                 cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.name}</span>
+                    <CellTitle
+                        title={row.original.name}
+                        href={branches.show(row.original.id).url}
+                    />
                 ),
             } as Col,
             {
@@ -118,7 +122,7 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
                 cell: ({ row }: any) => {
                     const branch: Branch = row.original;
                     return (
-                        <Badge className={branch.is_active ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}>
+                        <Badge variant={branch.is_active ? 'success' : 'danger'}>
                             {branch.is_active ? t('branches.active') : t('branches.inactive')}
                         </Badge>
                     );
@@ -173,12 +177,21 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
                     <div className="flex items-center gap-1">
                         <RefreshButton refreshing={refreshing} onRefresh={handleRefresh} />
                         {isAdmin && (
-                            <Link href={branches.create()}>
-                                <Button size="sm">
-                                    <Plus className="mr-2 size-4" />
-                                    {t('branches.create')}
-                                </Button>
-                            </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                                        <EllipsisVertical className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <Link href={branches.create()}>
+                                            <Plus className="mr-2 size-4" />
+                                            {t('branches.create')}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
                 </div>
@@ -202,7 +215,7 @@ export default function BranchesIndex({ branches: pagination, filters }: PagePro
                                     searchPlaceholder={t('actions.search') + '...'}
                                     searchValue={search}
                                     onSearchChange={handleSearch}
-                                    activeFilterCount={0}
+                                    activeFilterCount={search ? 1 : 0}
                                     onClearAll={clearAll}
                                 />
                             }

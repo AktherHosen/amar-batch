@@ -27,6 +27,7 @@ class StoreUserRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['nullable', Rule::in($assignableRoles)],
+            'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('tenant_id', $this->user()->tenant_id)],
             'avatar' => ['nullable', 'image', 'max:2048'],
         ];
     }

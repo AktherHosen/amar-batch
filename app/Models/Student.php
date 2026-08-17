@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToBranch;
 use App\Concerns\BelongsToTenant;
 use Database\Factories\StudentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,10 +15,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Student extends Model
 {
     /** @use HasFactory<StudentFactory> */
-    use BelongsToTenant, HasFactory, SoftDeletes;
+    use BelongsToBranch, BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'tenant_id', 'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',
+        'tenant_id', 'branch_id', 'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',
         'gender', 'guardian_name', 'guardian_phone', 'photo', 'status', 'joined_at', 'left_at',
     ];
 

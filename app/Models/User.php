@@ -20,12 +20,16 @@ class User extends Authenticatable implements PasskeyUser
     use BelongsToTenant, HasApiTokens, HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'tenant_id', 'phone', 'avatar',
+        'name', 'email', 'password', 'role', 'tenant_id', 'branch_id', 'phone', 'avatar',
         'student_id', 'is_approved', 'onboarding_complete',
     ];
 
     protected $hidden = [
         'password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token',
+    ];
+
+    protected $appends = [
+        'permissions',
     ];
 
     protected function casts(): array
@@ -43,6 +47,20 @@ class User extends Authenticatable implements PasskeyUser
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /** @return BelongsTo<Branch, $this> */
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    /**
+     * Whether this user should be restricted to a single branch's data.
+     */
+    public function isBranchScoped(): bool
+    {
+        return ! $this->isOwner() && ! $this->isSuperAdmin() && ! is_null($this->branch_id);
     }
 
     /** @return BelongsTo<Student, $this> */
@@ -99,5 +117,58 @@ class User extends Authenticatable implements PasskeyUser
     public function isApproved(): bool
     {
         return $this->is_approved;
+    }
+
+    /**
+     * The resolved route permissions for the user's role.
+     * Owners and super admins have wildcard access.
+     *
+     * @return array<string>
+     */
+    public function routePermissions(): array
+    {
+        if ($this->isSuperAdmin() || $this->isOwner()) {
+            return ['*'];
+        }
+
+        $permissions = Role::query()
+            ->where('slug', $this->role)
+            ->value('permissions');
+
+        // Teachers are staff-type users; fall back to the staff role when no
+        // dedicated teacher role row exists yet.
+        if (is_null($permissions) && $this->isTeacher()) {
+            $permissions = Role::query()
+                ->where('slug', 'staff')
+                ->value('permissions');
+        }
+
+        return is_array($permissions) ? $permissions : [];
+    }
+
+    /**
+     * Accessor so route permissions are serialized with the user (used by the
+     * sidebar and UI gating).
+     *
+     * @return array<string>
+     */
+    public function getPermissionsAttribute(): array
+    {
+        return $this->routePermissions();
+    }
+
+    public function hasRoutePermission(string $routeName): bool
+    {
+        if ($this->isSuperAdmin() || $this->isOwner()) {
+            return true;
+        }
+
+        $role = Role::query()->where('slug', $this->role)->first();
+
+        if (! $role && $this->isTeacher()) {
+            $role = Role::query()->where('slug', 'staff')->first();
+        }
+
+        return $role ? $role->hasRoute($routeName) : false;
     }
 }

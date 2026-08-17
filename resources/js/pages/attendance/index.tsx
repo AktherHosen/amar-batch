@@ -7,10 +7,16 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Badge } from '@/components/ui/badge';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Select,
@@ -146,10 +152,10 @@ export default function AttendanceIndex({
     const getStatusBadge = (status: string) => {
         const variants: Record<
             string,
-            'default' | 'secondary' | 'destructive'
+            'default' | 'secondary' | 'destructive' | 'warning'
         > = {
             present: 'default',
-            late: 'secondary',
+            late: 'warning',
             absent: 'destructive',
         };
 
@@ -245,7 +251,22 @@ export default function AttendanceIndex({
                 accessorKey: 'notes',
                 header: t('attendance.notes'),
                 enableSorting: false,
-                cell: ({ row }: any) => row.original.notes || '-',
+                cell: ({ row }: any) => {
+                    const notes = row.original.notes;
+
+                    if (!notes) return '-';
+
+                    return (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="block max-w-[200px] cursor-default truncate">
+                                    {notes}
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{notes}</TooltipContent>
+                        </Tooltip>
+                    );
+                },
             } as Col,
             ...(isAdmin || isTeacher
                 ? [
@@ -288,14 +309,10 @@ export default function AttendanceIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-start justify-between">
-                    <div className="space-y-0.5">
-                        <h2 className="text-xl font-semibold tracking-tight">
-                            {t('attendance.title')}
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            {t('attendance.desc')}
-                        </p>
-                    </div>
+                    <Heading
+                        title={t('attendance.title')}
+                        description={t('attendance.desc')}
+                    />
                     <div className="flex items-center gap-1">
                         <RefreshButton
                             refreshing={refreshing}

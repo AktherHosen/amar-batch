@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -245,14 +246,10 @@ export default function BatchesIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-start justify-between">
-                    <div className="space-y-0.5">
-                        <h2 className="text-xl font-semibold tracking-tight">
-                            {t('batches.title')}
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            {t('batches.desc')}
-                        </p>
-                    </div>
+                    <Heading
+                        title={t('batches.title')}
+                        description={t('batches.desc')}
+                    />
                     <div className="flex items-center gap-1">
                         <RefreshButton
                             refreshing={refreshing}

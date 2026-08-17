@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ChangeUserRoleRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\Branch;
 use App\Models\Role;
 use App\Models\User;
 use App\Policies\PlanLimitsPolicy;
@@ -18,7 +19,7 @@ class UserController extends Controller
 {
     public function index(Request $request): Response
     {
-        if (! $request->user()->isAdmin()) {
+        if (! $request->user()->hasRoutePermission('users.index')) {
             abort(403);
         }
 
@@ -43,7 +44,7 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->withCount('assignedBatches')->latest()->paginate(10)->withQueryString();
+        $users = $query->withCount('assignedBatches')->with('branch')->latest()->paginate(10)->withQueryString();
 
         $users->getCollection()->transform(function (User $user) {
             $user->setAttribute('is_owner', $user->isOwner());
@@ -60,7 +61,7 @@ class UserController extends Controller
 
     public function create(Request $request): Response|RedirectResponse
     {
-        if (! $request->user()->isAdmin()) {
+        if (! $request->user()->hasRoutePermission('users.create')) {
             abort(403);
         }
 
@@ -82,12 +83,13 @@ class UserController extends Controller
                 'limit' => $limit,
             ],
             'roles' => Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get(['id', 'name', 'slug']),
+            'branches' => Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        if (! $request->user()->isAdmin()) {
+        if (! $request->user()->hasRoutePermission('users.store')) {
             abort(403);
         }
 
@@ -105,6 +107,7 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'staff',
             'tenant_id' => $request->user()->tenant_id,
+            'branch_id' => $request->branch_id,
             'avatar' => $request->hasFile('avatar')
                 ? $request->file('avatar')->store('avatars', 'public')
                 : null,
@@ -128,19 +131,28 @@ class UserController extends Controller
         ]);
     }
 
-    public function edit(User $user): Response
+    public function edit(Request $request, User $user): Response
     {
         abort_if($user->isOwner(), 403);
+
+        if (! $request->user()->hasRoutePermission('users.edit')) {
+            abort(403);
+        }
 
         return Inertia::render('users/edit', [
             'user' => $user,
             'roles' => Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get(['id', 'name', 'slug']),
+            'branches' => Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         if ($user->isOwner()) {
+            abort(403);
+        }
+
+        if (! $request->user()->hasRoutePermission('users.update')) {
             abort(403);
         }
 
@@ -166,7 +178,7 @@ class UserController extends Controller
 
     public function changeRole(ChangeUserRoleRequest $request, User $user): RedirectResponse
     {
-        if ($user->isOwner()) {
+        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.role')) {
             abort(403);
         }
 
@@ -177,7 +189,7 @@ class UserController extends Controller
 
     public function deactivate(Request $request, User $user): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || $user->isOwner()) {
+        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.deactivate')) {
             abort(403);
         }
 
@@ -189,7 +201,7 @@ class UserController extends Controller
 
     public function reactivate(Request $request, User $user): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || $user->isOwner()) {
+        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.reactivate')) {
             abort(403);
         }
 
@@ -200,7 +212,7 @@ class UserController extends Controller
 
     public function approve(Request $request, User $user): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || $user->isOwner()) {
+        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.approve')) {
             abort(403);
         }
 
@@ -211,7 +223,7 @@ class UserController extends Controller
 
     public function reject(Request $request, User $user): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || $user->isOwner()) {
+        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.reject')) {
             abort(403);
         }
 
@@ -222,7 +234,7 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user): RedirectResponse
     {
-        if (! $request->user()->isAdmin() || $user->isOwner()) {
+        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.destroy')) {
             abort(403);
         }
 

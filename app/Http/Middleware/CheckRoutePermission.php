@@ -33,6 +33,14 @@ class CheckRoutePermission
             ->where('slug', $user->role)
             ->first();
 
+        // Teachers are staff-type users; fall back to the staff role when no
+        // dedicated teacher role row exists yet.
+        if (! $role && $user->isTeacher()) {
+            $role = Role::query()
+                ->where('slug', 'staff')
+                ->first();
+        }
+
         // Unknown role for the tenant: deny access.
         if (! $role) {
             abort(403, 'Unauthorized.');

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToBranch;
 use App\Concerns\BelongsToTenant;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exam extends Model
 {
-    use BelongsToTenant, HasFactory;
+    use BelongsToBranch, BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'tenant_id', 'title', 'subject', 'batch_id', 'date',
@@ -24,6 +26,11 @@ class Exam extends Model
             'total_marks' => 'integer',
             'passing_marks' => 'integer',
         ];
+    }
+
+    public function branchScopeQuery(Builder $query, int $branchId): void
+    {
+        $query->whereHas('batch', fn ($q) => $q->where('branch_id', $branchId));
     }
 
     /** @return BelongsTo<Batch, $this> */

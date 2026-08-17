@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/contexts/locale-context';
 import exams from '@/routes/exams';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -18,6 +18,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import CellTitle from '@/components/cell-title';
 
 type Exam = {
     id: number;
@@ -101,7 +102,10 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                 enableSorting: true,
                 meta: { sticky: true },
                 cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.title}</span>
+                    <CellTitle
+                        title={row.original.title}
+                        href={exams.show(row.original.id).url}
+                    />
                 ),
             } as Col,
             {
@@ -183,12 +187,19 @@ export default function ExamsIndex({ exams: pagination, batches, filters }: Page
                     <div className="flex items-center gap-1">
                         <RefreshButton refreshing={refreshing} onRefresh={handleRefresh} />
                         {isAdmin && (
-                            <Link href={exams.create()}>
-                                <Button>
-                                    <Plus className="mr-2 size-4" />
-                                    {t('exams.create')}
-                                </Button>
-                            </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="size-8 p-0">
+                                        <EllipsisVertical className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => router.get(exams.create())}>
+                                        <Plus className="mr-2 size-4" />
+                                        {t('exams.create')}
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
                 </div>

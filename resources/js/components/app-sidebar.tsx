@@ -12,10 +12,10 @@ import {
     FileText,
     BarChart3,
     Building2,
-    Key,
     Megaphone,
     Calendar,
     Shield,
+    Settings2,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -32,6 +32,7 @@ import { useLocale } from '@/contexts/locale-context';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { isOwner } from '@/lib/role';
 import { useHasFeature } from '@/lib/features';
+import { usePermissions } from '@/lib/permissions';
 import { dashboard } from '@/routes';
 import students from '@/routes/students';
 import batches from '@/routes/batches';
@@ -57,6 +58,18 @@ export function AppSidebar() {
     const hasReports = useHasFeature('reports');
     const hasMultiBranch = useHasFeature('multi_branch');
     const hasApiAccess = useHasFeature('api_access');
+    const permissions = usePermissions();
+
+    const hasPermission = (route: string): boolean => {
+        if (permissions.includes('*')) return true;
+        return permissions.some((pattern) => {
+            const escaped = pattern
+                .split('*')
+                .map((part) => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+                .join('.*');
+            return new RegExp(`^${escaped}$`).test(route);
+        });
+    };
 
     const filterItem = (item: NavItem): boolean => {
         if (item.ownerOnly && !isUserOwner) return false;
@@ -64,6 +77,7 @@ export function AppSidebar() {
         if (item.featureRequired === 'reports' && !hasReports) return false;
         if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
         if (item.featureRequired === 'api_access' && !hasApiAccess) return false;
+        if (item.permission && !hasPermission(item.permission)) return false;
         return true;
     };
 
@@ -71,52 +85,136 @@ export function AppSidebar() {
         {
             label: t('nav.group.administration'),
             items: [
-                { title: t('nav.users'), href: users.index(), icon: UsersRound },
-                { title: t('nav.roles'), href: roles.index(), icon: Shield, ownerOnly: true },
+                {
+                    title: t('nav.users'),
+                    href: users.index(),
+                    icon: UsersRound,
+                    permission: 'users.index',
+                },
+                {
+                    title: t('nav.roles'),
+                    href: roles.index(),
+                    icon: Shield,
+                    ownerOnly: true,
+                },
             ],
         },
         {
             label: t('nav.group.academic'),
             items: [
-                { title: t('nav.students'), href: students.index(), icon: Users },
-                { title: t('nav.coaching_classes'), href: coachingClasses.index(), icon: School },
-                { title: t('nav.teachers'), href: teachers.index(), icon: GraduationCap },
-                { title: t('nav.batches'), href: batches.index(), icon: Layers },
+                {
+                    title: t('nav.students'),
+                    href: students.index(),
+                    icon: Users,
+                    permission: 'students.index',
+                },
+                {
+                    title: t('nav.coaching_classes'),
+                    href: coachingClasses.index(),
+                    icon: School,
+                    permission: 'coaching-classes.index',
+                },
+                {
+                    title: t('nav.teachers'),
+                    href: teachers.index(),
+                    icon: GraduationCap,
+                    permission: 'teachers.index',
+                },
+                {
+                    title: t('nav.batches'),
+                    href: batches.index(),
+                    icon: Layers,
+                    permission: 'batches.index',
+                },
             ],
         },
         {
             label: t('nav.group.finance'),
             items: [
-                { title: t('nav.fees'), href: fees.index(), icon: Wallet, ownerOnly: true },
-                { title: t('nav.subscription'), href: subscription.index(), icon: CreditCard, ownerOnly: true },
+                {
+                    title: t('nav.fees'),
+                    href: fees.index(),
+                    icon: Wallet,
+                    ownerOnly: true,
+                    permission: 'fees.index',
+                },
+                {
+                    title: t('nav.subscription'),
+                    href: subscription.index(),
+                    icon: CreditCard,
+                    ownerOnly: true,
+                },
             ],
         },
         {
             label: t('nav.group.tracking'),
             items: [
-                { title: t('nav.attendance'), href: attendance.index(), icon: CheckSquare },
-                { title: t('nav.exams'), href: exams.index(), icon: FileText, featureRequired: 'exams' },
+                {
+                    title: t('nav.attendance'),
+                    href: attendance.index(),
+                    icon: CheckSquare,
+                    permission: 'attendance.index',
+                },
+                {
+                    title: t('nav.exams'),
+                    href: exams.index(),
+                    icon: FileText,
+                    featureRequired: 'exams',
+                    permission: 'exams.index',
+                },
             ],
         },
         {
             label: t('nav.group.communication'),
             items: [
-                { title: 'Notices', href: '/notices', icon: Megaphone },
-                { title: 'Holidays', href: '/holidays', icon: Calendar },
+                {
+                    title: 'Notices',
+                    href: '/notices',
+                    icon: Megaphone,
+                    permission: 'notices.index',
+                },
+                {
+                    title: 'Holidays',
+                    href: '/holidays',
+                    icon: Calendar,
+                    permission: 'holidays.index',
+                },
             ],
         },
         {
             label: t('nav.group.insights'),
             items: [
-                { title: t('nav.reports'), href: reports.index(), icon: BarChart3, featureRequired: 'reports' },
-                { title: t('nav.branches'), href: branches.index(), icon: Building2, featureRequired: 'multi_branch' },
+                {
+                    title: t('nav.reports'),
+                    href: reports.index(),
+                    icon: BarChart3,
+                    featureRequired: 'reports',
+                    permission: 'reports.index',
+                },
+                {
+                    title: t('nav.branches'),
+                    href: branches.index(),
+                    icon: Building2,
+                    featureRequired: 'multi_branch',
+                    permission: 'branches.index',
+                },
             ],
         },
         {
             label: t('nav.group.settings'),
             items: [
-                { title: t('nav.coaching_center'), href: settings.tenant.edit(), icon: Building2, ownerOnly: true },
-                { title: t('nav.api_settings'), href: settings.api.index(), icon: Key, ownerOnly: true, featureRequired: 'api_access' },
+                {
+                    title: t('nav.settings'),
+                    href: '/settings/profile',
+                    icon: Settings2,
+                },
+                {
+                    title: t('nav.coaching_center'),
+                    href: settings.tenant.edit(),
+                    icon: Building2,
+                    ownerOnly: true,
+                    permission: 'settings.tenant.edit',
+                },
             ],
         },
     ];

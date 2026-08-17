@@ -13,6 +13,7 @@ export type NavItem = {
     isActive?: boolean;
     ownerOnly?: boolean;
     featureRequired?: string;
+    permission?: string;
 };
 
 export type NavItemGroup = {
