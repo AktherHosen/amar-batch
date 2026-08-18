@@ -60,7 +60,9 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<RoleItem, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<RoleItem, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -125,7 +127,11 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -167,7 +173,11 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                     />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="size-8 p-0">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 p-0"
+                            >
                                 <EllipsisVertical className="size-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -175,7 +185,7 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                             <DropdownMenuItem asChild>
                                 <Link href={roles.create()}>
                                     <Plus className="mr-2 size-4" />
-                                    Create Role
+                                    New Role
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -204,7 +214,9 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
 
             <ConfirmDialog
                 open={deleteDialog.open}
-                onOpenChange={(open) => setDeleteDialog({ open, item: deleteDialog.item })}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
                 title="Delete Role"
                 description={`Are you sure you want to delete the "${deleteDialog.item?.name}" role? Users assigned to this role will no longer be able to access restricted features.`}
                 confirmText="Delete"
