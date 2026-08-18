@@ -13,7 +13,9 @@ class Tenant extends Model
 
     protected $fillable = [
         'name', 'slug', 'email', 'phone', 'address', 'logo',
-        'timezone', 'currency', 'is_active',
+        'timezone', 'currency', 'currency_symbol', 'academic_year',
+        'receipt_prefix', 'student_id_prefix', 'default_attendance',
+        'invoice_footer', 'primary_color', 'is_active',
     ];
 
     protected function casts(): array

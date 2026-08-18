@@ -29,6 +29,13 @@ class TenantSettingsController extends Controller
                 'logo' => $tenant->logo,
                 'timezone' => $tenant->timezone,
                 'currency' => $tenant->currency,
+                'currency_symbol' => $tenant->currency_symbol,
+                'academic_year' => $tenant->academic_year,
+                'receipt_prefix' => $tenant->receipt_prefix,
+                'student_id_prefix' => $tenant->student_id_prefix,
+                'default_attendance' => $tenant->default_attendance,
+                'invoice_footer' => $tenant->invoice_footer,
+                'primary_color' => $tenant->primary_color,
             ],
         ]);
     }
@@ -50,6 +57,13 @@ class TenantSettingsController extends Controller
             'logo' => ['nullable', 'image', 'max:2048'],
             'timezone' => ['nullable', 'string', 'max:50'],
             'currency' => ['nullable', 'string', 'max:10'],
+            'currency_symbol' => ['nullable', 'string', 'max:10'],
+            'academic_year' => ['nullable', 'string', 'max:20'],
+            'receipt_prefix' => ['nullable', 'string', 'max:20'],
+            'student_id_prefix' => ['nullable', 'string', 'max:20'],
+            'default_attendance' => ['nullable', 'string', 'in:manual,auto_absent'],
+            'invoice_footer' => ['nullable', 'string', 'max:500'],
+            'primary_color' => ['nullable', 'string', 'max:20'],
         ]);
 
         // Handle logo upload

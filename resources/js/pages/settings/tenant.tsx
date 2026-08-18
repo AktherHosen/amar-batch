@@ -25,6 +25,13 @@ type Center = {
     logo: string | null;
     timezone: string;
     currency: string;
+    currency_symbol: string | null;
+    academic_year: string | null;
+    receipt_prefix: string | null;
+    student_id_prefix: string | null;
+    default_attendance: string | null;
+    invoice_footer: string | null;
+    primary_color: string | null;
 };
 
 type PageProps = {
@@ -40,6 +47,13 @@ export default function TenantSettings({ center }: PageProps) {
         logo: null as File | null,
         timezone: center.timezone,
         currency: center.currency,
+        currency_symbol: center.currency_symbol || '৳',
+        academic_year: center.academic_year || '2025-26',
+        receipt_prefix: center.receipt_prefix || 'RCT',
+        student_id_prefix: center.student_id_prefix || 'STU',
+        default_attendance: center.default_attendance || 'manual',
+        invoice_footer: center.invoice_footer || '',
+        primary_color: center.primary_color || '#6366f1',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -179,6 +193,163 @@ export default function TenantSettings({ center }: PageProps) {
                                     </Select>
                                     <InputError message={errors.currency} />
                                 </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="currency_symbol">
+                                        Currency Symbol
+                                    </Label>
+                                    <Input
+                                        id="currency_symbol"
+                                        value={data.currency_symbol}
+                                        onChange={(e) =>
+                                            setData(
+                                                'currency_symbol',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="৳"
+                                    />
+                                    <InputError
+                                        message={errors.currency_symbol}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="academic_year">
+                                        Academic Year
+                                    </Label>
+                                    <Input
+                                        id="academic_year"
+                                        value={data.academic_year}
+                                        onChange={(e) =>
+                                            setData(
+                                                'academic_year',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="2025-26"
+                                    />
+                                    <InputError
+                                        message={errors.academic_year}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="receipt_prefix">
+                                        Receipt Prefix
+                                    </Label>
+                                    <Input
+                                        id="receipt_prefix"
+                                        value={data.receipt_prefix}
+                                        onChange={(e) =>
+                                            setData(
+                                                'receipt_prefix',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="RCT"
+                                    />
+                                    <InputError
+                                        message={errors.receipt_prefix}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="student_id_prefix">
+                                        Student ID Prefix
+                                    </Label>
+                                    <Input
+                                        id="student_id_prefix"
+                                        value={data.student_id_prefix}
+                                        onChange={(e) =>
+                                            setData(
+                                                'student_id_prefix',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="STU"
+                                    />
+                                    <InputError
+                                        message={errors.student_id_prefix}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="default_attendance">
+                                        Default Attendance
+                                    </Label>
+                                    <Select
+                                        value={data.default_attendance}
+                                        onValueChange={(value) =>
+                                            setData('default_attendance', value)
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="manual">
+                                                Manual
+                                            </SelectItem>
+                                            <SelectItem value="auto_absent">
+                                                Auto Absent (after time)
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError
+                                        message={errors.default_attendance}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="invoice_footer">
+                                    Invoice Footer Text
+                                </Label>
+                                <Input
+                                    id="invoice_footer"
+                                    value={data.invoice_footer}
+                                    onChange={(e) =>
+                                        setData(
+                                            'invoice_footer',
+                                            e.target.value,
+                                        )
+                                    }
+                                    placeholder="Thank you for your payment!"
+                                />
+                                <InputError message={errors.invoice_footer} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="primary_color">
+                                    Primary Color (for PDFs)
+                                </Label>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="color"
+                                        id="primary_color"
+                                        value={data.primary_color}
+                                        onChange={(e) =>
+                                            setData(
+                                                'primary_color',
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="size-10 cursor-pointer rounded-md border"
+                                    />
+                                    <Input
+                                        value={data.primary_color}
+                                        onChange={(e) =>
+                                            setData(
+                                                'primary_color',
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="w-32"
+                                        placeholder="#6366f1"
+                                    />
+                                </div>
+                                <InputError message={errors.primary_color} />
                             </div>
 
                             <div className="space-y-2">

@@ -81,21 +81,37 @@ export const MAX_RADIUS = 16;
 export const DEFAULT_ACCENT = 'neutral';
 export const DEFAULT_RADIUS = 10;
 export const DEFAULT_CUSTOM_COLOR = '#6366f1';
+export const DEFAULT_DATE_FORMAT = 'DD/MM/YYYY';
+export const DEFAULT_TIME_FORMAT = '12h';
+export const DEFAULT_SIDEBAR_STYLE = 'full';
+export const DEFAULT_DEFAULT_PAGE = 'dashboard';
 
 export type UseAppearanceReturn = {
     readonly appearance: Appearance;
     readonly resolvedAppearance: ResolvedAppearance;
     readonly accent: string;
     readonly radius: number;
+    readonly dateFormat: string;
+    readonly timeFormat: string;
+    readonly sidebarStyle: string;
+    readonly defaultPage: string;
     readonly updateAppearance: (mode: Appearance) => void;
     readonly updateAccent: (accent: string) => void;
     readonly updateRadius: (radius: number) => void;
+    readonly updateDateFormat: (format: string) => void;
+    readonly updateTimeFormat: (format: string) => void;
+    readonly updateSidebarStyle: (style: string) => void;
+    readonly updateDefaultPage: (page: string) => void;
 };
 
 const listeners = new Set<() => void>();
 let currentAppearance: Appearance = 'system';
 let currentAccent: string = DEFAULT_ACCENT;
 let currentRadius: number = DEFAULT_RADIUS;
+let currentDateFormat: string = DEFAULT_DATE_FORMAT;
+let currentTimeFormat: string = DEFAULT_TIME_FORMAT;
+let currentSidebarStyle: string = DEFAULT_SIDEBAR_STYLE;
+let currentDefaultPage: string = DEFAULT_DEFAULT_PAGE;
 
 const prefersDark = (): boolean => {
     if (typeof window === 'undefined') {
@@ -160,6 +176,34 @@ const getStoredRadius = (): number => {
     }
 
     return DEFAULT_RADIUS;
+};
+
+const getStoredDateFormat = (): string => {
+    if (typeof window === 'undefined') {
+        return DEFAULT_DATE_FORMAT;
+    }
+    return localStorage.getItem('dateFormat') || DEFAULT_DATE_FORMAT;
+};
+
+const getStoredTimeFormat = (): string => {
+    if (typeof window === 'undefined') {
+        return DEFAULT_TIME_FORMAT;
+    }
+    return localStorage.getItem('timeFormat') || DEFAULT_TIME_FORMAT;
+};
+
+const getStoredSidebarStyle = (): string => {
+    if (typeof window === 'undefined') {
+        return DEFAULT_SIDEBAR_STYLE;
+    }
+    return localStorage.getItem('sidebarStyle') || DEFAULT_SIDEBAR_STYLE;
+};
+
+const getStoredDefaultPage = (): string => {
+    if (typeof window === 'undefined') {
+        return DEFAULT_DEFAULT_PAGE;
+    }
+    return localStorage.getItem('defaultPage') || DEFAULT_DEFAULT_PAGE;
 };
 
 const isDarkMode = (appearance: Appearance): boolean => {
@@ -269,6 +313,10 @@ export function initializeTheme(): void {
     currentAppearance = getStoredAppearance();
     currentAccent = getStoredAccent();
     currentRadius = getStoredRadius();
+    currentDateFormat = getStoredDateFormat();
+    currentTimeFormat = getStoredTimeFormat();
+    currentSidebarStyle = getStoredSidebarStyle();
+    currentDefaultPage = getStoredDefaultPage();
     applyTheme(currentAppearance);
 
     // Set up system theme change listener
@@ -292,6 +340,30 @@ export function useAppearance(): UseAppearanceReturn {
         subscribe,
         () => currentRadius,
         () => DEFAULT_RADIUS,
+    );
+
+    const dateFormat: string = useSyncExternalStore(
+        subscribe,
+        () => currentDateFormat,
+        () => DEFAULT_DATE_FORMAT,
+    );
+
+    const timeFormat: string = useSyncExternalStore(
+        subscribe,
+        () => currentTimeFormat,
+        () => DEFAULT_TIME_FORMAT,
+    );
+
+    const sidebarStyle: string = useSyncExternalStore(
+        subscribe,
+        () => currentSidebarStyle,
+        () => DEFAULT_SIDEBAR_STYLE,
+    );
+
+    const defaultPage: string = useSyncExternalStore(
+        subscribe,
+        () => currentDefaultPage,
+        () => DEFAULT_DEFAULT_PAGE,
     );
 
     const resolvedAppearance: ResolvedAppearance = isDarkMode(appearance)
@@ -336,13 +408,45 @@ export function useAppearance(): UseAppearanceReturn {
         notify();
     };
 
+    const updateDateFormat = (format: string): void => {
+        currentDateFormat = format;
+        localStorage.setItem('dateFormat', format);
+        notify();
+    };
+
+    const updateTimeFormat = (format: string): void => {
+        currentTimeFormat = format;
+        localStorage.setItem('timeFormat', format);
+        notify();
+    };
+
+    const updateSidebarStyle = (style: string): void => {
+        currentSidebarStyle = style;
+        localStorage.setItem('sidebarStyle', style);
+        notify();
+    };
+
+    const updateDefaultPage = (page: string): void => {
+        currentDefaultPage = page;
+        localStorage.setItem('defaultPage', page);
+        notify();
+    };
+
     return {
         appearance,
         resolvedAppearance,
         accent,
         radius,
+        dateFormat,
+        timeFormat,
+        sidebarStyle,
+        defaultPage,
         updateAppearance,
         updateAccent,
         updateRadius,
+        updateDateFormat,
+        updateTimeFormat,
+        updateSidebarStyle,
+        updateDefaultPage,
     } as const;
 }

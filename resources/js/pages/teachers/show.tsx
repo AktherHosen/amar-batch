@@ -33,6 +33,7 @@ import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
     auth: { user: { role: string } };
+    tenant: { primary_color: string } | null;
 };
 
 type Batch = {
@@ -76,7 +77,8 @@ function formatDate(dateStr: string | null): string {
 
 export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
     const { t } = useLocale();
-    const { auth } = usePage<PageProps>().props;
+    const { auth, tenant } = usePage<PageProps>().props;
+    const primaryColor = tenant?.primary_color || '#6366f1';
     const isAdmin = isOwner(auth.user);
     const [deleteDialog, setDeleteDialog] = useState(false);
 
@@ -403,6 +405,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                                                 b.status,
                                             ]),
                                             filename: `${teacher.name}_batches`,
+                                            primaryColor,
                                         })
                                     }
                                 >

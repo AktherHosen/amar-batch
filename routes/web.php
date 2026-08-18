@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\UserSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
@@ -25,6 +26,8 @@ Route::middleware(['auth', 'verified', 'onboarding'])->group(function () {
 // Tenant routes (tenant required)
 Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'role.permission', 'teacher.approved'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::get('user/settings', [UserSettingsController::class, 'get'])->name('user.settings.get');
+    Route::post('user/settings', [UserSettingsController::class, 'update'])->name('user.settings.update');
 });
 
 Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'role.permission', 'teacher.approved'])->group(function () {

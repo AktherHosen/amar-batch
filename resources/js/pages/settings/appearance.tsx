@@ -11,6 +11,13 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import type { Appearance } from '@/hooks/use-appearance';
 import {
     ACCENTS,
@@ -24,8 +31,10 @@ import {
 } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
-import { Head } from '@inertiajs/react';
-import { Check, Monitor, Moon, Pipette, Sun } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { Check, Monitor, Moon, Pipette, Sun, Save } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 const MODES: {
     value: Appearance;
@@ -58,10 +67,44 @@ export default function Appearance() {
         appearance,
         accent,
         radius,
+        dateFormat,
+        timeFormat,
+        sidebarStyle,
+        defaultPage,
         updateAppearance,
         updateAccent,
         updateRadius,
+        updateDateFormat,
+        updateTimeFormat,
+        updateSidebarStyle,
+        updateDefaultPage,
     } = useAppearance();
+
+    const [saving, setSaving] = useState(false);
+
+    const handleSave = () => {
+        setSaving(true);
+        router.post(
+            '/user/settings',
+            {
+                appearance,
+                accent,
+                radius,
+                date_format: dateFormat,
+                time_format: timeFormat,
+                sidebar_style: sidebarStyle,
+                default_page: defaultPage,
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Settings saved successfully');
+                },
+                onFinish: () => {
+                    setSaving(false);
+                },
+            },
+        );
+    };
 
     const accentIsPreset = ACCENT_KEYS.includes(accent);
     const customColor = accentIsPreset ? DEFAULT_CUSTOM_COLOR : accent;
@@ -308,6 +351,129 @@ export default function Appearance() {
                 <Card>
                     <CardHeader className="border-b">
                         <div>
+                            <CardTitle className="text-base">
+                                Date & Time
+                            </CardTitle>
+                            <CardDescription>
+                                Choose how dates and times are displayed.
+                            </CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label>Date Format</Label>
+                                <Select
+                                    value={dateFormat}
+                                    onValueChange={updateDateFormat}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="DD/MM/YYYY">
+                                            DD/MM/YYYY
+                                        </SelectItem>
+                                        <SelectItem value="MM/DD/YYYY">
+                                            MM/DD/YYYY
+                                        </SelectItem>
+                                        <SelectItem value="YYYY-MM-DD">
+                                            YYYY-MM-DD
+                                        </SelectItem>
+                                        <SelectItem value="DD.MM.YYYY">
+                                            DD.MM.YYYY
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Time Format</Label>
+                                <Select
+                                    value={timeFormat}
+                                    onValueChange={updateTimeFormat}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="12h">
+                                            12 Hour (AM/PM)
+                                        </SelectItem>
+                                        <SelectItem value="24h">
+                                            24 Hour
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="border-b">
+                        <div>
+                            <CardTitle className="text-base">Layout</CardTitle>
+                            <CardDescription>
+                                Customize sidebar and navigation behavior.
+                            </CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label>Sidebar Style</Label>
+                                <Select
+                                    value={sidebarStyle}
+                                    onValueChange={updateSidebarStyle}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="full">
+                                            Full (labels visible)
+                                        </SelectItem>
+                                        <SelectItem value="compact">
+                                            Compact (icons only)
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Default Landing Page</Label>
+                                <Select
+                                    value={defaultPage}
+                                    onValueChange={updateDefaultPage}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="dashboard">
+                                            Dashboard
+                                        </SelectItem>
+                                        <SelectItem value="students">
+                                            Students
+                                        </SelectItem>
+                                        <SelectItem value="batches">
+                                            Batches
+                                        </SelectItem>
+                                        <SelectItem value="attendance">
+                                            Attendance
+                                        </SelectItem>
+                                        <SelectItem value="fees">
+                                            Fees
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="border-b">
+                        <div>
                             <CardTitle className="text-base">Preview</CardTitle>
                             <CardDescription>
                                 A live sample of your customizations.
@@ -343,6 +509,13 @@ export default function Appearance() {
                         </label>
                     </CardContent>
                 </Card>
+
+                <div className="flex justify-end">
+                    <Button onClick={handleSave} disabled={saving}>
+                        <Save className="mr-2 size-4" />
+                        {saving ? 'Saving...' : 'Save Settings'}
+                    </Button>
+                </div>
             </div>
         </>
     );

@@ -33,6 +33,7 @@ import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
     auth: { user: { role: string } };
+    tenant: { primary_color: string } | null;
 };
 
 type Teacher = {
@@ -94,7 +95,8 @@ export default function BatchesShow({
     enrolledStudentIds,
 }: BatchesShowProps) {
     const { t } = useLocale();
-    const { auth } = usePage<PageProps>().props;
+    const { auth, tenant } = usePage<PageProps>().props;
+    const primaryColor = tenant?.primary_color || '#6366f1';
     const isAdmin = isOwner(auth.user);
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [selectedStudent, setSelectedStudent] = useState('');
@@ -850,6 +852,7 @@ export default function BatchesShow({
                                                         ],
                                                     ),
                                                     filename: `${batch.name}_teachers`,
+                                                    primaryColor,
                                                 })
                                             }
                                         >
@@ -909,6 +912,7 @@ export default function BatchesShow({
                                                 e.status,
                                             ]),
                                             filename: `${batch.name}_enrollments`,
+                                            primaryColor,
                                         })
                                     }
                                 >
@@ -963,6 +967,7 @@ export default function BatchesShow({
                                                     h.user?.name || '-',
                                                 ]),
                                                 filename: `${batch.name}_history`,
+                                                primaryColor,
                                             })
                                         }
                                     >

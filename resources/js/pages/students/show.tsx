@@ -25,6 +25,7 @@ import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
     auth: { user: { role: string } };
+    tenant: { primary_color: string } | null;
 };
 
 type StudentsShowProps = {
@@ -117,8 +118,9 @@ export default function StudentsShow({
     attendanceSummary,
 }: StudentsShowProps) {
     const { t } = useLocale();
-    const { auth } = usePage<PageProps>().props;
+    const { auth, tenant } = usePage<PageProps>().props;
     const isAdmin = isOwner(auth.user);
+    const primaryColor = tenant?.primary_color || '#6366f1';
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: any | null;
@@ -785,6 +787,7 @@ export default function StudentsShow({
                                                     e.status,
                                                 ]),
                                                 filename: `${student.name}_enrollments`,
+                                                primaryColor,
                                             })
                                         }
                                     >
@@ -835,6 +838,7 @@ export default function StudentsShow({
                                                 r.late,
                                             ]),
                                             filename: `${student.name}_attendance`,
+                                            primaryColor,
                                         })
                                     }
                                 >
@@ -892,6 +896,7 @@ export default function StudentsShow({
                                                     `${r.marks_obtained}/${r.exam.total_marks}`,
                                                 ]),
                                                 filename: `${student.name}_exams`,
+                                                primaryColor,
                                             })
                                         }
                                     >
@@ -956,6 +961,7 @@ export default function StudentsShow({
                                                         h.user?.name || '-',
                                                     ]),
                                                     filename: `${student.name}_batch_history`,
+                                                    primaryColor,
                                                 })
                                             }
                                         >
@@ -1042,6 +1048,7 @@ export default function StudentsShow({
                                                 f.notes || '-',
                                             ]),
                                             filename: `${student.name}_payments`,
+                                            primaryColor,
                                         })
                                     }
                                 >

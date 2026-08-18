@@ -42,6 +42,7 @@ type Exam = {
 
 type PageProps = {
     auth: { user: { role: string } };
+    tenant: { primary_color: string } | null;
 };
 
 type ExamsShowProps = {
@@ -64,24 +65,12 @@ function formatDate(dateStr: string | null): string {
     });
 }
 
-function getPrimaryRGB(): [number, number, number] {
-    const raw = getComputedStyle(document.documentElement)
-        .getPropertyValue('--primary')
-        .trim();
-    const el = document.createElement('div');
-    el.style.color = raw;
-    el.style.position = 'absolute';
-    el.style.visibility = 'hidden';
-    document.body.appendChild(el);
-    const computed = getComputedStyle(el).color;
-    document.body.removeChild(el);
-    const match = computed.match(/\d+/g);
-
-    if (match) {
-        return [Number(match[0]), Number(match[1]), Number(match[2])];
+function hexToRGB(hex: string): [number, number, number] {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (result) {
+        return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
     }
-
-    return [30, 41, 59];
+    return [99, 102, 241];
 }
 
 function generatePDF(
@@ -89,10 +78,11 @@ function generatePDF(
     displayStudents: Student[],
     results: Record<number, { marks: string; notes: string }>,
     t: (key: string) => string,
+    primaryColor: string,
 ) {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
-    const [pr, pg, pb] = getPrimaryRGB();
+    const [pr, pg, pb] = hexToRGB(primaryColor);
 
     // Header
     doc.setFillColor(pr, pg, pb);
@@ -221,7 +211,8 @@ export default function ExamsShow({
     enrolledStudentIds,
 }: ExamsShowProps) {
     const { t } = useLocale();
-    const { auth } = usePage<PageProps>().props;
+    const { auth, tenant } = usePage<PageProps>().props;
+    const primaryColor = tenant?.primary_color || '#6366f1';
     const isAdmin = isOwner(auth.user);
     const [deleteDialog, setDeleteDialog] = useState(false);
     const [results, setResults] = useState<
@@ -288,7 +279,7 @@ export default function ExamsShow({
     };
 
     const handleDownloadPDF = () => {
-        generatePDF(exam, displayStudents, results, t);
+        generatePDF(exam, displayStudents, results, t, primaryColor);
     };
 
     const columns = (() => {
