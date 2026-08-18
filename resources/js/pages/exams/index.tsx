@@ -1,4 +1,5 @@
 import Heading from '@/components/heading';
+import PageActions from '@/components/page-actions';
 import { isOwner } from '@/lib/role';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -223,29 +224,39 @@ export default function ExamsIndex({
                             refreshing={refreshing}
                             onRefresh={handleRefresh}
                         />
-                        {isAdmin && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="size-8 p-0"
-                                    >
-                                        <EllipsisVertical className="size-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            router.get(exams.create())
-                                        }
-                                    >
-                                        <Plus className="mr-2 size-4" />
-                                        {t('exams.create')}
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('exams.create')}
+                            onCreate={() => router.get(exams.create())}
+                            exportTitle={t('exams.title')}
+                            exportFilename="exams"
+                            exportHeaders={[
+                                t('exams.title'),
+                                t('exams.subject'),
+                                t('exams.batch'),
+                                t('exams.date'),
+                                t('exams.marks'),
+                            ]}
+                            exportRows={pagination.data.map((e) => [
+                                e.title,
+                                e.subject || '-',
+                                e.batch?.name || '-',
+                                formatDate(e.date),
+                                `${e.total_marks} (pass: ${e.passing_marks})`,
+                            ])}
+                            importUrl="/exams/import"
+                            importFields={[
+                                'title',
+                                'subject',
+                                'batch_id',
+                                'date',
+                                'total_marks',
+                                'passing_marks',
+                            ]}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['exams'] })
+                            }
+                        />
                     </div>
                 </div>
 

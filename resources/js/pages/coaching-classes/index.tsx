@@ -1,12 +1,13 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
+import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import {
@@ -182,27 +183,30 @@ export default function CoachingClassesIndex({
                                 });
                             }}
                         />
-                        {isAdmin && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 p-0"
-                                    >
-                                        <EllipsisVertical className="size-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <Link href={coachingClasses.create()}>
-                                            <Plus className="mr-2 size-4" />
-                                            {t('classes.create')}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('classes.create')}
+                            onCreate={() =>
+                                router.get(coachingClasses.create())
+                            }
+                            exportTitle={t('classes.title')}
+                            exportFilename="coaching_classes"
+                            exportHeaders={[
+                                t('classes.name'),
+                                t('classes.default_fee'),
+                                t('batches.enrolled'),
+                            ]}
+                            exportRows={pagination.data.map((c) => [
+                                c.name,
+                                c.default_fee,
+                                c.students_count,
+                            ])}
+                            importUrl="/coaching-classes/import"
+                            importFields={['name', 'default_fee']}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['classes'] })
+                            }
+                        />
                     </div>
                 </div>
 

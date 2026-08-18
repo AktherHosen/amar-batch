@@ -1,12 +1,13 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { EllipsisVertical, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner, isStaff } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -349,25 +350,38 @@ export default function AttendanceIndex({
                             }}
                         />
                         {(isAdmin || isTeacher) && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 p-0"
-                                    >
-                                        <EllipsisVertical className="size-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <Link href={attendance.create()}>
-                                            <Plus className="mr-2 size-4" />
-                                            {t('attendance.mark')}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <PageActions
+                                isAdmin={isAdmin || isTeacher}
+                                createLabel={t('attendance.create')}
+                                onCreate={() => router.get(attendance.create())}
+                                exportTitle={t('attendance.title')}
+                                exportFilename="attendance"
+                                exportHeaders={[
+                                    t('students.name'),
+                                    t('batches.name'),
+                                    t('attendance.date'),
+                                    t('attendance.status'),
+                                    t('attendance.notes'),
+                                ]}
+                                exportRows={pagination.data.map((a) => [
+                                    a.student.name,
+                                    a.batch.name,
+                                    a.date,
+                                    a.status,
+                                    a.notes || '',
+                                ])}
+                                importUrl="/attendance/import"
+                                importFields={[
+                                    'student_id',
+                                    'batch_id',
+                                    'date',
+                                    'status',
+                                    'notes',
+                                ]}
+                                onImportSuccess={() =>
+                                    router.reload({ only: ['attendances'] })
+                                }
+                            />
                         )}
                     </div>
                 </div>

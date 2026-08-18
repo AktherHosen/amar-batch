@@ -15,18 +15,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Download,
-    EllipsisVertical,
-    Eye,
-    PenLine,
-    Pencil,
-    Plus,
-    Trash2,
-} from 'lucide-react';
+import { EllipsisVertical, Eye, PenLine, Pencil, Trash2 } from 'lucide-react';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
 import { useLocale } from '@/contexts/locale-context';
 import students from '@/routes/students';
@@ -296,36 +289,40 @@ export default function StudentsIndex({
                                 });
                             }}
                         />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8 p-0"
-                                >
-                                    <EllipsisVertical className="size-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {isAdmin && (
-                                    <DropdownMenuItem asChild>
-                                        <Link href={students.create()}>
-                                            <Plus className="mr-2 size-4" />
-                                            {t('students.create')}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        (window.location.href =
-                                            '/students/export')
-                                    }
-                                >
-                                    <Download className="mr-2 size-4" />
-                                    {t('actions.export_csv')}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('students.create')}
+                            onCreate={() => router.get(students.create())}
+                            exportTitle={t('students.title')}
+                            exportFilename="students"
+                            exportHeaders={[
+                                t('students.name'),
+                                t('students.phone'),
+                                t('students.class'),
+                                t('students.joined_at'),
+                                t('students.status'),
+                            ]}
+                            exportRows={pagination.data.map((s) => [
+                                s.name,
+                                s.phone || '',
+                                s.coaching_class?.name || '',
+                                s.joined_at ? formatDate(s.joined_at) : '',
+                                s.status,
+                            ])}
+                            importUrl="/students/import"
+                            importFields={[
+                                'name',
+                                'phone',
+                                'coaching_class',
+                                'section',
+                                'gender',
+                                'date_of_birth',
+                                'joined_at',
+                            ]}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['students'] })
+                            }
+                        />
                     </div>
                 </div>
 

@@ -1,10 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Plus, EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
+import { EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
+import PageActions from '@/components/page-actions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,18 +45,28 @@ type PageProps = {
     };
 };
 
-export default function HolidaysIndex({ holidays: pagination, filters }: PageProps) {
+export default function HolidaysIndex({
+    holidays: pagination,
+    filters,
+}: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage().props;
     const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
     const [typeFilter, setTypeFilter] = useState(filters.type || '');
     const [refreshing, setRefreshing] = useState(false);
-    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Holiday | null }>({ open: false, item: null });
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: Holiday | null;
+    }>({ open: false, item: null });
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get('/holidays', { search: value, type: typeFilter }, { preserveState: true });
+        router.get(
+            '/holidays',
+            { search: value, type: typeFilter },
+            { preserveState: true },
+        );
     };
 
     const handleDelete = (holiday: Holiday) => {
@@ -72,7 +83,10 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
     };
 
     const getTypeBadge = (type: string) => {
-        const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
+        const variants: Record<
+            string,
+            'default' | 'secondary' | 'destructive'
+        > = {
             holiday: 'default',
             exam: 'secondary',
             event: 'default',
@@ -83,7 +97,9 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
     const activeFilterCount = typeFilter ? 1 : 0;
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<Holiday, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<Holiday, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'title',
@@ -100,14 +116,16 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
                 accessorKey: 'start_date',
                 header: 'Start Date',
                 enableSorting: false,
-                cell: ({ row }: any) => new Date(row.original.start_date).toLocaleDateString(),
+                cell: ({ row }: any) =>
+                    new Date(row.original.start_date).toLocaleDateString(),
             } as Col,
             {
                 id: 'end_date',
                 accessorKey: 'end_date',
                 header: 'End Date',
                 enableSorting: false,
-                cell: ({ row }: any) => new Date(row.original.end_date).toLocaleDateString(),
+                cell: ({ row }: any) =>
+                    new Date(row.original.end_date).toLocaleDateString(),
             } as Col,
             {
                 id: 'duration',
@@ -117,7 +135,14 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
                 cell: ({ row }: any) => {
                     const h: Holiday = row.original;
                     return (
-                        <>{Math.ceil((new Date(h.end_date).getTime() - new Date(h.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1} day(s)</>
+                        <>
+                            {Math.ceil(
+                                (new Date(h.end_date).getTime() -
+                                    new Date(h.start_date).getTime()) /
+                                    (1000 * 60 * 60 * 24),
+                            ) + 1}{' '}
+                            day(s)
+                        </>
                     );
                 },
             } as Col,
@@ -129,9 +154,7 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
                 cell: ({ row }: any) => {
                     const h: Holiday = row.original;
                     return (
-                        <Badge variant={getTypeBadge(h.type)}>
-                            {h.type}
-                        </Badge>
+                        <Badge variant={getTypeBadge(h.type)}>{h.type}</Badge>
                     );
                 },
             } as Col,
@@ -145,22 +168,41 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.get(`/holidays/${holiday.id}`)}>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        router.get(`/holidays/${holiday.id}`)
+                                    }
+                                >
                                     <Eye className="mr-2 size-4" />
                                     View
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                     <>
-                                        <DropdownMenuItem onClick={() => router.get(`/holidays/${holiday.id}/edit`)}>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                router.get(
+                                                    `/holidays/${holiday.id}/edit`,
+                                                )
+                                            }
+                                        >
                                             <Pencil className="mr-2 size-4" />
                                             Edit
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(holiday)}>
+                                        <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onClick={() =>
+                                                handleDelete(holiday)
+                                            }
+                                        >
                                             <Trash2 className="mr-2 size-4" />
                                             Delete
                                         </DropdownMenuItem>
@@ -189,26 +231,44 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
                             refreshing={refreshing}
                             onRefresh={() => {
                                 setRefreshing(true);
-                                router.reload({ only: ['holidays'], onFinish: () => setRefreshing(false) });
+                                router.reload({
+                                    only: ['holidays'],
+                                    onFinish: () => setRefreshing(false),
+                                });
                             }}
                         />
-                        {isAdmin && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="size-8 p-0">
-                                        <EllipsisVertical className="size-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/holidays/create">
-                                            <Plus className="mr-2 size-4" />
-                                            Add Holiday
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel="New Holiday"
+                            onCreate={() => router.get('/holidays/create')}
+                            exportTitle="Holidays"
+                            exportFilename="holidays"
+                            exportHeaders={[
+                                'Title',
+                                'Description',
+                                'Start Date',
+                                'End Date',
+                                'Type',
+                            ]}
+                            exportRows={pagination.data.map((h) => [
+                                h.title,
+                                h.description || '',
+                                h.start_date,
+                                h.end_date,
+                                h.type,
+                            ])}
+                            importUrl="/holidays/import"
+                            importFields={[
+                                'title',
+                                'description',
+                                'start_date',
+                                'end_date',
+                                'type',
+                            ]}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['holidays'] })
+                            }
+                        />
                     </div>
                 </div>
 
@@ -238,13 +298,26 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
                                             placeholder: 'All Types',
                                             value: typeFilter,
                                             options: [
-                                                { label: 'Holiday', value: 'holiday' },
-                                                { label: 'Exam', value: 'exam' },
-                                                { label: 'Event', value: 'event' },
+                                                {
+                                                    label: 'Holiday',
+                                                    value: 'holiday',
+                                                },
+                                                {
+                                                    label: 'Exam',
+                                                    value: 'exam',
+                                                },
+                                                {
+                                                    label: 'Event',
+                                                    value: 'event',
+                                                },
                                             ],
                                             onValueChange: (value) => {
                                                 setTypeFilter(value);
-                                                router.get('/holidays', { search, type: value }, { preserveState: true });
+                                                router.get(
+                                                    '/holidays',
+                                                    { search, type: value },
+                                                    { preserveState: true },
+                                                );
                                             },
                                         },
                                     ]}
@@ -257,7 +330,9 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
 
             <ConfirmDialog
                 open={deleteDialog.open}
-                onOpenChange={(open) => setDeleteDialog({ open, item: deleteDialog.item })}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
                 title="Delete Holiday"
                 description={`Are you sure you want to delete "${deleteDialog.item?.title}"? This action cannot be undone.`}
                 confirmText="Delete"
@@ -269,7 +344,5 @@ export default function HolidaysIndex({ holidays: pagination, filters }: PagePro
 }
 
 HolidaysIndex.layout = {
-    breadcrumbs: [
-        { title: 'Holiday Calendar', href: '/holidays' },
-    ],
+    breadcrumbs: [{ title: 'Holiday Calendar', href: '/holidays' }],
 };

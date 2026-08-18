@@ -7,7 +7,6 @@ import {
     Trash2,
     CheckCircle,
     XCircle,
-    Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
@@ -15,6 +14,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import {
@@ -419,27 +419,30 @@ export default function TeachersIndex({
                                 });
                             }}
                         />
-                        {isAdmin && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 p-0"
-                                    >
-                                        <EllipsisVertical className="size-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <Link href={teachers.create()}>
-                                            <Plus className="mr-2 size-4" />
-                                            {t('teachers.create')}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('teachers.create')}
+                            onCreate={() => router.get(teachers.create())}
+                            exportTitle={t('teachers.title')}
+                            exportFilename="teachers"
+                            exportHeaders={[
+                                t('teachers.name'),
+                                t('teachers.email'),
+                                t('teachers.role'),
+                                t('batches.title'),
+                            ]}
+                            exportRows={pagination.data.map((t) => [
+                                t.name,
+                                t.email,
+                                roleName(t.role),
+                                t.assigned_batches_count,
+                            ])}
+                            importUrl="/teachers/import"
+                            importFields={['name', 'email', 'phone', 'role']}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['teachers'] })
+                            }
+                        />
                     </div>
                 </div>
 

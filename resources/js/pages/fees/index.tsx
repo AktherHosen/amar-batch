@@ -1,19 +1,14 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useRef } from 'react';
 import { isOwner } from '@/lib/role';
-import {
-    Plus,
-    Trash2,
-    EllipsisVertical,
-    Download,
-    ChevronDown,
-} from 'lucide-react';
+import { Trash2, EllipsisVertical, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import PageActions from '@/components/page-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -451,43 +446,6 @@ export default function FeesIndex({
 
     const activeFilterCount = selectedYear !== currentYear ? 1 : 0;
 
-    const exportToExcel = () => {
-        const headers = [
-            'Student',
-            'Class',
-            'Batch',
-            ...months.map((m) => monthNames[m]),
-            'Total',
-        ];
-        const rows = feeGrid.map((item) => {
-            const total = months.reduce((sum, m) => {
-                const fee = item.months[m];
-
-                return sum + (fee ? Number(fee.amount_paid) : 0);
-            }, 0);
-
-            return [
-                item.student.name,
-                item.student.coaching_class?.name || '',
-                item.batch.name,
-                ...months.map((m) => {
-                    const fee = item.months[m];
-
-                    return fee ? Number(fee.amount_paid) : 0;
-                }),
-                total,
-            ];
-        });
-        const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `fees-${year}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
     const columns = (() => {
         type Col = NonNullable<
             DataTableProps<FeeGridItem, unknown>['columns']
@@ -686,31 +644,53 @@ export default function FeesIndex({
                                 });
                             }}
                         />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8 p-0"
-                                >
-                                    <EllipsisVertical className="size-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {isAdmin && (
-                                    <DropdownMenuItem asChild>
-                                        <Link href={fees.create.url()}>
-                                            <Plus className="mr-2 size-4" />
-                                            {t('fees.create')}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem onClick={exportToExcel}>
-                                    <Download className="mr-2 size-4" />
-                                    {t('fees.export')}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('fees.create')}
+                            onCreate={() => router.get(fees.create.url())}
+                            exportTitle={t('fees.title')}
+                            exportFilename={`fees-${year}`}
+                            exportHeaders={[
+                                'Student',
+                                'Class',
+                                'Batch',
+                                ...months.map((m) => monthNames[m]),
+                                'Total',
+                            ]}
+                            exportRows={feeGrid.map((item) => {
+                                const total = months.reduce((sum, m) => {
+                                    const fee = item.months[m];
+                                    return (
+                                        sum +
+                                        (fee ? Number(fee.amount_paid) : 0)
+                                    );
+                                }, 0);
+                                return [
+                                    item.student.name,
+                                    item.student.coaching_class?.name || '',
+                                    item.batch.name,
+                                    ...months.map((m) => {
+                                        const fee = item.months[m];
+                                        return fee
+                                            ? Number(fee.amount_paid)
+                                            : 0;
+                                    }),
+                                    total,
+                                ];
+                            })}
+                            importUrl="/fees/import"
+                            importFields={[
+                                'student_id',
+                                'batch_id',
+                                'month',
+                                'year',
+                                'amount_paid',
+                                'notes',
+                            ]}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['feeGrid'] })
+                            }
+                        />
                     </div>
                 </div>
 

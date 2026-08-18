@@ -841,7 +841,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Students
         'students.title': 'Students',
         'students.desc': 'List and manage all students',
-        'students.create': 'Add Student',
+        'students.create': 'New Student',
         'students.edit': 'Edit Student',
         'students.name': 'Name',
         'students.phone': 'Phone',
@@ -880,7 +880,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Batches
         'batches.title': 'Batches',
         'batches.desc': 'Manage all batches',
-        'batches.create': 'Add Batch',
+        'batches.create': 'New Batch',
         'batches.name': 'Name',
         'batches.subject': 'Subject',
         'batches.schedule': 'Schedule',
@@ -934,7 +934,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Teachers
         'teachers.title': 'Teachers',
         'teachers.desc': 'List and manage all teachers',
-        'teachers.create': 'Add Teacher',
+        'teachers.create': 'New Teacher',
         'teachers.name': 'Name',
         'teachers.name_placeholder': 'Enter teacher name',
         'teachers.email': 'Email',
@@ -1041,6 +1041,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Attendance
         'attendance.title': 'Attendance',
         'attendance.desc': 'Track daily attendance',
+        'attendance.create': 'New Attendance',
         'attendance.mark': 'Mark Attendance',
         'attendance.batch': 'Batch',
         'attendance.date': 'Date',
@@ -1074,7 +1075,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Exams
         'exams.title': 'Exams',
         'exams.desc': 'Manage exams and track student results',
-        'exams.create': 'Add Exam',
+        'exams.create': 'New Exam',
         'exams.edit': 'Edit Exam',
         'exams.subject': 'Subject',
         'exams.batch': 'Batch',
@@ -1152,7 +1153,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Fees
         'fees.title': 'Fee Management',
         'fees.desc': 'Track student fees and collect payments',
-        'fees.create': 'Add Fee Record',
+        'fees.create': 'New Fee Record',
         'fees.student': 'Student',
         'fees.batch': 'Batch',
         'fees.month': 'Month',
@@ -1174,7 +1175,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Classes
         'classes.title': 'Coaching Classes',
         'classes.desc': 'Manage all coaching classes',
-        'classes.create': 'Add Class',
+        'classes.create': 'New Class',
         'classes.name': 'Name',
         'classes.default_fee': 'Default Fee',
         'classes.deleted': 'Coaching class deleted successfully',
@@ -1278,7 +1279,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'actions.view': 'View',
         'actions.view_all': 'View all',
         'actions.search': 'Search',
-        'actions.export_csv': 'Export CSV',
+        'actions.export_csv': 'Export',
         'actions.complete': 'Complete',
         'actions.back': 'Back',
 

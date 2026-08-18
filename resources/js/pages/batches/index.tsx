@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { isOwner } from '@/lib/role';
 import {
-    Plus,
     Eye,
     EllipsisVertical,
     Pencil,
@@ -14,6 +13,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable, type DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import { RefreshButton } from '@/components/refresh-button';
+import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import {
@@ -305,27 +305,40 @@ export default function BatchesIndex({
                                 });
                             }}
                         />
-                        {isAdmin && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 p-0"
-                                    >
-                                        <EllipsisVertical className="size-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <Link href={batches.create()}>
-                                            <Plus className="mr-2 size-4" />
-                                            {t('batches.create')}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('batches.create')}
+                            onCreate={() => router.get(batches.create())}
+                            exportTitle={t('batches.title')}
+                            exportFilename="batches"
+                            exportHeaders={[
+                                t('batches.name'),
+                                t('batches.subject'),
+                                t('batches.capacity'),
+                                t('batches.enrolled'),
+                                t('students.status'),
+                            ]}
+                            exportRows={pagination.data.map((b) => [
+                                b.name,
+                                b.subject || '-',
+                                b.capacity,
+                                b.enrollments_count,
+                                b.status,
+                            ])}
+                            importUrl="/batches/import"
+                            importFields={[
+                                'name',
+                                'subject',
+                                'capacity',
+                                'days',
+                                'time',
+                                'start_date',
+                                'end_date',
+                            ]}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['batches'] })
+                            }
+                        />
                     </div>
                 </div>
 
