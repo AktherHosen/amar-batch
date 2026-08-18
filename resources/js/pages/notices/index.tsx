@@ -58,7 +58,7 @@ export default function NoticesIndex({
     batches,
     filters,
 }: PageProps) {
-    const { t } = useLocale();
+    const { t, formatDate } = useLocale();
     const { auth } = usePage().props;
     const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
@@ -251,7 +251,9 @@ export default function NoticesIndex({
                                 n.content,
                                 n.batch?.name || 'Center-wide',
                                 n.is_active ? 'Active' : 'Draft',
-                                n.published_at || '',
+                                n.published_at
+                                    ? formatDate(n.published_at)
+                                    : '',
                             ])}
                             importUrl="/notices/import"
                             importFields={[

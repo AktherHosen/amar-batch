@@ -75,7 +75,7 @@ export default function AttendanceIndex({
     batches,
     filters,
 }: PageProps) {
-    const { t } = useLocale();
+    const { t, formatDate } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = isOwner(auth.user);
     const isTeacher = isStaff(auth.user);
@@ -366,7 +366,7 @@ export default function AttendanceIndex({
                                 exportRows={pagination.data.map((a) => [
                                     a.student.name,
                                     a.batch.name,
-                                    a.date,
+                                    a.date ? formatDate(a.date) : '',
                                     a.status,
                                     a.notes || '',
                                 ])}

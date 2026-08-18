@@ -49,7 +49,7 @@ export default function HolidaysIndex({
     holidays: pagination,
     filters,
 }: PageProps) {
-    const { t } = useLocale();
+    const { t, formatDate } = useLocale();
     const { auth } = usePage().props;
     const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
@@ -253,8 +253,8 @@ export default function HolidaysIndex({
                             exportRows={pagination.data.map((h) => [
                                 h.title,
                                 h.description || '',
-                                h.start_date,
-                                h.end_date,
+                                h.start_date ? formatDate(h.start_date) : '',
+                                h.end_date ? formatDate(h.end_date) : '',
                                 h.type,
                             ])}
                             importUrl="/holidays/import"
