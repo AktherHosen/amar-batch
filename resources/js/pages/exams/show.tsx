@@ -1,16 +1,19 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { isOwner } from '@/lib/role';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import type { DataTableProps } from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import exams from '@/routes/exams';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import exams from '@/routes/exams';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { ArrowLeft, Download, Pencil, Save, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 type Student = {
     id: number;
@@ -48,13 +51,168 @@ type ExamsShowProps = {
 };
 
 function formatDate(dateStr: string | null): string {
-    if (!dateStr) return '-';
+    if (!dateStr) {
+        return '-';
+    }
+
     const d = new Date(dateStr);
+
     return d.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
     });
+}
+
+function getPrimaryRGB(): [number, number, number] {
+    const raw = getComputedStyle(document.documentElement)
+        .getPropertyValue('--primary')
+        .trim();
+    const el = document.createElement('div');
+    el.style.color = raw;
+    el.style.position = 'absolute';
+    el.style.visibility = 'hidden';
+    document.body.appendChild(el);
+    const computed = getComputedStyle(el).color;
+    document.body.removeChild(el);
+    const match = computed.match(/\d+/g);
+
+    if (match) {
+        return [Number(match[0]), Number(match[1]), Number(match[2])];
+    }
+
+    return [30, 41, 59];
+}
+
+function generatePDF(
+    exam: Exam,
+    displayStudents: Student[],
+    results: Record<number, { marks: string; notes: string }>,
+    t: (key: string) => string,
+) {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const [pr, pg, pb] = getPrimaryRGB();
+
+    // Header
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(0, 0, pageWidth, 40, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text(exam.title, 14, 18);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const subtitle = [
+        exam.subject && `Subject: ${exam.subject}`,
+        exam.batch?.name && `Batch: ${exam.batch.name}`,
+        exam.date && `Date: ${formatDate(exam.date)}`,
+    ]
+        .filter(Boolean)
+        .join('  |  ');
+    doc.text(subtitle, 14, 26);
+
+    doc.setFontSize(9);
+    doc.text(
+        `Total: ${exam.total_marks}  |  Passing: ${exam.passing_marks}`,
+        14,
+        33,
+    );
+
+    // Stats
+    const resultsData = displayStudents.map((s) => {
+        const obtained = Number(results[s.id]?.marks || 0);
+        const hasResult =
+            results[s.id]?.marks !== undefined && results[s.id]?.marks !== '';
+        const passed = obtained >= exam.passing_marks;
+
+        return { student: s, obtained, hasResult, passed };
+    });
+
+    const totalStudents = displayStudents.length;
+    const graded = resultsData.filter((r) => r.hasResult).length;
+    const passed = resultsData.filter((r) => r.passed && r.hasResult).length;
+    const failed = graded - passed;
+    const avg =
+        graded > 0
+            ? (
+                  resultsData.reduce((sum, r) => sum + r.obtained, 0) / graded
+              ).toFixed(1)
+            : '-';
+
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    const statsY = 48;
+    doc.text(`Students: ${totalStudents}`, 14, statsY);
+    doc.text(`Graded: ${graded}`, 60, statsY);
+    doc.text(`Passed: ${passed}`, 100, statsY);
+    doc.text(`Failed: ${failed}`, 135, statsY);
+    doc.text(`Average: ${avg}`, 165, statsY);
+
+    // Table
+    const tableBody = resultsData.map((r, i) => [
+        i + 1,
+        r.student.name,
+        r.hasResult ? String(r.obtained) : '-',
+        r.hasResult ? (r.passed ? t('exams.pass') : t('exams.fail')) : '-',
+        results[r.student.id]?.notes || '-',
+    ]);
+
+    autoTable(doc, {
+        startY: statsY + 6,
+        head: [
+            [
+                '#',
+                t('exams.student'),
+                t('exams.marks_obtained'),
+                t('exams.status'),
+                t('exams.notes'),
+            ],
+        ],
+        body: tableBody,
+        styles: {
+            fontSize: 9,
+            cellPadding: 4,
+            textColor: [30, 41, 59],
+            lineColor: [226, 232, 240],
+            lineWidth: 0.1,
+        },
+        headStyles: {
+            fillColor: [pr, pg, pb],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 9,
+        },
+        alternateRowStyles: {
+            fillColor: [248, 250, 252],
+        },
+        columnStyles: {
+            0: { cellWidth: 12, halign: 'center' },
+            2: { cellWidth: 25, halign: 'center' },
+            3: { cellWidth: 20, halign: 'center' },
+        },
+        margin: { left: 14, right: 14 },
+    });
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text(
+            `Generated on ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}  |  Page ${i} of ${pageCount}`,
+            pageWidth / 2,
+            doc.internal.pageSize.getHeight() - 10,
+            { align: 'center' },
+        );
+    }
+
+    doc.save(`${exam.title.replace(/\s+/g, '_')}_results.pdf`);
 }
 
 export default function ExamsShow({
@@ -76,6 +234,7 @@ export default function ExamsShow({
                 notes: r.notes || '',
             };
         });
+
         return map;
     });
 
@@ -128,10 +287,15 @@ export default function ExamsShow({
         );
     };
 
+    const handleDownloadPDF = () => {
+        generatePDF(exam, displayStudents, results, t);
+    };
+
     const columns = (() => {
         type Col = NonNullable<
             DataTableProps<Student, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -150,6 +314,7 @@ export default function ExamsShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const student: Student = row.original;
+
                     return (
                         <Input
                             type="number"
@@ -176,6 +341,7 @@ export default function ExamsShow({
                     const hasResult =
                         results[student.id]?.marks !== undefined &&
                         results[student.id]?.marks !== '';
+
                     return (
                         hasResult && (
                             <Badge
@@ -198,6 +364,7 @@ export default function ExamsShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const student: Student = row.original;
+
                     return (
                         <Input
                             className="w-48"
@@ -323,14 +490,10 @@ export default function ExamsShow({
                 </div>
 
                 <Card>
-                    <CardHeader className="flex-row items-center justify-between space-y-0">
+                    <CardHeader>
                         <CardTitle>
                             {t('exams.results')} ({displayStudents.length})
                         </CardTitle>
-                        <Button size="sm" onClick={saveResults}>
-                            <Pencil className="mr-2 size-4" />
-                            {t('actions.save')}
-                        </Button>
                     </CardHeader>
                     <CardContent>
                         <DataTable
@@ -341,7 +504,25 @@ export default function ExamsShow({
                             searchPlaceholder={t('exams.student') + '...'}
                             emptyMessage={t('exams.no_students')}
                             getRowId={(row) => String(row.id)}
+                            toolbarEnd={
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleDownloadPDF}
+                                >
+                                    <Download className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">
+                                        PDF
+                                    </span>
+                                </Button>
+                            }
                         />
+                        <div className="-mt-4 flex justify-end">
+                            <Button onClick={saveResults}>
+                                <Save className="mr-2 size-4" />
+                                {t('actions.save')}
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

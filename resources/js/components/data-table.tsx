@@ -60,6 +60,7 @@ export type DataTableProps<TData, TValue> = {
     showPagination?: boolean;
     emptyMessage?: string;
     toolbar?: ReactNode;
+    toolbarEnd?: ReactNode;
     searchable?: boolean;
     searchPlaceholder?: string;
     getRowId?: (row: TData, index?: number, parent?: any) => string;
@@ -83,6 +84,7 @@ export function DataTable<TData, TValue>({
     showPagination = true,
     emptyMessage = 'No records found',
     toolbar,
+    toolbarEnd,
     searchable = false,
     searchPlaceholder = 'Search...',
     getRowId,
@@ -218,9 +220,12 @@ export function DataTable<TData, TValue>({
                                             </button>
                                         )}
                                     </div>
-                                    {enableColumnVisibility && (
+                                    {(enableColumnVisibility || toolbarEnd) && (
                                         <div className="flex shrink-0 items-center gap-2">
-                                            <ColumnToggle table={table} />
+                                            {enableColumnVisibility && (
+                                                <ColumnToggle table={table} />
+                                            )}
+                                            {toolbarEnd}
                                         </div>
                                     )}
                                 </div>
