@@ -19,6 +19,7 @@ export function exportToExcel({
             h.length,
             ...rows.map((r) => String(r[i] ?? '').length),
         );
+
         return { wch: Math.min(maxLen + 2, 40) };
     });
     ws['!cols'] = colWidths;
@@ -41,12 +42,15 @@ export function importFromExcel(
                 const raw = XLSX.utils.sheet_to_json<(string | number)[]>(ws, {
                     header: 1,
                 });
+
                 if (raw.length < 2) {
                     reject(
                         new Error('Excel file is empty or has no data rows'),
                     );
+
                     return;
                 }
+
                 const headers = raw[0].map(String);
                 const rows = raw
                     .slice(1)

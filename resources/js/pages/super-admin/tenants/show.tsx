@@ -1,13 +1,14 @@
+import { router } from '@inertiajs/react';
+import { ArrowLeft, Building2, Users, GraduationCap, Layers, CreditCard, Eye } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { router } from '@inertiajs/react';
-import { ArrowLeft, Building2, Users, GraduationCap, Layers, CreditCard, Eye } from 'lucide-react';
-import { ConfirmDialog } from '@/components/confirm-dialog';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import { useLocale } from '@/contexts/locale-context';
 
 type Tenant = {
@@ -85,6 +86,7 @@ export default function TenantShow({ tenant, stats, recentPayments }: PageProps)
 
     const columns = (() => {
         type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
+
         return [
             {
                 id: 'created_at',

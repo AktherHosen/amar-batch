@@ -1,4 +1,4 @@
-import { useLocale } from '@/contexts/locale-context';
+import { Check, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -6,7 +6,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Check, Globe } from 'lucide-react';
+import { useLocale } from '@/contexts/locale-context';
 
 const LANGUAGES: { code: 'en' | 'bn'; label: string }[] = [
     { code: 'en', label: 'English' },

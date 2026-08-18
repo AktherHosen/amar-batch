@@ -1,13 +1,13 @@
 import { Head, router, Link } from '@inertiajs/react';
-import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import Pagination from '@/components/pagination';
-import { useLocale } from '@/contexts/locale-context';
-import notifications from '@/routes/notifications';
 import { Bell, CheckCheck } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import Heading from '@/components/heading';
+import Pagination from '@/components/pagination';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
+import notifications from '@/routes/notifications';
 
 type Notification = {
     id: number;
@@ -34,10 +34,22 @@ function timeAgo(dateStr: string): string {
     const date = new Date(dateStr);
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 60) return 'just now';
-    if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
-    if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
-    if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+    if (seconds < 60) {
+return 'just now';
+}
+
+    if (seconds < 3600) {
+return Math.floor(seconds / 60) + 'm ago';
+}
+
+    if (seconds < 86400) {
+return Math.floor(seconds / 3600) + 'h ago';
+}
+
+    if (seconds < 604800) {
+return Math.floor(seconds / 86400) + 'd ago';
+}
+
     return date.toLocaleDateString();
 }
 

@@ -1,16 +1,17 @@
-import React, { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
     flexRender,
     getCoreRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    useReactTable,
-    type ColumnDef,
-    type ColumnFiltersState,
-    type SortingState,
-    type VisibilityState,
+    useReactTable
+    
+    
+    
+    
 } from '@tanstack/react-table';
+import type {ColumnDef, ColumnFiltersState, SortingState, VisibilityState} from '@tanstack/react-table';
+import { motion } from 'framer-motion';
 import {
     ChevronDown,
     ChevronUp,
@@ -19,9 +20,10 @@ import {
     Search,
     X,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useMemo, useState  } from 'react';
+import type {ReactNode} from 'react';
+import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -29,6 +31,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -37,7 +40,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import Pagination from '@/components/pagination';
 
 export type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -100,9 +102,13 @@ export function DataTable<TData, TValue>({
     const [globalFilter, setGlobalFilter] = useState('');
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
         () => {
-            if (!resolvedStorageKey) return {};
+            if (!resolvedStorageKey) {
+return {};
+}
+
             try {
                 const raw = localStorage.getItem(resolvedStorageKey);
+
                 return raw ? (JSON.parse(raw) as VisibilityState) : {};
             } catch {
                 return {};
@@ -125,6 +131,7 @@ export function DataTable<TData, TValue>({
         if (!onSortingChange || sorting.length === 0) {
             return;
         }
+
         const s = sorting[0];
         onSortingChange(String(s.id), s.desc ? 'desc' : 'asc');
     }, [sorting]);
@@ -147,6 +154,7 @@ export function DataTable<TData, TValue>({
             setColumnVisibility((prev) => {
                 const next =
                     typeof updater === 'function' ? updater(prev) : updater;
+
                 if (resolvedStorageKey) {
                     try {
                         localStorage.setItem(
@@ -157,6 +165,7 @@ export function DataTable<TData, TValue>({
                         // ignore storage errors
                     }
                 }
+
                 return next;
             });
         },
@@ -445,6 +454,7 @@ export function ColumnToggle<TData>({
 
     const handleOpenChange = (nextOpen: boolean) => {
         setOpen(nextOpen);
+
         if (nextOpen) {
             setVisibility(
                 Object.fromEntries(

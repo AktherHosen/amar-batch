@@ -1,7 +1,4 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { isOwner } from '@/lib/role';
 import {
     Eye,
     EllipsisVertical,
@@ -9,23 +6,27 @@ import {
     Trash2,
     CheckCircle,
 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
-import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
+import PageActions from '@/components/page-actions';
+import { RefreshButton } from '@/components/refresh-button';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import batches from '@/routes/batches';
 
 type BatchRow = {
     id: number;
@@ -151,6 +152,7 @@ export default function BatchesIndex({
         type Col = NonNullable<
             DataTableProps<BatchRow, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -183,6 +185,7 @@ export default function BatchesIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const batch: BatchRow = row.original;
+
                     return (
                         <div className="flex items-center gap-2">
                             <span>{batch.enrollments_count}</span>
@@ -231,6 +234,7 @@ export default function BatchesIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const batch: BatchRow = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

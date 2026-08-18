@@ -1,19 +1,20 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import { EllipsisVertical, PenLine, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Card, CardContent } from '@/components/ui/card';
-import { DataTable, type DataTableProps } from '@/components/data-table';
 import roles from '@/routes/roles';
 
 type RoleItem = {
@@ -63,6 +64,7 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
         type Col = NonNullable<
             DataTableProps<RoleItem, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -72,6 +74,7 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const role: RoleItem = row.original;
+
                     return (
                         <span className="font-medium">
                             {role.name}
@@ -105,6 +108,7 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const role: RoleItem = row.original;
+
                     return (
                         <span>
                             {role.permissions.includes('*')
@@ -121,9 +125,11 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const role: RoleItem = row.original;
+
                     if (role.slug === 'owner') {
                         return null;
                     }
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

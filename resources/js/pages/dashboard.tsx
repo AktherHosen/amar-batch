@@ -1,16 +1,3 @@
-import Clock from '@/components/clock';
-import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLocale } from '@/contexts/locale-context';
-import { isOwner, isStaff } from '@/lib/role';
-import { dashboard } from '@/routes';
-import attendance from '@/routes/attendance';
-import batches from '@/routes/batches';
-import fees from '@/routes/fees';
-import students from '@/routes/students';
-import users from '@/routes/users';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     ArcElement,
@@ -40,6 +27,19 @@ import {
     Users,
 } from 'lucide-react';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import Clock from '@/components/clock';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
+import { isOwner, isStaff } from '@/lib/role';
+import { dashboard } from '@/routes';
+import attendance from '@/routes/attendance';
+import batches from '@/routes/batches';
+import fees from '@/routes/fees';
+import students from '@/routes/students';
+import users from '@/routes/users';
 
 ChartJS.register(
     CategoryScale,
@@ -300,9 +300,7 @@ export default function Dashboard({
                         >
                             <Card className="h-full">
                                 <CardHeader>
-                                    <CardTitle>
-                                        {t('nav.teachers')}
-                                    </CardTitle>
+                                    <CardTitle>{t('nav.teachers')}</CardTitle>
                                     <GraduationCap className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
                                 <CardContent>
@@ -475,7 +473,7 @@ export default function Dashboard({
                                                     <Megaphone className="size-3 text-amber-600" />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <h4 className="text-sm font-medium leading-snug">
+                                                    <h4 className="text-sm leading-snug font-medium">
                                                         {notice.title}
                                                     </h4>
                                                     <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
@@ -530,18 +528,31 @@ export default function Dashboard({
                                     }}
                                 >
                                     {upcomingHolidays.map((holiday, idx) => {
-                                        const start = new Date(holiday.start_date);
+                                        const start = new Date(
+                                            holiday.start_date,
+                                        );
                                         const end = new Date(holiday.end_date);
                                         const day = start.getDate();
-                                        const month = start.toLocaleDateString('en', { month: 'short' });
-                                        const isMultiDay = start.toDateString() !== end.toDateString();
+                                        const month = start.toLocaleDateString(
+                                            'en',
+                                            { month: 'short' },
+                                        );
+                                        const isMultiDay =
+                                            start.toDateString() !==
+                                            end.toDateString();
 
                                         return (
                                             <motion.div
                                                 key={holiday.id}
                                                 variants={{
-                                                    hidden: { opacity: 0, y: 4 },
-                                                    visible: { opacity: 1, y: 0 },
+                                                    hidden: {
+                                                        opacity: 0,
+                                                        y: 4,
+                                                    },
+                                                    visible: {
+                                                        opacity: 1,
+                                                        y: 0,
+                                                    },
                                                 }}
                                             >
                                                 <Link
@@ -549,25 +560,40 @@ export default function Dashboard({
                                                     className={`flex items-start gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 sm:px-4 ${idx !== upcomingHolidays.length - 1 ? 'border-b border-border/40' : ''}`}
                                                 >
                                                     <div className="flex size-6 shrink-0 flex-col items-center justify-center rounded-md bg-blue-500/10 leading-none">
-                                                        <span className="text-[10px] font-bold text-blue-600">{day}</span>
-                                                        <span className="text-[8px] font-medium text-blue-600/70">{month}</span>
+                                                        <span className="text-[10px] font-bold text-blue-600">
+                                                            {day}
+                                                        </span>
+                                                        <span className="text-[8px] font-medium text-blue-600/70">
+                                                            {month}
+                                                        </span>
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <h4 className="text-sm font-medium leading-snug">
+                                                        <h4 className="text-sm leading-snug font-medium">
                                                             {holiday.title}
                                                         </h4>
                                                         <p className="mt-0.5 text-xs text-muted-foreground">
                                                             {isMultiDay
                                                                 ? `${start.toLocaleDateString('en', { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                                                                : start.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                                                                : start.toLocaleDateString(
+                                                                      'en',
+                                                                      {
+                                                                          weekday:
+                                                                              'short',
+                                                                          month: 'short',
+                                                                          day: 'numeric',
+                                                                          year: 'numeric',
+                                                                      },
+                                                                  )}
                                                         </p>
                                                     </div>
                                                     <Badge
                                                         variant="outline"
                                                         className={`mt-0.5 shrink-0 text-[10px] font-medium ${
-                                                            holiday.type === 'holiday'
+                                                            holiday.type ===
+                                                            'holiday'
                                                                 ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                                                                : holiday.type === 'exam'
+                                                                : holiday.type ===
+                                                                    'exam'
                                                                   ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300'
                                                                   : 'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-300'
                                                         }`}
@@ -588,23 +614,43 @@ export default function Dashboard({
                 {isAdmin && (
                     <>
                         {/* Mobile: floating bottom nav */}
-                        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/95 px-2 py-2 backdrop-blur-md sm:hidden">
+                        <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-border/50 bg-background/95 px-2 py-2 backdrop-blur-md sm:hidden">
                             <div className="flex items-center justify-around">
-                                <Link href="/students/create" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                <Link
+                                    href="/students/create"
+                                    className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                                >
                                     <Plus className="size-5 shrink-0" />
-                                    <span className="w-full truncate text-center text-[10px] font-medium">{t('students.title')}</span>
+                                    <span className="w-full truncate text-center text-[10px] font-medium">
+                                        {t('students.title')}
+                                    </span>
                                 </Link>
-                                <Link href="/attendance/create" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                <Link
+                                    href="/attendance/create"
+                                    className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                                >
                                     <ClipboardCheck className="size-5 shrink-0" />
-                                    <span className="w-full truncate text-center text-[10px] font-medium">{t('attendance.title')}</span>
+                                    <span className="w-full truncate text-center text-[10px] font-medium">
+                                        {t('attendance.title')}
+                                    </span>
                                 </Link>
-                                <Link href="/fees" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                <Link
+                                    href="/fees"
+                                    className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                                >
                                     <CreditCard className="size-5 shrink-0" />
-                                    <span className="w-full truncate text-center text-[10px] font-medium">{t('fees.title')}</span>
+                                    <span className="w-full truncate text-center text-[10px] font-medium">
+                                        {t('fees.title')}
+                                    </span>
                                 </Link>
-                                <Link href="/notices/create" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground">
+                                <Link
+                                    href="/notices/create"
+                                    className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                                >
                                     <Megaphone className="size-5 shrink-0" />
-                                    <span className="w-full truncate text-center text-[10px] font-medium">{t('notices.title')}</span>
+                                    <span className="w-full truncate text-center text-[10px] font-medium">
+                                        {t('notices.title')}
+                                    </span>
                                 </Link>
                             </div>
                         </div>
@@ -638,8 +684,14 @@ export default function Dashboard({
                                     >
                                         <motion.div
                                             variants={{
-                                                hidden: { opacity: 0, scale: 0.9 },
-                                                visible: { opacity: 1, scale: 1 },
+                                                hidden: {
+                                                    opacity: 0,
+                                                    scale: 0.9,
+                                                },
+                                                visible: {
+                                                    opacity: 1,
+                                                    scale: 1,
+                                                },
                                             }}
                                         >
                                             <Link href="/students/create">
@@ -654,8 +706,14 @@ export default function Dashboard({
                                         </motion.div>
                                         <motion.div
                                             variants={{
-                                                hidden: { opacity: 0, scale: 0.9 },
-                                                visible: { opacity: 1, scale: 1 },
+                                                hidden: {
+                                                    opacity: 0,
+                                                    scale: 0.9,
+                                                },
+                                                visible: {
+                                                    opacity: 1,
+                                                    scale: 1,
+                                                },
                                             }}
                                         >
                                             <Link href="/attendance/create">
@@ -664,14 +722,22 @@ export default function Dashboard({
                                                     className="w-full justify-start"
                                                 >
                                                     <ClipboardCheck className="mr-2 size-4" />
-                                                    {t('dashboard.mark_attendance')}
+                                                    {t(
+                                                        'dashboard.mark_attendance',
+                                                    )}
                                                 </Button>
                                             </Link>
                                         </motion.div>
                                         <motion.div
                                             variants={{
-                                                hidden: { opacity: 0, scale: 0.9 },
-                                                visible: { opacity: 1, scale: 1 },
+                                                hidden: {
+                                                    opacity: 0,
+                                                    scale: 0.9,
+                                                },
+                                                visible: {
+                                                    opacity: 1,
+                                                    scale: 1,
+                                                },
                                             }}
                                         >
                                             <Link href="/fees">
@@ -680,14 +746,22 @@ export default function Dashboard({
                                                     className="w-full justify-start"
                                                 >
                                                     <CreditCard className="mr-2 size-4" />
-                                                    {t('dashboard.record_payment')}
+                                                    {t(
+                                                        'dashboard.record_payment',
+                                                    )}
                                                 </Button>
                                             </Link>
                                         </motion.div>
                                         <motion.div
                                             variants={{
-                                                hidden: { opacity: 0, scale: 0.9 },
-                                                visible: { opacity: 1, scale: 1 },
+                                                hidden: {
+                                                    opacity: 0,
+                                                    scale: 0.9,
+                                                },
+                                                visible: {
+                                                    opacity: 1,
+                                                    scale: 1,
+                                                },
                                             }}
                                         >
                                             <Link href="/notices/create">
@@ -900,9 +974,7 @@ export default function Dashboard({
                     >
                         <Card>
                             <CardHeader>
-                                <CardTitle>
-                                    {t('attendance.title')}
-                                </CardTitle>
+                                <CardTitle>{t('attendance.title')}</CardTitle>
                                 <CheckCircle className="size-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
@@ -956,20 +1028,20 @@ export default function Dashboard({
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="rounded-lg border p-4">
+                                    <div className="flex gap-4">
+                                        <div className="text-center">
                                             <div className="text-2xl font-bold text-green-600">
                                                 {batchHistory.completed}
                                             </div>
-                                            <div className="text-sm text-muted-foreground">
+                                            <div className="text-xs text-muted-foreground">
                                                 {t('dashboard.completed')}
                                             </div>
                                         </div>
-                                        <div className="rounded-lg border p-4">
+                                        <div className="text-center">
                                             <div className="text-2xl font-bold text-blue-600">
                                                 {batchHistory.active}
                                             </div>
-                                            <div className="text-sm text-muted-foreground">
+                                            <div className="text-xs text-muted-foreground">
                                                 {t('dashboard.ongoing')}
                                             </div>
                                         </div>

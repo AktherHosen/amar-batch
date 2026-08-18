@@ -1,4 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import LanguageSwitcher from '@/components/language-switcher';
+import { NotificationBell } from '@/components/notification-bell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -6,10 +9,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import LanguageSwitcher from '@/components/language-switcher';
-import { NotificationBell } from '@/components/notification-bell';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';

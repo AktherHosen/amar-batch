@@ -1,12 +1,12 @@
 import { Head, router, Link, usePage } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Heading from '@/components/heading';
+import { ArrowLeft } from 'lucide-react';
 import BatchForm from '@/components/batch-form';
-import { Card, CardContent } from '@/components/ui/card';
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import batches from '@/routes/batches';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLocale } from '@/contexts/locale-context';
+import batches from '@/routes/batches';
 
 export default function BatchesCreate() {
     const { t } = useLocale();

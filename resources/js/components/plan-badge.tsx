@@ -1,5 +1,5 @@
-import { Badge } from '@/components/ui/badge';
 import { Sparkles } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 type PlanBadgeProps = {
     isPopular?: boolean;

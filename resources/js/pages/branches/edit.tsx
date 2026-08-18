@@ -2,13 +2,13 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { FormActions } from '@/components/form-actions';
 import Heading from '@/components/heading';
-import { Card, CardContent } from '@/components/ui/card';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
-import branches from '@/routes/branches';
 import { useLocale } from '@/contexts/locale-context';
+import branches from '@/routes/branches';
 
 type Branch = {
     id: number;

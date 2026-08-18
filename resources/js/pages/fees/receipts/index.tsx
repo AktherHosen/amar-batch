@@ -1,11 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import { Eye, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import Heading from '@/components/heading';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
+import Heading from '@/components/heading';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -73,6 +74,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
 
     const columns = (() => {
         type Col = NonNullable<DataTableProps<Receipt, unknown>['columns']>[number];
+
         return [
             {
                 id: 'receipt_number',
@@ -143,6 +145,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const receipt: Receipt = row.original;
+
                     return (
                         <div className="flex gap-1">
                             <Link href={`/fees/receipts/${receipt.id}`}>

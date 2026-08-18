@@ -1,16 +1,15 @@
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
 import { Mail, MailOpen, MessageSquareReply } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import Heading from '@/components/heading';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
+import Heading from '@/components/heading';
 import { RefreshButton } from '@/components/refresh-button';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogContent,
@@ -18,6 +17,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 type ContactMessage = {
     id: number;
@@ -71,7 +72,10 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
     };
 
     const markRead = (message: ContactMessage) => {
-        if (message.is_read) return;
+        if (message.is_read) {
+return;
+}
+
         router.post(`/super-admin/contacts/${message.id}/read`, {}, {
             preserveScroll: true,
             onSuccess: () => toast.success('Message marked as read.'),
@@ -83,7 +87,9 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
     };
 
     const sendReply = () => {
-        if (!replyDialog.message || !replyDialog.reply.trim()) return;
+        if (!replyDialog.message || !replyDialog.reply.trim()) {
+return;
+}
 
         setSending(true);
         router.post(`/super-admin/contacts/${replyDialog.message.id}/reply`, {
@@ -102,6 +108,7 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
 
     const columns = (() => {
         type Col = NonNullable<DataTableProps<ContactMessage, unknown>['columns']>[number];
+
         return [
             {
                 id: 'name',
@@ -136,6 +143,7 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const message: ContactMessage = row.original;
+
                     return !message.is_read ? (
                         <Badge className="bg-yellow-600 text-white whitespace-nowrap">Unread</Badge>
                     ) : (
@@ -160,6 +168,7 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const message: ContactMessage = row.original;
+
                     return (
                         <Button
                             variant="ghost"

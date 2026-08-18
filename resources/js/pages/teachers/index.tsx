@@ -1,5 +1,4 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import {
     EllipsisVertical,
     Eye,
@@ -8,15 +7,17 @@ import {
     CheckCircle,
     XCircle,
 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
-import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
+import PageActions from '@/components/page-actions';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,10 +31,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import teachers from '@/routes/teachers';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
+import { isOwner } from '@/lib/role';
+import teachers from '@/routes/teachers';
 
 type TeacherRow = {
     id: number;
@@ -79,7 +80,10 @@ export default function TeachersIndex({
     const [refreshing, setRefreshing] = useState(false);
 
     const roleName = (slug: string) => {
-        if (slug === 'inactive') return t('teachers.inactive');
+        if (slug === 'inactive') {
+return t('teachers.inactive');
+}
+
         return roles.find((r) => r.slug === slug)?.name ?? slug;
     };
 
@@ -193,7 +197,11 @@ export default function TeachersIndex({
                 : teacher.is_approved
                   ? 'active'
                   : 'pending';
-        if (value === current) return;
+
+        if (value === current) {
+return;
+}
+
         router.patch(
             teachers.status(teacher.id).url,
             { status: value },
@@ -215,6 +223,7 @@ export default function TeachersIndex({
         type Col = NonNullable<
             DataTableProps<TeacherRow, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -273,6 +282,7 @@ export default function TeachersIndex({
                             : teacher.is_approved
                               ? 'active'
                               : 'pending';
+
                     return (
                         <Select
                             value={statusValue}
@@ -321,6 +331,7 @@ export default function TeachersIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const teacher: TeacherRow = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

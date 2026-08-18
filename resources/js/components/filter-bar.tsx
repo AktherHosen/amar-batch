@@ -1,3 +1,7 @@
+import { motion } from 'framer-motion';
+import { ListFilter, Search, SlidersHorizontal, X } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,10 +16,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { motion } from 'framer-motion';
-import { ListFilter, Search, SlidersHorizontal, X } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { useCallback, useEffect, useState } from 'react';
 
 function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
     let timer: ReturnType<typeof setTimeout>;

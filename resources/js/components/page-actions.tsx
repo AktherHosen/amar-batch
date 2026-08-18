@@ -1,6 +1,4 @@
 import { router } from '@inertiajs/react';
-import { useRef, useState } from 'react';
-import { toast } from 'sonner';
 import {
     Download,
     EllipsisVertical,
@@ -10,16 +8,10 @@ import {
     FileUp,
     X,
 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { exportToExcel, importFromExcel } from '@/lib/excel';
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
     Dialog,
     DialogContent,
@@ -27,7 +19,15 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/contexts/locale-context';
+import { exportToExcel, importFromExcel } from '@/lib/excel';
 
 type PageActionsProps = {
     isAdmin: boolean;
@@ -78,9 +78,12 @@ export default function PageActions({
     };
 
     const handleImport = async () => {
-        if (!selectedFile) return;
+        if (!selectedFile) {
+return;
+}
 
         setImporting(true);
+
         try {
             const { headers, rows } = await importFromExcel(selectedFile);
 
@@ -92,10 +95,12 @@ export default function PageActions({
                             f.toLowerCase() ===
                             h.toLowerCase().replace(/\s+/g, '_'),
                     );
+
                     if (field) {
                         obj[field] = row[i] ?? '';
                     }
                 });
+
                 return obj;
             });
 

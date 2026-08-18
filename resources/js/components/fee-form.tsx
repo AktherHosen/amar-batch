@@ -1,4 +1,6 @@
 import { useForm } from '@inertiajs/react';
+import { FormActions } from '@/components/form-actions';
+import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -8,8 +10,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import InputError from '@/components/input-error';
-import { FormActions } from '@/components/form-actions';
 import fees from '@/routes/fees';
 
 type Student = {

@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { translations, type Locale } from './translations';
+import { translations  } from './translations';
+import type {Locale} from './translations';
 
 export const STORAGE_KEY = 'locale';
 

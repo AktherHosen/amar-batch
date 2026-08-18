@@ -1,15 +1,16 @@
-import Heading from '@/components/heading';
+import { router } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
+import type { FormEvent} from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { FormActions } from '@/components/form-actions';
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { router } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
-import { FormEvent, useState } from 'react';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 
 const AVAILABLE_FEATURES = [
     'students',

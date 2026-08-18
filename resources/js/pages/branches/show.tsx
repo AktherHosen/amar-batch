@@ -1,21 +1,15 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ArrowLeft, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
-import Heading from '@/components/heading';
-import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import branches from '@/routes/branches';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import branches from '@/routes/branches';
 
 type Branch = {
     id: number;
@@ -72,32 +66,22 @@ export default function BranchesShow({ branch }: PageProps) {
                         </h1>
                     </div>
                     {isAdmin && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8 p-0"
-                                >
-                                    <EllipsisVertical className="size-4" />
+                        <div className="flex shrink-0 gap-2">
+                            <Link href={branches.edit(branch.id)}>
+                                <Button variant="outline" className="h-9">
+                                    <Pencil className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                    <Link href={branches.edit(branch.id)}>
-                                        <Pencil className="mr-2 size-4" />
-                                        {t('actions.edit')}
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
-                                    onClick={handleDelete}
-                                >
-                                    <Trash2 className="mr-2 size-4" />
-                                    {t('actions.delete')}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                            </Link>
+                            <Button
+                                variant="destructive"
+                                className="h-9"
+                                onClick={handleDelete}
+                            >
+                                <Trash2 className="size-4" />
+                                <span className="ml-2 hidden sm:inline">{t('actions.delete')}</span>
+                            </Button>
+                        </div>
                     )}
                 </div>
 

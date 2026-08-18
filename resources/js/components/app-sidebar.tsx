@@ -32,27 +32,27 @@ import {
     SidebarRail,
 } from '@/components/ui/sidebar';
 import { useLocale } from '@/contexts/locale-context';
-import { isOwner } from '@/lib/role';
 import { useHasFeature } from '@/lib/features';
 import { usePermissions } from '@/lib/permissions';
+import { isOwner } from '@/lib/role';
 import { dashboard } from '@/routes';
-import students from '@/routes/students';
-import batches from '@/routes/batches';
-import teachers from '@/routes/teachers';
-import users from '@/routes/users';
-import fees from '@/routes/fees';
+import { edit as appearanceEdit } from '@/routes/appearance';
 import attendance from '@/routes/attendance';
+import batches from '@/routes/batches';
+import branches from '@/routes/branches';
 import coachingClasses from '@/routes/coaching-classes';
 import exams from '@/routes/exams';
-import reports from '@/routes/reports';
-import branches from '@/routes/branches';
-import subscription from '@/routes/subscription';
-import roles from '@/routes/roles';
+import fees from '@/routes/fees';
 import { edit as profileEdit } from '@/routes/profile';
+import reports from '@/routes/reports';
+import roles from '@/routes/roles';
 import { edit as securityEdit } from '@/routes/security';
-import { edit as appearanceEdit } from '@/routes/appearance';
-import tenant from '@/routes/settings/tenant';
 import api from '@/routes/settings/api';
+import tenant from '@/routes/settings/tenant';
+import students from '@/routes/students';
+import subscription from '@/routes/subscription';
+import teachers from '@/routes/teachers';
+import users from '@/routes/users';
 import type { NavItem, NavItemGroup } from '@/types';
 
 export function AppSidebar() {
@@ -66,25 +66,45 @@ export function AppSidebar() {
     const permissions = usePermissions();
 
     const hasPermission = (route: string): boolean => {
-        if (permissions.includes('*')) return true;
+        if (permissions.includes('*')) {
+return true;
+}
+
         return permissions.some((pattern) => {
             const escaped = pattern
                 .split('*')
                 .map((part) => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
                 .join('.*');
+
             return new RegExp(`^${escaped}$`).test(route);
         });
     };
 
     const filterItem = (item: NavItem): boolean => {
-        if (item.ownerOnly && !isUserOwner) return false;
-        if (item.featureRequired === 'exams' && !hasExams) return false;
-        if (item.featureRequired === 'reports' && !hasReports) return false;
-        if (item.featureRequired === 'multi_branch' && !hasMultiBranch)
-            return false;
-        if (item.featureRequired === 'api_access' && !hasApiAccess)
-            return false;
-        if (item.permission && !hasPermission(item.permission)) return false;
+        if (item.ownerOnly && !isUserOwner) {
+return false;
+}
+
+        if (item.featureRequired === 'exams' && !hasExams) {
+return false;
+}
+
+        if (item.featureRequired === 'reports' && !hasReports) {
+return false;
+}
+
+        if (item.featureRequired === 'multi_branch' && !hasMultiBranch) {
+return false;
+}
+
+        if (item.featureRequired === 'api_access' && !hasApiAccess) {
+return false;
+}
+
+        if (item.permission && !hasPermission(item.permission)) {
+return false;
+}
+
         return true;
     };
 

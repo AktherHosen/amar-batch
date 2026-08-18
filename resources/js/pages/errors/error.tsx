@@ -1,9 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { Home, LayoutDashboard, ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useLocale } from '@/contexts/locale-context';
 import { dashboard } from '@/routes';
-import { Button } from '@/components/ui/button';
 
 type ErrorConfig = {
     titleKey: string;

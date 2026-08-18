@@ -1,13 +1,17 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import { EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { isOwner } from '@/lib/role';
+import CellTitle from '@/components/cell-title';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import PageActions from '@/components/page-actions';
-import { Button } from '@/components/ui/button';
+import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
@@ -16,10 +20,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/contexts/locale-context';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
-import CellTitle from '@/components/cell-title';
+import { isOwner } from '@/lib/role';
 import notices from '@/routes/notices';
 
 type Notice = {
@@ -97,6 +98,7 @@ export default function NoticesIndex({
         type Col = NonNullable<
             DataTableProps<Notice, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'title',
@@ -118,6 +120,7 @@ export default function NoticesIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const notice: Notice = row.original;
+
                     return notice.batch ? (
                         <Badge variant="secondary">{notice.batch.name}</Badge>
                     ) : (
@@ -132,6 +135,7 @@ export default function NoticesIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const notice: Notice = row.original;
+
                     return (
                         <Badge
                             variant={notice.is_active ? 'success' : 'secondary'}
@@ -163,6 +167,7 @@ export default function NoticesIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const notice: Notice = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

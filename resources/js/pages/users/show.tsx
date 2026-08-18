@@ -1,23 +1,24 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { isOwner } from '@/lib/role';
 import { ArrowLeft, EllipsisVertical, Pencil, Shield, ShieldOff } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import users from '@/routes/users';
-import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import batches from '@/routes/batches';
+import users from '@/routes/users';
 
 type PageProps = {
     auth: { user: { role: string } };
@@ -60,7 +61,10 @@ export default function UsersShow({ user, roles = [] }: UsersShowProps) {
     const [revokeDialog, setRevokeDialog] = useState(false);
 
     const roleName = (slug: string) => {
-        if (slug === 'inactive') return t('users.inactive');
+        if (slug === 'inactive') {
+return t('users.inactive');
+}
+
         return roles.find((r) => r.slug === slug)?.name ?? slug;
     };
 
@@ -81,6 +85,7 @@ export default function UsersShow({ user, roles = [] }: UsersShowProps) {
 
     const columns = (() => {
         type Col = NonNullable<DataTableProps<Batch, unknown>['columns']>[number];
+
         return [
             {
                 id: 'name',
@@ -113,6 +118,7 @@ export default function UsersShow({ user, roles = [] }: UsersShowProps) {
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const batch: Batch = row.original;
+
                     return (
                         <Badge
                             variant={
@@ -135,6 +141,7 @@ export default function UsersShow({ user, roles = [] }: UsersShowProps) {
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const batch: Batch = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -173,9 +180,9 @@ export default function UsersShow({ user, roles = [] }: UsersShowProps) {
                     {isAdmin && !user.is_owner && (
                         <div className="flex gap-2 shrink-0">
                             <Link href={users.edit(user.id)}>
-                                <Button variant="outline">
-                                    <Pencil className="mr-2 size-4" />
-                                    {t('actions.edit')}
+                                <Button variant="outline" className="h-9">
+                                    <Pencil className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
                             {user.role === 'inactive' ? (

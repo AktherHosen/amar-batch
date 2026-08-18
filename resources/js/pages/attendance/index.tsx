@@ -1,24 +1,25 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import { EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { isOwner, isStaff } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
-import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { DatePicker } from '@/components/ui/date-picker';
+import PageActions from '@/components/page-actions';
+import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
@@ -27,13 +28,13 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import attendance from '@/routes/attendance';
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner, isStaff } from '@/lib/role';
+import attendance from '@/routes/attendance';
 
 type AttendanceRecord = {
     id: number;
@@ -128,7 +129,10 @@ export default function AttendanceIndex({
     };
 
     const handleStatusChange = (record: AttendanceRecord, value: string) => {
-        if (value === record.status) return;
+        if (value === record.status) {
+return;
+}
+
         router.put(
             attendance.update(record.id),
             { status: value, notes: record.notes },
@@ -167,6 +171,7 @@ export default function AttendanceIndex({
         type Col = NonNullable<
             DataTableProps<AttendanceRecord, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'student',
@@ -213,6 +218,7 @@ export default function AttendanceIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const record: AttendanceRecord = row.original;
+
                     if (!isAdmin && !isTeacher) {
                         return (
                             <Badge variant={getStatusBadge(record.status)}>
@@ -220,6 +226,7 @@ export default function AttendanceIndex({
                             </Badge>
                         );
                     }
+
                     return (
                         <Select
                             value={record.status}
@@ -262,7 +269,9 @@ export default function AttendanceIndex({
                 cell: ({ row }: any) => {
                     const notes = row.original.notes;
 
-                    if (!notes) return '-';
+                    if (!notes) {
+return '-';
+}
 
                     return (
                         <Tooltip>
@@ -285,6 +294,7 @@ export default function AttendanceIndex({
                           enableHiding: false,
                           cell: ({ row }: any) => {
                               const record: AttendanceRecord = row.original;
+
                               return (
                                   <DropdownMenu>
                                       <DropdownMenuTrigger asChild>

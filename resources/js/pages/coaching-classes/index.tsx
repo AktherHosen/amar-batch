@@ -1,24 +1,25 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
-import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
+import PageActions from '@/components/page-actions';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Card, CardContent } from '@/components/ui/card';
-import coachingClasses from '@/routes/coaching-classes';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import coachingClasses from '@/routes/coaching-classes';
 
 type CoachingClass = {
     id: number;
@@ -85,6 +86,7 @@ export default function CoachingClassesIndex({
         type Col = NonNullable<
             DataTableProps<CoachingClass, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -123,6 +125,7 @@ export default function CoachingClassesIndex({
                           enableHiding: false,
                           cell: ({ row }: any) => {
                               const cls: CoachingClass = row.original;
+
                               return (
                                   <DropdownMenu>
                                       <DropdownMenuTrigger asChild>

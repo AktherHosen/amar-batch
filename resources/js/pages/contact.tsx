@@ -1,3 +1,6 @@
+import { Head, router, useForm } from '@inertiajs/react';
+import { Clock, Loader2, Mail, MapPin, Phone, Send } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -5,9 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
 import PublicLayout from '@/layouts/public-layout';
-import { Head, router, useForm } from '@inertiajs/react';
-import { Clock, Loader2, Mail, MapPin, Phone, Send } from 'lucide-react';
-import { toast } from 'sonner';
 
 export default function Contact() {
     const { t } = useLocale();

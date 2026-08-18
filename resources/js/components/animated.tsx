@@ -1,4 +1,5 @@
-import { motion, type Variants } from 'framer-motion';
+import { motion  } from 'framer-motion';
+import type {Variants} from 'framer-motion';
 import type { ReactNode } from 'react';
 
 const pageVariants: Variants = {

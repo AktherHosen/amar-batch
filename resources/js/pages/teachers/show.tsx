@@ -1,5 +1,4 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { isOwner } from '@/lib/role';
 import {
     ArrowLeft,
     Download,
@@ -14,26 +13,28 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import Heading from '@/components/heading';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { generateTablePDF } from '@/lib/pdf-table';
-import teachers from '@/routes/teachers';
-import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
+import { generateTablePDF } from '@/lib/pdf-table';
+import { isOwner } from '@/lib/role';
+import batches from '@/routes/batches';
+import teachers from '@/routes/teachers';
 
 type PageProps = {
     auth: { user: { role: string } };
-    tenant: { primary_color: string } | null;
+    tenant: { primary_color: string; name: string } | null;
 };
 
 type Batch = {
@@ -66,8 +67,12 @@ type TeachersShowProps = {
 };
 
 function formatDate(dateStr: string | null): string {
-    if (!dateStr) return '-';
+    if (!dateStr) {
+return '-';
+}
+
     const d = new Date(dateStr);
+
     return d.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
@@ -96,6 +101,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
         type Col = NonNullable<
             DataTableProps<Batch, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -130,6 +136,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const batch: Batch = row.original;
+
                     return (
                         <Badge
                             variant={
@@ -152,6 +159,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const batch: Batch = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -200,17 +208,18 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     {isAdmin && (
                         <div className="flex shrink-0 gap-2">
                             <Link href={teachers.edit(teacher.id)}>
-                                <Button variant="outline">
-                                    <Pencil className="mr-2 size-4" />
-                                    {t('actions.edit')}
+                                <Button variant="outline" className="h-9">
+                                    <Pencil className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
                             <Button
                                 variant="destructive"
+                                className="h-9"
                                 onClick={handleDelete}
                             >
-                                <Trash2 className="mr-2 size-4" />
-                                {t('actions.delete')}
+                                <Trash2 className="size-4" />
+                                <span className="ml-2 hidden sm:inline">{t('actions.delete')}</span>
                             </Button>
                         </div>
                     )}
@@ -406,6 +415,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                                             ]),
                                             filename: `${teacher.name}_batches`,
                                             primaryColor,
+                                            centerName: tenant?.name,
                                         })
                                     }
                                 >

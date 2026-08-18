@@ -6,9 +6,10 @@ import {
     formatBanglaNumber,
     formatCurrency as formatCurrencyForLocale,
     formatDate as formatDateForLocale,
-    formatTime as formatTimeForLocale,
-    type Locale,
+    formatTime as formatTimeForLocale
+    
 } from '@/i18n/translations';
+import type {Locale} from '@/i18n/translations';
 
 type LocaleContextType = {
     locale: Locale;

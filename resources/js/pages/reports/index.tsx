@@ -1,12 +1,4 @@
 import { Head, router } from '@inertiajs/react';
-import Heading from '@/components/heading';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
-import { useLocale } from '@/contexts/locale-context';
-import { useHasFeature } from '@/lib/features';
-import reports from '@/routes/reports';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -20,8 +12,17 @@ import {
     Legend,
     Filler,
 } from 'chart.js';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
 import { useState } from 'react';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import Heading from '@/components/heading';
+import { RefreshButton } from '@/components/refresh-button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
+import { useHasFeature } from '@/lib/features';
+import reports from '@/routes/reports';
 
 ChartJS.register(
     CategoryScale,
@@ -170,8 +171,15 @@ export default function ReportsIndex({
         newYear?: string,
     ) => {
         const params: Record<string, string> = {};
-        if (newBranchId ?? branchId) params.branch_id = newBranchId ?? branchId;
-        if (newBatchId ?? batchId) params.batch_id = newBatchId ?? batchId;
+
+        if (newBranchId ?? branchId) {
+params.branch_id = newBranchId ?? branchId;
+}
+
+        if (newBatchId ?? batchId) {
+params.batch_id = newBatchId ?? batchId;
+}
+
         params.month = newMonth ?? month;
         params.year = newYear ?? year;
         router.get(reports.index(), params, { preserveState: true });
@@ -272,6 +280,7 @@ export default function ReportsIndex({
         type Col = NonNullable<
             DataTableProps<BatchPerformance, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',

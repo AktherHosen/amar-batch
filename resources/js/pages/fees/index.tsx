@@ -1,25 +1,26 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState, useRef } from 'react';
-import { isOwner } from '@/lib/role';
 import { Trash2, EllipsisVertical, ChevronDown } from 'lucide-react';
+import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import Heading from '@/components/heading';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
+import Heading from '@/components/heading';
 import PageActions from '@/components/page-actions';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import fees from '@/routes/fees';
+import { Input } from '@/components/ui/input';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import fees from '@/routes/fees';
 
 type Student = {
     id: number;
@@ -215,11 +216,13 @@ function MobileFeeList({
     const toggle = (key: string) => {
         setExpanded((prev) => {
             const next = new Set(prev);
+
             if (next.has(key)) {
                 next.delete(key);
             } else {
                 next.add(key);
             }
+
             return next;
         });
     };
@@ -459,6 +462,7 @@ export default function FeesIndex({
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const item: FeeGridItem = row.original;
+
                     return (
                         <div className="flex items-center gap-3">
                             {item.student.photo ? (
@@ -504,6 +508,7 @@ export default function FeesIndex({
                             item.months[m] &&
                             Number(item.months[m].amount_paid) > 0,
                     ).length;
+
                     return (
                         <div className="flex items-center gap-2">
                             <div className="flex h-2 w-16 overflow-hidden rounded-full bg-muted">
@@ -536,6 +541,7 @@ export default function FeesIndex({
                         enableSorting: false,
                         cell: ({ row }: any) => {
                             const item: FeeGridItem = row.original;
+
                             return (
                                 <div className="flex justify-center">
                                     <FeeCell
@@ -575,6 +581,7 @@ export default function FeesIndex({
 
                     return sum + (fee ? Number(fee.amount_paid) : 0);
                 }, 0);
+
                 return (
                     <div className="flex justify-center">
                         <span
@@ -599,6 +606,7 @@ export default function FeesIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const item: FeeGridItem = row.original;
+
                     return (
                         <div className="flex justify-center">
                             <Button
@@ -660,17 +668,20 @@ export default function FeesIndex({
                             exportRows={feeGrid.map((item) => {
                                 const total = months.reduce((sum, m) => {
                                     const fee = item.months[m];
+
                                     return (
                                         sum +
                                         (fee ? Number(fee.amount_paid) : 0)
                                     );
                                 }, 0);
+
                                 return [
                                     item.student.name,
                                     item.student.coaching_class?.name || '',
                                     item.batch.name,
                                     ...months.map((m) => {
                                         const fee = item.months[m];
+
                                         return fee
                                             ? Number(fee.amount_paid)
                                             : 0;

@@ -1,13 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import { EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import PageActions from '@/components/page-actions';
-import { Button } from '@/components/ui/button';
+import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
@@ -16,9 +19,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/contexts/locale-context';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
+import { isOwner } from '@/lib/role';
 import holidays from '@/routes/holidays';
 
 type Holiday = {
@@ -91,6 +92,7 @@ export default function HolidaysIndex({
             exam: 'secondary',
             event: 'default',
         };
+
         return variants[type] || 'secondary';
     };
 
@@ -100,6 +102,7 @@ export default function HolidaysIndex({
         type Col = NonNullable<
             DataTableProps<Holiday, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'title',
@@ -134,6 +137,7 @@ export default function HolidaysIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const h: Holiday = row.original;
+
                     return (
                         <>
                             {Math.ceil(
@@ -153,6 +157,7 @@ export default function HolidaysIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const h: Holiday = row.original;
+
                     return (
                         <Badge variant={getTypeBadge(h.type)}>{h.type}</Badge>
                     );
@@ -165,6 +170,7 @@ export default function HolidaysIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const holiday: Holiday = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

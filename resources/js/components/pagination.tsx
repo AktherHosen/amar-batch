@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useLocale } from '@/contexts/locale-context';
 
 type PaginationProps = {
@@ -23,7 +23,10 @@ export default function Pagination({
     preserveParams = {},
 }: PaginationProps) {
     const { t } = useLocale();
-    if (total <= 0) return null;
+
+    if (total <= 0) {
+return null;
+}
 
     const goToPage = (page: number) => {
         router.get(

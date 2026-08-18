@@ -1,17 +1,4 @@
 import { useForm } from '@inertiajs/react';
-import type { Student } from '@/types';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import InputError from '@/components/input-error';
-import { DatePicker } from '@/components/ui/date-picker';
 import {
     Camera,
     X,
@@ -23,9 +10,22 @@ import {
     MapPin,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { useLocale } from '@/contexts/locale-context';
 import { FormActions } from '@/components/form-actions';
+import InputError from '@/components/input-error';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useLocale } from '@/contexts/locale-context';
 import students from '@/routes/students';
+import type { Student } from '@/types';
 
 type CoachingClass = {
     id: number;
@@ -93,6 +93,7 @@ export default function StudentForm({
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+
         if (file) {
             setPhotoFile(file);
             const reader = new FileReader();
@@ -106,9 +107,11 @@ export default function StudentForm({
     const removePhoto = () => {
         setPhotoFile(null);
         setPhotoPreview(null);
+
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+
         setData('photo', null as any);
     };
 
@@ -120,9 +123,11 @@ export default function StudentForm({
                 formData.append(key, String(value));
             }
         });
+
         if (photoFile) {
             formData.append('photo', photoFile);
         }
+
         onSubmit(formData);
     };
 

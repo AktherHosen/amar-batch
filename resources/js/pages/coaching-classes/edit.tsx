@@ -1,13 +1,13 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { FormActions } from '@/components/form-actions';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import InputError from '@/components/input-error';
-import coachingClasses from '@/routes/coaching-classes';
 import { useLocale } from '@/contexts/locale-context';
+import coachingClasses from '@/routes/coaching-classes';
 
 type CoachingClass = {
     id: number;

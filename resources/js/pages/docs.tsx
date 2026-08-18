@@ -1,11 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
 import { BookOpen, Users, Calendar, Wallet, GraduationCap, Settings, Shield, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useLocale } from '@/contexts/locale-context';
 import PublicLayout from '@/layouts/public-layout';
 import { register } from '@/routes';
-import { useLocale } from '@/contexts/locale-context';
 
 export default function Docs() {
     const { t } = useLocale();

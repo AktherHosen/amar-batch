@@ -1,7 +1,4 @@
-import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { Link, router } from '@inertiajs/react';
 import {
     Building2,
     GraduationCap,
@@ -11,9 +8,13 @@ import {
     Eye,
     MessageSquareReply,
 } from 'lucide-react';
-import { useLocale } from '@/contexts/locale-context';
-import { Link, router } from '@inertiajs/react';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
 
 type Stats = {
     total_tenants: number;
@@ -95,16 +96,22 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
     };
 
     const getSubscriptionBadge = (tenant: TenantStat) => {
-        if (!tenant.subscription) return <Badge variant="outline" className="whitespace-nowrap">No Plan</Badge>;
+        if (!tenant.subscription) {
+return <Badge variant="outline" className="whitespace-nowrap">No Plan</Badge>;
+}
+
         const planName = tenant.subscription.plan?.name ?? 'Unknown';
+
         if (tenant.subscription.status === 'trial') {
             return <Badge variant="outline" className="whitespace-nowrap">Trial</Badge>;
         }
+
         return <Badge className="bg-blue-600 text-white whitespace-nowrap">{planName}</Badge>;
     };
 
     const revenueByPlanColumns = (() => {
         type Col = NonNullable<DataTableProps<RevenueByPlan, unknown>['columns']>[number];
+
         return [
             {
                 id: 'name',
@@ -141,6 +148,7 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
 
     const recentPaymentsColumns = (() => {
         type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
+
         return [
             {
                 id: 'tenant',
@@ -180,6 +188,7 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
 
     const contactMessagesColumns = (() => {
         type Col = NonNullable<DataTableProps<ContactMessage, unknown>['columns']>[number];
+
         return [
             {
                 id: 'name',
@@ -240,6 +249,7 @@ export default function SuperAdminDashboard({ stats, tenantStats, recentPayments
 
     const tenantColumns = (() => {
         type Col = NonNullable<DataTableProps<TenantStat, unknown>['columns']>[number];
+
         return [
             {
                 id: 'name',

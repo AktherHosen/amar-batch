@@ -1,3 +1,9 @@
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { ArrowLeft, Download, Pencil, Save, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import type { DataTableProps } from '@/components/data-table';
 import { DataTable } from '@/components/data-table';
@@ -8,12 +14,6 @@ import { Input } from '@/components/ui/input';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import exams from '@/routes/exams';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { ArrowLeft, Download, Pencil, Save, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
 
 type Student = {
     id: number;
@@ -67,9 +67,15 @@ function formatDate(dateStr: string | null): string {
 
 function hexToRGB(hex: string): [number, number, number] {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
     if (result) {
-        return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
+        return [
+            parseInt(result[1], 16),
+            parseInt(result[2], 16),
+            parseInt(result[3], 16),
+        ];
     }
+
     return [99, 102, 241];
 }
 
@@ -79,20 +85,34 @@ function generatePDF(
     results: Record<number, { marks: string; notes: string }>,
     t: (key: string) => string,
     primaryColor: string,
+    centerName: string,
 ) {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const [pr, pg, pb] = hexToRGB(primaryColor);
 
     // Header
     doc.setFillColor(pr, pg, pb);
-    doc.rect(0, 0, pageWidth, 40, 'F');
+    doc.rect(0, 0, pageWidth, 45, 'F');
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(0, 45, pageWidth, 1, 'F');
 
+    // Center name
+    if (centerName) {
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(centerName.toUpperCase(), 14, 10);
+    }
+
+    // Title
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text(exam.title, 14, 18);
+    doc.text(exam.title, 14, 20);
 
+    // Subtitle
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const subtitle = [
@@ -102,13 +122,19 @@ function generatePDF(
     ]
         .filter(Boolean)
         .join('  |  ');
-    doc.text(subtitle, 14, 26);
+    doc.text(subtitle, 14, 28);
 
     doc.setFontSize(9);
     doc.text(
         `Total: ${exam.total_marks}  |  Passing: ${exam.passing_marks}`,
         14,
-        33,
+        35,
+    );
+
+    doc.text(
+        `Generated on ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`,
+        14,
+        41,
     );
 
     // Stats
@@ -135,7 +161,7 @@ function generatePDF(
     doc.setTextColor(30, 41, 59);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    const statsY = 48;
+    const statsY = 53;
     doc.text(`Students: ${totalStudents}`, 14, statsY);
     doc.text(`Graded: ${graded}`, 60, statsY);
     doc.text(`Passed: ${passed}`, 100, statsY);
@@ -192,14 +218,23 @@ function generatePDF(
 
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
+
+        // Footer line
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.5);
+        doc.line(14, pageHeight - 15, pageWidth - 14, pageHeight - 15);
+
+        // Page number
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
-        doc.text(
-            `Generated on ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}  |  Page ${i} of ${pageCount}`,
-            pageWidth / 2,
-            doc.internal.pageSize.getHeight() - 10,
-            { align: 'center' },
-        );
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 10, {
+            align: 'center',
+        });
+
+        // Center name in footer
+        if (centerName) {
+            doc.text(centerName, 14, pageHeight - 10);
+        }
     }
 
     doc.save(`${exam.title.replace(/\s+/g, '_')}_results.pdf`);
@@ -279,7 +314,14 @@ export default function ExamsShow({
     };
 
     const handleDownloadPDF = () => {
-        generatePDF(exam, displayStudents, results, t, primaryColor);
+        generatePDF(
+            exam,
+            displayStudents,
+            results,
+            t,
+            primaryColor,
+            tenant?.name || '',
+        );
     };
 
     const columns = (() => {
@@ -394,17 +436,22 @@ export default function ExamsShow({
                     {isAdmin && (
                         <div className="flex shrink-0 gap-2">
                             <Link href={exams.edit(exam.id)}>
-                                <Button variant="outline">
-                                    <Pencil className="mr-2 size-4" />
-                                    {t('actions.edit')}
+                                <Button variant="outline" className="h-9">
+                                    <Pencil className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">
+                                        {t('actions.edit')}
+                                    </span>
                                 </Button>
                             </Link>
                             <Button
                                 variant="destructive"
+                                className="h-9"
                                 onClick={handleDelete}
                             >
-                                <Trash2 className="mr-2 size-4" />
-                                {t('actions.delete')}
+                                <Trash2 className="size-4" />
+                                <span className="ml-2 hidden sm:inline">
+                                    {t('actions.delete')}
+                                </span>
                             </Button>
                         </div>
                     )}

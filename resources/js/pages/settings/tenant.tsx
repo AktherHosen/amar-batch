@@ -1,6 +1,8 @@
 import { Head, useForm } from '@inertiajs/react';
+import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import { LogoUpload } from '@/components/logo-upload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,9 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
 import settings from '@/routes/settings';
-import { LogoUpload } from '@/components/logo-upload';
 
 type Center = {
     id: number;

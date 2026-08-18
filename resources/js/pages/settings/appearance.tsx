@@ -1,3 +1,7 @@
+import { Head, router } from '@inertiajs/react';
+import { Check, Monitor, Moon, Pipette, Sun, Save } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,10 +35,6 @@ import {
 } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
-import { Head, router } from '@inertiajs/react';
-import { Check, Monitor, Moon, Pipette, Sun, Save } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
 
 const MODES: {
     value: Appearance;
@@ -243,7 +243,7 @@ export default function Appearance() {
                                     {!accentIsPreset ? (
                                         <Check className="size-3.5 text-white" />
                                     ) : (
-                                        <Pipette className="size-3.5 text-muted-foreground" />
+                                        <Pipette className="size-3.5 text-foreground" />
                                     )}
                                 </span>
                                 <input
@@ -512,8 +512,10 @@ export default function Appearance() {
 
                 <div className="flex justify-end">
                     <Button onClick={handleSave} disabled={saving}>
-                        <Save className="mr-2 size-4" />
-                        {saving ? 'Saving...' : 'Save Settings'}
+                        <Save className="size-4" />
+                        <span className="ml-2 hidden sm:inline">
+                            {saving ? 'Saving...' : 'Save'}
+                        </span>
                     </Button>
                 </div>
             </div>

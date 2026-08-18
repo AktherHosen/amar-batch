@@ -182,6 +182,7 @@ const getStoredDateFormat = (): string => {
     if (typeof window === 'undefined') {
         return DEFAULT_DATE_FORMAT;
     }
+
     return localStorage.getItem('dateFormat') || DEFAULT_DATE_FORMAT;
 };
 
@@ -189,6 +190,7 @@ const getStoredTimeFormat = (): string => {
     if (typeof window === 'undefined') {
         return DEFAULT_TIME_FORMAT;
     }
+
     return localStorage.getItem('timeFormat') || DEFAULT_TIME_FORMAT;
 };
 
@@ -196,6 +198,7 @@ const getStoredSidebarStyle = (): string => {
     if (typeof window === 'undefined') {
         return DEFAULT_SIDEBAR_STYLE;
     }
+
     return localStorage.getItem('sidebarStyle') || DEFAULT_SIDEBAR_STYLE;
 };
 
@@ -203,6 +206,7 @@ const getStoredDefaultPage = (): string => {
     if (typeof window === 'undefined') {
         return DEFAULT_DEFAULT_PAGE;
     }
+
     return localStorage.getItem('defaultPage') || DEFAULT_DEFAULT_PAGE;
 };
 

@@ -1,14 +1,14 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { isOwner } from '@/lib/role';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import notices from '@/routes/notices';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import notices from '@/routes/notices';
 
 type Notice = {
     id: number;
@@ -70,17 +70,18 @@ export default function NoticesShow() {
                     {isAdmin && (
                         <div className="flex shrink-0 gap-2">
                             <Link href={notices.edit(notice.id)}>
-                                <Button variant="outline">
-                                    <Pencil className="mr-2 size-4" />
-                                    {t('actions.edit')}
+                                <Button variant="outline" className="h-9">
+                                    <Pencil className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
                             <Button
                                 variant="destructive"
+                                className="h-9"
                                 onClick={handleDelete}
                             >
-                                <Trash2 className="mr-2 size-4" />
-                                {t('actions.delete')}
+                                <Trash2 className="size-4" />
+                                <span className="ml-2 hidden sm:inline">{t('actions.delete')}</span>
                             </Button>
                         </div>
                     )}

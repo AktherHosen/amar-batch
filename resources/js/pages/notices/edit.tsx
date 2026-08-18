@@ -1,11 +1,12 @@
 import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { FormActions } from '@/components/form-actions';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -14,8 +15,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import InputError from '@/components/input-error';
-import { FormActions } from '@/components/form-actions';
+import { Textarea } from '@/components/ui/textarea';
 
 type Notice = {
     id: number;

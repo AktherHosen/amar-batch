@@ -1,7 +1,7 @@
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
-import { SuperAdminSidebar } from '@/components/super-admin-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { SuperAdminSidebar } from '@/components/super-admin-sidebar';
 import type { AppLayoutProps } from '@/types';
 
 export default function SuperAdminSidebarLayout({

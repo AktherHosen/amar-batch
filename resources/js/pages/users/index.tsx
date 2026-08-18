@@ -1,5 +1,4 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import {
     EllipsisVertical,
     Eye,
@@ -10,15 +9,17 @@ import {
     CheckCircle,
     XCircle,
 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { isOwner } from '@/lib/role';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
+import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,10 +33,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import users from '@/routes/users';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
+import { isOwner } from '@/lib/role';
+import users from '@/routes/users';
 
 type UserRow = {
     id: number;
@@ -85,7 +86,10 @@ export default function UsersIndex({
     const assignableRoles = roles.filter((r) => r.slug !== 'owner');
 
     const roleName = (slug: string) => {
-        if (slug === 'inactive') return t('users.inactive');
+        if (slug === 'inactive') {
+return t('users.inactive');
+}
+
         return roles.find((r) => r.slug === slug)?.name ?? slug;
     };
 
@@ -93,8 +97,15 @@ export default function UsersIndex({
         const params: Record<string, string> = {
             ...extra,
         };
-        if (status) params.status = status;
-        if (roleFilter) params.role = roleFilter;
+
+        if (status) {
+params.status = status;
+}
+
+        if (roleFilter) {
+params.role = roleFilter;
+}
+
         router.get(users.index(), params, { preserveState: true });
     };
 
@@ -120,7 +131,10 @@ export default function UsersIndex({
         user: { id: number; role: string; name: string },
         value: string,
     ) => {
-        if (value === user.role) return;
+        if (value === user.role) {
+return;
+}
+
         router.post(
             users.role(user.id).url,
             { role: value },
@@ -228,6 +242,7 @@ export default function UsersIndex({
         type Col = NonNullable<
             DataTableProps<UserRow, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -269,6 +284,7 @@ export default function UsersIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const user: UserRow = row.original;
+
                     if (user.role === 'inactive') {
                         return (
                             <Badge variant="danger">
@@ -276,6 +292,7 @@ export default function UsersIndex({
                             </Badge>
                         );
                     }
+
                     if (user.is_owner) {
                         return (
                             <Badge variant="default">
@@ -284,6 +301,7 @@ export default function UsersIndex({
                             </Badge>
                         );
                     }
+
                     if (isAdmin) {
                         return (
                             <Select
@@ -310,6 +328,7 @@ export default function UsersIndex({
                             </Select>
                         );
                     }
+
                     return (
                         <span className="capitalize">
                             {roleName(user.role)}
@@ -324,6 +343,7 @@ export default function UsersIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const user: UserRow = row.original;
+
                     if (user.role === 'inactive') {
                         return (
                             <Badge variant="danger">
@@ -331,6 +351,7 @@ export default function UsersIndex({
                             </Badge>
                         );
                     }
+
                     if (!user.is_owner && !user.is_approved) {
                         return (
                             <Badge variant="secondary">
@@ -338,6 +359,7 @@ export default function UsersIndex({
                             </Badge>
                         );
                     }
+
                     return <Badge variant="success">{t('users.active')}</Badge>;
                 },
             } as Col,
@@ -348,6 +370,7 @@ export default function UsersIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const user: UserRow = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

@@ -1,18 +1,3 @@
-import LanguageSwitcher from '@/components/language-switcher';
-import PlanBadge from '@/components/plan-badge';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { useLocale } from '@/contexts/locale-context';
-import { dashboard, login, register } from '@/routes';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     ArrowRight,
@@ -28,6 +13,21 @@ import {
     Zap,
 } from 'lucide-react';
 import { useState } from 'react';
+import LanguageSwitcher from '@/components/language-switcher';
+import PlanBadge from '@/components/plan-badge';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { useLocale } from '@/contexts/locale-context';
+import { dashboard, login, register } from '@/routes';
 
 type Plan = {
     id: number;

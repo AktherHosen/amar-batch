@@ -1,10 +1,11 @@
+import { Link, router } from '@inertiajs/react';
+import { ArrowLeft, CreditCard, Users, GraduationCap, Layers, CalendarClock, Clock } from 'lucide-react';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { ArrowLeft, CreditCard, Users, GraduationCap, Layers, CalendarClock, Clock } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
-import { Link, router } from '@inertiajs/react';
 
 type Plan = {
     id: number;
@@ -103,6 +104,7 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
 
     const paymentColumns = (() => {
         type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
+
         return [
             {
                 id: 'created_at',
@@ -155,6 +157,7 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
 
     const subscriptionColumns = (() => {
         type Col = NonNullable<DataTableProps<SubscriptionRecord, unknown>['columns']>[number];
+
         return [
             {
                 id: 'created_at',

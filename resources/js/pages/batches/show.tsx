@@ -1,7 +1,4 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { isOwner, isStaff } from '@/lib/role';
 import {
     ArrowLeft,
     CheckCircle2,
@@ -12,9 +9,15 @@ import {
     UserMinus,
     UserX,
 } from 'lucide-react';
-import Heading from '@/components/heading';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
     DropdownMenu,
@@ -22,18 +25,16 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { generateTablePDF } from '@/lib/pdf-table';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { useLocale } from '@/contexts/locale-context';
+import { generateTablePDF } from '@/lib/pdf-table';
+import { isOwner, isStaff } from '@/lib/role';
 import batches from '@/routes/batches';
 import studentsRoutes from '@/routes/students';
-import { useLocale } from '@/contexts/locale-context';
 
 type PageProps = {
     auth: { user: { role: string } };
-    tenant: { primary_color: string } | null;
+    tenant: { primary_color: string; name: string } | null;
 };
 
 type Teacher = {
@@ -154,6 +155,7 @@ export default function BatchesShow({
                 onSuccess: () => toast.success(t('toast.removed_successfully')),
             });
         }
+
         setRemoveTeacherDialog({ open: false, teacherId: null });
     };
 
@@ -205,6 +207,7 @@ export default function BatchesShow({
                     toast.success(t('toast.unenrolled_successfully')),
             });
         }
+
         setUnenrollDialog({ open: false, enrollmentId: null });
     };
 
@@ -229,6 +232,7 @@ export default function BatchesShow({
         type Col = NonNullable<
             DataTableProps<Teacher, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -254,6 +258,7 @@ export default function BatchesShow({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const teacher: Teacher = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -287,6 +292,7 @@ export default function BatchesShow({
         type Col = NonNullable<
             DataTableProps<Enrollment, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'student',
@@ -296,6 +302,7 @@ export default function BatchesShow({
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const enrollment: Enrollment = row.original;
+
                     return (
                         <Link
                             href={studentsRoutes.show(enrollment.student.id)}
@@ -315,6 +322,7 @@ export default function BatchesShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const enrollment: Enrollment = row.original;
+
                     return enrollment.student.coaching_class?.name || '-';
                 },
             } as Col,
@@ -325,6 +333,7 @@ export default function BatchesShow({
                 enableSorting: true,
                 cell: ({ row }: any) => {
                     const enrollment: Enrollment = row.original;
+
                     return new Date(
                         enrollment.enrolled_at,
                     ).toLocaleDateString();
@@ -337,6 +346,7 @@ export default function BatchesShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const enrollment: Enrollment = row.original;
+
                     return enrollment.student.joined_at
                         ? new Date(
                               enrollment.student.joined_at,
@@ -351,6 +361,7 @@ export default function BatchesShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const enrollment: Enrollment = row.original;
+
                     return (
                         <Badge variant={getStatusBadge(enrollment.status)}>
                             {enrollment.status}
@@ -365,11 +376,13 @@ export default function BatchesShow({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const enrollment: Enrollment = row.original;
+
                     if (!(
                         isAdmin || (auth.user.role as string) === 'teacher'
                     )) {
                         return null;
                     }
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -429,6 +442,7 @@ export default function BatchesShow({
         type Col = NonNullable<
             DataTableProps<BatchHistory, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'date',
@@ -438,6 +452,7 @@ export default function BatchesShow({
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const item: BatchHistory = row.original;
+
                     return item.action_date
                         ? new Date(item.action_date).toLocaleDateString()
                         : new Date(item.created_at).toLocaleDateString();
@@ -450,6 +465,7 @@ export default function BatchesShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const item: BatchHistory = row.original;
+
                     return (
                         <span className="font-medium">
                             {item.student?.name}
@@ -464,6 +480,7 @@ export default function BatchesShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const item: BatchHistory = row.original;
+
                     return (
                         <Badge
                             variant={
@@ -486,6 +503,7 @@ export default function BatchesShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const item: BatchHistory = row.original;
+
                     return item.user?.name;
                 },
             } as Col,
@@ -515,17 +533,18 @@ export default function BatchesShow({
                     {isAdmin && batch.status !== 'completed' && (
                         <div className="flex shrink-0 gap-2">
                             <Link href={batches.edit(batch.id)}>
-                                <Button variant="outline">
-                                    <Pencil className="mr-2 size-4" />
-                                    {t('actions.edit')}
+                                <Button variant="outline" className="h-9">
+                                    <Pencil className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
                             <Button
                                 variant="destructive"
+                                className="h-9"
                                 onClick={handleDelete}
                             >
-                                <Trash2 className="mr-2 size-4" />
-                                {t('actions.delete')}
+                                <Trash2 className="size-4" />
+                                <span className="ml-2 hidden sm:inline">{t('actions.delete')}</span>
                             </Button>
                         </div>
                     )}
@@ -853,6 +872,7 @@ export default function BatchesShow({
                                                     ),
                                                     filename: `${batch.name}_teachers`,
                                                     primaryColor,
+                                                    centerName: tenant?.name,
                                                 })
                                             }
                                         >
@@ -913,6 +933,7 @@ export default function BatchesShow({
                                             ]),
                                             filename: `${batch.name}_enrollments`,
                                             primaryColor,
+                                            centerName: tenant?.name,
                                         })
                                     }
                                 >
@@ -968,6 +989,7 @@ export default function BatchesShow({
                                                 ]),
                                                 filename: `${batch.name}_history`,
                                                 primaryColor,
+                                                centerName: tenant?.name,
                                             })
                                         }
                                     >

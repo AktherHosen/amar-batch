@@ -3,8 +3,8 @@ import { Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import PublicLayout from '@/layouts/public-layout';
 import { useLocale } from '@/contexts/locale-context';
+import PublicLayout from '@/layouts/public-layout';
 
 export default function Privacy() {
     const { t } = useLocale();

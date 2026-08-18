@@ -7,6 +7,7 @@ export default function Clock() {
 
     useEffect(() => {
         const timer = setInterval(() => setNow(new Date()), 1000);
+
         return () => clearInterval(timer);
     }, []);
 
@@ -23,10 +24,12 @@ export default function Clock() {
             const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
             const toBn = (n: string) => n.split('').map(d => bnDigits[parseInt(d)]).join('');
             const period = isPM ? 'অপরাহ্ন' : 'পূর্বাহ্ন';
+
             return `${toBn(String(h))}:${toBn(m)}:${toBn(s)} ${period}`;
         }
         
         const period = isPM ? 'PM' : 'AM';
+
         return `${h}:${m}:${s} ${period}`;
     };
 

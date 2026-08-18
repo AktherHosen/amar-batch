@@ -1,4 +1,12 @@
-import { isOwner } from '@/lib/role';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { EllipsisVertical, Eye, PenLine, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,19 +23,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { EllipsisVertical, Eye, PenLine, Pencil, Trash2 } from 'lucide-react';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
 import PageActions from '@/components/page-actions';
 import Heading from '@/components/heading';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
 import students from '@/routes/students';
 import type { Student } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { ConfirmDialog } from '@/components/confirm-dialog';
 
 function formatDate(dateStr: string | null): string {
     if (!dateStr) {
@@ -109,7 +110,10 @@ export default function StudentsIndex({
     };
 
     const handleRowStatusChange = (student: Student, value: string) => {
-        if (value === student.status) return;
+        if (value === student.status) {
+return;
+}
+
         router.patch(
             students.status(student.id),
             { status: value },
@@ -129,6 +133,7 @@ export default function StudentsIndex({
         type Col = NonNullable<
             DataTableProps<Student, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -141,6 +146,7 @@ export default function StudentsIndex({
                     const className = s.coaching_class
                         ? `${s.coaching_class.name}${s.section ? ` - ${s.section}` : ''}`
                         : s.section || '';
+
                     return (
                         <div className="min-w-0">
                             <Link
@@ -179,6 +185,7 @@ export default function StudentsIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const s: Student = row.original;
+
                     if (!isAdmin) {
                         return (
                             <Badge
@@ -190,6 +197,7 @@ export default function StudentsIndex({
                             </Badge>
                         );
                     }
+
                     return (
                         <Select
                             value={s.status}
@@ -225,6 +233,7 @@ export default function StudentsIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const s: Student = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

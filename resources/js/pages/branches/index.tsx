@@ -1,6 +1,16 @@
+import CellTitle from '@/components/cell-title';
+import { useLocale } from '@/contexts/locale-context';
+import branches from '@/routes/branches';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable, type DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import PageActions from '@/components/page-actions';
-import { isOwner } from '@/lib/role';
+import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,17 +20,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
-import CellTitle from '@/components/cell-title';
-import { useLocale } from '@/contexts/locale-context';
-import branches from '@/routes/branches';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { ConfirmDialog } from '@/components/confirm-dialog';
+import { isOwner } from '@/lib/role';
 
 type Branch = {
     id: number;
@@ -92,6 +92,7 @@ export default function BranchesIndex({
         type Col = NonNullable<
             DataTableProps<Branch, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -134,6 +135,7 @@ export default function BranchesIndex({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const branch: Branch = row.original;
+
                     return (
                         <Badge
                             variant={branch.is_active ? 'success' : 'danger'}
@@ -152,6 +154,7 @@ export default function BranchesIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const branch: Branch = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

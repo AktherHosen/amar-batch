@@ -1,14 +1,14 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { Check, Crown, Users, GraduationCap, Layers, ArrowRight, CreditCard } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import PlanBadge from '@/components/plan-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
-import { useState } from 'react';
-import { Check, Crown, Users, GraduationCap, Layers, ArrowRight, CreditCard } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
 import { index as subscriptionIndex } from '@/routes/subscription';
 
@@ -104,11 +104,15 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
         if (value === -1) {
             return <span className="text-lg leading-none">∞</span>;
         }
+
         return value.toString();
     };
 
     const getUsagePercent = (current: number, max: number) => {
-        if (max === -1) return 0;
+        if (max === -1) {
+return 0;
+}
+
         return Math.min(100, (current / max) * 100);
     };
 
@@ -123,7 +127,9 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
     };
 
     const confirmUpgrade = () => {
-        if (!upgradeDialog.plan) return;
+        if (!upgradeDialog.plan) {
+return;
+}
 
         if (upgradeDialog.plan.price_monthly > 0) {
             submitPayment(upgradeDialog.plan.id, upgradeDialog.billing);
@@ -143,6 +149,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
         form.action = `/payment/initiate/${planId}?billing=${billing}`;
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
         if (csrfToken) {
             const input = document.createElement('input');
             input.type = 'hidden';

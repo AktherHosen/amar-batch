@@ -1,6 +1,15 @@
+import { Head, router, usePage } from '@inertiajs/react';
+import { EllipsisVertical, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import CellTitle from '@/components/cell-title';
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import PageActions from '@/components/page-actions';
-import { isOwner } from '@/lib/role';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -10,16 +19,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
 import exams from '@/routes/exams';
-import { Head, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
-import CellTitle from '@/components/cell-title';
 
 type Exam = {
     id: number;
@@ -50,11 +51,15 @@ type PageProps = {
 };
 
 function formatDate(dateStr: string | null): string {
-    if (!dateStr) return '-';
+    if (!dateStr) {
+return '-';
+}
+
     const d = new Date(dateStr);
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
+
     return `${day}/${month}/${year}`;
 }
 
@@ -108,6 +113,7 @@ export default function ExamsIndex({
         type Col = NonNullable<
             DataTableProps<Exam, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'title',
@@ -162,6 +168,7 @@ export default function ExamsIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const exam: Exam = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

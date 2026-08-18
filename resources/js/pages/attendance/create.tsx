@@ -1,10 +1,13 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DatePicker } from '@/components/ui/date-picker';
 import {
     Select,
     SelectContent,
@@ -12,10 +15,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import attendance from '@/routes/attendance';
 import { useLocale } from '@/contexts/locale-context';
+import attendance from '@/routes/attendance';
 
 type Batch = {
     id: number;
@@ -112,6 +113,7 @@ export default function AttendanceCreate({
 
     const columns = (() => {
         type Col = NonNullable<DataTableProps<StudentAttendance, unknown>['columns']>[number];
+
         return [
             {
                 id: 'name',
@@ -130,6 +132,7 @@ export default function AttendanceCreate({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const student: StudentAttendance = row.original;
+
                     return (
                         <div className="flex gap-1">
                             <Button
@@ -201,6 +204,7 @@ export default function AttendanceCreate({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const student: StudentAttendance = row.original;
+
                     return (
                         <Input
                             placeholder="Notes..."

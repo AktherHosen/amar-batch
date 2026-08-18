@@ -2,12 +2,12 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { FormActions } from '@/components/form-actions';
 import Heading from '@/components/heading';
-import { Card, CardContent } from '@/components/ui/card';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -15,9 +15,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import InputError from '@/components/input-error';
-import exams from '@/routes/exams';
+import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
+import exams from '@/routes/exams';
 
 type Exam = {
     id: number;

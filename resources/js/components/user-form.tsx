@@ -1,7 +1,10 @@
 import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { AvatarUpload } from '@/components/avatar-upload';
+import { FormActions } from '@/components/form-actions';
+import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
 import {
     Select,
     SelectContent,
@@ -9,11 +12,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { AvatarUpload } from '@/components/avatar-upload';
-import { useState } from 'react';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
-import { FormActions } from '@/components/form-actions';
 import users from '@/routes/users';
 
 type Role = {
@@ -73,9 +73,11 @@ export default function UserForm({
                 formData.append(key, String(value));
             }
         });
+
         if (avatarFile) {
             formData.append('avatar', avatarFile);
         }
+
         onSubmit(formData);
     };
 

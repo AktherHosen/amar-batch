@@ -1,12 +1,12 @@
 import { Head, router, Link } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import StudentForm from '@/components/student-form';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import students from '@/routes/students';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLocale } from '@/contexts/locale-context';
+import students from '@/routes/students';
 
 type CoachingClass = {
     id: number;

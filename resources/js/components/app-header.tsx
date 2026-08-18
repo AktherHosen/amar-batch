@@ -39,24 +39,24 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { UserMenuContent } from '@/components/user-menu-content';
+import { useLocale } from '@/contexts/locale-context';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
-import { cn } from '@/lib/utils';
-import { isOwner } from '@/lib/role';
 import { useHasFeature } from '@/lib/features';
-import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
-import students from '@/routes/students';
-import batches from '@/routes/batches';
-import users from '@/routes/users';
-import fees from '@/routes/fees';
 import attendance from '@/routes/attendance';
+import batches from '@/routes/batches';
+import branches from '@/routes/branches';
 import coachingClasses from '@/routes/coaching-classes';
 import exams from '@/routes/exams';
+import fees from '@/routes/fees';
 import reports from '@/routes/reports';
-import branches from '@/routes/branches';
-import subscription from '@/routes/subscription';
 import roles from '@/routes/roles';
+import students from '@/routes/students';
+import subscription from '@/routes/subscription';
+import users from '@/routes/users';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -94,17 +94,41 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
     const mainNavItems = isUserOwner
         ? allNavItems.filter((item) => {
-            if (item.ownerOnly && !isUserOwner) return false;
-            if (item.featureRequired === 'exams' && !hasExams) return false;
-            if (item.featureRequired === 'reports' && !hasReports) return false;
-            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
+            if (item.ownerOnly && !isUserOwner) {
+return false;
+}
+
+            if (item.featureRequired === 'exams' && !hasExams) {
+return false;
+}
+
+            if (item.featureRequired === 'reports' && !hasReports) {
+return false;
+}
+
+            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) {
+return false;
+}
+
             return true;
         })
         : allNavItems.filter((item) => {
-            if (item.ownerOnly) return false;
-            if (item.featureRequired === 'exams' && !hasExams) return false;
-            if (item.featureRequired === 'reports' && !hasReports) return false;
-            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) return false;
+            if (item.ownerOnly) {
+return false;
+}
+
+            if (item.featureRequired === 'exams' && !hasExams) {
+return false;
+}
+
+            if (item.featureRequired === 'reports' && !hasReports) {
+return false;
+}
+
+            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) {
+return false;
+}
+
             return true;
         });
 

@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
 import { X, User } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { useRef, useState } from 'react';
 import InputError from '@/components/input-error';
+import { Label } from '@/components/ui/label';
 
 type AvatarUploadProps = {
     value: string | null;
@@ -25,6 +25,7 @@ export function AvatarUpload({
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selected = e.target.files?.[0];
+
         if (selected) {
             onChange(selected);
             const reader = new FileReader();
@@ -36,6 +37,7 @@ export function AvatarUpload({
     const removeAvatar = () => {
         onChange(null);
         setPreview(null);
+
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }

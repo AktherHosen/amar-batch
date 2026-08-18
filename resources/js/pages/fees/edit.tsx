@@ -1,12 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Heading from '@/components/heading';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import FeeForm from '@/components/fee-form';
-import fees from '@/routes/fees';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLocale } from '@/contexts/locale-context';
+import fees from '@/routes/fees';
 
 type Student = {
     id: number;

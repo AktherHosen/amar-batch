@@ -1,9 +1,9 @@
+import { Link, usePage } from '@inertiajs/react';
+import { ArrowRight } from 'lucide-react';
 import LanguageSwitcher from '@/components/language-switcher';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/contexts/locale-context';
 import { dashboard, login, register } from '@/routes';
-import { Link, usePage } from '@inertiajs/react';
-import { ArrowRight } from 'lucide-react';
 
 type Props = {
     children: React.ReactNode;

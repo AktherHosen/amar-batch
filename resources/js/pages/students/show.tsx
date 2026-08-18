@@ -1,5 +1,4 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { isOwner } from '@/lib/role';
 import {
     ArrowLeft,
     Download,
@@ -12,20 +11,22 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import type { Student } from '@/types';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import Heading from '@/components/heading';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { generateTablePDF } from '@/lib/pdf-table';
-import students from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
+import { generateTablePDF } from '@/lib/pdf-table';
+import { isOwner } from '@/lib/role';
+import students from '@/routes/students';
+import type { Student } from '@/types';
 
 type PageProps = {
     auth: { user: { role: string } };
-    tenant: { primary_color: string } | null;
+    tenant: { primary_color: string; name: string } | null;
 };
 
 type StudentsShowProps = {
@@ -158,6 +159,7 @@ export default function StudentsShow({
         type Col = NonNullable<
             DataTableProps<StudentEnrollment, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'batch_name',
@@ -167,6 +169,7 @@ export default function StudentsShow({
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const enrollment: StudentEnrollment = row.original;
+
                     return (
                         <span className="font-medium">
                             {enrollment.batch?.name}
@@ -181,6 +184,7 @@ export default function StudentsShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const enrollment: StudentEnrollment = row.original;
+
                     return enrollment.batch?.subject || '-';
                 },
             } as Col,
@@ -198,6 +202,7 @@ export default function StudentsShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const enrollment: StudentEnrollment = row.original;
+
                     return (
                         <Badge
                             variant={
@@ -220,6 +225,7 @@ export default function StudentsShow({
         type Col = NonNullable<
             DataTableProps<AttendanceRow, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'month',
@@ -280,6 +286,7 @@ export default function StudentsShow({
         type Col = NonNullable<
             DataTableProps<ExamResult, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'title',
@@ -325,6 +332,7 @@ export default function StudentsShow({
                     const result: ExamResult = row.original;
                     const passed =
                         result.marks_obtained >= result.exam.passing_marks;
+
                     return (
                         <span
                             className={`font-medium ${passed ? 'text-green-600' : 'text-red-600'}`}
@@ -341,6 +349,7 @@ export default function StudentsShow({
         type Col = NonNullable<
             DataTableProps<BatchHistoryItem, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'date',
@@ -350,6 +359,7 @@ export default function StudentsShow({
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const item: BatchHistoryItem = row.original;
+
                     return (
                         <span className="font-medium">
                             {item.action_date
@@ -377,6 +387,7 @@ export default function StudentsShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const item: BatchHistoryItem = row.original;
+
                     return (
                         <Badge
                             variant={
@@ -406,6 +417,7 @@ export default function StudentsShow({
         type Col = NonNullable<
             DataTableProps<FeeStatus, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'month',
@@ -415,6 +427,7 @@ export default function StudentsShow({
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const fee: FeeStatus = row.original;
+
                     return (
                         <span className="font-medium">
                             {MONTH_NAMES[fee.month]}
@@ -436,6 +449,7 @@ export default function StudentsShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const fee: FeeStatus = row.original;
+
                     return fee.batch?.name || '-';
                 },
             } as Col,
@@ -446,6 +460,7 @@ export default function StudentsShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const fee: FeeStatus = row.original;
+
                     return (
                         <span className="text-right font-medium">
                             {Number(fee.amount_paid).toFixed(0)}
@@ -460,6 +475,7 @@ export default function StudentsShow({
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const fee: FeeStatus = row.original;
+
                     return fee.notes || '-';
                 },
             } as Col,
@@ -489,17 +505,18 @@ export default function StudentsShow({
                     {isAdmin && (
                         <div className="flex gap-2">
                             <Link href={students.edit(student.id)}>
-                                <Button variant="outline">
-                                    <Pencil className="mr-2 size-4" />
-                                    {t('actions.edit')}
+                                <Button variant="outline" className="h-9">
+                                    <Pencil className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
                             <Button
                                 variant="destructive"
+                                className="h-9"
                                 onClick={handleDelete}
                             >
-                                <Trash2 className="mr-2 size-4" />
-                                {t('actions.delete')}
+                                <Trash2 className="size-4" />
+                                <span className="ml-2 hidden sm:inline">{t('actions.delete')}</span>
                             </Button>
                         </div>
                     )}
@@ -788,6 +805,7 @@ export default function StudentsShow({
                                                 ]),
                                                 filename: `${student.name}_enrollments`,
                                                 primaryColor,
+                                                centerName: tenant?.name,
                                             })
                                         }
                                     >
@@ -839,6 +857,7 @@ export default function StudentsShow({
                                             ]),
                                             filename: `${student.name}_attendance`,
                                             primaryColor,
+                                            centerName: tenant?.name,
                                         })
                                     }
                                 >
@@ -897,6 +916,7 @@ export default function StudentsShow({
                                                 ]),
                                                 filename: `${student.name}_exams`,
                                                 primaryColor,
+                                                centerName: tenant?.name,
                                             })
                                         }
                                     >
@@ -962,6 +982,7 @@ export default function StudentsShow({
                                                     ]),
                                                     filename: `${student.name}_batch_history`,
                                                     primaryColor,
+                                                    centerName: tenant?.name,
                                                 })
                                             }
                                         >
@@ -1049,6 +1070,7 @@ export default function StudentsShow({
                                             ]),
                                             filename: `${student.name}_payments`,
                                             primaryColor,
+                                            centerName: tenant?.name,
                                         })
                                     }
                                 >

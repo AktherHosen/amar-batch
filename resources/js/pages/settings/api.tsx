@@ -1,16 +1,17 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { Copy, Eye, EyeOff, Plus, Trash2, Key } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { ConfirmDialog } from '@/components/confirm-dialog';
-import { FilterBar } from '@/components/filter-bar';
-import { toast } from 'sonner';
-import { useState } from 'react';
-import { Copy, Eye, EyeOff, Plus, Trash2, Key } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
 import api from '@/routes/settings/api';
 
@@ -82,6 +83,7 @@ export default function ApiSettings({ tokens, filters }: PageProps) {
         type Col = NonNullable<
             DataTableProps<Token, unknown>['columns']
         >[number];
+
         return [
             {
                 id: 'name',
@@ -100,6 +102,7 @@ export default function ApiSettings({ tokens, filters }: PageProps) {
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const token: Token = row.original;
+
                     return (
                         <Badge variant="outline">
                             {token.abilities.join(', ')}
@@ -114,6 +117,7 @@ export default function ApiSettings({ tokens, filters }: PageProps) {
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const token: Token = row.original;
+
                     return (
                         <span>
                             {token.last_used_at
@@ -132,6 +136,7 @@ export default function ApiSettings({ tokens, filters }: PageProps) {
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const token: Token = row.original;
+
                     return (
                         <span>
                             {new Date(token.created_at).toLocaleDateString()}
@@ -146,6 +151,7 @@ export default function ApiSettings({ tokens, filters }: PageProps) {
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const token: Token = row.original;
+
                     return (
                         <Button
                             variant="ghost"

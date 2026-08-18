@@ -4,6 +4,7 @@ export function usePermissions(): string[] {
     const { auth } = usePage().props as {
         auth: { user: { permissions?: string[] } | null };
     };
+
     return auth.user?.permissions ?? [];
 }
 

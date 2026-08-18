@@ -1,12 +1,12 @@
 import { Head, router, Link, usePage } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import TeacherForm from '@/components/teacher-form';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import teachers from '@/routes/teachers';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLocale } from '@/contexts/locale-context';
+import teachers from '@/routes/teachers';
 
 type Teacher = {
     id: number;

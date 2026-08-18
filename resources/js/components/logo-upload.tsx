@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
 import { ImagePlus, UploadCloud, X } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { useRef, useState } from 'react';
 import InputError from '@/components/input-error';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 type LogoUploadProps = {
@@ -26,7 +26,9 @@ export function LogoUpload({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFile = (file: File | undefined | null) => {
-        if (!file) return;
+        if (!file) {
+return;
+}
 
         onChange(file);
         const reader = new FileReader();
@@ -43,6 +45,7 @@ export function LogoUpload({
     const removeLogo = () => {
         onChange(null);
         setPreview(null);
+
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }

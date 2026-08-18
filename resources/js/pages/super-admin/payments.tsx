@@ -1,16 +1,17 @@
-import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
-import { CreditCard, TrendingUp, Clock, CheckCircle, XCircle, EllipsisVertical, Check, Ban, Eye } from 'lucide-react';
-import { useLocale } from '@/contexts/locale-context';
 import { router } from '@inertiajs/react';
+import { CreditCard, TrendingUp, Clock, CheckCircle, XCircle, EllipsisVertical, Check, Ban, Eye } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import Heading from '@/components/heading';
+import { RefreshButton } from '@/components/refresh-button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useLocale } from '@/contexts/locale-context';
 
 type PaymentRecord = {
     id: number;
@@ -97,6 +98,7 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
 
     const columns = (() => {
         type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
+
         return [
             {
                 id: 'tenant',
@@ -175,6 +177,7 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const payment: PaymentRecord = row.original;
+
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

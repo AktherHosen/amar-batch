@@ -15,11 +15,15 @@ export default function RolePermissionsForm({ groups, selected, onToggle }: Prop
     const toggleAll = () => {
         if (allSelected) {
             allRoutes.forEach((r) => {
-                if (selected.includes(r)) onToggle(r);
+                if (selected.includes(r)) {
+onToggle(r);
+}
             });
         } else {
             allRoutes.forEach((r) => {
-                if (!selected.includes(r)) onToggle(r);
+                if (!selected.includes(r)) {
+onToggle(r);
+}
             });
         }
     };
@@ -50,11 +54,15 @@ export default function RolePermissionsForm({ groups, selected, onToggle }: Prop
                                 onCheckedChange={() => {
                                     if (groupSelected) {
                                         groupRoutes.forEach((r) => {
-                                            if (selected.includes(r)) onToggle(r);
+                                            if (selected.includes(r)) {
+onToggle(r);
+}
                                         });
                                     } else {
                                         groupRoutes.forEach((r) => {
-                                            if (!selected.includes(r)) onToggle(r);
+                                            if (!selected.includes(r)) {
+onToggle(r);
+}
                                         });
                                     }
                                 }}

@@ -1,14 +1,14 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { isOwner } from '@/lib/role';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import holidays from '@/routes/holidays';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import holidays from '@/routes/holidays';
 
 type Holiday = {
     id: number;
@@ -27,6 +27,7 @@ type PageProps = {
 
 function formatDate(dateStr: string): string {
     const d = new Date(dateStr);
+
     return d.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
@@ -71,6 +72,7 @@ export default function HolidaysShow() {
             exam: 'secondary',
             event: 'destructive',
         };
+
         return variants[type] || 'secondary';
     };
 
@@ -97,17 +99,18 @@ export default function HolidaysShow() {
                     {isAdmin && (
                         <div className="flex shrink-0 gap-2">
                             <Link href={holidays.edit(holiday.id)}>
-                                <Button variant="outline">
-                                    <Pencil className="mr-2 size-4" />
-                                    {t('actions.edit')}
+                                <Button variant="outline" className="h-9">
+                                    <Pencil className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
                             <Button
                                 variant="destructive"
+                                className="h-9"
                                 onClick={handleDelete}
                             >
-                                <Trash2 className="mr-2 size-4" />
-                                {t('actions.delete')}
+                                <Trash2 className="size-4" />
+                                <span className="ml-2 hidden sm:inline">{t('actions.delete')}</span>
                             </Button>
                         </div>
                     )}

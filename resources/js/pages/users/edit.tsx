@@ -1,12 +1,12 @@
 import { Head, router, Link, usePage } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
-import UserForm from '@/components/user-form';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import users from '@/routes/users';
+import { Card, CardContent } from '@/components/ui/card';
+import UserForm from '@/components/user-form';
 import { useLocale } from '@/contexts/locale-context';
+import users from '@/routes/users';
 
 type User = {
     id: number;

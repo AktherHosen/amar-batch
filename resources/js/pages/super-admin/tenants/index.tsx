@@ -1,13 +1,14 @@
-import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { DataTable, type DataTableProps } from '@/components/data-table';
-import { FilterBar } from '@/components/filter-bar';
-import { RefreshButton } from '@/components/refresh-button';
 import { Link, router } from '@inertiajs/react';
 import { Eye } from 'lucide-react';
 import { useState } from 'react';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import Heading from '@/components/heading';
+import { RefreshButton } from '@/components/refresh-button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 type Tenant = {
     id: number;
@@ -60,6 +61,7 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
 
     const columns = (() => {
         type Col = NonNullable<DataTableProps<Tenant, unknown>['columns']>[number];
+
         return [
             {
                 id: 'name',
@@ -117,6 +119,7 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const tenant: Tenant = row.original;
+
                     return (
                         <Link href={`/super-admin/tenants/${tenant.id}`}>
                             <Button variant="ghost" size="sm" className="size-8 p-0">
