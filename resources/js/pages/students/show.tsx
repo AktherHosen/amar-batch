@@ -766,6 +766,7 @@ export default function StudentsShow({
                                     <Button
                                         variant="outline"
                                         size="sm"
+                                        className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                                         onClick={() =>
                                             generateTablePDF({
                                                 title: `${student.name} - ${t('students.title')}`,
@@ -815,6 +816,7 @@ export default function StudentsShow({
                                 <Button
                                     variant="outline"
                                     size="sm"
+                                    className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                                     onClick={() =>
                                         generateTablePDF({
                                             title: `${student.name} - ${t('attendance.title')}`,
@@ -867,6 +869,7 @@ export default function StudentsShow({
                                     <Button
                                         variant="outline"
                                         size="sm"
+                                        className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                                         onClick={() =>
                                             generateTablePDF({
                                                 title: `${student.name} - ${t('exams.title')}`,
@@ -927,6 +930,7 @@ export default function StudentsShow({
                                         <Button
                                             variant="outline"
                                             size="sm"
+                                            className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                                             onClick={() =>
                                                 generateTablePDF({
                                                     title: `${student.name} - ${t('batches.history')}`,
@@ -1008,6 +1012,7 @@ export default function StudentsShow({
                                 <Button
                                     variant="outline"
                                     size="sm"
+                                    className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                                     onClick={() =>
                                         generateTablePDF({
                                             title: `${student.name} - ${t('fees.payment_history')}`,

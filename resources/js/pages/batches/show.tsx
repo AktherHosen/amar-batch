@@ -835,6 +835,7 @@ export default function BatchesShow({
                                         <Button
                                             variant="outline"
                                             size="sm"
+                                            className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                                             onClick={() =>
                                                 generateTablePDF({
                                                     title: `${batch.name} - ${t('batches.assigned_teachers')}`,
@@ -882,6 +883,7 @@ export default function BatchesShow({
                                 <Button
                                     variant="outline"
                                     size="sm"
+                                    className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                                     onClick={() =>
                                         generateTablePDF({
                                             title: `${batch.name} - ${t('batches.enrolled')}`,
@@ -938,6 +940,7 @@ export default function BatchesShow({
                                     <Button
                                         variant="outline"
                                         size="sm"
+                                        className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                                         onClick={() =>
                                             generateTablePDF({
                                                 title: `${batch.name} - History`,
