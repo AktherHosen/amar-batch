@@ -1,6 +1,14 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { isOwner } from '@/lib/role';
-import { ArrowLeft, Pencil, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import {
+    ArrowLeft,
+    Download,
+    Pencil,
+    Trash2,
+    CheckCircle,
+    XCircle,
+    Clock,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -11,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DataTable, type DataTableProps } from '@/components/data-table';
+import { generateTablePDF } from '@/lib/pdf-table';
 import students from '@/routes/students';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -119,7 +128,9 @@ export default function StudentsShow({
         );
 
     const enrollmentColumns = (() => {
-        type Col = NonNullable<DataTableProps<StudentEnrollment, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<StudentEnrollment, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'batch_name',
@@ -129,7 +140,11 @@ export default function StudentsShow({
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const enrollment: StudentEnrollment = row.original;
-                    return <span className="font-medium">{enrollment.batch?.name}</span>;
+                    return (
+                        <span className="font-medium">
+                            {enrollment.batch?.name}
+                        </span>
+                    );
                 },
             } as Col,
             {
@@ -175,7 +190,9 @@ export default function StudentsShow({
     })();
 
     const attendanceColumns = (() => {
-        type Col = NonNullable<DataTableProps<AttendanceRow, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<AttendanceRow, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'month',
@@ -184,7 +201,9 @@ export default function StudentsShow({
                 enableSorting: true,
                 meta: { sticky: true },
                 cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.monthName}</span>
+                    <span className="font-medium">
+                        {row.original.monthName}
+                    </span>
                 ),
             } as Col,
             {
@@ -200,7 +219,9 @@ export default function StudentsShow({
                 header: t('attendance.present'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
-                    <span className="text-center text-green-600">{row.original.present}</span>
+                    <span className="text-center text-green-600">
+                        {row.original.present}
+                    </span>
                 ),
             } as Col,
             {
@@ -209,7 +230,9 @@ export default function StudentsShow({
                 header: t('attendance.absent'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
-                    <span className="text-center text-red-600">{row.original.absent}</span>
+                    <span className="text-center text-red-600">
+                        {row.original.absent}
+                    </span>
                 ),
             } as Col,
             {
@@ -218,14 +241,18 @@ export default function StudentsShow({
                 header: t('attendance.late'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
-                    <span className="text-center text-yellow-600">{row.original.late}</span>
+                    <span className="text-center text-yellow-600">
+                        {row.original.late}
+                    </span>
                 ),
             } as Col,
         ];
     })();
 
     const feeColumns = (() => {
-        type Col = NonNullable<DataTableProps<FeeStatus, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<FeeStatus, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'month',
@@ -235,7 +262,11 @@ export default function StudentsShow({
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const fee: FeeStatus = row.original;
-                    return <span className="font-medium">{MONTH_NAMES[fee.month]}</span>;
+                    return (
+                        <span className="font-medium">
+                            {MONTH_NAMES[fee.month]}
+                        </span>
+                    );
                 },
             } as Col,
             {
@@ -287,14 +318,20 @@ export default function StudentsShow({
             <Head title={student.name} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between min-w-0">
-                    <div className="flex items-center gap-2 min-w-0">
+                <div className="flex min-w-0 items-center justify-between">
+                    <div className="flex min-w-0 items-center gap-2">
                         <Link href={students.index()} className="shrink-0">
-                            <Button variant="ghost" size="icon" className="size-9">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-9"
+                            >
                                 <ArrowLeft className="size-4" />
                             </Button>
                         </Link>
-                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">{student.name}</h1>
+                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">
+                            {student.name}
+                        </h1>
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
@@ -323,17 +360,31 @@ export default function StudentsShow({
                         <CardContent>
                             <div className="flex flex-col items-center gap-4">
                                 <Avatar className="size-16 sm:size-20">
-                                    <AvatarImage src={student.photo ? `/storage/${student.photo}` : undefined} alt={student.name} />
+                                    <AvatarImage
+                                        src={
+                                            student.photo
+                                                ? `/storage/${student.photo}`
+                                                : undefined
+                                        }
+                                        alt={student.name}
+                                    />
                                     <AvatarFallback className="text-xl">
-                                        {student.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                        {student.name
+                                            .split(' ')
+                                            .map((n) => n[0])
+                                            .join('')
+                                            .toUpperCase()
+                                            .slice(0, 2)}
                                     </AvatarFallback>
                                 </Avatar>
-                                <div className="w-full grid grid-cols-2 gap-3">
+                                <div className="grid w-full grid-cols-2 gap-3">
                                     <div className="min-w-0">
                                         <p className="text-xs text-muted-foreground">
                                             {t('students.name')}
                                         </p>
-                                        <p className="truncate text-sm font-medium">{student.name}</p>
+                                        <p className="truncate text-sm font-medium">
+                                            {student.name}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">
@@ -393,56 +444,106 @@ export default function StudentsShow({
                     </Card>
 
                     <div className="grid gap-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium">{t('attendance.summary')}</CardTitle>
-                        </CardHeader>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-sm font-medium">
+                                    {t('attendance.summary')}
+                                </CardTitle>
+                            </CardHeader>
                             <CardContent>
                                 {(() => {
                                     let totalPresent = 0;
                                     let totalAbsent = 0;
                                     let totalLate = 0;
-                                    Object.values(attendanceSummary).forEach(months => {
-                                        Object.values(months).forEach(counts => {
-                                            totalPresent += counts.present || 0;
-                                            totalAbsent += counts.absent || 0;
-                                            totalLate += counts.late || 0;
-                                        });
-                                    });
-                                    const total = totalPresent + totalAbsent + totalLate;
-                                    const percentage = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
+                                    Object.values(attendanceSummary).forEach(
+                                        (months) => {
+                                            Object.values(months).forEach(
+                                                (counts) => {
+                                                    totalPresent +=
+                                                        counts.present || 0;
+                                                    totalAbsent +=
+                                                        counts.absent || 0;
+                                                    totalLate +=
+                                                        counts.late || 0;
+                                                },
+                                            );
+                                        },
+                                    );
+                                    const total =
+                                        totalPresent + totalAbsent + totalLate;
+                                    const percentage =
+                                        total > 0
+                                            ? Math.round(
+                                                  (totalPresent / total) * 100,
+                                              )
+                                            : 0;
 
                                     return total > 0 ? (
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-2xl font-bold">{percentage}%</span>
-                                                <Badge variant={percentage >= 75 ? 'success' : percentage >= 50 ? 'secondary' : 'destructive'}>
-                                                    {percentage >= 75 ? t('attendance.good') : percentage >= 50 ? t('attendance.average') : t('attendance.low')}
+                                                <span className="text-2xl font-bold">
+                                                    {percentage}%
+                                                </span>
+                                                <Badge
+                                                    variant={
+                                                        percentage >= 75
+                                                            ? 'success'
+                                                            : percentage >= 50
+                                                              ? 'secondary'
+                                                              : 'destructive'
+                                                    }
+                                                >
+                                                    {percentage >= 75
+                                                        ? t('attendance.good')
+                                                        : percentage >= 50
+                                                          ? t(
+                                                                'attendance.average',
+                                                            )
+                                                          : t('attendance.low')}
                                                 </Badge>
                                             </div>
                                             <div className="flex gap-4 text-sm">
                                                 <div className="flex items-center gap-1">
                                                     <CheckCircle className="size-3 text-green-600" />
-                                                    <span>{totalPresent} {t('attendance.present').toLowerCase()}</span>
+                                                    <span>
+                                                        {totalPresent}{' '}
+                                                        {t(
+                                                            'attendance.present',
+                                                        ).toLowerCase()}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <XCircle className="size-3 text-red-600" />
-                                                    <span>{totalAbsent} {t('attendance.absent').toLowerCase()}</span>
+                                                    <span>
+                                                        {totalAbsent}{' '}
+                                                        {t(
+                                                            'attendance.absent',
+                                                        ).toLowerCase()}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="size-3 text-yellow-600" />
-                                                    <span>{totalLate} {t('attendance.late').toLowerCase()}</span>
+                                                    <span>
+                                                        {totalLate}{' '}
+                                                        {t(
+                                                            'attendance.late',
+                                                        ).toLowerCase()}
+                                                    </span>
                                                 </div>
                                             </div>
                                             <div className="h-2 overflow-hidden rounded-full bg-muted">
                                                 <div
                                                     className="h-full bg-green-600"
-                                                    style={{ width: `${percentage}%` }}
+                                                    style={{
+                                                        width: `${percentage}%`,
+                                                    }}
                                                 />
                                             </div>
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-muted-foreground">{t('students.no_attendance')}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {t('students.no_attendance')}
+                                        </p>
                                     );
                                 })()}
                             </CardContent>
@@ -464,6 +565,37 @@ export default function StudentsShow({
                                 searchPlaceholder={t('students.title') + '...'}
                                 emptyMessage={t('students.no_enrollments')}
                                 getRowId={(row) => String(row.id)}
+                                toolbarEnd={
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            generateTablePDF({
+                                                title: `${student.name} - ${t('students.title')}`,
+                                                headers: [
+                                                    t('batches.name'),
+                                                    t('batches.subject'),
+                                                    t('students.joined_at'),
+                                                    t('students.status'),
+                                                ],
+                                                rows: (
+                                                    student.enrollments ?? []
+                                                ).map((e) => [
+                                                    e.batch?.name || '-',
+                                                    e.batch?.subject || '-',
+                                                    formatDate(e.enrolled_at),
+                                                    e.status,
+                                                ]),
+                                                filename: `${student.name}_enrollments`,
+                                            })
+                                        }
+                                    >
+                                        <Download className="size-4" />
+                                        <span className="ml-2 hidden sm:inline">
+                                            PDF
+                                        </span>
+                                    </Button>
+                                }
                             />
                         </CardContent>
                     </Card>
@@ -482,6 +614,37 @@ export default function StudentsShow({
                             searchPlaceholder={t('attendance.title') + '...'}
                             emptyMessage={t('students.no_attendance')}
                             getRowId={(row) => row.key}
+                            toolbarEnd={
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        generateTablePDF({
+                                            title: `${student.name} - ${t('attendance.title')}`,
+                                            headers: [
+                                                t('fees.month'),
+                                                t('fees.year'),
+                                                t('attendance.present'),
+                                                t('attendance.absent'),
+                                                t('attendance.late'),
+                                            ],
+                                            rows: attendanceRows.map((r) => [
+                                                r.monthName,
+                                                r.year,
+                                                r.present,
+                                                r.absent,
+                                                r.late,
+                                            ]),
+                                            filename: `${student.name}_attendance`,
+                                        })
+                                    }
+                                >
+                                    <Download className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">
+                                        PDF
+                                    </span>
+                                </Button>
+                            }
                         />
                     </CardContent>
                 </Card>
@@ -497,8 +660,7 @@ export default function StudentsShow({
                                         {student.fee_statuses
                                             .reduce(
                                                 (sum, f) =>
-                                                    sum +
-                                                    Number(f.amount_paid),
+                                                    sum + Number(f.amount_paid),
                                                 0,
                                             )
                                             .toFixed(0)}
@@ -520,9 +682,53 @@ export default function StudentsShow({
                             }
                             showPagination={false}
                             searchable
-                            searchPlaceholder={t('fees.payment_history') + '...'}
+                            searchPlaceholder={
+                                t('fees.payment_history') + '...'
+                            }
                             emptyMessage={t('students.no_payments')}
                             getRowId={(row) => String(row.id)}
+                            toolbarEnd={
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        generateTablePDF({
+                                            title: `${student.name} - ${t('fees.payment_history')}`,
+                                            headers: [
+                                                t('fees.month'),
+                                                t('fees.year'),
+                                                t('batches.name'),
+                                                t('fees.amount_paid'),
+                                                t('attendance.notes'),
+                                            ],
+                                            rows: (student.fee_statuses
+                                                ? [
+                                                      ...student.fee_statuses,
+                                                  ].sort(
+                                                      (a, b) =>
+                                                          b.year - a.year ||
+                                                          b.month - a.month,
+                                                  )
+                                                : []
+                                            ).map((f) => [
+                                                MONTH_NAMES[f.month],
+                                                f.year,
+                                                f.batch?.name || '-',
+                                                Number(f.amount_paid).toFixed(
+                                                    0,
+                                                ),
+                                                f.notes || '-',
+                                            ]),
+                                            filename: `${student.name}_payments`,
+                                        })
+                                    }
+                                >
+                                    <Download className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">
+                                        PDF
+                                    </span>
+                                </Button>
+                            }
                         />
                     </CardContent>
                 </Card>

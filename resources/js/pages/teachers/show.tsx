@@ -1,6 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { isOwner } from '@/lib/role';
-import { ArrowLeft, EllipsisVertical, Pencil, Trash2, Mail, Phone, Layers, Calendar } from 'lucide-react';
+import {
+    ArrowLeft,
+    Download,
+    EllipsisVertical,
+    Pencil,
+    Trash2,
+    Mail,
+    Phone,
+    Layers,
+    Calendar,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -16,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DataTable, type DataTableProps } from '@/components/data-table';
+import { generateTablePDF } from '@/lib/pdf-table';
 import teachers from '@/routes/teachers';
 import batches from '@/routes/batches';
 import { useLocale } from '@/contexts/locale-context';
@@ -80,7 +91,9 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<Batch, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<Batch, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -104,7 +117,9 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                 accessorKey: 'enrollments_count',
                 header: t('batches.enrolled'),
                 enableSorting: false,
-                cell: ({ row }: any) => <span>{row.original.enrollments_count}</span>,
+                cell: ({ row }: any) => (
+                    <span>{row.original.enrollments_count}</span>
+                ),
             } as Col,
             {
                 id: 'status',
@@ -138,7 +153,11 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -161,17 +180,23 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
             <Head title={teacher.name} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between min-w-0">
-                    <div className="flex items-center gap-2 min-w-0">
+                <div className="flex min-w-0 items-center justify-between">
+                    <div className="flex min-w-0 items-center gap-2">
                         <Link href={teachers.index()} className="shrink-0">
-                            <Button variant="ghost" size="icon" className="size-9">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-9"
+                            >
                                 <ArrowLeft className="size-4" />
                             </Button>
                         </Link>
-                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">{teacher.name}</h1>
+                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">
+                            {teacher.name}
+                        </h1>
                     </div>
                     {isAdmin && (
-                        <div className="flex gap-2 shrink-0">
+                        <div className="flex shrink-0 gap-2">
                             <Link href={teachers.edit(teacher.id)}>
                                 <Button variant="outline">
                                     <Pencil className="mr-2 size-4" />
@@ -197,20 +222,45 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <div className="flex flex-col items-center gap-4">
                             <Avatar className="size-16 sm:size-20">
                                 <AvatarImage
-                                    src={teacher.avatar ? `/storage/${teacher.avatar}` : undefined}
+                                    src={
+                                        teacher.avatar
+                                            ? `/storage/${teacher.avatar}`
+                                            : undefined
+                                    }
                                     alt={teacher.name}
                                 />
                                 <AvatarFallback className="text-xl">
-                                    {teacher.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
+                                    {teacher.name
+                                        .split(' ')
+                                        .map((n) => n[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="w-full space-y-3">
                                 <div className="flex flex-wrap items-center justify-center gap-2">
-                                    <Badge variant={teacher.role === 'inactive' ? 'danger' : 'success'}>
-                                        {teacher.role === 'inactive' ? t('teachers.inactive') : t('teachers.active')}
+                                    <Badge
+                                        variant={
+                                            teacher.role === 'inactive'
+                                                ? 'danger'
+                                                : 'success'
+                                        }
+                                    >
+                                        {teacher.role === 'inactive'
+                                            ? t('teachers.inactive')
+                                            : t('teachers.active')}
                                     </Badge>
-                                    <Badge variant={teacher.is_approved ? 'success' : 'secondary'}>
-                                        {teacher.is_approved ? t('teachers.approved') : t('teachers.pending')}
+                                    <Badge
+                                        variant={
+                                            teacher.is_approved
+                                                ? 'success'
+                                                : 'secondary'
+                                        }
+                                    >
+                                        {teacher.is_approved
+                                            ? t('teachers.approved')
+                                            : t('teachers.pending')}
                                     </Badge>
                                 </div>
                                 <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
@@ -218,25 +268,33 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                                         <p className="text-xs text-muted-foreground">
                                             {t('teachers.name')}
                                         </p>
-                                        <p className="truncate text-sm font-medium">{teacher.name}</p>
+                                        <p className="truncate text-sm font-medium">
+                                            {teacher.name}
+                                        </p>
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-xs text-muted-foreground">
                                             {t('teachers.email')}
                                         </p>
-                                        <p className="truncate text-sm font-medium">{teacher.email}</p>
+                                        <p className="truncate text-sm font-medium">
+                                            {teacher.email}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">
                                             {t('teachers.phone')}
                                         </p>
-                                        <p className="text-sm font-medium">{teacher.phone || '-'}</p>
+                                        <p className="text-sm font-medium">
+                                            {teacher.phone || '-'}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">
                                             {t('teachers.role')}
                                         </p>
-                                        <p className="text-sm font-medium capitalize">{teacher.role}</p>
+                                        <p className="text-sm font-medium capitalize">
+                                            {teacher.role}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">
@@ -252,12 +310,12 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     </CardContent>
                 </Card>
 
-                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <Card>
                         <CardContent className="flex items-center gap-3 p-4">
                             <Layers className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                                <p className="text-2xl font-bold leading-none">
+                                <p className="text-2xl leading-none font-bold">
                                     {teacher.assigned_batches_count}
                                 </p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -270,7 +328,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Calendar className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                                <p className="text-2xl font-bold leading-none">
+                                <p className="text-2xl leading-none font-bold">
                                     {stats.active_batches}
                                 </p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -283,7 +341,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Mail className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                                <p className="text-2xl font-bold leading-none">
+                                <p className="text-2xl leading-none font-bold">
                                     {stats.total_students}
                                 </p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -296,8 +354,10 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Phone className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                                <p className="text-2xl font-bold leading-none">
-                                    {teacher.assigned_batches_count > 0 ? 'Yes' : 'No'}
+                                <p className="text-2xl leading-none font-bold">
+                                    {teacher.assigned_batches_count > 0
+                                        ? 'Yes'
+                                        : 'No'}
                                 </p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
                                     {t('batches.assigned')}
@@ -320,6 +380,37 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                             searchPlaceholder={t('batches.title') + '...'}
                             emptyMessage={t('batches.title')}
                             getRowId={(row) => String(row.id)}
+                            toolbarEnd={
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        generateTablePDF({
+                                            title: `${teacher.name} - ${t('batches.title')}`,
+                                            headers: [
+                                                t('batches.name'),
+                                                t('batches.subject'),
+                                                t('batches.enrolled'),
+                                                t('students.status'),
+                                            ],
+                                            rows: (
+                                                teacher.assigned_batches ?? []
+                                            ).map((b) => [
+                                                b.name,
+                                                b.subject || '-',
+                                                b.enrollments_count,
+                                                b.status,
+                                            ]),
+                                            filename: `${teacher.name}_batches`,
+                                        })
+                                    }
+                                >
+                                    <Download className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">
+                                        PDF
+                                    </span>
+                                </Button>
+                            }
                         />
                     </CardContent>
                 </Card>
@@ -329,7 +420,10 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                 open={deleteDialog}
                 onOpenChange={setDeleteDialog}
                 title={t('teachers.deactivate_title')}
-                description={t('teachers.deactivate_confirm').replace('{name}', teacher.name)}
+                description={t('teachers.deactivate_confirm').replace(
+                    '{name}',
+                    teacher.name,
+                )}
                 confirmText={t('teachers.deactivate')}
                 cancelText={t('actions.cancel')}
                 variant="destructive"
