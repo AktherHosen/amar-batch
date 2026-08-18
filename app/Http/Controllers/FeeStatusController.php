@@ -215,4 +215,26 @@ class FeeStatusController extends Controller
 
         return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => 'Fee record deleted successfully.']);
     }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            FeeStatus::updateOrCreate(
+                [
+                    'student_id' => $row['student_id'],
+                    'batch_id' => $row['batch_id'],
+                    'month' => $row['month'],
+                    'year' => $row['year'],
+                ],
+                [
+                    'amount_paid' => $row['amount_paid'] ?? 0,
+                    'notes' => $row['notes'] ?? null,
+                ]
+            );
+        }
+
+        return to_route('fees.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' fee records imported successfully.']);
+    }
 }

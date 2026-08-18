@@ -120,4 +120,26 @@ class NoticeController extends Controller
         return redirect()->route('notices.index')
             ->with('success', 'Notice deleted successfully');
     }
+
+    public function import(Request $request)
+    {
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            $data = [
+                'title' => $row['title'] ?? '',
+                'content' => $row['content'] ?? '',
+                'batch_id' => $row['batch_id'] ?? null,
+                'is_active' => $row['is_active'] ?? true,
+                'tenant_id' => $request->user()->tenant_id,
+                'created_by' => $request->user()->id,
+                'published_at' => ($row['is_active'] ?? true) ? now() : null,
+            ];
+
+            Notice::create($data);
+        }
+
+        return redirect()->route('notices.index')
+            ->with('success', count($rows) . ' notices imported successfully');
+    }
 }

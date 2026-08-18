@@ -238,6 +238,27 @@ public function reject(Request $request, User $teacher): RedirectResponse
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Staff member approval revoked.']);
     }
+
+    public function import(Request $request): RedirectResponse
+    {
+        if (! $request->user()->hasRoutePermission('teachers.store')) {
+            abort(403);
+        }
+
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            User::create([
+                'name' => $row['name'] ?? '',
+                'email' => $row['email'] ?? '',
+                'password' => Hash::make($row['password'] ?? 'password'),
+                'role' => $row['role'] ?? 'teacher',
+                'branch_id' => $row['branch_id'] ?? null,
+            ]);
+        }
+
+        return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' staff members imported successfully.']);
+    }
 }
 
 

@@ -1130,7 +1130,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Branches
         'branches.title': 'Branches',
         'branches.desc': 'Manage your branches',
-        'branches.create': 'Add Branch',
+        'branches.create': 'New Branch',
         'branches.edit': 'Edit Branch',
         'branches.name': 'Name',
         'branches.code': 'Code',

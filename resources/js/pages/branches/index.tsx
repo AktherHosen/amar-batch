@@ -1,4 +1,5 @@
 import Heading from '@/components/heading';
+import PageActions from '@/components/page-actions';
 import { isOwner } from '@/lib/role';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import CellTitle from '@/components/cell-title';
 import { useLocale } from '@/contexts/locale-context';
 import branches from '@/routes/branches';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -215,27 +216,38 @@ export default function BranchesIndex({
                             refreshing={refreshing}
                             onRefresh={handleRefresh}
                         />
-                        {isAdmin && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 p-0"
-                                    >
-                                        <EllipsisVertical className="size-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <Link href={branches.create()}>
-                                            <Plus className="mr-2 size-4" />
-                                            {t('branches.create')}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('branches.create')}
+                            onCreate={() => router.visit(branches.create())}
+                            exportTitle="Branches"
+                            exportFilename="branches"
+                            exportHeaders={[
+                                'Name',
+                                'Code',
+                                'Address',
+                                'Phone',
+                                'Email',
+                            ]}
+                            exportRows={pagination.data.map((b) => [
+                                b.name,
+                                b.code || '',
+                                b.address || '',
+                                b.phone || '',
+                                b.email || '',
+                            ])}
+                            importUrl="/branches/import"
+                            importFields={[
+                                'name',
+                                'code',
+                                'address',
+                                'phone',
+                                'email',
+                            ]}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['branches'] })
+                            }
+                        />
                     </div>
                 </div>
 

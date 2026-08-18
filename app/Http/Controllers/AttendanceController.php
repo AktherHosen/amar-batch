@@ -141,4 +141,26 @@ class AttendanceController extends Controller
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Attendance record deleted.']);
     }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            Attendance::updateOrCreate(
+                [
+                    'student_id' => $row['student_id'],
+                    'batch_id' => $row['batch_id'],
+                    'date' => $row['date'],
+                ],
+                [
+                    'status' => $row['status'] ?? 'present',
+                    'marked_by' => $request->user()->id,
+                    'notes' => $row['notes'] ?? null,
+                ]
+            );
+        }
+
+        return to_route('attendance.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' attendance records imported successfully.']);
+    }
 }

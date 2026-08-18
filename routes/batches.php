@@ -5,6 +5,7 @@ use App\Http\Controllers\EnrollmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::put('batches/{batch}/complete', [BatchController::class, 'complete'])->name('batches.complete');
+Route::post('batches/import', [BatchController::class, 'import'])->name('batches.import');
 Route::resource('batches', BatchController::class);
 Route::post('batches/{batch}/assign-teacher', [BatchController::class, 'assignTeacher'])->name('batches.assign-teacher');
 Route::delete('batches/{batch}/remove-teacher', [BatchController::class, 'removeTeacher'])->name('batches.remove-teacher');

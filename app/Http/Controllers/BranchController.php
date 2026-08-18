@@ -86,4 +86,23 @@ class BranchController extends Controller
 
         return to_route('branches.index')->with('toast', ['type' => 'success', 'message' => 'Branch deleted successfully.']);
     }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $this->authorize('create', Branch::class);
+
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            Branch::create([
+                'name' => $row['name'] ?? '',
+                'code' => $row['code'] ?? null,
+                'address' => $row['address'] ?? null,
+                'phone' => $row['phone'] ?? null,
+                'email' => $row['email'] ?? null,
+            ]);
+        }
+
+        return to_route('branches.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' branches imported successfully.']);
+    }
 }

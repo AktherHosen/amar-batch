@@ -1,9 +1,19 @@
-import { Head, router, Link } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ArrowLeft, EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
+import { isOwner } from '@/lib/role';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import branches from '@/routes/branches';
 import { useLocale } from '@/contexts/locale-context';
 
@@ -19,73 +29,186 @@ type Branch = {
     students_count: number;
 };
 
-type PageProps = { branch: Branch };
+type PageProps = {
+    auth: { user: { role: string } };
+    branch: Branch;
+};
 
 export default function BranchesShow({ branch }: PageProps) {
     const { t } = useLocale();
+    const { auth } = usePage<PageProps>().props;
+    const isAdmin = isOwner(auth.user);
+    const [deleteDialog, setDeleteDialog] = useState(false);
+
+    const handleDelete = () => {
+        setDeleteDialog(true);
+    };
+
+    const confirmDelete = () => {
+        router.delete(branches.destroy(branch.id), {
+            onSuccess: () => toast.success(t('toast.deleted_successfully')),
+        });
+        setDeleteDialog(false);
+    };
 
     return (
         <>
             <Head title={branch.name} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4">
-                    <Link href={branches.index()}>
-                        <Button variant="ghost" size="sm">
-                            <ArrowLeft className="mr-2 size-4" />
-                            {t('actions.back')}
-                        </Button>
-                    </Link>
-                    <Heading title={branch.name} description={branch.code || ''} />
+                <div className="flex min-w-0 items-center justify-between">
+                    <div className="flex min-w-0 items-center gap-2">
+                        <Link href={branches.index()} className="shrink-0">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-9"
+                            >
+                                <ArrowLeft className="size-4" />
+                            </Button>
+                        </Link>
+                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">
+                            {branch.name}
+                        </h1>
+                    </div>
+                    {isAdmin && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 p-0"
+                                >
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={branches.edit(branch.id)}>
+                                        <Pencil className="mr-2 size-4" />
+                                        {t('actions.edit')}
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={handleDelete}
+                                >
+                                    <Trash2 className="mr-2 size-4" />
+                                    {t('actions.delete')}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 md:grid-cols-2">
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('branches.status')}</div>
-                            <Badge className={branch.is_active ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}>
-                                {branch.is_active ? t('branches.active') : t('branches.inactive')}
-                            </Badge>
+                        <CardHeader>
+                            <CardTitle>{t('branches.title')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('branches.name')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {branch.name}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('branches.code')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {branch.code || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('branches.status')}
+                                    </p>
+                                    <Badge
+                                        className={
+                                            branch.is_active
+                                                ? 'bg-green-600 text-white'
+                                                : 'bg-red-600 text-white'
+                                        }
+                                    >
+                                        {branch.is_active
+                                            ? t('branches.active')
+                                            : t('branches.inactive')}
+                                    </Badge>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('branches.batches')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {branch.batches_count}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('branches.students')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {branch.students_count}
+                                    </p>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
+
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('branches.batches')}</div>
-                            <div className="text-2xl font-bold">{branch.batches_count}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('branches.students')}</div>
-                            <div className="text-2xl font-bold">{branch.students_count}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('branches.phone')}</div>
-                            <div className="text-lg font-semibold">{branch.phone || '-'}</div>
+                        <CardHeader>
+                            <CardTitle>{t('branches.contact')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('branches.phone')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {branch.phone || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('branches.email')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {branch.email || '-'}
+                                    </p>
+                                </div>
+                                <div className="col-span-2">
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('branches.address')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {branch.address || '-'}
+                                    </p>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
-
-                {branch.address && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('branches.address')}</div>
-                            <div>{branch.address}</div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {branch.email && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('branches.email')}</div>
-                            <div>{branch.email}</div>
-                        </CardContent>
-                    </Card>
-                )}
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog}
+                onOpenChange={setDeleteDialog}
+                title={t('branches.delete_title')}
+                description={t('branches.delete_confirm').replace(
+                    '{name}',
+                    branch.name,
+                )}
+                confirmText={t('actions.delete')}
+                cancelText={t('actions.cancel')}
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }

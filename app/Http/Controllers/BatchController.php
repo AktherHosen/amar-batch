@@ -201,4 +201,26 @@ class BatchController extends Controller
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Batch completed successfully.']);
     }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $this->authorize('create', Batch::class);
+
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            Batch::create([
+                'name' => $row['name'] ?? '',
+                'subject' => $row['subject'] ?? null,
+                'days' => $row['days'] ?? null,
+                'time' => $row['time'] ?? null,
+                'capacity' => $row['capacity'] ?? null,
+                'start_date' => $row['start_date'] ?? null,
+                'end_date' => $row['end_date'] ?? null,
+                'status' => $row['status'] ?? 'active',
+            ]);
+        }
+
+        return to_route('batches.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' batches imported successfully.']);
+    }
 }

@@ -193,6 +193,27 @@ class StudentController extends Controller
         ]);
     }
 
+    public function import(Request $request): RedirectResponse
+    {
+        $this->authorize('create', Student::class);
+
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            Student::create([
+                'name' => $row['name'] ?? '',
+                'phone' => $row['phone'] ?? null,
+                'coaching_class_id' => $row['coaching_class_id'] ?? null,
+                'section' => $row['section'] ?? null,
+                'guardian_name' => $row['guardian_name'] ?? null,
+                'guardian_phone' => $row['guardian_phone'] ?? null,
+                'status' => $row['status'] ?? 'active',
+            ]);
+        }
+
+        return to_route('students.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' students imported successfully.']);
+    }
+
     public function export(Request $request)
     {
         $this->authorize('viewAny', Student::class);

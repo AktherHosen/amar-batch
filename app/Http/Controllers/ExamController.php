@@ -118,6 +118,27 @@ class ExamController extends Controller
         return to_route('exams.index')->with('toast', ['type' => 'success', 'message' => 'Exam deleted successfully.']);
     }
 
+    public function import(Request $request): RedirectResponse
+    {
+        $this->authorize('create', Exam::class);
+
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            Exam::create([
+                'title' => $row['title'] ?? '',
+                'subject' => $row['subject'] ?? null,
+                'batch_id' => $row['batch_id'] ?? null,
+                'date' => $row['date'] ?? null,
+                'total_marks' => $row['total_marks'] ?? 0,
+                'passing_marks' => $row['passing_marks'] ?? 0,
+                'notes' => $row['notes'] ?? null,
+            ]);
+        }
+
+        return to_route('exams.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' exams imported successfully.']);
+    }
+
     public function storeResults(Request $request, Exam $exam): RedirectResponse
     {
         $this->authorize('update', $exam);

@@ -72,4 +72,20 @@ class CoachingClassController extends Controller
 
         return to_route('coaching-classes.index')->with('toast', ['type' => 'success', 'message' => 'Class deleted successfully.']);
     }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $this->authorize('create', CoachingClass::class);
+
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            CoachingClass::create([
+                'name' => $row['name'] ?? '',
+                'default_fee' => $row['default_fee'] ?? null,
+            ]);
+        }
+
+        return to_route('coaching-classes.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' classes imported successfully.']);
+    }
 }

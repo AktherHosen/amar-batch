@@ -8,6 +8,7 @@ Route::middleware(['auth', 'verified'])->prefix('fees')->name('fees.')->group(fu
     Route::get('/', [FeeStatusController::class, 'index'])->name('index');
     Route::get('/create', [FeeStatusController::class, 'create'])->name('create');
     Route::post('/', [FeeStatusController::class, 'store'])->name('store');
+    Route::post('/import', [FeeStatusController::class, 'import'])->name('import');
     Route::delete('/clear-student', [FeeStatusController::class, 'destroyStudentBatch'])->name('clear-student');
     Route::get('/{fee}/edit', [FeeStatusController::class, 'edit'])->name('edit');
     Route::put('/{fee}', [FeeStatusController::class, 'update'])->name('update');

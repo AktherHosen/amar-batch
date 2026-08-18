@@ -97,4 +97,23 @@ class HolidayController extends Controller
             'holiday' => $isHoliday ? Holiday::forDate($date)->first() : null,
         ]);
     }
+
+    public function import(Request $request)
+    {
+        $rows = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            Holiday::create([
+                'title' => $row['title'] ?? '',
+                'description' => $row['description'] ?? null,
+                'start_date' => $row['start_date'],
+                'end_date' => $row['end_date'],
+                'type' => $row['type'] ?? 'holiday',
+                'tenant_id' => $request->user()->tenant_id,
+            ]);
+        }
+
+        return redirect()->route('holidays.index')
+            ->with('success', count($rows) . ' holidays imported successfully');
+    }
 }
