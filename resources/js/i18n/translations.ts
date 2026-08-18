@@ -924,6 +924,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'batches.unenroll_confirm':
             'Are you sure you want to unenroll this student from the batch?',
         'batches.no_batches': 'No batches found',
+        'batches.no_history': 'No history records',
         'batches.delete_title': 'Delete Batch',
         'batches.complete_title': 'Complete Batch',
         'batches.remove_teacher_title': 'Remove Teacher',
@@ -1092,6 +1093,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'exams.results': 'Results',
         'exams.results_saved': 'Results saved successfully',
         'exams.no_exams': 'No exams found',
+        'exams.no_results': 'No exam results found',
         'exams.no_students': 'No students found',
         'exams.all_batches': 'All Batches',
         'exams.select_batch': 'Select a batch',

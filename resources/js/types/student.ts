@@ -30,4 +30,27 @@ export type Student = {
         amount_paid: number;
         notes: string | null;
     }>;
+    examResults?: Array<{
+        id: number;
+        exam: {
+            id: number;
+            title: string;
+            subject: string;
+            exam_date: string;
+            total_marks: number;
+            passing_marks: number;
+            batch: { id: number; name: string } | null;
+        };
+        marks_obtained: number;
+        notes: string | null;
+    }>;
+    batchHistories?: Array<{
+        id: number;
+        batch: { id: number; name: string } | null;
+        user: { name: string } | null;
+        action: string;
+        action_date: string | null;
+        notes: string | null;
+        created_at: string;
+    }>;
 };

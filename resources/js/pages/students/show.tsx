@@ -58,6 +58,31 @@ type AttendanceRow = {
     late: number;
 };
 
+type ExamResult = {
+    id: number;
+    exam: {
+        id: number;
+        title: string;
+        subject: string;
+        exam_date: string;
+        total_marks: number;
+        passing_marks: number;
+        batch: { id: number; name: string } | null;
+    };
+    marks_obtained: number;
+    notes: string | null;
+};
+
+type BatchHistoryItem = {
+    id: number;
+    batch: { id: number; name: string } | null;
+    user: { name: string } | null;
+    action: string;
+    action_date: string | null;
+    notes: string | null;
+    created_at: string;
+};
+
 const MONTH_NAMES = [
     '',
     'January',
@@ -245,6 +270,132 @@ export default function StudentsShow({
                         {row.original.late}
                     </span>
                 ),
+            } as Col,
+        ];
+    })();
+
+    const examColumns = (() => {
+        type Col = NonNullable<
+            DataTableProps<ExamResult, unknown>['columns']
+        >[number];
+        return [
+            {
+                id: 'title',
+                accessorKey: 'exam.title',
+                header: t('exams.title'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">
+                        {row.original.exam.title}
+                    </span>
+                ),
+            } as Col,
+            {
+                id: 'subject',
+                accessorKey: 'exam.subject',
+                header: t('exams.subject'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span>{row.original.exam.subject}</span>
+                ),
+            } as Col,
+            {
+                id: 'batch',
+                accessorKey: 'exam.batch.name',
+                header: t('batches.name'),
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.exam.batch?.name || '-',
+            } as Col,
+            {
+                id: 'date',
+                accessorKey: 'exam.exam_date',
+                header: t('exams.date'),
+                enableSorting: true,
+                cell: ({ row }: any) => formatDate(row.original.exam.exam_date),
+            } as Col,
+            {
+                id: 'marks',
+                accessorKey: 'marks_obtained',
+                header: t('exams.marks'),
+                enableSorting: true,
+                cell: ({ row }: any) => {
+                    const result: ExamResult = row.original;
+                    const passed =
+                        result.marks_obtained >= result.exam.passing_marks;
+                    return (
+                        <span
+                            className={`font-medium ${passed ? 'text-green-600' : 'text-red-600'}`}
+                        >
+                            {result.marks_obtained}/{result.exam.total_marks}
+                        </span>
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
+    const batchHistoryColumns = (() => {
+        type Col = NonNullable<
+            DataTableProps<BatchHistoryItem, unknown>['columns']
+        >[number];
+        return [
+            {
+                id: 'date',
+                accessorKey: 'action_date',
+                header: t('batches.date'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => {
+                    const item: BatchHistoryItem = row.original;
+                    return (
+                        <span className="font-medium">
+                            {item.action_date
+                                ? new Date(
+                                      item.action_date,
+                                  ).toLocaleDateString()
+                                : new Date(
+                                      item.created_at,
+                                  ).toLocaleDateString()}
+                        </span>
+                    );
+                },
+            } as Col,
+            {
+                id: 'batch',
+                accessorKey: 'batch.name',
+                header: t('batches.name'),
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.batch?.name || '-',
+            } as Col,
+            {
+                id: 'action',
+                accessorKey: 'action',
+                header: t('batches.action'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const item: BatchHistoryItem = row.original;
+                    return (
+                        <Badge
+                            variant={
+                                item.action === 'enrolled'
+                                    ? 'default'
+                                    : item.action === 'completed'
+                                      ? 'success'
+                                      : 'danger'
+                            }
+                        >
+                            {item.action}
+                        </Badge>
+                    );
+                },
+            } as Col,
+            {
+                id: 'by',
+                accessorKey: 'user.name',
+                header: t('batches.by'),
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.user?.name || '-',
             } as Col,
         ];
     })();
@@ -548,13 +699,57 @@ export default function StudentsShow({
                                 })()}
                             </CardContent>
                         </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-sm font-medium">
+                                    Payment Summary
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {(() => {
+                                    const fees = student.fee_statuses || [];
+                                    const totalPaid = fees.reduce(
+                                        (sum, f) => sum + Number(f.amount_paid),
+                                        0,
+                                    );
+                                    const feeCount = fees.length;
+
+                                    return feeCount > 0 ? (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-2xl font-bold text-green-600">
+                                                    {totalPaid.toFixed(0)}
+                                                </span>
+                                                <Badge variant="success">
+                                                    {feeCount}{' '}
+                                                    {feeCount === 1
+                                                        ? 'payment'
+                                                        : 'payments'}
+                                                </Badge>
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {t('fees.amount_paid')}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            {t('students.no_payments')}
+                                        </p>
+                                    );
+                                })()}
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
 
                 {student.enrollments && student.enrollments.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t('students.title')}</CardTitle>
+                            <CardTitle>
+                                {t('batches.enrolled')} (
+                                {student.enrollments.length})
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <DataTable
@@ -562,7 +757,9 @@ export default function StudentsShow({
                                 data={student.enrollments ?? []}
                                 showPagination={false}
                                 searchable
-                                searchPlaceholder={t('students.title') + '...'}
+                                searchPlaceholder={
+                                    t('batches.enrolled') + '...'
+                                }
                                 emptyMessage={t('students.no_enrollments')}
                                 getRowId={(row) => String(row.id)}
                                 toolbarEnd={
@@ -648,6 +845,126 @@ export default function StudentsShow({
                         />
                     </CardContent>
                 </Card>
+
+                {student.examResults && student.examResults.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('exams.title')} ({student.examResults.length}
+                                )
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <DataTable
+                                columns={examColumns}
+                                data={student.examResults}
+                                showPagination={false}
+                                searchable
+                                searchPlaceholder={t('exams.title') + '...'}
+                                emptyMessage={t('exams.no_results')}
+                                getRowId={(row) => String(row.id)}
+                                toolbarEnd={
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            generateTablePDF({
+                                                title: `${student.name} - ${t('exams.title')}`,
+                                                headers: [
+                                                    t('exams.title'),
+                                                    t('exams.subject'),
+                                                    t('batches.name'),
+                                                    t('exams.date'),
+                                                    t('exams.marks'),
+                                                ],
+                                                rows: (
+                                                    student.examResults ?? []
+                                                ).map((r) => [
+                                                    r.exam.title,
+                                                    r.exam.subject,
+                                                    r.exam.batch?.name || '-',
+                                                    formatDate(
+                                                        r.exam.exam_date,
+                                                    ),
+                                                    `${r.marks_obtained}/${r.exam.total_marks}`,
+                                                ]),
+                                                filename: `${student.name}_exams`,
+                                            })
+                                        }
+                                    >
+                                        <Download className="size-4" />
+                                        <span className="ml-2 hidden sm:inline">
+                                            PDF
+                                        </span>
+                                    </Button>
+                                }
+                            />
+                        </CardContent>
+                    </Card>
+                )}
+
+                {student.batchHistories &&
+                    student.batchHistories.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>
+                                    {t('batches.history')} (
+                                    {student.batchHistories.length})
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <DataTable
+                                    columns={batchHistoryColumns}
+                                    data={student.batchHistories}
+                                    showPagination={false}
+                                    searchable
+                                    searchPlaceholder={
+                                        t('batches.history') + '...'
+                                    }
+                                    emptyMessage={t('batches.no_history')}
+                                    getRowId={(row) => String(row.id)}
+                                    toolbarEnd={
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                generateTablePDF({
+                                                    title: `${student.name} - ${t('batches.history')}`,
+                                                    headers: [
+                                                        t('batches.date'),
+                                                        t('batches.name'),
+                                                        t('batches.action'),
+                                                        t('batches.by'),
+                                                    ],
+                                                    rows: (
+                                                        student.batchHistories ??
+                                                        []
+                                                    ).map((h) => [
+                                                        h.action_date
+                                                            ? new Date(
+                                                                  h.action_date,
+                                                              ).toLocaleDateString()
+                                                            : new Date(
+                                                                  h.created_at,
+                                                              ).toLocaleDateString(),
+                                                        h.batch?.name || '-',
+                                                        h.action,
+                                                        h.user?.name || '-',
+                                                    ]),
+                                                    filename: `${student.name}_batch_history`,
+                                                })
+                                            }
+                                        >
+                                            <Download className="size-4" />
+                                            <span className="ml-2 hidden sm:inline">
+                                                PDF
+                                            </span>
+                                        </Button>
+                                    }
+                                />
+                            </CardContent>
+                        </Card>
+                    )}
 
                 <Card>
                     <CardHeader className="flex-row items-center justify-between space-y-0">
