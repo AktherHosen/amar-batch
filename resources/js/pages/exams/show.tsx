@@ -1,18 +1,16 @@
-import { Head, router, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
-import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { isOwner } from '@/lib/role';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { DataTable, type DataTableProps } from '@/components/data-table';
-import InputError from '@/components/input-error';
 import exams from '@/routes/exams';
 import { useLocale } from '@/contexts/locale-context';
-import { useState } from 'react';
-import { toast } from 'sonner';
 
 type Student = {
     id: number;
@@ -40,6 +38,10 @@ type Exam = {
 };
 
 type PageProps = {
+    auth: { user: { role: string } };
+};
+
+type ExamsShowProps = {
     exam: Exam;
     students: Student[];
     enrolledStudentIds: number[];
@@ -48,25 +50,50 @@ type PageProps = {
 function formatDate(dateStr: string | null): string {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+    return d.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
 }
 
-export default function ExamsShow({ exam, students, enrolledStudentIds }: PageProps) {
+export default function ExamsShow({
+    exam,
+    students,
+    enrolledStudentIds,
+}: ExamsShowProps) {
     const { t } = useLocale();
-    const [results, setResults] = useState<Record<number, { marks: string; notes: string }>>(() => {
+    const { auth } = usePage<PageProps>().props;
+    const isAdmin = isOwner(auth.user);
+    const [deleteDialog, setDeleteDialog] = useState(false);
+    const [results, setResults] = useState<
+        Record<number, { marks: string; notes: string }>
+    >(() => {
         const map: Record<number, { marks: string; notes: string }> = {};
         exam.results.forEach((r) => {
-            map[r.student_id] = { marks: String(r.marks_obtained), notes: r.notes || '' };
+            map[r.student_id] = {
+                marks: String(r.marks_obtained),
+                notes: r.notes || '',
+            };
         });
         return map;
     });
 
-    const displayStudents = enrolledStudentIds.length > 0
-        ? students.filter((s) => enrolledStudentIds.includes(s.id))
-        : students;
+    const displayStudents =
+        enrolledStudentIds.length > 0
+            ? students.filter((s) => enrolledStudentIds.includes(s.id))
+            : students;
+
+    const handleDelete = () => {
+        setDeleteDialog(true);
+    };
+
+    const confirmDelete = () => {
+        router.delete(exams.destroy(exam.id), {
+            onSuccess: () => toast.success(t('toast.deleted_successfully')),
+        });
+        setDeleteDialog(false);
+    };
 
     const handleMarksChange = (studentId: number, value: string) => {
         setResults((prev) => ({
@@ -91,14 +118,20 @@ export default function ExamsShow({ exam, students, enrolledStudentIds }: PagePr
                 notes: v.notes || null,
             }));
 
-        router.post(exams.results.store(exam.id), { results: payload }, {
-            preserveScroll: true,
-            onSuccess: () => toast.success(t('exams.results_saved')),
-        });
+        router.post(
+            exams.results.store(exam.id),
+            { results: payload },
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success(t('exams.results_saved')),
+            },
+        );
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<Student, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<Student, unknown>['columns']
+        >[number];
         return [
             {
                 id: 'name',
@@ -124,7 +157,9 @@ export default function ExamsShow({ exam, students, enrolledStudentIds }: PagePr
                             max={exam.total_marks}
                             className="w-24"
                             value={results[student.id]?.marks || ''}
-                            onChange={(e) => handleMarksChange(student.id, e.target.value)}
+                            onChange={(e) =>
+                                handleMarksChange(student.id, e.target.value)
+                            }
                         />
                     );
                 },
@@ -138,10 +173,18 @@ export default function ExamsShow({ exam, students, enrolledStudentIds }: PagePr
                     const student: Student = row.original;
                     const obtained = Number(results[student.id]?.marks || 0);
                     const passed = obtained >= exam.passing_marks;
-                    const hasResult = results[student.id]?.marks !== undefined && results[student.id]?.marks !== '';
+                    const hasResult =
+                        results[student.id]?.marks !== undefined &&
+                        results[student.id]?.marks !== '';
                     return (
                         hasResult && (
-                            <Badge className={passed ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}>
+                            <Badge
+                                className={
+                                    passed
+                                        ? 'bg-green-600 text-white'
+                                        : 'bg-red-600 text-white'
+                                }
+                            >
                                 {passed ? t('exams.pass') : t('exams.fail')}
                             </Badge>
                         )
@@ -160,7 +203,9 @@ export default function ExamsShow({ exam, students, enrolledStudentIds }: PagePr
                             className="w-48"
                             placeholder={t('exams.notes_placeholder')}
                             value={results[student.id]?.notes || ''}
-                            onChange={(e) => handleNotesChange(student.id, e.target.value)}
+                            onChange={(e) =>
+                                handleNotesChange(student.id, e.target.value)
+                            }
                         />
                     );
                 },
@@ -173,57 +218,117 @@ export default function ExamsShow({ exam, students, enrolledStudentIds }: PagePr
             <Head title={exam.title} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4">
-                    <Link href={exams.index()}>
-                        <Button variant="ghost" size="sm">
-                            <ArrowLeft className="mr-2 size-4" />
-                            {t('actions.back')}
-                        </Button>
-                    </Link>
-                    <Heading title={exam.title} description={exam.subject || ''} />
+                <div className="flex min-w-0 items-center justify-between">
+                    <div className="flex min-w-0 items-center gap-2">
+                        <Link href={exams.index()} className="shrink-0">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-9"
+                            >
+                                <ArrowLeft className="size-4" />
+                            </Button>
+                        </Link>
+                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">
+                            {exam.title}
+                        </h1>
+                    </div>
+                    {isAdmin && (
+                        <div className="flex shrink-0 gap-2">
+                            <Link href={exams.edit(exam.id)}>
+                                <Button variant="outline">
+                                    <Pencil className="mr-2 size-4" />
+                                    {t('actions.edit')}
+                                </Button>
+                            </Link>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                            >
+                                <Trash2 className="mr-2 size-4" />
+                                {t('actions.delete')}
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 md:grid-cols-2">
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('exams.batch')}</div>
-                            <div className="text-lg font-semibold">{exam.batch?.name || '-'}</div>
+                        <CardHeader>
+                            <CardTitle>{t('exams.title')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="min-w-0">
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('exams.subject')}
+                                    </p>
+                                    <p className="truncate text-sm font-medium">
+                                        {exam.subject || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('exams.batch')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {exam.batch?.name || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('exams.total_marks')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {exam.total_marks}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('exams.passing_marks')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {exam.passing_marks}
+                                    </p>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
+
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('exams.date')}</div>
-                            <div className="text-lg font-semibold">{formatDate(exam.date)}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('exams.total_marks')}</div>
-                            <div className="text-lg font-semibold">{exam.total_marks}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('exams.passing_marks')}</div>
-                            <div className="text-lg font-semibold">{exam.passing_marks}</div>
+                        <CardHeader>
+                            <CardTitle>{t('exams.date')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('exams.date')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {formatDate(exam.date)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('exams.notes')}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {exam.notes || '-'}
+                                    </p>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
-
-                {exam.notes && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">{t('exams.notes')}</div>
-                            <div className="mt-1">{exam.notes}</div>
-                        </CardContent>
-                    </Card>
-                )}
 
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>{t('exams.results')}</CardTitle>
+                    <CardHeader className="flex-row items-center justify-between space-y-0">
+                        <CardTitle>
+                            {t('exams.results')} ({displayStudents.length})
+                        </CardTitle>
                         <Button size="sm" onClick={saveResults}>
-                            <Save className="mr-2 size-4" />
+                            <Pencil className="mr-2 size-4" />
                             {t('actions.save')}
                         </Button>
                     </CardHeader>
@@ -232,12 +337,25 @@ export default function ExamsShow({ exam, students, enrolledStudentIds }: PagePr
                             columns={columns}
                             data={displayStudents}
                             showPagination={false}
+                            searchable
+                            searchPlaceholder={t('exams.student') + '...'}
                             emptyMessage={t('exams.no_students')}
                             getRowId={(row) => String(row.id)}
                         />
                     </CardContent>
                 </Card>
             </div>
+
+            <ConfirmDialog
+                open={deleteDialog}
+                onOpenChange={setDeleteDialog}
+                title={t('confirm.are_you_sure')}
+                description={t('exams.delete_confirm')}
+                confirmText={t('confirm.delete')}
+                cancelText={t('actions.cancel')}
+                variant="destructive"
+                onConfirm={confirmDelete}
+            />
         </>
     );
 }
@@ -245,6 +363,6 @@ export default function ExamsShow({ exam, students, enrolledStudentIds }: PagePr
 ExamsShow.layout = {
     breadcrumbs: [
         { title: 'Exams', href: exams.index() },
-        { title: 'Detail', href: '' },
+        { title: 'View', href: '#' },
     ],
 };

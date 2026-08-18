@@ -195,8 +195,8 @@ export function DataTable<TData, TValue>({
                                   )
                                 : toolbar}
                             {!toolbar && searchable && (
-                                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
-                                    <div className="relative w-full sm:flex-1">
+                                <div className="flex w-full items-center gap-2">
+                                    <div className="relative min-w-0 flex-1">
                                         <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                                         <Input
                                             placeholder={searchPlaceholder}
@@ -219,7 +219,7 @@ export function DataTable<TData, TValue>({
                                         )}
                                     </div>
                                     {enableColumnVisibility && (
-                                        <div className="flex w-full sm:w-auto sm:flex-none">
+                                        <div className="flex shrink-0 items-center gap-2">
                                             <ColumnToggle table={table} />
                                         </div>
                                     )}
@@ -228,7 +228,7 @@ export function DataTable<TData, TValue>({
                             {!toolbar &&
                                 !searchable &&
                                 enableColumnVisibility && (
-                                    <div className="flex w-full sm:w-auto">
+                                    <div className="flex shrink-0 items-center gap-2">
                                         <ColumnToggle table={table} />
                                     </div>
                                 )}
@@ -466,11 +466,11 @@ export function ColumnToggle<TData>({
                 <Button
                     variant="outline"
                     size="sm"
-                    className="h-9 flex-1 gap-2 sm:flex-none"
+                    className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                 >
                     <Columns3 className="size-4" />
-                    View
-                    <ChevronDown className="size-3.5 opacity-60" />
+                    <span className="hidden sm:inline">View</span>
+                    <ChevronDown className="hidden size-3.5 opacity-60 sm:block" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

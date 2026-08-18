@@ -207,7 +207,11 @@ function MobileFeeList({
     monthNames: Record<number, string>;
     year: number;
     isAdmin: boolean;
-    isMonthDisabled: (enrolledAt: string | null, month: number, year: number) => boolean;
+    isMonthDisabled: (
+        enrolledAt: string | null,
+        month: number,
+        year: number,
+    ) => boolean;
     onDeleteRow: (studentId: number, batchId: number) => void;
     t: (key: string) => string;
 }) {
@@ -268,7 +272,8 @@ function MobileFeeList({
                                         {item.student.name}
                                     </p>
                                     <p className="truncate text-xs text-muted-foreground">
-                                        {item.student.coaching_class?.name || '-'}
+                                        {item.student.coaching_class?.name ||
+                                            '-'}
                                         <span className="mx-1 text-muted-foreground/50">
                                             •
                                         </span>
@@ -283,13 +288,16 @@ function MobileFeeList({
                             </button>
 
                             {isAdmin && (
-                                <div className="flex shrink-0 items-center border-l pl-1 pr-2">
+                                <div className="flex shrink-0 items-center border-l pr-2 pl-1">
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         className="size-8 p-0 text-destructive hover:text-destructive"
                                         onClick={() =>
-                                            onDeleteRow(item.student.id, item.batch.id)
+                                            onDeleteRow(
+                                                item.student.id,
+                                                item.batch.id,
+                                            )
                                         }
                                     >
                                         <Trash2 className="size-4" />
@@ -306,7 +314,7 @@ function MobileFeeList({
                                             key={m}
                                             className="flex flex-col items-center gap-1"
                                         >
-                                            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                            <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                                                 {monthNames[m].slice(0, 3)}
                                             </span>
                                             <FeeCell
@@ -481,7 +489,9 @@ export default function FeesIndex({
     };
 
     const columns = (() => {
-        type Col = NonNullable<DataTableProps<FeeGridItem, unknown>['columns']>[number];
+        type Col = NonNullable<
+            DataTableProps<FeeGridItem, unknown>['columns']
+        >[number];
         const cols: Col[] = [
             {
                 id: 'student',
@@ -560,7 +570,7 @@ export default function FeesIndex({
                         accessorKey: `months.${m}`,
                         header: () => (
                             <div className="flex flex-col items-center justify-center gap-0.5">
-                                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                                     {monthNames[m].slice(0, 3)}
                                 </span>
                             </div>
@@ -594,7 +604,7 @@ export default function FeesIndex({
             id: 'total',
             accessorKey: 'total',
             header: () => (
-                <div className="flex items-center justify-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <div className="flex items-center justify-center gap-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                     {t('fees.total_paid')}
                 </div>
             ),
@@ -637,7 +647,12 @@ export default function FeesIndex({
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                onClick={() => handleDeleteRow(item.student.id, item.batch.id)}
+                                onClick={() =>
+                                    handleDeleteRow(
+                                        item.student.id,
+                                        item.batch.id,
+                                    )
+                                }
                             >
                                 <Trash2 className="size-4" />
                             </Button>
@@ -673,7 +688,11 @@ export default function FeesIndex({
                         />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -698,7 +717,7 @@ export default function FeesIndex({
                 <Card className="min-w-0">
                     <CardContent className="pt-6">
                         <FilterBar
-                            className="mb-4"
+                            className="mb-4 lg:hidden"
                             searchPlaceholder={t('actions.search') + '...'}
                             searchValue={search}
                             onSearchChange={handleSearch}
@@ -732,7 +751,35 @@ export default function FeesIndex({
                                 preserveParams={{ search, year: selectedYear }}
                                 showPagination={false}
                                 emptyMessage={t('fees.no_records')}
-                                getRowId={(row) => `${row.student.id}_${row.batch.id}`}
+                                getRowId={(row) =>
+                                    `${row.student.id}_${row.batch.id}`
+                                }
+                                toolbar={
+                                    <FilterBar
+                                        searchPlaceholder={
+                                            t('actions.search') + '...'
+                                        }
+                                        searchValue={search}
+                                        onSearchChange={handleSearch}
+                                        activeFilterCount={activeFilterCount}
+                                        active={selectedYear !== currentYear}
+                                        onClearAll={clearAll}
+                                        filters={[
+                                            {
+                                                id: 'year',
+                                                placeholder: t('fees.year'),
+                                                value: String(selectedYear),
+                                                options: yearOptionsList.map(
+                                                    (y) => ({
+                                                        label: String(y),
+                                                        value: String(y),
+                                                    }),
+                                                ),
+                                                onValueChange: handleYearChange,
+                                            },
+                                        ]}
+                                    />
+                                }
                             />
                         </div>
 
