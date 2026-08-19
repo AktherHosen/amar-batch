@@ -13,6 +13,8 @@ class FeeReceiptController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', FeeReceipt::class);
+
         $receipts = FeeReceipt::with(['student', 'batch'])
             ->when($request->search, function ($query, $search) {
                 $query->whereHas('student', function ($q) use ($search) {
@@ -31,6 +33,8 @@ class FeeReceiptController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', FeeReceipt::class);
+
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'batch_id' => 'required|exists:batches,id',
@@ -48,11 +52,13 @@ class FeeReceiptController extends Controller
         ]);
 
         return redirect()->route('fees.receipts.show', $receipt->id)
-            ->with('success', 'Receipt generated successfully');
+            ->with('toast', ['type' => 'success', 'message' => 'Receipt generated successfully.']);
     }
 
     public function show(FeeReceipt $receipt)
     {
+        $this->authorize('view', $receipt);
+
         $receipt->load(['student', 'batch', 'creator']);
 
         return Inertia::render('fees/receipts/show', [
@@ -62,9 +68,11 @@ class FeeReceiptController extends Controller
 
     public function destroy(FeeReceipt $receipt)
     {
+        $this->authorize('delete', $receipt);
+
         $receipt->delete();
 
         return redirect()->route('fees.receipts.index')
-            ->with('success', 'Receipt deleted successfully');
+            ->with('toast', ['type' => 'success', 'message' => 'Receipt deleted successfully.']);
     }
 }

@@ -585,7 +585,7 @@ export default function BatchesShow({
                                         <p className="text-sm font-medium">
                                             {batch.capacity}
                                         </p>
-                                        {batch.enrollments.length >=
+                                        {batch.enrollments.length >
                                             batch.capacity && (
                                             <Badge
                                                 variant="destructive"

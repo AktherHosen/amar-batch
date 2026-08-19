@@ -256,6 +256,7 @@ public function reject(Request $request, User $teacher): RedirectResponse
                     'email' => $row['email'] ?? '',
                     'password' => Hash::make($row['password'] ?? 'password'),
                     'role' => $row['role'] ?? 'teacher',
+                    'tenant_id' => $request->user()->tenant_id,
                     'branch_id' => $row['branch_id'] ?? null,
                 ]);
                 $imported++;

@@ -12,6 +12,8 @@ class NoticeController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Notice::class);
+
         $notices = Notice::with(['batch', 'creator'])
             ->when($request->search, function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
@@ -37,6 +39,8 @@ class NoticeController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Notice::class);
+
         $batches = Batch::where('status', '!=', 'completed')
             ->orderBy('name')
             ->get(['id', 'name']);
@@ -48,6 +52,8 @@ class NoticeController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Notice::class);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -70,11 +76,13 @@ class NoticeController extends Controller
         ]);
 
         return redirect()->route('notices.index')
-            ->with('success', 'Notice created successfully');
+            ->with('toast', ['type' => 'success', 'message' => 'Notice created successfully.']);
     }
 
     public function show(Notice $notice)
     {
+        $this->authorize('view', $notice);
+
         $notice->load(['batch', 'creator']);
 
         return Inertia::render('notices/show', [
@@ -84,6 +92,8 @@ class NoticeController extends Controller
 
     public function edit(Notice $notice)
     {
+        $this->authorize('update', $notice);
+
         $batches = Batch::where('status', '!=', 'completed')
             ->orderBy('name')
             ->get(['id', 'name']);
@@ -96,6 +106,8 @@ class NoticeController extends Controller
 
     public function update(Request $request, Notice $notice)
     {
+        $this->authorize('update', $notice);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -110,19 +122,23 @@ class NoticeController extends Controller
         $notice->update($validated);
 
         return redirect()->route('notices.index')
-            ->with('success', 'Notice updated successfully');
+            ->with('toast', ['type' => 'success', 'message' => 'Notice updated successfully.']);
     }
 
     public function destroy(Notice $notice)
     {
+        $this->authorize('delete', $notice);
+
         $notice->delete();
 
         return redirect()->route('notices.index')
-            ->with('success', 'Notice deleted successfully');
+            ->with('toast', ['type' => 'success', 'message' => 'Notice deleted successfully.']);
     }
 
     public function import(Request $request)
     {
+        $this->authorize('create', Notice::class);
+
         $rows = $request->input('rows', []);
         $imported = 0;
         $skipped = 0;

@@ -10,6 +10,8 @@ class HolidayController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Holiday::class);
+
         $holidays = Holiday::when($request->year, function ($query, $year) {
                 $query->whereYear('start_date', $year);
             })
@@ -28,11 +30,15 @@ class HolidayController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Holiday::class);
+
         return Inertia::render('holidays/create');
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', Holiday::class);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -46,11 +52,13 @@ class HolidayController extends Controller
         Holiday::create($validated);
 
         return redirect()->route('holidays.index')
-            ->with('success', 'Holiday created successfully');
+            ->with('toast', ['type' => 'success', 'message' => 'Holiday created successfully.']);
     }
 
     public function show(Holiday $holiday)
     {
+        $this->authorize('view', $holiday);
+
         return Inertia::render('holidays/show', [
             'holiday' => $holiday,
         ]);
@@ -58,6 +66,8 @@ class HolidayController extends Controller
 
     public function edit(Holiday $holiday)
     {
+        $this->authorize('update', $holiday);
+
         return Inertia::render('holidays/edit', [
             'holiday' => $holiday,
         ]);
@@ -65,6 +75,8 @@ class HolidayController extends Controller
 
     public function update(Request $request, Holiday $holiday)
     {
+        $this->authorize('update', $holiday);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -76,15 +88,17 @@ class HolidayController extends Controller
         $holiday->update($validated);
 
         return redirect()->route('holidays.index')
-            ->with('success', 'Holiday updated successfully');
+            ->with('toast', ['type' => 'success', 'message' => 'Holiday updated successfully.']);
     }
 
     public function destroy(Holiday $holiday)
     {
+        $this->authorize('delete', $holiday);
+
         $holiday->delete();
 
         return redirect()->route('holidays.index')
-            ->with('success', 'Holiday deleted successfully');
+            ->with('toast', ['type' => 'success', 'message' => 'Holiday deleted successfully.']);
     }
 
     public function checkDate(Request $request)
@@ -100,6 +114,8 @@ class HolidayController extends Controller
 
     public function import(Request $request)
     {
+        $this->authorize('create', Holiday::class);
+
         $rows = $request->input('rows', []);
         $imported = 0;
         $skipped = 0;

@@ -46,6 +46,7 @@ class StudentController extends Controller
 
         return Inertia::render('students/index', [
             'students' => $students,
+            'coachingClasses' => CoachingClass::orderBy('name')->get(['id', 'name']),
             'filters' => $request->only(['search', 'status']),
         ]);
     }
@@ -196,6 +197,19 @@ class StudentController extends Controller
                 ? 'Student activated successfully.'
                 : 'Student deactivated successfully.',
         ]);
+    }
+
+    public function updateCoachingClass(Request $request, Student $student): RedirectResponse
+    {
+        $this->authorize('update', $student);
+
+        $validated = $request->validate([
+            'coaching_class_id' => ['required', 'exists:coaching_classes,id'],
+        ]);
+
+        $student->update($validated);
+
+        return back()->with('toast', ['type' => 'success', 'message' => 'Class updated successfully.']);
     }
 
     public function import(Request $request): RedirectResponse

@@ -309,7 +309,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'users.add_desc': 'সিস্টেমে একটি নতুন ব্যবহারকারী যোগ করুন',
         'users.approve': 'অনুমোদন দিন',
         'users.approved': 'অনুমোদিত',
-        'users.pending_approval': 'অনুমোদন pending',
+        'users.pending_approval': 'অনুমোদন অপেক্ষমাণ',
         'users.revoke_approval': 'অনুমোদন বাতিল করুন',
         'users.approve_title': 'ব্যবহারকারী অনুমোদন করুন',
         'users.approve_confirm': 'আপনি কি নিশ্চিত {name}কে অনুমোদন দিতে চান?',

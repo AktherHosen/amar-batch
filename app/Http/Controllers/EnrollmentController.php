@@ -14,6 +14,8 @@ class EnrollmentController extends Controller
 {
     public function store(StoreEnrollmentRequest $request, Batch $batch): RedirectResponse
     {
+        $this->authorize('update', $batch);
+
         $existing = Enrollment::where('student_id', $request->student_id)
             ->where('batch_id', $batch->id)
             ->first();
@@ -50,6 +52,8 @@ class EnrollmentController extends Controller
 
     public function update(Request $request, Enrollment $enrollment): RedirectResponse
     {
+        $this->authorize('update', $enrollment);
+
         $request->validate([
             'status' => 'required|in:active,completed,dropped',
         ]);
@@ -69,6 +73,8 @@ class EnrollmentController extends Controller
 
     public function destroy(Enrollment $enrollment, Request $request): RedirectResponse
     {
+        $this->authorize('delete', $enrollment);
+
         BatchHistory::create([
             'batch_id' => $enrollment->batch_id,
             'student_id' => $enrollment->student_id,

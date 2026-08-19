@@ -43,6 +43,11 @@ function formatDate(dateStr: string | null): string {
     return `${day}/${month}/${year}`;
 }
 
+type CoachingClass = {
+    id: number;
+    name: string;
+};
+
 type PageProps = {
     auth: { user: { role: string } };
     students: {
@@ -52,6 +57,7 @@ type PageProps = {
         per_page: number;
         total: number;
     };
+    coachingClasses: CoachingClass[];
     filters: {
         search?: string;
         status?: string;
@@ -60,6 +66,7 @@ type PageProps = {
 
 export default function StudentsIndex({
     students: pagination,
+    coachingClasses,
     filters,
 }: PageProps) {
     const { t } = useLocale();
@@ -111,12 +118,30 @@ export default function StudentsIndex({
 
     const handleRowStatusChange = (student: Student, value: string) => {
         if (value === student.status) {
-return;
-}
+            return;
+        }
 
         router.patch(
             students.status(student.id),
             { status: value },
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(t('toast.updated_successfully'));
+                    router.reload({ only: ['students'] });
+                },
+            },
+        );
+    };
+
+    const handleClassChange = (student: Student, classId: string) => {
+        if (classId === String(student.coaching_class_id)) {
+            return;
+        }
+
+        router.patch(
+            `/students/${student.id}/coaching-class`,
+            { coaching_class_id: classId },
             {
                 preserveState: true,
                 onSuccess: () => {
@@ -172,11 +197,44 @@ return;
                 cell: ({ row }: any) => row.original.phone || '-',
             } as Col,
             {
-                id: 'joined_at',
-                accessorKey: 'joined_at',
-                header: t('students.joined_at'),
-                enableSorting: true,
-                cell: ({ row }: any) => formatDate(row.original.joined_at),
+                id: 'coaching_class',
+                accessorKey: 'coaching_class',
+                header: t('students.class'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const s: Student = row.original;
+
+                    if (!isAdmin) {
+                        return (
+                            <span className="text-sm">
+                                {s.coaching_class?.name || '-'}
+                            </span>
+                        );
+                    }
+
+                    return (
+                        <Select
+                            value={String(s.coaching_class_id ?? '')}
+                            onValueChange={(value) =>
+                                handleClassChange(s, value)
+                            }
+                        >
+                            <SelectTrigger className="h-8 w-auto min-w-[8rem]">
+                                <SelectValue placeholder={t('students.class')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {coachingClasses.map((cls) => (
+                                    <SelectItem
+                                        key={cls.id}
+                                        value={String(cls.id)}
+                                    >
+                                        {cls.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    );
+                },
             } as Col,
             {
                 id: 'status',
