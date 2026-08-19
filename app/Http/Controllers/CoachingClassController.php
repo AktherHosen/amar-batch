@@ -78,14 +78,26 @@ class CoachingClassController extends Controller
         $this->authorize('create', CoachingClass::class);
 
         $rows = $request->input('rows', []);
+        $imported = 0;
+        $skipped = 0;
 
         foreach ($rows as $row) {
-            CoachingClass::create([
-                'name' => $row['name'] ?? '',
-                'default_fee' => $row['default_fee'] ?? null,
-            ]);
+            try {
+                CoachingClass::create([
+                    'name' => $row['name'] ?? '',
+                    'default_fee' => $row['default_fee'] ?? null,
+                ]);
+                $imported++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                $skipped++;
+            }
         }
 
-        return to_route('coaching-classes.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' classes imported successfully.']);
+        $message = $imported . ' classes imported successfully.';
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped (duplicate or invalid).";
+        }
+
+        return to_route('coaching-classes.index')->with('toast', ['type' => 'success', 'message' => $message]);
     }
 }

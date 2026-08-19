@@ -20,7 +20,7 @@ class StoreStudentRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
-            'coaching_class_id' => ['nullable', Rule::exists('coaching_classes', 'id')->where('tenant_id', $tenantId)],
+            'coaching_class_id' => ['required', Rule::exists('coaching_classes', 'id')->where('tenant_id', $tenantId)],
             'section' => ['nullable', 'string', 'max:10'],
             'address' => ['nullable', 'string'],
             'date_of_birth' => ['nullable', 'date'],

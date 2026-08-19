@@ -10,9 +10,13 @@ const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
 function CompactCalendar({
   selected,
   onSelect,
+  min,
+  max,
 }: {
   selected?: Date
   onSelect: (date: Date) => void
+  min?: Date
+  max?: Date
 }) {
   const [viewMonth, setViewMonth] = React.useState(
     selected ? new Date(selected.getFullYear(), selected.getMonth(), 1) : startOfMonth(new Date())
@@ -70,18 +74,22 @@ function CompactCalendar({
           const isOutside = !isSameMonth(day, viewMonth)
           const isDisabled =
             isBefore(day, new Date(1900, 0, 1)) ||
-            isAfter(day, new Date(2100, 11, 31))
+            isAfter(day, new Date(2100, 11, 31)) ||
+            (min && isBefore(day, min) && !isSameDay(day, min)) ||
+            (max && isAfter(day, max) && !isSameDay(day, max))
           return (
             <button
               key={day.toISOString()}
               type="button"
               onClick={() => onSelect(day)}
+              disabled={isDisabled}
               className={cn(
                 "flex h-8 w-8 touch-manipulation items-center justify-center rounded-md text-sm font-normal transition-colors",
                 isToday(day) && !isSelected && "bg-accent text-accent-foreground",
                 isSelected && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
                 isOutside && "text-muted-foreground opacity-50",
-                !isSelected && !isToday(day) && "hover:bg-accent hover:text-accent-foreground"
+                !isSelected && !isToday(day) && "hover:bg-accent hover:text-accent-foreground",
+                isDisabled && "text-muted-foreground opacity-30 cursor-not-allowed hover:bg-transparent"
               )}
             >
               {format(day, "d")}
@@ -98,6 +106,8 @@ type DatePickerProps = {
   onValueChange: (value: string) => void
   placeholder?: string
   className?: string
+  min?: string
+  max?: string
 }
 
 export function DatePicker({
@@ -105,8 +115,12 @@ export function DatePicker({
   onValueChange,
   placeholder = "Pick a date",
   className,
+  min,
+  max,
 }: DatePickerProps) {
   const selected = value ? new Date(value + "T00:00:00") : undefined
+  const minDate = min ? new Date(min + "T00:00:00") : undefined
+  const maxDate = max ? new Date(max + "T00:00:00") : undefined
 
   return (
     <Popover>
@@ -127,6 +141,8 @@ export function DatePicker({
         <CompactCalendar
           selected={selected}
           onSelect={(date) => onValueChange(format(date, "yyyy-MM-dd"))}
+          min={minDate}
+          max={maxDate}
         />
       </PopoverContent>
     </Popover>

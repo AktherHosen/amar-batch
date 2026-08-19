@@ -249,7 +249,7 @@ export default function StudentForm({
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                         <Label htmlFor="coaching_class_id">
-                            {t('students.class')}
+                            {t('students.class')} *
                         </Label>
                         <Select
                             value={data.coaching_class_id}

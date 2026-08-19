@@ -52,7 +52,7 @@ export default function CoachingClassEdit({
                     </div>
                 </div>
 
-                <Card className="max-w-xl">
+                <Card className="max-w-xl mx-auto">
                     <CardContent className="pt-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">

@@ -246,18 +246,30 @@ public function reject(Request $request, User $teacher): RedirectResponse
         }
 
         $rows = $request->input('rows', []);
+        $imported = 0;
+        $skipped = 0;
 
         foreach ($rows as $row) {
-            User::create([
-                'name' => $row['name'] ?? '',
-                'email' => $row['email'] ?? '',
-                'password' => Hash::make($row['password'] ?? 'password'),
-                'role' => $row['role'] ?? 'teacher',
-                'branch_id' => $row['branch_id'] ?? null,
-            ]);
+            try {
+                User::create([
+                    'name' => $row['name'] ?? '',
+                    'email' => $row['email'] ?? '',
+                    'password' => Hash::make($row['password'] ?? 'password'),
+                    'role' => $row['role'] ?? 'teacher',
+                    'branch_id' => $row['branch_id'] ?? null,
+                ]);
+                $imported++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                $skipped++;
+            }
         }
 
-        return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' staff members imported successfully.']);
+        $message = $imported . ' staff members imported successfully.';
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped (duplicate or invalid).";
+        }
+
+        return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => $message]);
     }
 }
 

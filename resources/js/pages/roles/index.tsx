@@ -51,10 +51,13 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
 
     const confirmDelete = () => {
         if (deleteDialog.item) {
+            setDeleteDialog({ open: false, item: null });
             router.delete(roles.destroy(deleteDialog.item.id), {
                 onSuccess: () => {
                     toast.success('Role deleted successfully.');
-                    setDeleteDialog({ open: false, item: null });
+                },
+                onError: () => {
+                    toast.error('Could not delete role. Make sure no users are assigned to it.');
                 },
             });
         }

@@ -92,17 +92,29 @@ class BranchController extends Controller
         $this->authorize('create', Branch::class);
 
         $rows = $request->input('rows', []);
+        $imported = 0;
+        $skipped = 0;
 
         foreach ($rows as $row) {
-            Branch::create([
-                'name' => $row['name'] ?? '',
-                'code' => $row['code'] ?? null,
-                'address' => $row['address'] ?? null,
-                'phone' => $row['phone'] ?? null,
-                'email' => $row['email'] ?? null,
-            ]);
+            try {
+                Branch::create([
+                    'name' => $row['name'] ?? '',
+                    'code' => $row['code'] ?? null,
+                    'address' => $row['address'] ?? null,
+                    'phone' => $row['phone'] ?? null,
+                    'email' => $row['email'] ?? null,
+                ]);
+                $imported++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                $skipped++;
+            }
         }
 
-        return to_route('branches.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' branches imported successfully.']);
+        $message = $imported . ' branches imported successfully.';
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped (duplicate or invalid).";
+        }
+
+        return to_route('branches.index')->with('toast', ['type' => 'success', 'message' => $message]);
     }
 }

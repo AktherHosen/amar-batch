@@ -48,6 +48,7 @@ type FeeStatus = {
     year: number;
     amount_paid: number;
     notes: string | null;
+    created_at: string | null;
 };
 
 type AttendanceRow = {
@@ -479,6 +480,17 @@ export default function StudentsShow({
                     return fee.notes || '-';
                 },
             } as Col,
+            {
+                id: 'created_at',
+                accessorKey: 'created_at',
+                header: t('fees.date'),
+                enableSorting: true,
+                cell: ({ row }: any) => {
+                    const fee: FeeStatus = row.original;
+
+                    return fee.created_at ? formatDate(fee.created_at) : '-';
+                },
+            } as Col,
         ];
     })();
 
@@ -524,10 +536,7 @@ export default function StudentsShow({
 
                 <div className="grid gap-4 md:grid-cols-2">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>{t('students.title')}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-6">
                             <div className="flex flex-col items-center gap-4">
                                 <Avatar className="size-16 sm:size-20">
                                     <AvatarImage

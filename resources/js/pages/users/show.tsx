@@ -196,8 +196,8 @@ return t('users.inactive');
                                 </Button>
                             ) : (
                                 <Button variant="destructive" onClick={handleRevoke}>
-                                    <ShieldOff className="mr-2 size-4" />
-                                    {t('users.revoke_access')}
+                                    <ShieldOff className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('users.revoke_access')}</span>
                                 </Button>
                             )}
                         </div>

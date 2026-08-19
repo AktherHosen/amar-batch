@@ -119,13 +119,28 @@ export default function BatchForm({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="time">Time</Label>
-                    <Input
-                        id="time"
-                        value={data.time || ''}
-                        onChange={(e) => setData('time', e.target.value)}
-                        placeholder="e.g. 10:00 AM - 12:00 PM"
-                    />
+                    <Label>Time</Label>
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                        <Input
+                            type="time"
+                            id="time_start"
+                            value={data.time?.split(' - ')[0] || data.time?.split('-')[0]?.trim() || ''}
+                            onChange={(e) => {
+                                const end = data.time?.split(' - ')[1] || data.time?.split('-')[1]?.trim() || '';
+                                setData('time', end ? `${e.target.value} - ${end}` : e.target.value);
+                            }}
+                        />
+                        <span className="text-muted-foreground text-sm">-</span>
+                        <Input
+                            type="time"
+                            id="time_end"
+                            value={data.time?.split(' - ')[1] || data.time?.split('-')[1]?.trim() || ''}
+                            onChange={(e) => {
+                                const start = data.time?.split(' - ')[0] || data.time?.split('-')[0]?.trim() || '';
+                                setData('time', start ? `${start} - ${e.target.value}` : e.target.value);
+                            }}
+                        />
+                    </div>
                     <InputError message={errors.time} />
                 </div>
 

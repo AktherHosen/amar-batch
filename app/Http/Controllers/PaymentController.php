@@ -8,6 +8,7 @@ use App\Models\Subscription;
 use App\Services\SslcommerzService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -125,14 +126,9 @@ class PaymentController extends Controller
             ]);
         }
 
-        $payment->update([
-            'status' => 'success',
-            'payment_method' => $data['card_type'] ?? null,
-            'gateway_response' => array_merge($data, ['validation' => $validation]),
-            'paid_at' => now(),
-        ]);
-
-        $this->activateSubscription($payment);
+        if ($payment->status !== 'success') {
+            $this->markPaidAndActivate($payment, $data, $validation);
+        }
 
         return Inertia::render('payment/success', [
             'payment' => [
@@ -197,14 +193,9 @@ class PaymentController extends Controller
         $validation = $this->sslcommerz->validatePayment($data['val_id']);
 
         if (isset($validation['status']) && strtolower($validation['status']) === 'valid' && ($data['status'] ?? '') === 'VALID') {
-            $payment->update([
-                'status' => 'success',
-                'payment_method' => $data['card_type'] ?? null,
-                'gateway_response' => array_merge($data, ['validation' => $validation]),
-                'paid_at' => now(),
-            ]);
-
-            $this->activateSubscription($payment);
+            if ($payment->status !== 'success') {
+                $this->markPaidAndActivate($payment, $data, $validation);
+            }
 
             return response('OK', 200);
         }
@@ -246,18 +237,44 @@ class PaymentController extends Controller
         ]);
     }
 
+    private function markPaidAndActivate(Payment $payment, array $data, array $validation): void
+    {
+        DB::transaction(function () use ($payment, $data, $validation): void {
+            $locked = Payment::query()->withoutGlobalScopes()->lockForUpdate()->findOrFail($payment->id);
+
+            if ($locked->status === 'success') {
+                return;
+            }
+
+            $locked->update([
+                'status' => 'success',
+                'payment_method' => $data['card_type'] ?? null,
+                'gateway_response' => array_merge($data, ['validation' => $validation]),
+                'paid_at' => now(),
+            ]);
+
+            $this->activateSubscription($locked);
+        });
+    }
+
     private function activateSubscription(Payment $payment): void
     {
         $tenant = $payment->tenant;
         $plan = $payment->plan;
 
-        $endsAt = $payment->billing_type === 'yearly'
+        $period = $payment->billing_type === 'yearly'
             ? now()->addYear()
             : now()->addMonth();
 
         $subscription = $tenant->subscription;
 
         if ($subscription) {
+            // Extend from the current term so mid-term renewals keep paid time.
+            $base = $subscription->ends_at && $subscription->ends_at->isFuture() ? $subscription->ends_at : now();
+            $endsAt = $payment->billing_type === 'yearly'
+                ? $base->copy()->addYear()
+                : $base->copy()->addMonth();
+
             $subscription->update([
                 'plan_id' => $plan->id,
                 'status' => 'active',
@@ -271,7 +288,7 @@ class PaymentController extends Controller
                 'plan_id' => $plan->id,
                 'status' => 'active',
                 'billing_type' => $payment->billing_type,
-                'ends_at' => $endsAt,
+                'ends_at' => $period,
             ]);
         }
 

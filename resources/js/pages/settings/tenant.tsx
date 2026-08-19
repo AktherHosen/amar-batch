@@ -14,6 +14,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Save } from 'lucide-react';
 import settings from '@/routes/settings';
 
 type Center = {
@@ -133,18 +135,6 @@ export default function TenantSettings({ center }: PageProps) {
                                         }
                                     />
                                     <InputError message={errors.phone} />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="address">Address</Label>
-                                    <Input
-                                        id="address"
-                                        value={data.address}
-                                        onChange={(e) =>
-                                            setData('address', e.target.value)
-                                        }
-                                    />
-                                    <InputError message={errors.address} />
                                 </div>
 
                                 <div className="space-y-2">

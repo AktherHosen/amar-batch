@@ -101,9 +101,13 @@ export default function BatchesShow({
     const isAdmin = isOwner(auth.user);
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [selectedStudent, setSelectedStudent] = useState('');
-    const [enrollmentDate, setEnrollmentDate] = useState(
-        new Date().toISOString().split('T')[0],
-    );
+    const [enrollmentDate, setEnrollmentDate] = useState(() => {
+        const today = new Date().toISOString().split('T')[0];
+        if (batch.start_date && batch.start_date > today) {
+            return batch.start_date;
+        }
+        return today;
+    });
     const [deleteDialog, setDeleteDialog] = useState(false);
     const [removeTeacherDialog, setRemoveTeacherDialog] = useState<{
         open: boolean;
@@ -801,6 +805,7 @@ export default function BatchesShow({
                                                                         value,
                                                                     )
                                                                 }
+                                                                min={batch.start_date || undefined}
                                                                 placeholder={t(
                                                                     'batches.enroll_date',
                                                                 )}

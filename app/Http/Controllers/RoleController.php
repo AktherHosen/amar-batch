@@ -83,7 +83,13 @@ class RoleController extends Controller
 
     public function destroy(Role $role): RedirectResponse
     {
-        $this->authorize('delete', $role);
+        if ($role->is_system) {
+            return back()->withErrors(['role' => 'System roles cannot be deleted.']);
+        }
+
+        if ($role->users()->count() > 0) {
+            return back()->withErrors(['role' => 'Cannot delete role with assigned users. Unassign users first.']);
+        }
 
         $role->delete();
 

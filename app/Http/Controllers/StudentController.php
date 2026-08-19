@@ -90,6 +90,11 @@ class StudentController extends Controller
         }
 
         $validated = $request->validated();
+
+        if (empty($validated['joined_at'])) {
+            $validated['joined_at'] = now()->toDateString();
+        }
+
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('students', 'public');
         }
@@ -198,20 +203,46 @@ class StudentController extends Controller
         $this->authorize('create', Student::class);
 
         $rows = $request->input('rows', []);
+        $imported = 0;
+        $skipped = 0;
 
         foreach ($rows as $row) {
-            Student::create([
-                'name' => $row['name'] ?? '',
-                'phone' => $row['phone'] ?? null,
-                'coaching_class_id' => $row['coaching_class_id'] ?? null,
-                'section' => $row['section'] ?? null,
-                'guardian_name' => $row['guardian_name'] ?? null,
-                'guardian_phone' => $row['guardian_phone'] ?? null,
-                'status' => $row['status'] ?? 'active',
-            ]);
+            try {
+                $coachingClassId = $row['coaching_class_id'] ?? null;
+
+                if (! $coachingClassId && ! empty($row['coaching_class'])) {
+                    $className = trim($row['coaching_class']);
+                    $coachingClass = CoachingClass::firstOrCreate(
+                        ['name' => $className, 'tenant_id' => $request->user()->tenant_id],
+                        ['default_fee' => 0]
+                    );
+                    $coachingClassId = $coachingClass->id;
+                }
+
+                $joinedAt = ! empty($row['joined_at']) ? $row['joined_at'] : now()->toDateString();
+
+                Student::create([
+                    'name' => $row['name'] ?? '',
+                    'phone' => $row['phone'] ?? null,
+                    'coaching_class_id' => $coachingClassId,
+                    'section' => $row['section'] ?? null,
+                    'guardian_name' => $row['guardian_name'] ?? null,
+                    'guardian_phone' => $row['guardian_phone'] ?? null,
+                    'status' => $row['status'] ?? 'active',
+                    'joined_at' => $joinedAt,
+                ]);
+                $imported++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                $skipped++;
+            }
         }
 
-        return to_route('students.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' students imported successfully.']);
+        $message = $imported . ' students imported successfully.';
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped (duplicate or invalid).";
+        }
+
+        return to_route('students.index')->with('toast', ['type' => 'success', 'message' => $message]);
     }
 
     public function export(Request $request)

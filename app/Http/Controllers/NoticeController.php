@@ -124,22 +124,33 @@ class NoticeController extends Controller
     public function import(Request $request)
     {
         $rows = $request->input('rows', []);
+        $imported = 0;
+        $skipped = 0;
 
         foreach ($rows as $row) {
-            $data = [
-                'title' => $row['title'] ?? '',
-                'content' => $row['content'] ?? '',
-                'batch_id' => $row['batch_id'] ?? null,
-                'is_active' => $row['is_active'] ?? true,
-                'tenant_id' => $request->user()->tenant_id,
-                'created_by' => $request->user()->id,
-                'published_at' => ($row['is_active'] ?? true) ? now() : null,
-            ];
+            try {
+                $data = [
+                    'title' => $row['title'] ?? '',
+                    'content' => $row['content'] ?? '',
+                    'batch_id' => $row['batch_id'] ?? null,
+                    'is_active' => $row['is_active'] ?? true,
+                    'tenant_id' => $request->user()->tenant_id,
+                    'created_by' => $request->user()->id,
+                    'published_at' => ($row['is_active'] ?? true) ? now() : null,
+                ];
 
-            Notice::create($data);
+                Notice::create($data);
+                $imported++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                $skipped++;
+            }
         }
 
-        return redirect()->route('notices.index')
-            ->with('success', count($rows) . ' notices imported successfully');
+        $message = $imported . ' notices imported successfully.';
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped (duplicate or invalid).";
+        }
+
+        return redirect()->route('notices.index')->with('toast', ['type' => 'success', 'message' => $message]);
     }
 }

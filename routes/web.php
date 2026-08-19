@@ -46,9 +46,21 @@ Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'role.permission'
     require __DIR__.'/branches.php';
     require __DIR__.'/api-tokens.php';
     require __DIR__.'/subscription.php';
-    require __DIR__.'/payment.php';
     require __DIR__.'/tenant-settings.php';
     require __DIR__.'/roles.php';
 });
 
 require __DIR__.'/settings.php';
+
+// Payment routes: history/initiate need auth; gateway callbacks
+// (success/failure/cancel/ipn) are server- or session-less requests
+// from SSLCommerz and must stay outside the auth/tenant middleware.
+Route::middleware(['auth', 'verified', 'onboarding'])->group(function () {
+    Route::get('payment/history', [PaymentController::class, 'history'])->name('payment.history');
+    Route::match(['get', 'post'], 'payment/initiate/{plan}', [PaymentController::class, 'initiate'])->name('payment.initiate');
+});
+
+Route::match(['get', 'post'], 'payment/success', [PaymentController::class, 'success'])->name('sslc.success');
+Route::match(['get', 'post'], 'payment/failure', [PaymentController::class, 'failure'])->name('sslc.failure');
+Route::match(['get', 'post'], 'payment/cancel', [PaymentController::class, 'cancel'])->name('sslc.cancel');
+Route::post('payment/ipn', [PaymentController::class, 'ipn'])->name('sslc.ipn');

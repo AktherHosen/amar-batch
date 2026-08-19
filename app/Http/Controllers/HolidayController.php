@@ -101,19 +101,30 @@ class HolidayController extends Controller
     public function import(Request $request)
     {
         $rows = $request->input('rows', []);
+        $imported = 0;
+        $skipped = 0;
 
         foreach ($rows as $row) {
-            Holiday::create([
-                'title' => $row['title'] ?? '',
-                'description' => $row['description'] ?? null,
-                'start_date' => $row['start_date'],
-                'end_date' => $row['end_date'],
-                'type' => $row['type'] ?? 'holiday',
-                'tenant_id' => $request->user()->tenant_id,
-            ]);
+            try {
+                Holiday::create([
+                    'title' => $row['title'] ?? '',
+                    'description' => $row['description'] ?? null,
+                    'start_date' => $row['start_date'],
+                    'end_date' => $row['end_date'],
+                    'type' => $row['type'] ?? 'holiday',
+                    'tenant_id' => $request->user()->tenant_id,
+                ]);
+                $imported++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                $skipped++;
+            }
         }
 
-        return redirect()->route('holidays.index')
-            ->with('success', count($rows) . ' holidays imported successfully');
+        $message = $imported . ' holidays imported successfully.';
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped (duplicate or invalid).";
+        }
+
+        return redirect()->route('holidays.index')->with('toast', ['type' => 'success', 'message' => $message]);
     }
 }

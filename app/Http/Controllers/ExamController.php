@@ -123,20 +123,32 @@ class ExamController extends Controller
         $this->authorize('create', Exam::class);
 
         $rows = $request->input('rows', []);
+        $imported = 0;
+        $skipped = 0;
 
         foreach ($rows as $row) {
-            Exam::create([
-                'title' => $row['title'] ?? '',
-                'subject' => $row['subject'] ?? null,
-                'batch_id' => $row['batch_id'] ?? null,
-                'date' => $row['date'] ?? null,
-                'total_marks' => $row['total_marks'] ?? 0,
-                'passing_marks' => $row['passing_marks'] ?? 0,
-                'notes' => $row['notes'] ?? null,
-            ]);
+            try {
+                Exam::create([
+                    'title' => $row['title'] ?? '',
+                    'subject' => $row['subject'] ?? null,
+                    'batch_id' => $row['batch_id'] ?? null,
+                    'date' => $row['date'] ?? null,
+                    'total_marks' => $row['total_marks'] ?? 0,
+                    'passing_marks' => $row['passing_marks'] ?? 0,
+                    'notes' => $row['notes'] ?? null,
+                ]);
+                $imported++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                $skipped++;
+            }
         }
 
-        return to_route('exams.index')->with('toast', ['type' => 'success', 'message' => count($rows) . ' exams imported successfully.']);
+        $message = $imported . ' exams imported successfully.';
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped (duplicate or invalid).";
+        }
+
+        return to_route('exams.index')->with('toast', ['type' => 'success', 'message' => $message]);
     }
 
     public function storeResults(Request $request, Exam $exam): RedirectResponse
