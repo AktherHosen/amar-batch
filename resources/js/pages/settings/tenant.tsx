@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { LogoUpload } from '@/components/logo-upload';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,6 +18,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Save } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
+import { useHasFeature } from '@/lib/features';
 import settings from '@/routes/settings';
 
 type Center = {
@@ -43,6 +45,7 @@ type PageProps = {
 
 export default function TenantSettings({ center }: PageProps) {
     const { t } = useLocale();
+    const hasCustomBranding = useHasFeature('custom_branding');
     const { data, setData, post, processing, errors } = useForm({
         name: center.name,
         email: center.email || '',
@@ -352,14 +355,25 @@ export default function TenantSettings({ center }: PageProps) {
                                 <InputError message={errors.primary_color} />
                             </div>
 
-                            <div className="space-y-2">
-                                <LogoUpload
-                                    label={t('settings.logo')}
-                                    initialPreview={center.logo}
-                                    onChange={(file) => setData('logo', file)}
-                                    error={errors.logo}
-                                />
-                            </div>
+                            {hasCustomBranding && (
+                                <div className="space-y-2">
+                                    <LogoUpload
+                                        label={t('settings.logo')}
+                                        initialPreview={center.logo}
+                                        onChange={(file) => setData('logo', file)}
+                                        error={errors.logo}
+                                    />
+                                </div>
+                            )}
+
+                            {!hasCustomBranding && (
+                                <div className="flex items-center gap-2 rounded-lg border border-dashed border-muted-foreground/25 p-4 text-sm text-muted-foreground">
+                                    <Badge variant="outline">Pro</Badge>
+                                    <span>
+                                        Upgrade to Pro or Enterprise to upload a custom logo.
+                                    </span>
+                                </div>
+                            )}
 
                             <div className="flex justify-end">
                                 <Button type="submit" disabled={processing}>
