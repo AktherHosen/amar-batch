@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Save } from 'lucide-react';
+import { useLocale } from '@/contexts/locale-context';
 import settings from '@/routes/settings';
 
 type Center = {
@@ -41,6 +42,7 @@ type PageProps = {
 };
 
 export default function TenantSettings({ center }: PageProps) {
+    const { t } = useLocale();
     const { data, setData, post, processing, errors } = useForm({
         name: center.name,
         email: center.email || '',
@@ -63,7 +65,7 @@ export default function TenantSettings({ center }: PageProps) {
         post('/settings/tenant', {
             forceFormData: true,
             onSuccess: () => {
-                toast.success('Updated successfully');
+                toast.success(t('toast.updated_successfully'));
             },
         });
     };
@@ -85,12 +87,12 @@ export default function TenantSettings({ center }: PageProps) {
 
     return (
         <>
-            <Head title="Coaching Center Settings" />
+            <Head title={t('settings.coaching_center')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <Heading
-                    title="Coaching Center"
-                    description="Manage your coaching center information, branding and preferences."
+                    title={t('settings.coaching_center')}
+                    description={t('settings.coaching_center_desc')}
                 />
 
                 <Card>
@@ -99,7 +101,7 @@ export default function TenantSettings({ center }: PageProps) {
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="name">
-                                        Coaching Center Name *
+                                        {t('settings.center_name')}
                                     </Label>
                                     <Input
                                         id="name"
@@ -113,7 +115,9 @@ export default function TenantSettings({ center }: PageProps) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
+                                    <Label htmlFor="email">
+                                        {t('settings.email')}
+                                    </Label>
                                     <Input
                                         id="email"
                                         type="email"
@@ -126,7 +130,9 @@ export default function TenantSettings({ center }: PageProps) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone</Label>
+                                    <Label htmlFor="phone">
+                                        {t('settings.phone')}
+                                    </Label>
                                     <Input
                                         id="phone"
                                         value={data.phone}
@@ -138,7 +144,9 @@ export default function TenantSettings({ center }: PageProps) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="timezone">Timezone</Label>
+                                    <Label htmlFor="timezone">
+                                        {t('settings.timezone')}
+                                    </Label>
                                     <Select
                                         value={data.timezone}
                                         onValueChange={(value) =>
@@ -160,7 +168,9 @@ export default function TenantSettings({ center }: PageProps) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="currency">Currency</Label>
+                                    <Label htmlFor="currency">
+                                        {t('settings.currency')}
+                                    </Label>
                                     <Select
                                         value={data.currency}
                                         onValueChange={(value) =>
@@ -186,7 +196,7 @@ export default function TenantSettings({ center }: PageProps) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="currency_symbol">
-                                        Currency Symbol
+                                        {t('settings.currency_symbol')}
                                     </Label>
                                     <Input
                                         id="currency_symbol"
@@ -206,7 +216,7 @@ export default function TenantSettings({ center }: PageProps) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="academic_year">
-                                        Academic Year
+                                        {t('settings.academic_year')}
                                     </Label>
                                     <Input
                                         id="academic_year"
@@ -226,7 +236,7 @@ export default function TenantSettings({ center }: PageProps) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="receipt_prefix">
-                                        Receipt Prefix
+                                        {t('settings.receipt_prefix')}
                                     </Label>
                                     <Input
                                         id="receipt_prefix"
@@ -246,7 +256,7 @@ export default function TenantSettings({ center }: PageProps) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="student_id_prefix">
-                                        Student ID Prefix
+                                        {t('settings.student_id_prefix')}
                                     </Label>
                                     <Input
                                         id="student_id_prefix"
@@ -266,7 +276,7 @@ export default function TenantSettings({ center }: PageProps) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="default_attendance">
-                                        Default Attendance
+                                        {t('settings.default_attendance')}
                                     </Label>
                                     <Select
                                         value={data.default_attendance}
@@ -279,10 +289,10 @@ export default function TenantSettings({ center }: PageProps) {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="manual">
-                                                Manual
+                                                {t('settings.manual')}
                                             </SelectItem>
                                             <SelectItem value="auto_absent">
-                                                Auto Absent (after time)
+                                                {t('settings.auto_absent')}
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -294,7 +304,7 @@ export default function TenantSettings({ center }: PageProps) {
 
                             <div className="space-y-2">
                                 <Label htmlFor="invoice_footer">
-                                    Invoice Footer Text
+                                    {t('settings.invoice_footer')}
                                 </Label>
                                 <Input
                                     id="invoice_footer"
@@ -312,7 +322,7 @@ export default function TenantSettings({ center }: PageProps) {
 
                             <div className="space-y-2">
                                 <Label htmlFor="primary_color">
-                                    Primary Color (for PDFs)
+                                    {t('settings.primary_color')}
                                 </Label>
                                 <div className="flex items-center gap-3">
                                     <input
@@ -344,7 +354,7 @@ export default function TenantSettings({ center }: PageProps) {
 
                             <div className="space-y-2">
                                 <LogoUpload
-                                    label="Logo"
+                                    label={t('settings.logo')}
                                     initialPreview={center.logo}
                                     onChange={(file) => setData('logo', file)}
                                     error={errors.logo}
@@ -353,7 +363,12 @@ export default function TenantSettings({ center }: PageProps) {
 
                             <div className="flex justify-end">
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Saving...' : 'Save Changes'}
+                                    <Save className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">
+                                        {processing
+                                            ? t('actions.saving')
+                                            : t('settings.save_changes')}
+                                    </span>
                                 </Button>
                             </div>
                         </form>

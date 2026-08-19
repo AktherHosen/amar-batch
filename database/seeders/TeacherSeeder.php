@@ -26,7 +26,7 @@ class TeacherSeeder extends Seeder
                 'name' => $teacher['name'],
                 'email' => $teacher['email'],
                 'password' => Hash::make('password'),
-                'role' => 'staff',
+                'role' => 'teacher',
                 'tenant_id' => $tenant->id,
                 'is_approved' => true,
                 'email_verified_at' => now(),

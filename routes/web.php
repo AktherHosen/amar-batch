@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
+Route::get('/up', fn () => response()->json(['status' => 'ok']))->name('health');
+
 Route::get('/docs', [PageController::class, 'docs'])->name('docs');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');

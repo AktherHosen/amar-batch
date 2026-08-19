@@ -118,7 +118,7 @@ class User extends Authenticatable implements PasskeyUser
 
     public function isTeacher(): bool
     {
-        return $this->role === 'teacher';
+        return in_array($this->role, ['teacher', 'staff'], true);
     }
 
     public function isApproved(): bool

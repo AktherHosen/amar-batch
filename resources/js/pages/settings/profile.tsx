@@ -1,4 +1,5 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { Save } from 'lucide-react';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useLocale } from '@/contexts/locale-context';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import type { Auth } from '@/types';
@@ -22,15 +24,16 @@ export default function Profile({
     status?: string;
 }) {
     const { auth } = usePage<PageProps>().props;
+    const { t } = useLocale();
 
     return (
         <>
-            <Head title="Profile settings" />
+            <Head title={t('settings.profile')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <Heading
-                    title="Profile settings"
-                    description="Manage your account profile and email address."
+                    title={t('settings.profile')}
+                    description={t('settings.profile_desc')}
                 />
 
                 <Card>
@@ -46,7 +49,9 @@ export default function Profile({
                             {({ processing, errors }) => (
                                 <>
                                     <div className="space-y-2">
-                                        <Label htmlFor="name">Name</Label>
+                                        <Label htmlFor="name">
+                                            {t('settings.name')}
+                                        </Label>
 
                                         <Input
                                             id="name"
@@ -54,7 +59,9 @@ export default function Profile({
                                             name="name"
                                             required
                                             autoComplete="name"
-                                            placeholder="Full name"
+                                            placeholder={t(
+                                                'settings.name_placeholder',
+                                            )}
                                         />
 
                                         <InputError message={errors.name} />
@@ -62,7 +69,7 @@ export default function Profile({
 
                                     <div className="space-y-2">
                                         <Label htmlFor="email">
-                                            Email address
+                                            {t('settings.email')}
                                         </Label>
 
                                         <Input
@@ -72,7 +79,9 @@ export default function Profile({
                                             name="email"
                                             required
                                             autoComplete="username"
-                                            placeholder="Email address"
+                                            placeholder={t(
+                                                'settings.email_placeholder',
+                                            )}
                                         />
 
                                         <InputError message={errors.email} />
@@ -83,24 +92,24 @@ export default function Profile({
                                             null && (
                                             <div>
                                                 <p className="-mt-4 text-sm text-muted-foreground">
-                                                    Your email address is
-                                                    unverified.{' '}
+                                                    {t('settings.unverified')}{' '}
                                                     <Link
                                                         href={send()}
                                                         as="button"
                                                         className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
                                                     >
-                                                        Click here to re-send
-                                                        the verification email.
+                                                        {t(
+                                                            'settings.resend_verification',
+                                                        )}
                                                     </Link>
                                                 </p>
 
                                                 {status ===
                                                     'verification-link-sent' && (
                                                     <div className="mt-2 text-sm font-medium text-green-600">
-                                                        A new verification link
-                                                        has been sent to your
-                                                        email address.
+                                                        {t(
+                                                            'settings.verification_sent',
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -111,7 +120,12 @@ export default function Profile({
                                             disabled={processing}
                                             data-test="update-profile-button"
                                         >
-                                            {processing ? 'Saving...' : 'Save'}
+                                            <Save className="size-4" />
+                                            <span className="ml-2 hidden sm:inline">
+                                                {processing
+                                                    ? t('actions.saving')
+                                                    : t('actions.save')}
+                                            </span>
                                         </Button>
                                     </div>
                                 </>

@@ -109,9 +109,12 @@ class DashboardController extends Controller
 
             return [
                 'month' => $date->format('M Y'),
-                'present' => Attendance::where('tenant_id', $tenantId)->whereDate('date', $date)->where('status', 'present')->count(),
-                'absent' => Attendance::where('tenant_id', $tenantId)->whereDate('date', $date)->where('status', 'absent')->count(),
-                'late' => Attendance::where('tenant_id', $tenantId)->whereDate('date', $date)->where('status', 'late')->count(),
+                'present' => Attendance::where('tenant_id', $tenantId)->whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'present')->count(),
+                'absent' => Attendance::where('tenant_id', $tenantId)->whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'absent')->count(),
+                'late' => Attendance::where('tenant_id', $tenantId)->whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'late')->count(),
             ];
         });
 
@@ -238,11 +241,14 @@ class DashboardController extends Controller
 
             return [
                 'month' => $date->format('M Y'),
-                'present' => Attendance::whereDate('date', $date)->where('status', 'present')
+                'present' => Attendance::whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'present')
                     ->whereIn('batch_id', $assignedBatchIds)->count(),
-                'absent' => Attendance::whereDate('date', $date)->where('status', 'absent')
+                'absent' => Attendance::whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'absent')
                     ->whereIn('batch_id', $assignedBatchIds)->count(),
-                'late' => Attendance::whereDate('date', $date)->where('status', 'late')
+                'late' => Attendance::whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'late')
                     ->whereIn('batch_id', $assignedBatchIds)->count(),
             ];
         });

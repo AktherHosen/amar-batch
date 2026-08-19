@@ -1,4 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
+import { Save } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -10,6 +11,7 @@ import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useLocale } from '@/contexts/locale-context';
 import { edit } from '@/routes/security';
 
 type Props = {
@@ -20,15 +22,16 @@ type Props = {
 export default function Security(props: Props) {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
+    const { t } = useLocale();
 
     return (
         <>
-            <Head title="Security settings" />
+            <Head title={t('settings.security')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <Heading
-                    title="Security settings"
-                    description="Manage your password, two-factor authentication and passkeys."
+                    title={t('settings.security')}
+                    description={t('settings.password_desc')}
                 />
 
                 <Card>
@@ -60,7 +63,7 @@ export default function Security(props: Props) {
                                 <>
                                     <div className="space-y-2">
                                         <Label htmlFor="current_password">
-                                            Current password
+                                            {t('settings.current_password')}
                                         </Label>
 
                                         <PasswordInput
@@ -68,7 +71,9 @@ export default function Security(props: Props) {
                                             ref={currentPasswordInput}
                                             name="current_password"
                                             autoComplete="current-password"
-                                            placeholder="Current password"
+                                            placeholder={t(
+                                                'settings.current_password',
+                                            )}
                                         />
 
                                         <InputError
@@ -78,7 +83,7 @@ export default function Security(props: Props) {
 
                                     <div className="space-y-2">
                                         <Label htmlFor="password">
-                                            New password
+                                            {t('settings.new_password')}
                                         </Label>
 
                                         <PasswordInput
@@ -86,7 +91,9 @@ export default function Security(props: Props) {
                                             ref={passwordInput}
                                             name="password"
                                             autoComplete="new-password"
-                                            placeholder="New password"
+                                            placeholder={t(
+                                                'settings.new_password',
+                                            )}
                                             passwordrules={props.passwordRules}
                                         />
 
@@ -95,14 +102,16 @@ export default function Security(props: Props) {
 
                                     <div className="space-y-2">
                                         <Label htmlFor="password_confirmation">
-                                            Confirm password
+                                            {t('settings.confirm_password')}
                                         </Label>
 
                                         <PasswordInput
                                             id="password_confirmation"
                                             name="password_confirmation"
                                             autoComplete="new-password"
-                                            placeholder="Confirm password"
+                                            placeholder={t(
+                                                'settings.confirm_password',
+                                            )}
                                             passwordrules={props.passwordRules}
                                         />
 
@@ -118,7 +127,12 @@ export default function Security(props: Props) {
                                             disabled={processing}
                                             data-test="update-password-button"
                                         >
-                                            {processing ? 'Saving...' : 'Save'}
+                                            <Save className="size-4" />
+                                            <span className="ml-2 hidden sm:inline">
+                                                {processing
+                                                    ? t('actions.saving')
+                                                    : t('actions.save')}
+                                            </span>
                                         </Button>
                                     </div>
                                 </>

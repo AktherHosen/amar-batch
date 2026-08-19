@@ -22,6 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useLocale } from '@/contexts/locale-context';
 import type { Appearance } from '@/hooks/use-appearance';
 import {
     ACCENTS,
@@ -35,32 +36,6 @@ import {
 } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
-
-const MODES: {
-    value: Appearance;
-    icon: typeof Sun;
-    title: string;
-    description: string;
-}[] = [
-    {
-        value: 'light',
-        icon: Sun,
-        title: 'Light',
-        description: 'Bright and clean',
-    },
-    {
-        value: 'dark',
-        icon: Moon,
-        title: 'Dark',
-        description: 'Easy on the eyes',
-    },
-    {
-        value: 'system',
-        icon: Monitor,
-        title: 'System',
-        description: 'Follow device setting',
-    },
-];
 
 export default function Appearance() {
     const {
@@ -80,6 +55,7 @@ export default function Appearance() {
         updateDefaultPage,
     } = useAppearance();
 
+    const { t } = useLocale();
     const [saving, setSaving] = useState(false);
 
     const handleSave = () => {
@@ -97,7 +73,7 @@ export default function Appearance() {
             },
             {
                 onSuccess: () => {
-                    toast.success('Settings saved successfully');
+                    toast.success(t('toast.saved_successfully'));
                 },
                 onFinish: () => {
                     setSaving(false);
@@ -109,24 +85,50 @@ export default function Appearance() {
     const accentIsPreset = ACCENT_KEYS.includes(accent);
     const customColor = accentIsPreset ? DEFAULT_CUSTOM_COLOR : accent;
 
+    const MODES: {
+        value: Appearance;
+        icon: typeof Sun;
+        titleKey: string;
+        descKey: string;
+    }[] = [
+        {
+            value: 'light',
+            icon: Sun,
+            titleKey: 'settings.light',
+            descKey: 'settings.light_desc',
+        },
+        {
+            value: 'dark',
+            icon: Moon,
+            titleKey: 'settings.dark',
+            descKey: 'settings.dark_desc',
+        },
+        {
+            value: 'system',
+            icon: Monitor,
+            titleKey: 'settings.system',
+            descKey: 'settings.system_desc',
+        },
+    ];
+
     return (
         <>
-            <Head title="Appearance settings" />
+            <Head title={t('settings.appearance')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <Heading
-                    title="Appearance settings"
-                    description="Customize how the app looks and feels."
+                    title={t('settings.appearance')}
+                    description={t('settings.appearance_desc')}
                 />
 
                 <Card>
                     <CardHeader className="border-b">
                         <div>
                             <CardTitle className="text-base">
-                                Theme mode
+                                {t('settings.theme_mode')}
                             </CardTitle>
                             <CardDescription>
-                                Choose how the app looks on your device.
+                                {t('settings.theme_mode_desc')}
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -162,10 +164,10 @@ export default function Appearance() {
                                         </span>
                                         <span className="min-w-0 flex-1">
                                             <span className="block text-sm font-medium">
-                                                {mode.title}
+                                                {t(mode.titleKey)}
                                             </span>
                                             <span className="block text-xs text-muted-foreground">
-                                                {mode.description}
+                                                {t(mode.descKey)}
                                             </span>
                                         </span>
                                         {active && (
@@ -184,11 +186,10 @@ export default function Appearance() {
                     <CardHeader className="border-b">
                         <div>
                             <CardTitle className="text-base">
-                                Accent color
+                                {t('settings.accent_color')}
                             </CardTitle>
                             <CardDescription>
-                                Applies to buttons, links, active states and
-                                focus rings.
+                                {t('settings.accent_color_desc')}
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -263,10 +264,10 @@ export default function Appearance() {
                     <CardHeader className="border-b">
                         <div>
                             <CardTitle className="text-base">
-                                Corner radius
+                                {t('settings.corner_radius')}
                             </CardTitle>
                             <CardDescription>
-                                Roundness of buttons, inputs, cards and dialogs.
+                                {t('settings.corner_radius_desc')}
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -319,7 +320,7 @@ export default function Appearance() {
                                     htmlFor="radius-slider"
                                     className="text-sm font-medium"
                                 >
-                                    Custom size
+                                    {t('settings.custom_size')}
                                 </Label>
                                 <Badge
                                     variant="outline"
@@ -341,8 +342,8 @@ export default function Appearance() {
                                 className="w-full accent-primary"
                             />
                             <div className="flex justify-between text-xs text-muted-foreground">
-                                <span>Sharp</span>
-                                <span>Rounded</span>
+                                <span>{t('settings.sharp')}</span>
+                                <span>{t('settings.rounded')}</span>
                             </div>
                         </div>
                     </CardContent>
@@ -352,17 +353,17 @@ export default function Appearance() {
                     <CardHeader className="border-b">
                         <div>
                             <CardTitle className="text-base">
-                                Date & Time
+                                {t('settings.date_time')}
                             </CardTitle>
                             <CardDescription>
-                                Choose how dates and times are displayed.
+                                {t('settings.date_time_desc')}
                             </CardDescription>
                         </div>
                     </CardHeader>
                     <CardContent className="pt-4">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label>Date Format</Label>
+                                <Label>{t('settings.date_format')}</Label>
                                 <Select
                                     value={dateFormat}
                                     onValueChange={updateDateFormat}
@@ -387,7 +388,7 @@ export default function Appearance() {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Time Format</Label>
+                                <Label>{t('settings.time_format')}</Label>
                                 <Select
                                     value={timeFormat}
                                     onValueChange={updateTimeFormat}
@@ -397,10 +398,10 @@ export default function Appearance() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="12h">
-                                            12 Hour (AM/PM)
+                                            {t('settings.hour_12')}
                                         </SelectItem>
                                         <SelectItem value="24h">
-                                            24 Hour
+                                            {t('settings.hour_24')}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -412,16 +413,18 @@ export default function Appearance() {
                 <Card>
                     <CardHeader className="border-b">
                         <div>
-                            <CardTitle className="text-base">Layout</CardTitle>
+                            <CardTitle className="text-base">
+                                {t('settings.layout')}
+                            </CardTitle>
                             <CardDescription>
-                                Customize sidebar and navigation behavior.
+                                {t('settings.layout_desc')}
                             </CardDescription>
                         </div>
                     </CardHeader>
                     <CardContent className="pt-4">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label>Sidebar Style</Label>
+                                <Label>{t('settings.sidebar_style')}</Label>
                                 <Select
                                     value={sidebarStyle}
                                     onValueChange={updateSidebarStyle}
@@ -431,16 +434,16 @@ export default function Appearance() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="full">
-                                            Full (labels visible)
+                                            {t('settings.sidebar_full')}
                                         </SelectItem>
                                         <SelectItem value="compact">
-                                            Compact (icons only)
+                                            {t('settings.sidebar_compact')}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Default Landing Page</Label>
+                                <Label>{t('settings.default_page')}</Label>
                                 <Select
                                     value={defaultPage}
                                     onValueChange={updateDefaultPage}
@@ -450,19 +453,19 @@ export default function Appearance() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="dashboard">
-                                            Dashboard
+                                            {t('nav.dashboard')}
                                         </SelectItem>
                                         <SelectItem value="students">
-                                            Students
+                                            {t('nav.students')}
                                         </SelectItem>
                                         <SelectItem value="batches">
-                                            Batches
+                                            {t('nav.batches')}
                                         </SelectItem>
                                         <SelectItem value="attendance">
-                                            Attendance
+                                            {t('nav.attendance')}
                                         </SelectItem>
                                         <SelectItem value="fees">
-                                            Fees
+                                            {t('nav.fees')}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -474,9 +477,11 @@ export default function Appearance() {
                 <Card>
                     <CardHeader className="border-b">
                         <div>
-                            <CardTitle className="text-base">Preview</CardTitle>
+                            <CardTitle className="text-base">
+                                {t('settings.preview')}
+                            </CardTitle>
                             <CardDescription>
-                                A live sample of your customizations.
+                                {t('settings.preview_desc')}
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -514,7 +519,7 @@ export default function Appearance() {
                     <Button onClick={handleSave} disabled={saving}>
                         <Save className="size-4" />
                         <span className="ml-2 hidden sm:inline">
-                            {saving ? 'Saving...' : 'Save'}
+                            {saving ? t('actions.saving') : t('actions.save')}
                         </span>
                     </Button>
                 </div>
