@@ -1,13 +1,13 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
-import Heading from '@/components/heading';
+import { FormActions } from '@/components/form-actions';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import InputError from '@/components/input-error';
-import coachingClasses from '@/routes/coaching-classes';
 import { useLocale } from '@/contexts/locale-context';
+import coachingClasses from '@/routes/coaching-classes';
 
 export default function CoachingClassCreate() {
     const { t } = useLocale();
@@ -28,22 +28,19 @@ export default function CoachingClassCreate() {
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
                     <Link href={coachingClasses.index().url}>
-                        <Button variant="ghost" size="sm">
-                            <ArrowLeft className="mr-2 size-4" />
-                            {t('actions.back')}
+                        <Button variant="ghost" size="icon" className="size-9">
+                            <ArrowLeft className="size-4" />
                         </Button>
                     </Link>
-                    <Heading
-                        title={t('classes.create')}
-                        description={t('classes.create')}
-                    />
+                    <div className="min-w-0">
+                        <h2 className="truncate text-xl font-semibold tracking-tight">
+                            {t('classes.create')}
+                        </h2>
+                    </div>
                 </div>
 
-                <Card className="max-w-xl">
-                    <CardHeader>
-                        <CardTitle>{t('classes.title')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                <Card className="max-w-xl mx-auto">
+                    <CardContent className="pt-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
                                 <Label htmlFor="name">
@@ -77,12 +74,11 @@ export default function CoachingClassCreate() {
                                 <InputError message={errors.default_fee} />
                             </div>
 
-                            <div className="flex justify-end gap-2">
-                                <Button type="submit" disabled={processing}>
-                                    {processing
-                                        ? t('actions.save') + '...'
-                                        : t('classes.create')}
-                                </Button>
+                            <div className="flex justify-end gap-2 border-t pt-4">
+                                <FormActions
+                                    cancelHref={coachingClasses.index().url}
+                                    processing={processing}
+                                />
                             </div>
                         </form>
                     </CardContent>

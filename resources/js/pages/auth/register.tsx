@@ -18,7 +18,8 @@ export default function Register({ passwordRules }: Props) {
         <>
             <Head title="Register" />
             <Form
-                {...store.form()}
+                action={store.url()}
+                method="post"
                 resetOnSuccess={['password', 'password_confirmation']}
                 disableWhileProcessing
                 className="flex flex-col gap-6"
@@ -27,12 +28,7 @@ export default function Register({ passwordRules }: Props) {
                     <>
                         <div className="grid gap-5">
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="name"
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Full name
-                                </Label>
+                                <Label htmlFor="name">Full name</Label>
                                 <Input
                                     id="name"
                                     type="text"
@@ -42,7 +38,6 @@ export default function Register({ passwordRules }: Props) {
                                     autoComplete="name"
                                     name="name"
                                     placeholder="Enter your full name"
-                                    className="h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
                                 />
                                 <InputError
                                     message={errors.name}
@@ -51,12 +46,7 @@ export default function Register({ passwordRules }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="email"
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Email address
-                                </Label>
+                                <Label htmlFor="email">Email address</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -65,18 +55,12 @@ export default function Register({ passwordRules }: Props) {
                                     autoComplete="email"
                                     name="email"
                                     placeholder="you@example.com"
-                                    className="h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="password"
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Password
-                                </Label>
+                                <Label htmlFor="password">Password</Label>
                                 <PasswordInput
                                     id="password"
                                     required
@@ -85,18 +69,12 @@ export default function Register({ passwordRules }: Props) {
                                     name="password"
                                     placeholder="Create a password"
                                     passwordrules={passwordRules}
-                                    className="h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="password_confirmation"
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Confirm password
-                                </Label>
+                                <Label htmlFor="password_confirmation">Confirm password</Label>
                                 <PasswordInput
                                     id="password_confirmation"
                                     required
@@ -105,7 +83,6 @@ export default function Register({ passwordRules }: Props) {
                                     name="password_confirmation"
                                     placeholder="Confirm your password"
                                     passwordrules={passwordRules}
-                                    className="h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
@@ -114,21 +91,21 @@ export default function Register({ passwordRules }: Props) {
 
                             <Button
                                 type="submit"
-                                className="mt-2 h-12 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-base font-semibold shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700"
+                                className="mt-2 w-full"
                                 tabIndex={5}
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
-                                Create account
+                                Create Account
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+                        <div className="text-center text-sm text-muted-foreground">
                             Already have an account?{' '}
                             <TextLink
                                 href={login()}
                                 tabIndex={6}
-                                className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                                className="font-semibold text-primary hover:text-primary/80"
                             >
                                 Log in
                             </TextLink>
@@ -142,5 +119,5 @@ export default function Register({ passwordRules }: Props) {
 
 Register.layout = {
     title: 'Create your account',
-    description: 'Get started with Karnaphuli Alpha Academy',
+    description: 'Get started with Amar Batch',
 };

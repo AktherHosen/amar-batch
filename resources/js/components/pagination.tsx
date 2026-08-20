@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useLocale } from '@/contexts/locale-context';
 
 type PaginationProps = {
     currentPage: number;
@@ -21,7 +22,11 @@ export default function Pagination({
     baseUrl,
     preserveParams = {},
 }: PaginationProps) {
-    if (total <= 0) return null;
+    const { t } = useLocale();
+
+    if (total <= 0) {
+return null;
+}
 
     const goToPage = (page: number) => {
         router.get(
@@ -35,11 +40,15 @@ export default function Pagination({
     const to = Math.min(perPage * currentPage, total);
 
     return (
-        <div className="mt-4 flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
-            <p className="text-sm text-muted-foreground">
-                Showing {from}-{to} of {total} {itemName}
+        <div className="mt-4 flex w-full items-center justify-between gap-3">
+            <p className="min-w-0 truncate text-sm text-muted-foreground">
+                {t('pagination.showing')
+                    .replace('{from}', String(from))
+                    .replace('{to}', String(to))
+                    .replace('{total}', String(total))
+                    .replace('{itemName}', itemName)}
             </p>
-            <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1">
                 <Button
                     variant="outline"
                     size="icon"
@@ -51,13 +60,18 @@ export default function Pagination({
                 </Button>
                 {generatePageNumbers(currentPage, lastPage).map((page, i) =>
                     page === '...' ? (
-                        <span key={`dots-${i}`} className="px-2 text-muted-foreground">
+                        <span
+                            key={`dots-${i}`}
+                            className="px-2 text-muted-foreground"
+                        >
                             ...
                         </span>
                     ) : (
                         <Button
                             key={page}
-                            variant={currentPage === page ? 'default' : 'outline'}
+                            variant={
+                                currentPage === page ? 'default' : 'outline'
+                            }
                             size="icon"
                             className="h-8 w-8"
                             onClick={() => goToPage(page as number)}
@@ -80,7 +94,10 @@ export default function Pagination({
     );
 }
 
-function generatePageNumbers(current: number, last: number): (number | string)[] {
+function generatePageNumbers(
+    current: number,
+    last: number,
+): (number | string)[] {
     if (last <= 7) {
         return Array.from({ length: last }, (_, i) => i + 1);
     }

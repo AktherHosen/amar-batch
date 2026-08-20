@@ -83,7 +83,7 @@ class DatabaseSeeder extends Seeder
         // Admin
         User::factory()->admin()->create([
             'name' => 'Admin',
-            'email' => 'admin@academia.com',
+            'email' => 'admin@amarbatch.com',
             'password' => bcrypt('password'),
         ]);
 
@@ -223,7 +223,7 @@ public function export(Batch $batch, Request $request): \Symfony\Component\HttpF
 Create `public/sw.js`:
 
 ```javascript
-const CACHE_NAME = 'academia-v1';
+const CACHE_NAME = 'amar-batch-v1';
 const urlsToCache = [
     '/',
     '/build/assets/app.css',
@@ -251,8 +251,8 @@ Create `public/manifest.json`:
 
 ```json
 {
-    "name": "Karnaphuli Alpha Academy",
-    "short_name": "KAA",
+    "name": "Amar Batch",
+    "short_name": "Amar Batch",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",

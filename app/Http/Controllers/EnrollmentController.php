@@ -14,6 +14,8 @@ class EnrollmentController extends Controller
 {
     public function store(StoreEnrollmentRequest $request, Batch $batch): RedirectResponse
     {
+        $this->authorize('update', $batch);
+
         $existing = Enrollment::where('student_id', $request->student_id)
             ->where('batch_id', $batch->id)
             ->first();
@@ -22,12 +24,18 @@ class EnrollmentController extends Controller
             return back()->withErrors(['student_id' => 'This student is already enrolled in this batch.']);
         }
 
+        $enrolledAt = $request->input('enrolled_at') ?? now()->toDateString();
+
+        if ($batch->start_date && $enrolledAt < $batch->start_date->format('Y-m-d')) {
+            return back()->withErrors(['enrolled_at' => 'Enrollment date cannot be before the batch start date (' . $batch->start_date->format('Y-m-d') . ').']);
+        }
+
         $student = Student::find($request->student_id);
 
         $enrollment = Enrollment::create([
             'student_id' => $request->student_id,
             'batch_id' => $batch->id,
-            'enrolled_at' => $request->input('enrolled_at') ?? now()->toDateString(),
+            'enrolled_at' => $enrolledAt,
             'status' => 'active',
         ]);
 
@@ -44,6 +52,8 @@ class EnrollmentController extends Controller
 
     public function update(Request $request, Enrollment $enrollment): RedirectResponse
     {
+        $this->authorize('update', $enrollment);
+
         $request->validate([
             'status' => 'required|in:active,completed,dropped',
         ]);
@@ -63,6 +73,8 @@ class EnrollmentController extends Controller
 
     public function destroy(Enrollment $enrollment, Request $request): RedirectResponse
     {
+        $this->authorize('delete', $enrollment);
+
         BatchHistory::create([
             'batch_id' => $enrollment->batch_id,
             'student_id' => $enrollment->student_id,

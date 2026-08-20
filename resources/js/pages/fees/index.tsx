@@ -1,40 +1,31 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Trash2, EllipsisVertical, ChevronDown } from 'lucide-react';
 import { useState, useRef } from 'react';
-import {
-    Plus,
-    RefreshCw,
-    Search,
-    Trash2,
-    EllipsisVertical,
-    Download,
-    X,
-} from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import PageActions from '@/components/page-actions';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import fees from '@/routes/fees';
+import { Input } from '@/components/ui/input';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import fees from '@/routes/fees';
 
 type Student = {
     id: number;
     name: string;
+    photo: string | null;
     coaching_class: { id: number; name: string } | null;
 };
 
@@ -68,6 +59,7 @@ type PageProps = {
     months: number[];
     monthNames: Record<number, string>;
     year: number;
+    yearOptions: number[];
     filters: {
         search?: string;
         year?: string;
@@ -95,7 +87,11 @@ function FeeCell({
     const inputRef = useRef<HTMLInputElement>(null);
 
     if (disabled) {
-        return <span className="text-muted-foreground"></span>;
+        return (
+            <span className="inline-flex h-7 w-16 items-center justify-center text-xs text-muted-foreground/40">
+                –
+            </span>
+        );
     }
 
     const handleSave = (value: string) => {
@@ -140,15 +136,15 @@ function FeeCell({
     if (!isAdmin) {
         return (
             <span
-                className={
+                className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-semibold ${
                     fee && fee.amount_paid > 0
-                        ? 'font-medium text-green-600'
-                        : 'text-muted-foreground'
-                }
+                        ? 'bg-green-500/10 text-green-600'
+                        : 'bg-muted text-muted-foreground'
+                }`}
             >
                 {fee && fee.amount_paid > 0
-                    ? Number(fee.amount_paid).toFixed(0)
-                    : '-'}
+                    ? `৳${Number(fee.amount_paid).toFixed(0)}`
+                    : '—'}
             </span>
         );
     }
@@ -159,7 +155,7 @@ function FeeCell({
                 ref={inputRef}
                 type="number"
                 min="0"
-                className="h-8 w-[70px] text-center text-sm"
+                className="h-7 w-16 text-center text-xs"
                 defaultValue={fee ? fee.amount_paid : ''}
                 placeholder="0"
                 onBlur={(e) => handleSave(e.target.value)}
@@ -175,20 +171,186 @@ function FeeCell({
         );
     }
 
+    const paid = fee && fee.amount_paid > 0;
+
     return (
         <button
             type="button"
-            className={`h-8 w-[70px] cursor-text rounded-md border border-transparent px-2 text-center text-sm transition-colors hover:border-border hover:bg-muted ${
-                fee && fee.amount_paid > 0
-                    ? 'font-medium text-green-600'
-                    : 'text-muted-foreground'
+            className={`inline-flex h-7 min-w-16 cursor-text items-center justify-center rounded-full px-3 text-xs font-semibold transition-all ${
+                paid
+                    ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
+                    : 'border border-dashed border-border bg-muted/40 text-muted-foreground/70 hover:border-muted-foreground/30 hover:bg-muted'
             }`}
             onClick={() => setEditing(true)}
         >
-            {fee && fee.amount_paid > 0
-                ? Number(fee.amount_paid).toFixed(0)
-                : '0'}
+            {paid ? `৳${Number(fee.amount_paid).toFixed(0)}` : '0'}
         </button>
+    );
+}
+
+function MobileFeeList({
+    feeGrid,
+    months,
+    monthNames,
+    year,
+    isAdmin,
+    isMonthDisabled,
+    onDeleteRow,
+    t,
+}: {
+    feeGrid: FeeGridItem[];
+    months: number[];
+    monthNames: Record<number, string>;
+    year: number;
+    isAdmin: boolean;
+    isMonthDisabled: (
+        enrolledAt: string | null,
+        month: number,
+        year: number,
+    ) => boolean;
+    onDeleteRow: (studentId: number, batchId: number) => void;
+    t: (key: string) => string;
+}) {
+    const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+    const toggle = (key: string) => {
+        setExpanded((prev) => {
+            const next = new Set(prev);
+
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+
+            return next;
+        });
+    };
+
+    return (
+        <div className="space-y-2 lg:hidden">
+            {feeGrid.map((item) => {
+                const key = `${item.student.id}_${item.batch.id}`;
+                const isOpen = expanded.has(key);
+                const total = months.reduce((sum, m) => {
+                    const fee = item.months[m];
+
+                    return sum + (fee ? Number(fee.amount_paid) : 0);
+                }, 0);
+
+                return (
+                    <div
+                        key={key}
+                        className="overflow-hidden rounded-lg border bg-card"
+                    >
+                        <div className="flex items-center">
+                            <button
+                                type="button"
+                                onClick={() => toggle(key)}
+                                className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left"
+                            >
+                                {item.student.photo ? (
+                                    <img
+                                        src={`/storage/${item.student.photo}`}
+                                        alt={item.student.name}
+                                        className="size-8 shrink-0 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                                        {item.student.name
+                                            .split(' ')
+                                            .map((n) => n[0])
+                                            .join('')
+                                            .toUpperCase()
+                                            .slice(0, 2)}
+                                    </span>
+                                )}
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-medium">
+                                        {item.student.name}
+                                    </p>
+                                    <p className="truncate text-xs text-muted-foreground">
+                                        {item.student.coaching_class?.name ||
+                                            '-'}
+                                        <span className="mx-1 text-muted-foreground/50">
+                                            •
+                                        </span>
+                                        {item.batch.name}
+                                    </p>
+                                </div>
+                                <ChevronDown
+                                    className={`size-4 shrink-0 text-muted-foreground transition-transform ${
+                                        isOpen ? 'rotate-180' : ''
+                                    }`}
+                                />
+                            </button>
+
+                            {isAdmin && (
+                                <div className="flex shrink-0 items-center border-l pr-2 pl-1">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="size-8 p-0 text-destructive hover:text-destructive"
+                                        onClick={() =>
+                                            onDeleteRow(
+                                                item.student.id,
+                                                item.batch.id,
+                                            )
+                                        }
+                                    >
+                                        <Trash2 className="size-4" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+
+                        {isOpen && (
+                            <div className="border-t px-3 py-3">
+                                <div className="grid grid-cols-4 gap-2">
+                                    {months.map((m) => (
+                                        <div
+                                            key={m}
+                                            className="flex flex-col items-center gap-1"
+                                        >
+                                            <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                                                {monthNames[m].slice(0, 3)}
+                                            </span>
+                                            <FeeCell
+                                                fee={item.months[m]}
+                                                studentId={item.student.id}
+                                                batchId={item.batch.id}
+                                                month={m}
+                                                year={year}
+                                                isAdmin={isAdmin}
+                                                disabled={isMonthDisabled(
+                                                    item.enrolled_at,
+                                                    m,
+                                                    year,
+                                                )}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-3 flex items-center justify-between border-t pt-2">
+                                    <span className="text-xs text-muted-foreground">
+                                        {t('fees.total_paid')}
+                                    </span>
+                                    <span
+                                        className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold ${
+                                            total > 0
+                                                ? 'bg-primary/10 text-primary'
+                                                : 'bg-muted text-muted-foreground'
+                                        }`}
+                                    >
+                                        ৳{Number(total).toFixed(0)}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
     );
 }
 
@@ -197,11 +359,12 @@ export default function FeesIndex({
     months,
     monthNames,
     year,
+    yearOptions,
     filters,
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
-    const isAdmin = auth.user.role === 'admin';
+    const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
     const [selectedYear, setSelectedYear] = useState(year);
     const [refreshing, setRefreshing] = useState(false);
@@ -209,6 +372,10 @@ export default function FeesIndex({
         open: boolean;
         item: { studentId: number; batchId: number } | null;
     }>({ open: false, item: null });
+
+    const currentYear = new Date().getFullYear();
+    const yearOptionsList =
+        yearOptions.length > 0 ? yearOptions : [currentYear];
 
     const isMonthDisabled = (
         enrolledAt: string | null,
@@ -241,30 +408,31 @@ export default function FeesIndex({
     const confirmDeleteRow = () => {
         if (deleteDialog.item) {
             const { studentId, batchId } = deleteDialog.item;
-            const feeIds = feeGrid
-                .filter(
-                    (item) =>
-                        item.student.id === studentId &&
-                        item.batch.id === batchId,
-                )
-                .flatMap((item) => Object.values(item.months).map((f) => f.id));
-            feeIds.forEach((id) => {
-                router.delete(fees.destroy.url(id), { preserveState: true });
+            router.delete(fees.clearStudent.url(), {
+                data: { student_id: studentId, batch_id: batchId },
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(t('toast.deleted_successfully'));
+                },
+                onError: () => {
+                    toast.error(t('toast.error_occurred'));
+                },
             });
-            toast.success('Fee records deleted successfully');
             setDeleteDialog({ open: false, item: null });
         }
     };
 
-    const handleSearch = () => {
+    const handleSearch = (value: string) => {
+        setSearch(value);
         router.get(
             fees.index.url(),
-            { search, year: selectedYear },
+            { search: value, year: selectedYear },
             { preserveState: true },
         );
     };
 
-    const handleYearChange = (newYear: number) => {
+    const handleYearChange = (value: string) => {
+        const newYear = value ? Number(value) : currentYear;
         setSelectedYear(newYear);
         router.get(
             fees.index.url(),
@@ -273,249 +441,350 @@ export default function FeesIndex({
         );
     };
 
-    const exportToExcel = () => {
-        const headers = [
-            'Student',
-            'Class',
-            'Batch',
-            ...months.map((m) => monthNames[m]),
-            'Total',
-        ];
-        const rows = feeGrid.map((item) => {
-            const total = months.reduce((sum, m) => {
-                const fee = item.months[m];
-
-                return sum + (fee ? Number(fee.amount_paid) : 0);
-            }, 0);
-
-            return [
-                item.student.name,
-                item.student.coaching_class?.name || '',
-                item.batch.name,
-                ...months.map((m) => {
-                    const fee = item.months[m];
-
-                    return fee ? Number(fee.amount_paid) : 0;
-                }),
-                total,
-            ];
-        });
-        const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `fees-${year}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
+    const clearAll = () => {
+        setSearch('');
+        setSelectedYear(currentYear);
+        router.get(fees.index.url(), {}, { preserveState: true });
     };
 
-    const yearOptions = [];
-    const currentYear = new Date().getFullYear();
+    const activeFilterCount = selectedYear !== currentYear ? 1 : 0;
 
-    for (let y = currentYear - 2; y <= currentYear + 1; y++) {
-        yearOptions.push(y);
-    }
+    const columns = (() => {
+        type Col = NonNullable<
+            DataTableProps<FeeGridItem, unknown>['columns']
+        >[number];
+        const cols: Col[] = [
+            {
+                id: 'student',
+                accessorKey: 'student.name',
+                header: t('fees.student'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => {
+                    const item: FeeGridItem = row.original;
+
+                    return (
+                        <div className="flex items-center gap-3">
+                            {item.student.photo ? (
+                                <img
+                                    src={`/storage/${item.student.photo}`}
+                                    alt={item.student.name}
+                                    className="size-8 shrink-0 rounded-full object-cover"
+                                />
+                            ) : (
+                                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                                    {item.student.name
+                                        .split(' ')
+                                        .map((n: string) => n[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)}
+                                </span>
+                            )}
+                            <div className="min-w-0">
+                                <p className="truncate font-medium">
+                                    {item.student.name}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                    {item.student.coaching_class?.name || '-'}
+                                    <span className="mx-1 text-muted-foreground/50">
+                                        •
+                                    </span>
+                                    {item.batch.name}
+                                </p>
+                            </div>
+                        </div>
+                    );
+                },
+            } as Col,
+            {
+                id: 'paid',
+                header: t('fees.paid_months'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const item: FeeGridItem = row.original;
+                    const paidCount = months.filter(
+                        (m) =>
+                            item.months[m] &&
+                            Number(item.months[m].amount_paid) > 0,
+                    ).length;
+
+                    return (
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-2 w-16 overflow-hidden rounded-full bg-muted">
+                                <div
+                                    className="h-full rounded-full bg-green-500"
+                                    style={{
+                                        width: `${Math.min((paidCount / months.length) * 100, 100)}%`,
+                                    }}
+                                />
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                                {paidCount}/{months.length}
+                            </span>
+                        </div>
+                    );
+                },
+            } as Col,
+            ...months.map(
+                (m) =>
+                    ({
+                        id: `month_${m}`,
+                        accessorKey: `months.${m}`,
+                        header: () => (
+                            <div className="flex flex-col items-center justify-center gap-0.5">
+                                <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                                    {monthNames[m].slice(0, 3)}
+                                </span>
+                            </div>
+                        ),
+                        enableSorting: false,
+                        cell: ({ row }: any) => {
+                            const item: FeeGridItem = row.original;
+
+                            return (
+                                <div className="flex justify-center">
+                                    <FeeCell
+                                        fee={item.months[m]}
+                                        studentId={item.student.id}
+                                        batchId={item.batch.id}
+                                        month={m}
+                                        year={year}
+                                        isAdmin={isAdmin}
+                                        disabled={isMonthDisabled(
+                                            item.enrolled_at,
+                                            m,
+                                            year,
+                                        )}
+                                    />
+                                </div>
+                            );
+                        },
+                    }) as Col,
+            ),
+        ];
+
+        cols.push({
+            id: 'total',
+            accessorKey: 'total',
+            header: () => (
+                <div className="flex items-center justify-center gap-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    {t('fees.total_paid')}
+                </div>
+            ),
+            enableSorting: false,
+            meta: { stickyRight: true },
+            cell: ({ row }: any) => {
+                const item: FeeGridItem = row.original;
+                const total = months.reduce((sum, m) => {
+                    const fee = item.months[m];
+
+                    return sum + (fee ? Number(fee.amount_paid) : 0);
+                }, 0);
+
+                return (
+                    <div className="flex justify-center">
+                        <span
+                            className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold ${
+                                total > 0
+                                    ? 'bg-primary/10 text-primary'
+                                    : 'bg-muted text-muted-foreground'
+                            }`}
+                        >
+                            ৳{Number(total).toFixed(0)}
+                        </span>
+                    </div>
+                );
+            },
+        } as Col);
+
+        if (isAdmin) {
+            cols.push({
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const item: FeeGridItem = row.original;
+
+                    return (
+                        <div className="flex justify-center">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                onClick={() =>
+                                    handleDeleteRow(
+                                        item.student.id,
+                                        item.batch.id,
+                                    )
+                                }
+                            >
+                                <Trash2 className="size-4" />
+                            </Button>
+                        </div>
+                    );
+                },
+            } as Col);
+        }
+
+        return cols;
+    })();
 
     return (
         <>
             <Head title={t('fees.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                     <Heading
                         title={t('fees.title')}
-                        description={t('fees.title')}
+                        description={t('fees.desc')}
                     />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon">
-                                <EllipsisVertical className="size-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            {isAdmin && (
-                                <DropdownMenuItem asChild>
-                                    <Link href={fees.create.url()}>
-                                        <Plus className="mr-2 size-4" />
-                                        {t('fees.create')}
-                                    </Link>
-                                </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={exportToExcel}>
-                                <Download className="mr-2 size-4" />
-                                {t('fees.export')}
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({
+                                    only: ['feeGrid'],
+                                    onFinish: () => setRefreshing(false),
+                                });
+                            }}
+                        />
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('fees.create')}
+                            onCreate={() => router.get(fees.create.url())}
+                            exportTitle={t('fees.title')}
+                            exportFilename={`fees-${year}`}
+                            exportHeaders={[
+                                'Student',
+                                'Class',
+                                'Batch',
+                                ...months.map((m) => monthNames[m]),
+                                'Total',
+                            ]}
+                            exportRows={feeGrid.map((item) => {
+                                const total = months.reduce((sum, m) => {
+                                    const fee = item.months[m];
+
+                                    return (
+                                        sum +
+                                        (fee ? Number(fee.amount_paid) : 0)
+                                    );
+                                }, 0);
+
+                                return [
+                                    item.student.name,
+                                    item.student.coaching_class?.name || '',
+                                    item.batch.name,
+                                    ...months.map((m) => {
+                                        const fee = item.months[m];
+
+                                        return fee
+                                            ? Number(fee.amount_paid)
+                                            : 0;
+                                    }),
+                                    total,
+                                ];
+                            })}
+                            importUrl="/fees/import"
+                            importFields={[
+                                'student_id',
+                                'batch_id',
+                                'month',
+                                'year',
+                                'amount_paid',
+                                'notes',
+                            ]}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['feeGrid'] })
+                            }
+                        />
+                    </div>
                 </div>
 
-                <Card>
+                <Card className="min-w-0">
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t('actions.search') + '...'}
+                        <FilterBar
+                            className="mb-4 lg:hidden"
+                            searchPlaceholder={t('actions.search') + '...'}
+                            searchValue={search}
+                            onSearchChange={handleSearch}
+                            activeFilterCount={activeFilterCount}
+                            active={selectedYear !== currentYear}
+                            onClearAll={clearAll}
+                            filters={[
+                                {
+                                    id: 'year',
+                                    placeholder: t('fees.year'),
+                                    value: String(selectedYear),
+                                    options: yearOptionsList.map((y) => ({
+                                        label: String(y),
+                                        value: String(y),
+                                    })),
+                                    onValueChange: handleYearChange,
+                                },
+                            ]}
+                        />
 
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleSearch()
-                                    }
-                                    className="pr-9 pl-9"
-                                />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get(
-                                                fees.index.url(),
-                                                {
-                                                    search: '',
-                                                    year: selectedYear,
-                                                },
-                                                { preserveState: true },
-                                            );
-                                        }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex gap-3 sm:gap-4">
-                                <select
-                                    value={selectedYear}
-                                    onChange={(e) =>
-                                        handleYearChange(Number(e.target.value))
-                                    }
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm sm:w-[120px]"
-                                >
-                                    {yearOptions.map((y) => (
-                                        <option key={y} value={y}>
-                                            {y}
-                                        </option>
-                                    ))}
-                                </select>
-                                <Button
-                                    variant="secondary"
-                                    onClick={handleSearch}
-                                >
-                                    <Search className="size-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">
-                                        {t('actions.search')}
-                                    </span>
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={refreshing}
-                                    onClick={() => {
-                                        setRefreshing(true);
-                                        router.reload({
-                                            only: ['feeGrid'],
-                                            onFinish: () => setRefreshing(false),
-                                        });
-                                    }}
-                                >
-                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                </Button>
-                            </div>
+                        <div className="hidden lg:block">
+                            <DataTable
+                                columns={columns}
+                                data={feeGrid}
+                                loading={refreshing}
+                                currentPage={1}
+                                lastPage={1}
+                                total={feeGrid.length}
+                                itemName={t('fees.title').toLowerCase()}
+                                baseUrl={fees.index.url()}
+                                preserveParams={{ search, year: selectedYear }}
+                                showPagination={false}
+                                emptyMessage={t('fees.no_records')}
+                                getRowId={(row) =>
+                                    `${row.student.id}_${row.batch.id}`
+                                }
+                                toolbar={
+                                    <FilterBar
+                                        searchPlaceholder={
+                                            t('actions.search') + '...'
+                                        }
+                                        searchValue={search}
+                                        onSearchChange={handleSearch}
+                                        activeFilterCount={activeFilterCount}
+                                        active={selectedYear !== currentYear}
+                                        onClearAll={clearAll}
+                                        filters={[
+                                            {
+                                                id: 'year',
+                                                placeholder: t('fees.year'),
+                                                value: String(selectedYear),
+                                                options: yearOptionsList.map(
+                                                    (y) => ({
+                                                        label: String(y),
+                                                        value: String(y),
+                                                    }),
+                                                ),
+                                                onValueChange: handleYearChange,
+                                            },
+                                        ]}
+                                    />
+                                }
+                            />
                         </div>
 
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
-                                            {t('fees.student')}
-                                        </TableHead>
-                                        <TableHead className="min-w-[100px]">
-                                            {t('students.class')}
-                                        </TableHead>
-                                        <TableHead className="min-w-[100px]">
-                                            {t('batches.name')}
-                                        </TableHead>
-                                        {months.map((m) => (
-                                            <TableHead
-                                                key={m}
-                                                className="min-w-[80px] text-center"
-                                            >
-                                                {monthNames[m].slice(0, 3)}
-                                            </TableHead>
-                                        ))}
-                                        {isAdmin && (
-                                            <TableHead className="w-[50px]"></TableHead>
-                                        )}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {feeGrid.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={months.length + 4}
-                                                className="text-center"
-                                            >
-                                                {t('fees.title')}{' '}
-                                                {t('actions.search')}
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        feeGrid.map((item, idx) => (
-                                            <TableRow key={idx}>
-                                                <TableCell className="sticky left-0 z-10 bg-background font-medium">
-                                                    {item.student.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.student.coaching_class
-                                                        ?.name || '-'}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.batch.name}
-                                                </TableCell>
-                                                {months.map((m) => (
-                                                    <TableCell
-                                                        key={m}
-                                                        className="p-1 text-center"
-                                                    >
-                                                        <FeeCell
-                                                            fee={item.months[m]}
-                                                            studentId={
-                                                                item.student.id
-                                                            }
-                                                            batchId={
-                                                                item.batch.id
-                                                            }
-                                                            month={m}
-                                                            year={year}
-                                                            isAdmin={isAdmin}
-                                                            disabled={isMonthDisabled(
-                                                                item.enrolled_at,
-                                                                m,
-                                                                year,
-                                                            )}
-                                                        />
-                                                    </TableCell>
-                                                ))}
-                                                {isAdmin && (
-                                                    <TableCell className="p-1 text-center">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                            onClick={() => handleDeleteRow(item.student.id, item.batch.id)}
-                                                        >
-                                                            <Trash2 className="size-4" />
-                                                        </Button>
-                                                    </TableCell>
-                                                )}
-                                            </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                        <div className="lg:hidden">
+                            <MobileFeeList
+                                feeGrid={feeGrid}
+                                months={months}
+                                monthNames={monthNames}
+                                year={year}
+                                isAdmin={isAdmin}
+                                isMonthDisabled={isMonthDisabled}
+                                onDeleteRow={handleDeleteRow}
+                                t={t}
+                            />
                         </div>
                     </CardContent>
                 </Card>
@@ -526,9 +795,10 @@ export default function FeesIndex({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title="Delete Fee Records"
-                description="Delete all fee records for this student in this batch for the year?"
-                confirmText="Delete"
+                title={t('fees.delete_title')}
+                description={t('fees.delete_confirm')}
+                confirmText={t('actions.delete')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDeleteRow}
             />

@@ -1,6 +1,18 @@
 import { useForm } from '@inertiajs/react';
-import type { Student } from '@/types';
-import { Button } from '@/components/ui/button';
+import {
+    Camera,
+    X,
+    User,
+    Phone,
+    BookOpen,
+    Calendar,
+    Shield,
+    MapPin,
+} from 'lucide-react';
+import { useRef, useState } from 'react';
+import { FormActions } from '@/components/form-actions';
+import InputError from '@/components/input-error';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -10,7 +22,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import InputError from '@/components/input-error';
+import { Textarea } from '@/components/ui/textarea';
+import { useLocale } from '@/contexts/locale-context';
+import students from '@/routes/students';
+import type { Student } from '@/types';
 
 type CoachingClass = {
     id: number;
@@ -21,10 +36,27 @@ type CoachingClass = {
 type StudentFormProps = {
     student?: Student;
     coachingClasses: CoachingClass[];
-    onSubmit: (data: any) => void;
+    onSubmit: (data: FormData) => void;
     processing: boolean;
     errors: Record<string, string>;
 };
+
+function SectionHeader({
+    icon: Icon,
+    title,
+}: {
+    icon: React.ElementType;
+    title: string;
+}) {
+    return (
+        <div className="flex items-center gap-2 border-b pb-2">
+            <Icon className="size-4 text-muted-foreground" />
+            <h3 className="text-sm font-medium text-muted-foreground">
+                {title}
+            </h3>
+        </div>
+    );
+}
 
 export default function StudentForm({
     student,
@@ -33,6 +65,7 @@ export default function StudentForm({
     processing,
     errors,
 }: StudentFormProps) {
+    const { t } = useLocale();
     const { data, setData } = useForm({
         name: student?.name || '',
         phone: student?.phone || '',
@@ -52,129 +85,209 @@ export default function StudentForm({
         left_at: student?.left_at ? student.left_at.split('T')[0] : '',
     });
 
+    const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(
+        student?.photo ? `/storage/${student.photo}` : null,
+    );
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+
+        if (file) {
+            setPhotoFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPhotoPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removePhoto = () => {
+        setPhotoFile(null);
+        setPhotoPreview(null);
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+
+        setData('photo', null as any);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(data);
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                formData.append(key, String(value));
+            }
+        });
+
+        if (photoFile) {
+            formData.append('photo', photoFile);
+        }
+
+        onSubmit(formData);
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input
-                        id="name"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        placeholder="Enter student name"
-                    />
-                    <InputError message={errors.name} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                        id="phone"
-                        value={data.phone}
-                        onChange={(e) => setData('phone', e.target.value)}
-                        placeholder="Enter phone number"
-                    />
-                    <InputError message={errors.phone} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="coaching_class_id">Class</Label>
-                    <Select
-                        value={data.coaching_class_id}
-                        onValueChange={(value) =>
-                            setData('coaching_class_id', value)
-                        }
+            <div className="flex flex-col items-center gap-4">
+                <div className="relative">
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex size-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-muted-foreground/25 bg-muted transition-colors hover:border-muted-foreground/50"
                     >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select class" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {coachingClasses.map((cls) => (
-                                <SelectItem key={cls.id} value={String(cls.id)}>
-                                    {cls.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <InputError message={errors.coaching_class_id} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="section">Section</Label>
-                    <Input
-                        id="section"
-                        value={data.section}
-                        onChange={(e) => setData('section', e.target.value)}
-                        placeholder="e.g. A, B"
+                        {photoPreview ? (
+                            <img
+                                src={photoPreview}
+                                alt="Student photo"
+                                className="size-full object-cover"
+                            />
+                        ) : (
+                            <Camera className="size-8 text-muted-foreground/50" />
+                        )}
+                    </button>
+                    {photoPreview && (
+                        <button
+                            type="button"
+                            onClick={removePhoto}
+                            className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground"
+                        >
+                            <X className="size-3" />
+                        </button>
+                    )}
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoChange}
+                        className="hidden"
                     />
-                    <InputError message={errors.section} />
                 </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="joined_at">Joined At</Label>
-                    <Input
-                        id="joined_at"
-                        type="date"
-                        lang="en-GB"
-                        value={data.joined_at}
-                        onChange={(e) => setData('joined_at', e.target.value)}
-                    />
-                    <InputError message={errors.joined_at} />
+                <div className="space-y-2 text-center">
+                    <Label>{t('students.photo')}</Label>
+                    <p className="text-xs text-muted-foreground">
+                        {t('students.photo_hint')}
+                    </p>
+                    <InputError message={errors.photo} />
                 </div>
+            </div>
 
-                {student && (
+            <div className="space-y-4">
+                <SectionHeader
+                    icon={User}
+                    title={t('students.personal_info')}
+                />
+                <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="left_at">Left At</Label>
+                        <Label htmlFor="name">{t('students.name')} *</Label>
                         <Input
-                            id="left_at"
-                            type="date"
-                            lang="en-GB"
-                            value={data.left_at}
-                            onChange={(e) => setData('left_at', e.target.value)}
+                            id="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            placeholder="Enter student name"
                         />
-                        <InputError message={errors.left_at} />
+                        <InputError message={errors.name} />
                     </div>
-                )}
 
-                <div className="space-y-2">
-                    <Label htmlFor="date_of_birth">Date of Birth</Label>
-                    <Input
-                        id="date_of_birth"
-                        type="date"
-                        lang="en-GB"
-                        value={data.date_of_birth}
-                        onChange={(e) =>
-                            setData('date_of_birth', e.target.value)
-                        }
-                    />
-                    <InputError message={errors.date_of_birth} />
+                    <div className="space-y-2">
+                        <Label htmlFor="phone">{t('students.phone')}</Label>
+                        <Input
+                            id="phone"
+                            value={data.phone}
+                            onChange={(e) => setData('phone', e.target.value)}
+                            placeholder="Enter phone number"
+                        />
+                        <InputError message={errors.phone} />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="date_of_birth">
+                            {t('students.date_of_birth')}
+                        </Label>
+                        <DatePicker
+                            value={data.date_of_birth}
+                            onValueChange={(value) =>
+                                setData('date_of_birth', value)
+                            }
+                            placeholder="Select date of birth"
+                        />
+                        <InputError message={errors.date_of_birth} />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="gender">{t('students.gender')}</Label>
+                        <Select
+                            value={data.gender}
+                            onValueChange={(value) => setData('gender', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select gender" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="male">
+                                    {t('students.male')}
+                                </SelectItem>
+                                <SelectItem value="female">
+                                    {t('students.female')}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors.gender} />
+                    </div>
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                <SectionHeader
+                    icon={BookOpen}
+                    title={t('students.academic_info')}
+                />
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="coaching_class_id">
+                            {t('students.class')} *
+                        </Label>
+                        <Select
+                            value={data.coaching_class_id}
+                            onValueChange={(value) =>
+                                setData('coaching_class_id', value)
+                            }
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select class" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {coachingClasses.map((cls) => (
+                                    <SelectItem
+                                        key={cls.id}
+                                        value={String(cls.id)}
+                                    >
+                                        {cls.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors.coaching_class_id} />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="section">{t('students.section')}</Label>
+                        <Input
+                            id="section"
+                            value={data.section}
+                            onChange={(e) => setData('section', e.target.value)}
+                            placeholder="e.g. A, B"
+                        />
+                        <InputError message={errors.section} />
+                    </div>
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="gender">Gender</Label>
-                    <Select
-                        value={data.gender}
-                        onValueChange={(value) => setData('gender', value)}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="male">Male</SelectItem>
-                            <SelectItem value="female">Female</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <InputError message={errors.gender} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
+                    <Label htmlFor="status">{t('students.status')}</Label>
                     <Select
                         value={data.status}
                         onValueChange={(value) =>
@@ -185,61 +298,110 @@ export default function StudentForm({
                             <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="inactive">Inactive</SelectItem>
+                            <SelectItem value="active">
+                                {t('students.active')}
+                            </SelectItem>
+                            <SelectItem value="inactive">
+                                {t('students.inactive')}
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                     <InputError message={errors.status} />
                 </div>
             </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                    id="address"
-                    value={data.address}
-                    onChange={(e) => setData('address', e.target.value)}
-                    placeholder="Enter address"
+            <div className="space-y-4">
+                <SectionHeader icon={Calendar} title={t('students.dates')} />
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="joined_at">
+                            {t('students.joined_at')}
+                        </Label>
+                        <DatePicker
+                            value={data.joined_at}
+                            onValueChange={(value) =>
+                                setData('joined_at', value)
+                            }
+                            placeholder={t('students.joined_at')}
+                        />
+                        <InputError message={errors.joined_at} />
+                    </div>
+
+                    {student && (
+                        <div className="space-y-2">
+                            <Label htmlFor="left_at">
+                                {t('students.left_at')}
+                            </Label>
+                            <DatePicker
+                                value={data.left_at}
+                                onValueChange={(value) =>
+                                    setData('left_at', value)
+                                }
+                                placeholder={t('students.left_at')}
+                            />
+                            <InputError message={errors.left_at} />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                <SectionHeader icon={MapPin} title={t('students.address')} />
+                <div className="space-y-2">
+                    <Textarea
+                        id="address"
+                        value={data.address}
+                        onChange={(e) => setData('address', e.target.value)}
+                        placeholder="Enter address"
+                        rows={3}
+                    />
+                    <InputError message={errors.address} />
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                <SectionHeader
+                    icon={Shield}
+                    title={t('students.guardian_info')}
                 />
-                <InputError message={errors.address} />
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="guardian_name">
+                            {t('students.guardian_name')}
+                        </Label>
+                        <Input
+                            id="guardian_name"
+                            value={data.guardian_name}
+                            onChange={(e) =>
+                                setData('guardian_name', e.target.value)
+                            }
+                            placeholder="Enter guardian name"
+                        />
+                        <InputError message={errors.guardian_name} />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="guardian_phone">
+                            {t('students.guardian_phone')}
+                        </Label>
+                        <Input
+                            id="guardian_phone"
+                            value={data.guardian_phone}
+                            onChange={(e) =>
+                                setData('guardian_phone', e.target.value)
+                            }
+                            placeholder="Enter guardian phone"
+                        />
+                        <InputError message={errors.guardian_phone} />
+                    </div>
+                </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                    <Label htmlFor="guardian_name">Guardian Name</Label>
-                    <Input
-                        id="guardian_name"
-                        value={data.guardian_name}
-                        onChange={(e) =>
-                            setData('guardian_name', e.target.value)
-                        }
-                        placeholder="Enter guardian name"
-                    />
-                    <InputError message={errors.guardian_name} />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="guardian_phone">Guardian Phone</Label>
-                    <Input
-                        id="guardian_phone"
-                        value={data.guardian_phone}
-                        onChange={(e) =>
-                            setData('guardian_phone', e.target.value)
-                        }
-                        placeholder="Enter guardian phone"
-                    />
-                    <InputError message={errors.guardian_phone} />
-                </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
-                <Button type="submit" disabled={processing}>
-                    {processing
-                        ? 'Saving...'
-                        : student
-                          ? 'Update Student'
-                          : 'Create Student'}
-                </Button>
+            <div className="flex justify-end gap-2 border-t pt-4">
+                <FormActions
+                    cancelHref={students.index().url}
+                    processing={processing}
+                />
             </div>
         </form>
     );

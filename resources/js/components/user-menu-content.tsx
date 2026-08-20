@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, ShieldCheck, Monitor } from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -9,7 +9,9 @@ import {
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
+import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
+import { edit as editSecurity } from '@/routes/security';
 import type { User } from '@/types';
 
 type Props = {
@@ -41,7 +43,29 @@ export function UserMenuContent({ user }: Props) {
                         onClick={cleanup}
                     >
                         <Settings className="mr-2" />
-                        Settings
+                        Profile
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full cursor-pointer"
+                        href={editSecurity()}
+                        prefetch
+                        onClick={cleanup}
+                    >
+                        <ShieldCheck className="mr-2" />
+                        Security
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full cursor-pointer"
+                        href={editAppearance()}
+                        prefetch
+                        onClick={cleanup}
+                    >
+                        <Monitor className="mr-2" />
+                        Appearance
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>

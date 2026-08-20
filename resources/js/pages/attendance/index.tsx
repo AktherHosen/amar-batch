@@ -1,11 +1,24 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
-import { EllipsisVertical, PenLine, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
-import Pagination from '@/components/pagination';
+import PageActions from '@/components/page-actions';
+import { RefreshButton } from '@/components/refresh-button';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -14,28 +27,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import attendance from '@/routes/attendance';
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner, isStaff } from '@/lib/role';
+import attendance from '@/routes/attendance';
 
 type AttendanceRecord = {
     id: number;
-    student: { id: number; name: string };
+    student: {
+        id: number;
+        name: string;
+        coaching_class: { id: number; name: string } | null;
+        section?: string | null;
+    };
     batch: { id: number; name: string };
     date: string;
     status: 'present' | 'absent' | 'late';
@@ -68,34 +76,80 @@ export default function AttendanceIndex({
     batches,
     filters,
 }: PageProps) {
-    const { t } = useLocale();
+    const { t, formatDate } = useLocale();
     const { auth } = usePage<PageProps>().props;
-    const isAdmin = auth.user.role === 'admin';
-    const isTeacher = auth.user.role === 'teacher';
+    const isAdmin = isOwner(auth.user);
+    const isTeacher = isStaff(auth.user);
+    const [search, setSearch] = useState('');
     const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [date, setDate] = useState(filters.date || '');
     const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
-        item: any | null;
+        item: AttendanceRecord | null;
     }>({ open: false, item: null });
 
-    const handleFilter = () => {
+    const handleFilter = (overrideDate?: string) => {
         router.get(
             attendance.index(),
-            { batch_id: batchId, date },
+            { search, batch_id: batchId, date: overrideDate ?? date },
             { preserveState: true },
         );
     };
+
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get(
+            attendance.index(),
+            { search: value, batch_id: batchId, date },
+            { preserveState: true },
+        );
+    };
+
+    const handleBatchChange = (value: string) => {
+        setBatchId(value);
+        router.get(
+            attendance.index(),
+            { search, batch_id: value, date },
+            { preserveState: true },
+        );
+    };
+
+    const clearAll = () => {
+        setSearch('');
+        setBatchId('');
+        setDate('');
+        router.get(attendance.index(), {}, { preserveState: true });
+    };
+
+    const activeFilterCount = (batchId ? 1 : 0) + (date ? 1 : 0);
 
     const handleDelete = (record: AttendanceRecord) => {
         setDeleteDialog({ open: true, item: record });
     };
 
+    const handleStatusChange = (record: AttendanceRecord, value: string) => {
+        if (value === record.status) {
+return;
+}
+
+        router.put(
+            attendance.update(record.id),
+            { status: value, notes: record.notes },
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(t('toast.updated_successfully'));
+                    router.reload({ only: ['attendances'] });
+                },
+            },
+        );
+    };
+
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(attendance.destroy(deleteDialog.item.id));
-            toast.success('Attendance record deleted successfully');
+            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };
@@ -103,213 +157,323 @@ export default function AttendanceIndex({
     const getStatusBadge = (status: string) => {
         const variants: Record<
             string,
-            'default' | 'secondary' | 'destructive'
+            'default' | 'secondary' | 'destructive' | 'warning'
         > = {
             present: 'default',
-            late: 'secondary',
+            late: 'warning',
             absent: 'destructive',
         };
 
         return variants[status] || 'secondary';
     };
 
+    const columns = (() => {
+        type Col = NonNullable<
+            DataTableProps<AttendanceRecord, unknown>['columns']
+        >[number];
+
+        return [
+            {
+                id: 'student',
+                accessorKey: 'student.name',
+                header: t('attendance.student'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => {
+                    const record: AttendanceRecord = row.original;
+                    const cls = record.student.coaching_class
+                        ? record.student.coaching_class.name
+                        : '';
+                    const clsWithSection =
+                        cls && record.student.section
+                            ? `${cls} - ${record.student.section}`
+                            : cls;
+
+                    return (
+                        <div className="flex flex-col">
+                            <span className="font-medium">
+                                {record.student.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                                {[clsWithSection, record.batch.name]
+                                    .filter(Boolean)
+                                    .join(' • ')}
+                            </span>
+                        </div>
+                    );
+                },
+            } as Col,
+            {
+                id: 'date',
+                accessorKey: 'date',
+                header: t('attendance.date'),
+                enableSorting: true,
+                cell: ({ row }: any) =>
+                    new Date(row.original.date).toLocaleDateString(),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: t('attendance.status'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const record: AttendanceRecord = row.original;
+
+                    if (!isAdmin && !isTeacher) {
+                        return (
+                            <Badge variant={getStatusBadge(record.status)}>
+                                {record.status}
+                            </Badge>
+                        );
+                    }
+
+                    return (
+                        <Select
+                            value={record.status}
+                            onValueChange={(value) =>
+                                handleStatusChange(record, value)
+                            }
+                        >
+                            <SelectTrigger className="h-8 w-auto min-w-[7rem] capitalize">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="present">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-green-600" />
+                                        {t('attendance.present')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="late">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-yellow-500" />
+                                        {t('attendance.late')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="absent">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-red-600" />
+                                        {t('attendance.absent')}
+                                    </span>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    );
+                },
+            } as Col,
+            {
+                id: 'notes',
+                accessorKey: 'notes',
+                header: t('attendance.notes'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const notes = row.original.notes;
+
+                    if (!notes) {
+return '-';
+}
+
+                    return (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="block max-w-[200px] cursor-default truncate">
+                                    {notes}
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{notes}</TooltipContent>
+                        </Tooltip>
+                    );
+                },
+            } as Col,
+            ...(isAdmin || isTeacher
+                ? [
+                      {
+                          id: 'actions',
+                          header: '',
+                          enableSorting: false,
+                          enableHiding: false,
+                          cell: ({ row }: any) => {
+                              const record: AttendanceRecord = row.original;
+
+                              return (
+                                  <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="size-8 p-0"
+                                          >
+                                              <EllipsisVertical className="size-4" />
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                          <DropdownMenuItem
+                                              onClick={() =>
+                                                  router.get(
+                                                      attendance.edit(
+                                                          record.id,
+                                                      ),
+                                                  )
+                                              }
+                                          >
+                                              <Pencil className="mr-2 size-4" />
+                                              Edit
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                              className="text-destructive focus:text-destructive"
+                                              onClick={() =>
+                                                  handleDelete(record)
+                                              }
+                                          >
+                                              <Trash2 className="mr-2 size-4" />
+                                              Delete
+                                          </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                  </DropdownMenu>
+                              );
+                          },
+                      } as Col,
+                  ]
+                : []),
+        ];
+    })();
+
     return (
         <>
             <Head title={t('attendance.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                     <Heading
                         title={t('attendance.title')}
-                        description={t('attendance.title')}
+                        description={t('attendance.desc')}
                     />
-                    {(isAdmin || isTeacher) && (
-                        <Link href={attendance.create()}>
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                {t('attendance.mark')}
-                            </Button>
-                        </Link>
-                    )}
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({
+                                    only: ['attendances'],
+                                    onFinish: () => setRefreshing(false),
+                                });
+                            }}
+                        />
+                        {(isAdmin || isTeacher) && (
+                            <PageActions
+                                isAdmin={isAdmin || isTeacher}
+                                createLabel={t('attendance.create')}
+                                onCreate={() => router.get(attendance.create())}
+                                exportTitle={t('attendance.title')}
+                                exportFilename="attendance"
+                                exportHeaders={[
+                                    t('students.name'),
+                                    t('batches.name'),
+                                    t('attendance.date'),
+                                    t('attendance.status'),
+                                    t('attendance.notes'),
+                                ]}
+                                exportRows={pagination.data.map((a) => [
+                                    a.student.name,
+                                    a.batch.name,
+                                    a.date ? formatDate(a.date) : '',
+                                    a.status,
+                                    a.notes || '',
+                                ])}
+                                importUrl="/attendance/import"
+                                importFields={[
+                                    'student_id',
+                                    'batch_id',
+                                    'date',
+                                    'status',
+                                    'notes',
+                                ]}
+                                onImportSuccess={() =>
+                                    router.reload({ only: ['attendances'] })
+                                }
+                            />
+                        )}
+                    </div>
                 </div>
 
                 <Card>
-                    <CardHeader>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                            <Select
-                                value={batchId || 'all'}
-                                onValueChange={(v) =>
-                                    setBatchId(v === 'all' ? '' : v)
-                                }
-                            >
-                                <SelectTrigger className="w-full sm:w-[180px]">
-                                    <SelectValue placeholder="All Batches" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        {t('attendance.batch')}
-                                    </SelectItem>
-                                    {batches.map((batch) => (
-                                        <SelectItem
-                                            key={batch.id}
-                                            value={batch.id.toString()}
-                                        >
-                                            {batch.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <div className="flex gap-3 sm:gap-4">
-                                <div className="relative flex-1">
-                                    <Input
-                                        type="date"
-                                        value={date}
-                                        onChange={(e) =>
-                                            setDate(e.target.value)
-                                        }
-                                        className="w-full pr-9"
-                                    />
-                                    {date && (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setDate('');
-                                                router.get(
-                                                    attendance.index(),
-                                                    { batch_id: batchId },
-                                                    { preserveState: true },
-                                                );
-                                            }}
-                                            className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                        >
-                                            <X className="size-4" />
-                                        </button>
-                                    )}
-                                </div>
-                                <Button
-                                    variant="secondary"
-                                    onClick={handleFilter}
-                                >
-                                    <Search className="size-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">
-                                        {t('actions.search')}
-                                    </span>
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={refreshing}
-                                    onClick={() => {
-                                        setRefreshing(true);
-                                        router.reload({
-                                            only: ['records'],
-                                            onFinish: () => setRefreshing(false),
-                                        });
-                                    }}
-                                >
-                                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                </Button>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
-                                        {t('attendance.student')}
-                                    </TableHead>
-                                    <TableHead>
-                                        {t('attendance.batch')}
-                                    </TableHead>
-                                    <TableHead>
-                                        {t('attendance.date')}
-                                    </TableHead>
-                                    <TableHead>
-                                        {t('attendance.status')}
-                                    </TableHead>
-                                    <TableHead>
-                                        {t('attendance.notes')}
-                                    </TableHead>
-                                    {(isAdmin || isTeacher) && (
-                                        <TableHead className="w-[50px]"></TableHead>
-                                    )}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pagination.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={
-                                                isAdmin || isTeacher ? 6 : 5
-                                            }
-                                            className="text-center"
-                                        >
-                                            {t('attendance.title')}{' '}
-                                            {t('actions.search')}
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    pagination.data.map((record) => (
-                                        <TableRow key={record.id}>
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
-                                                {record.student.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {record.batch.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {new Date(
-                                                    record.date,
-                                                ).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant={getStatusBadge(
-                                                        record.status,
-                                                    )}
-                                                >
-                                                    {record.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                {record.notes || '-'}
-                                            </TableCell>
-                                            {(isAdmin || isTeacher) && (
-                                                <TableCell className="p-1 text-center">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                                <EllipsisVertical className="size-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => router.get(attendance.edit(record.id))}>
-                                                                <PenLine className="mr-2 size-4" />
-                                                                Edit
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(record)}>
-                                                                <Trash2 className="mr-2 size-4" />
-                                                                Delete
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-
-                        <Pagination
+                    <CardContent className="pt-6">
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            perPage={pagination.per_page}
-                            itemName={t('attendance.title').toLowerCase() + 's'}
-                            baseUrl={attendance.index()}
-                            preserveParams={{ batch_id: batchId, date }}
+                            itemName={t('attendance.title').toLowerCase()}
+                            baseUrl={attendance.index().url}
+                            preserveParams={{ search, batch_id: batchId, date }}
+                            emptyMessage="No attendance records found"
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={activeFilterCount}
+                                    onClearAll={clearAll}
+                                    filters={[
+                                        {
+                                            id: 'batch_id',
+                                            placeholder: t('attendance.batch'),
+                                            value: batchId,
+                                            options: batches.map((batch) => ({
+                                                label: batch.name,
+                                                value: batch.id.toString(),
+                                            })),
+                                            onValueChange: handleBatchChange,
+                                        },
+                                    ]}
+                                    customFilters={
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-medium text-muted-foreground">
+                                                {t('attendance.date')}
+                                            </label>
+                                            <div className="relative">
+                                                <DatePicker
+                                                    value={date}
+                                                    onValueChange={(value) => {
+                                                        setDate(value);
+                                                        handleFilter(value);
+                                                    }}
+                                                    placeholder={t(
+                                                        'attendance.date',
+                                                    )}
+                                                />
+                                                {date && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setDate('');
+                                                            router.get(
+                                                                attendance.index(),
+                                                                {
+                                                                    search,
+                                                                    batch_id:
+                                                                        batchId,
+                                                                },
+                                                                {
+                                                                    preserveState: true,
+                                                                },
+                                                            );
+                                                        }}
+                                                        className="absolute top-1/2 right-9 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                    >
+                                                        <X className="size-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    }
+                                ></FilterBar>
+                            }
                         />
                     </CardContent>
                 </Card>

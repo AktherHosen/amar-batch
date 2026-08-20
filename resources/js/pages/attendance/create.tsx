@@ -1,7 +1,11 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -11,17 +15,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import attendance from '@/routes/attendance';
 import { useLocale } from '@/contexts/locale-context';
+import attendance from '@/routes/attendance';
 
 type Batch = {
     id: number;
@@ -116,15 +111,127 @@ export default function AttendanceCreate({
         });
     };
 
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<StudentAttendance, unknown>['columns']>[number];
+
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('attendance.student'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: t('attendance.status'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const student: StudentAttendance = row.original;
+
+                    return (
+                        <div className="flex gap-1">
+                            <Button
+                                size="sm"
+                                variant={
+                                    student.status === 'present'
+                                        ? 'default'
+                                        : 'outline'
+                                }
+                                className="w-full sm:w-auto"
+                                onClick={() =>
+                                    updateStatus(student.id, 'present')
+                                }
+                            >
+                                P
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant={
+                                    student.status === 'absent'
+                                        ? 'destructive'
+                                        : 'outline'
+                                }
+                                className="w-full sm:w-auto"
+                                onClick={() =>
+                                    updateStatus(student.id, 'absent')
+                                }
+                            >
+                                A
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant={
+                                    student.status === 'late'
+                                        ? 'secondary'
+                                        : 'outline'
+                                }
+                                className="w-full sm:w-auto"
+                                onClick={() =>
+                                    updateStatus(student.id, 'late')
+                                }
+                            >
+                                L
+                            </Button>
+                            {student.status !==
+                                null && (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="px-2"
+                                    onClick={() =>
+                                        updateStatus(
+                                            student.id,
+                                            null,
+                                        )
+                                    }
+                                >
+                                    ✕
+                                </Button>
+                            )}
+                        </div>
+                    );
+                },
+            } as Col,
+            {
+                id: 'notes',
+                accessorKey: 'notes',
+                header: t('attendance.notes'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const student: StudentAttendance = row.original;
+
+                    return (
+                        <Input
+                            placeholder="Notes..."
+                            value={student.notes}
+                            onChange={(e) =>
+                                updateNotes(
+                                    student.id,
+                                    e.target.value,
+                                )
+                            }
+                            className="w-full"
+                        />
+                    );
+                },
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title={t('attendance.mark')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading
-                    title={t('attendance.mark')}
-                    description={t('attendance.title')}
-                />
+                    <Heading
+                        title={t('attendance.title')}
+                        description={t('attendance.desc')}
+                    />
 
                 <Card>
                     <CardHeader>
@@ -152,12 +259,10 @@ export default function AttendanceCreate({
                             </div>
                             <div className="w-full space-y-2 sm:w-auto sm:max-w-[200px]">
                                 <Label>{t('attendance.date')}</Label>
-                                <Input
-                                    type="date"
+                                <DatePicker
                                     value={date}
-                                    onChange={(e) =>
-                                        handleDateChange(e.target.value)
-                                    }
+                                    onValueChange={handleDateChange}
+                                    placeholder={t('attendance.date')}
                                     className="w-full"
                                 />
                             </div>
@@ -192,119 +297,13 @@ export default function AttendanceCreate({
                                         {t('attendance.clear_all')}
                                     </Button>
                                 </div>
-                                <div className="overflow-x-auto">
-                                    <Table className="min-w-[400px]">
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="sticky left-0 bg-background z-10">
-                                                    {t('attendance.student')}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t('attendance.status')}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t('attendance.notes')}
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {studentList.map((student) => (
-                                                <TableRow key={student.id}>
-                                                    <TableCell className="sticky left-0 bg-background font-medium z-10">
-                                                        {student.name}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex gap-1">
-                                                            <Button
-                                                                size="sm"
-                                                                variant={
-                                                                    student.status ===
-                                                                    'present'
-                                                                        ? 'default'
-                                                                        : 'outline'
-                                                                }
-                                                                className="w-full sm:w-auto"
-                                                                onClick={() =>
-                                                                    updateStatus(
-                                                                        student.id,
-                                                                        'present',
-                                                                    )
-                                                                }
-                                                            >
-                                                                P
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant={
-                                                                    student.status ===
-                                                                    'absent'
-                                                                        ? 'destructive'
-                                                                        : 'outline'
-                                                                }
-                                                                className="w-full sm:w-auto"
-                                                                onClick={() =>
-                                                                    updateStatus(
-                                                                        student.id,
-                                                                        'absent',
-                                                                    )
-                                                                }
-                                                            >
-                                                                A
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant={
-                                                                    student.status ===
-                                                                    'late'
-                                                                        ? 'secondary'
-                                                                        : 'outline'
-                                                                }
-                                                                className="w-full sm:w-auto"
-                                                                onClick={() =>
-                                                                    updateStatus(
-                                                                        student.id,
-                                                                        'late',
-                                                                    )
-                                                                }
-                                                            >
-                                                                L
-                                                            </Button>
-                                                            {student.status !==
-                                                                null && (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    className="px-2"
-                                                                    onClick={() =>
-                                                                        updateStatus(
-                                                                            student.id,
-                                                                            null,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    ✕
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Input
-                                                            placeholder="Notes..."
-                                                            value={student.notes}
-                                                            onChange={(e) =>
-                                                                updateNotes(
-                                                                    student.id,
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            className="w-full"
-                                                        />
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
+                                <DataTable
+                                    columns={columns}
+                                    data={studentList}
+                                    showPagination={false}
+                                    emptyMessage="No students"
+                                    getRowId={(row) => String(row.id)}
+                                />
 
                                 <div className="mt-4 flex justify-end gap-2">
                                     <Button

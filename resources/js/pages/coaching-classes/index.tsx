@@ -1,29 +1,25 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { Plus, RefreshCw, Search, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
-import Pagination from '@/components/pagination';
+import PageActions from '@/components/page-actions';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import coachingClasses from '@/routes/coaching-classes';
 import { useLocale } from '@/contexts/locale-context';
+import { isOwner } from '@/lib/role';
+import coachingClasses from '@/routes/coaching-classes';
 
 type CoachingClass = {
     id: number;
@@ -52,7 +48,7 @@ export default function CoachingClassesIndex({
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
-    const isAdmin = auth.user.role === 'admin';
+    const isAdmin = isOwner(auth.user);
     const [search, setSearch] = useState(filters.search || '');
     const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{
@@ -60,12 +56,18 @@ export default function CoachingClassesIndex({
         item: any | null;
     }>({ open: false, item: null });
 
-    const handleSearch = () => {
+    const handleSearch = (value: string) => {
+        setSearch(value);
         router.get(
             coachingClasses.index(),
-            { search },
+            { search: value },
             { preserveState: true },
         );
+    };
+
+    const clearAll = () => {
+        setSearch('');
+        router.get(coachingClasses.index(), {}, { preserveState: true });
     };
 
     const handleDelete = (cls: CoachingClass) => {
@@ -75,161 +77,166 @@ export default function CoachingClassesIndex({
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(coachingClasses.destroy(deleteDialog.item.id));
-            toast.success('Coaching class deleted successfully');
+            toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
     };
+
+    const columns = (() => {
+        type Col = NonNullable<
+            DataTableProps<CoachingClass, unknown>['columns']
+        >[number];
+
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('classes.name'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'default_fee',
+                accessorKey: 'default_fee',
+                header: t('classes.default_fee'),
+                enableSorting: true,
+                cell: ({ row }: any) => (
+                    <span>{Number(row.original.default_fee).toFixed(0)}</span>
+                ),
+            } as Col,
+            {
+                id: 'students_count',
+                accessorKey: 'students_count',
+                header: t('batches.enrolled'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span>{row.original.students_count}</span>
+                ),
+            } as Col,
+            ...(isAdmin
+                ? [
+                      {
+                          id: 'actions',
+                          header: '',
+                          enableSorting: false,
+                          enableHiding: false,
+                          cell: ({ row }: any) => {
+                              const cls: CoachingClass = row.original;
+
+                              return (
+                                  <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="size-8 p-0"
+                                          >
+                                              <EllipsisVertical className="size-4" />
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                          <DropdownMenuItem asChild>
+                                              <Link
+                                                  href={coachingClasses.edit(
+                                                      cls.id,
+                                                  )}
+                                              >
+                                                  <Pencil className="mr-2 size-4" />
+                                                  {t('actions.edit')}
+                                              </Link>
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                              onClick={() => handleDelete(cls)}
+                                              className="text-destructive"
+                                          >
+                                              <Trash2 className="mr-2 size-4" />
+                                              {t('actions.delete')}
+                                          </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                  </DropdownMenu>
+                              );
+                          },
+                      } as Col,
+                  ]
+                : []),
+        ];
+    })();
 
     return (
         <>
             <Head title={t('classes.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                     <Heading
                         title={t('classes.title')}
-                        description={t('classes.title')}
+                        description={t('classes.desc')}
                     />
-                    {isAdmin && (
-                        <Link href={coachingClasses.create()}>
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                {t('classes.create')}
-                            </Button>
-                        </Link>
-                    )}
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({
+                                    only: ['classes'],
+                                    onFinish: () => setRefreshing(false),
+                                });
+                            }}
+                        />
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('classes.create')}
+                            onCreate={() =>
+                                router.get(coachingClasses.create())
+                            }
+                            exportTitle={t('classes.title')}
+                            exportFilename="coaching_classes"
+                            exportHeaders={[
+                                t('classes.name'),
+                                t('classes.default_fee'),
+                                t('batches.enrolled'),
+                            ]}
+                            exportRows={pagination.data.map((c) => [
+                                c.name,
+                                c.default_fee,
+                                c.students_count,
+                            ])}
+                            importUrl="/coaching-classes/import"
+                            importFields={['name', 'default_fee']}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['classes'] })
+                            }
+                        />
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex items-center gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t('actions.search') + '...'}
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleSearch()
-                                    }
-                                    className="pr-9 pl-9"
-                                />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get(
-                                                coachingClasses.index(),
-                                                {},
-                                                { preserveState: true },
-                                            );
-                                        }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <Button variant="secondary" onClick={handleSearch}>
-                                <Search className="size-4 sm:mr-2" />
-                                <span className="hidden sm:inline">{t('actions.search')}</span>
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                disabled={refreshing}
-                                onClick={() => {
-                                    setRefreshing(true);
-                                    router.reload({
-                                        only: ['classes'],
-                                        onFinish: () => setRefreshing(false),
-                                    });
-                                }}
-                            >
-                                <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                            </Button>
-                        </div>
-
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
-                                        {t('classes.name')}
-                                    </TableHead>
-                                    <TableHead>
-                                        {t('classes.default_fee')}
-                                    </TableHead>
-                                    <TableHead>
-                                        {t('batches.enrolled')}
-                                    </TableHead>
-                                    {isAdmin && (
-                                        <TableHead className="w-[50px]"></TableHead>
-                                    )}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pagination.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={isAdmin ? 4 : 3}
-                                            className="text-center"
-                                        >
-                                            {t('classes.title')}{' '}
-                                            {t('actions.search')}
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    pagination.data.map((cls) => (
-                                        <TableRow key={cls.id}>
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
-                                                {cls.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {Number(
-                                                    cls.default_fee,
-                                                ).toFixed(0)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {cls.students_count}
-                                            </TableCell>
-                                            {isAdmin && (
-                                                <TableCell className="p-1 text-center">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                                <EllipsisVertical className="size-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={coachingClasses.edit(cls.id)}>
-                                                                    <Pencil className="mr-2 size-4" />
-                                                                    {t('actions.edit')}
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleDelete(cls)} className="text-destructive">
-                                                                <Trash2 className="mr-2 size-4" />
-                                                                {t('actions.delete')}
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-
-                        <Pagination
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            perPage={pagination.per_page}
-                            itemName={t('classes.title').toLowerCase() + 's'}
-                            baseUrl={coachingClasses.index()}
+                            itemName={t('classes.title').toLowerCase()}
+                            baseUrl={coachingClasses.index().url}
                             preserveParams={{ search }}
+                            emptyMessage="No coaching classes found"
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    onClearAll={clearAll}
+                                />
+                            }
                         />
                     </CardContent>
                 </Card>
@@ -240,9 +247,13 @@ export default function CoachingClassesIndex({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title="Delete Coaching Class"
-                description={`Are you sure you want to delete ${deleteDialog.item?.name}?`}
-                confirmText="Delete"
+                title={t('classes.delete_title')}
+                description={t('classes.delete_confirm').replace(
+                    '{name}',
+                    deleteDialog.item?.name || '',
+                )}
+                confirmText={t('actions.delete')}
+                cancelText={t('actions.cancel')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />

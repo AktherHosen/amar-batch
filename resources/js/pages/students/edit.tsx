@@ -1,12 +1,13 @@
 import { Head, router, Link } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import type { Student } from '@/types';
 import Heading from '@/components/heading';
 import StudentForm from '@/components/student-form';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import students from '@/routes/students';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLocale } from '@/contexts/locale-context';
+import students from '@/routes/students';
+import type { Student } from '@/types';
 
 type CoachingClass = {
     id: number;
@@ -24,8 +25,9 @@ export default function StudentsEdit({
     coachingClasses,
 }: StudentsEditProps) {
     const { t } = useLocale();
-    const handleSubmit = (data: any) => {
-        router.put(students.update(student.id), data, {
+    const handleSubmit = (data: FormData) => {
+        data.append('_method', 'PUT');
+        router.post(students.update(student.id), data, {
             preserveScroll: true,
         });
     };
@@ -34,18 +36,24 @@ export default function StudentsEdit({
         <>
             <Head title={`${t('students.edit')} ${student.name}`} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4">
-                    <Link href={students.show(student.id)}>
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+            >
+                <div className="flex items-center gap-4 min-w-0">
+                    <Link href={students.show(student.id)} className="shrink-0">
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="mr-2 size-4" />
                             {t('actions.back')}
                         </Button>
                     </Link>
-                    <Heading
-                        title={`${t('students.edit')} ${student.name}`}
-                        description={t('students.edit')}
-                    />
+                    <div className="min-w-0">
+                        <Heading
+                            title={`${t('students.edit')} ${student.name}`}
+                        />
+                    </div>
                 </div>
 
                 <Card>
@@ -59,7 +67,7 @@ export default function StudentsEdit({
                         />
                     </CardContent>
                 </Card>
-            </div>
+            </motion.div>
         </>
     );
 }

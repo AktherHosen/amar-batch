@@ -1,9 +1,11 @@
-import { Head, router, Link } from '@inertiajs/react';
+import { Head, router, Link, usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import Heading from '@/components/heading';
 import BatchForm from '@/components/batch-form';
-import { Card, CardContent } from '@/components/ui/card';
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
 import batches from '@/routes/batches';
 
 type Batch = {
@@ -23,28 +25,36 @@ type BatchesEditProps = {
 };
 
 export default function BatchesEdit({ batch }: BatchesEditProps) {
+    const { t } = useLocale();
+    const { errors } = usePage().props;
     const handleSubmit = (data: any) => {
-        router.put(batches.update(batch.id), data, {
+        router.put(batches.update(batch.id), {
+            ...data,
             preserveScroll: true,
         });
     };
 
     return (
         <>
-            <Head title={`Edit ${batch.name}`} />
+            <Head title={`${t('actions.edit')} ${batch.name}`} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4">
-                    <Link href={batches.show(batch.id)}>
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+            >
+                <div className="flex items-center gap-4 min-w-0">
+                    <Link href={batches.show(batch.id)} className="shrink-0">
                         <Button variant="ghost" size="sm">
-                            <ArrowLeft className="mr-2 size-4" />
-                            Back
+                            <ArrowLeft className="size-4" />
                         </Button>
                     </Link>
-                    <Heading
-                        title={`Edit ${batch.name}`}
-                        description="Update batch information"
-                    />
+                    <div className="min-w-0">
+                        <Heading
+                            title={`${t('actions.edit')} ${batch.name}`}
+                        />
+                    </div>
                 </div>
 
                 <Card>
@@ -53,11 +63,11 @@ export default function BatchesEdit({ batch }: BatchesEditProps) {
                             batch={batch}
                             onSubmit={handleSubmit}
                             processing={false}
-                            errors={{}}
+                            errors={errors}
                         />
                     </CardContent>
                 </Card>
-            </div>
+            </motion.div>
         </>
     );
 }

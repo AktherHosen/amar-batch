@@ -1,5 +1,7 @@
 import { useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import { FormActions } from '@/components/form-actions';
+import InputError from '@/components/input-error';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -9,7 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import InputError from '@/components/input-error';
+import batches from '@/routes/batches';
 
 type Batch = {
     id?: number;
@@ -117,13 +119,28 @@ export default function BatchForm({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="time">Time</Label>
-                    <Input
-                        id="time"
-                        value={data.time || ''}
-                        onChange={(e) => setData('time', e.target.value)}
-                        placeholder="e.g. 10:00 AM - 12:00 PM"
-                    />
+                    <Label>Time</Label>
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                        <Input
+                            type="time"
+                            id="time_start"
+                            value={data.time?.split(' - ')[0] || data.time?.split('-')[0]?.trim() || ''}
+                            onChange={(e) => {
+                                const end = data.time?.split(' - ')[1] || data.time?.split('-')[1]?.trim() || '';
+                                setData('time', end ? `${e.target.value} - ${end}` : e.target.value);
+                            }}
+                        />
+                        <span className="text-muted-foreground text-sm">-</span>
+                        <Input
+                            type="time"
+                            id="time_end"
+                            value={data.time?.split(' - ')[1] || data.time?.split('-')[1]?.trim() || ''}
+                            onChange={(e) => {
+                                const start = data.time?.split(' - ')[0] || data.time?.split('-')[0]?.trim() || '';
+                                setData('time', start ? `${start} - ${e.target.value}` : e.target.value);
+                            }}
+                        />
+                    </div>
                     <InputError message={errors.time} />
                 </div>
 
@@ -143,22 +160,20 @@ export default function BatchForm({
 
                 <div className="space-y-2">
                     <Label htmlFor="start_date">Start Date</Label>
-                    <Input
-                        id="start_date"
-                        type="date"
+                    <DatePicker
                         value={data.start_date || ''}
-                        onChange={(e) => setData('start_date', e.target.value)}
+                        onValueChange={(value) => setData('start_date', value)}
+                        placeholder="Select start date"
                     />
                     <InputError message={errors.start_date} />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="end_date">End Date</Label>
-                    <Input
-                        id="end_date"
-                        type="date"
+                    <DatePicker
                         value={data.end_date || ''}
-                        onChange={(e) => setData('end_date', e.target.value)}
+                        onValueChange={(value) => setData('end_date', value)}
+                        placeholder="Select end date"
                     />
                     <InputError message={errors.end_date} />
                 </div>
@@ -180,21 +195,18 @@ export default function BatchForm({
                         </SelectContent>
                     </Select>
                     {batch?.status === 'completed' && (
-                        <p className="text-xs text-muted-foreground">Completed batches cannot be reopened.</p>
+                        <p className="text-xs text-muted-foreground">
+                            Completed batches cannot be reopened.
+                        </p>
                     )}
                     <InputError message={errors.status} />
                 </div>
             </div>
 
-            <div className="flex justify-end gap-2">
-                <Button type="submit" disabled={processing}>
-                    {processing
-                        ? 'Saving...'
-                        : batch
-                          ? 'Update Batch'
-                          : 'Create Batch'}
-                </Button>
-            </div>
+            <FormActions
+                cancelHref={batches.index().url}
+                processing={processing}
+            />
         </form>
     );
 }

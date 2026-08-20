@@ -9,14 +9,19 @@ class StudentPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isTeacher();
+        return $user->hasRoutePermission('students.index');
     }
 
     public function view(User $user, Student $student): bool
     {
+        if (! $user->hasRoutePermission('students.show')) {
+            return false;
+        }
+
         if ($user->isAdmin()) {
             return true;
         }
+
         if ($user->isTeacher()) {
             return $user->assignedBatches()
                 ->whereHas('enrollments', fn ($q) => $q->where('student_id', $student->id))
@@ -28,16 +33,16 @@ class StudentPolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->hasRoutePermission('students.create');
     }
 
     public function update(User $user, Student $student): bool
     {
-        return $user->isAdmin();
+        return $user->hasRoutePermission('students.update');
     }
 
     public function delete(User $user, Student $student): bool
     {
-        return $user->isAdmin();
+        return $user->hasRoutePermission('students.destroy');
     }
 }

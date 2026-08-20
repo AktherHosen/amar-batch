@@ -4,12 +4,18 @@ namespace Database\Seeders;
 
 use App\Models\CoachingClass;
 use App\Models\Student;
+use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 
 class StudentSeeder extends Seeder
 {
     public function run(): void
     {
+        $tenant = Tenant::firstOrCreate(
+            ['slug' => 'bright-minds'],
+            ['name' => 'Bright Minds Academy', 'is_active' => true]
+        );
+
         $nursery = CoachingClass::where('name', 'Nursery')->first();
         $kg = CoachingClass::where('name', 'KG')->first();
         $class2 = CoachingClass::where('name', 'Class 2')->first();
@@ -33,7 +39,7 @@ class StudentSeeder extends Seeder
         ];
 
         foreach ($students as $studentData) {
-            Student::create($studentData);
+            Student::create(array_merge($studentData, ['tenant_id' => $tenant->id]));
         }
     }
 }

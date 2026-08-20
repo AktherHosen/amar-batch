@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreEnrollmentRequest extends FormRequest
 {
@@ -14,8 +15,10 @@ class StoreEnrollmentRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
+        $tenantId = $this->user()->tenant_id;
+
         return [
-            'student_id' => 'required|exists:students,id',
+            'student_id' => ['required', Rule::exists('students', 'id')->where('tenant_id', $tenantId)],
             'enrolled_at' => 'nullable|date',
         ];
     }

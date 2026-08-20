@@ -6,23 +6,38 @@ use App\Models\Attendance;
 use App\Models\Batch;
 use App\Models\Enrollment;
 use App\Models\FeeStatus;
+use App\Models\Holiday;
+use App\Models\Notice;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
+
+        // Super admin goes to platform dashboard
+        if ($user->isSuperAdmin()) {
+            return to_route('super-admin.dashboard');
+        }
 
         if ($user->isAdmin()) {
             return $this->adminDashboard($request);
         }
 
-        if ($user->isTeacher() && !$user->is_approved) {
+        // Custom tenant roles (created via the role editor) with dashboard
+        // access should get the admin dashboard rather than an empty teacher
+        // dashboard. Teachers keep their scoped dashboard below.
+        if (! $user->isTeacher()) {
+            return $this->adminDashboard($request);
+        }
+
+        if (! $user->is_approved) {
             return Inertia::render('dashboard', [
                 'isPendingApproval' => true,
                 'pendingTeacher' => [
@@ -37,65 +52,88 @@ class DashboardController extends Controller
 
     private function adminDashboard(Request $request): Response
     {
+        $tenantId = $request->user()->tenant_id;
+
         $stats = [
-            'total_students' => Student::where('status', 'active')->count(),
-            'total_teachers' => User::where('role', 'teacher')->count(),
-            'active_batches' => Batch::where('status', 'active')->count(),
-            'total_enrollments' => Enrollment::where('status', 'active')->count(),
+            'total_students' => Student::where('tenant_id', $tenantId)->where('status', 'active')->count(),
+            'total_teachers' => User::where('tenant_id', $tenantId)->where('role', 'teacher')->count(),
+            'active_batches' => Batch::where('tenant_id', $tenantId)->where('status', 'active')->count(),
+            'total_enrollments' => Enrollment::where('tenant_id', $tenantId)->where('status', 'active')->count(),
         ];
 
         $feeStats = [
-            'total_collected' => FeeStatus::sum('amount_paid'),
-            'total_records' => FeeStatus::count(),
+            'total_collected' => FeeStatus::where('tenant_id', $tenantId)->sum('amount_paid'),
+            'total_records' => FeeStatus::where('tenant_id', $tenantId)->count(),
         ];
 
         $recentEnrollments = Enrollment::with(['student', 'batch'])
+            ->where('tenant_id', $tenantId)
             ->latest()
             ->take(5)
             ->get();
 
         $recentFeePayments = FeeStatus::with(['student', 'batch'])
+            ->where('tenant_id', $tenantId)
             ->latest('created_at')
             ->take(5)
             ->get();
 
         $todayAttendance = [
-            'present' => Attendance::whereDate('date', now())->where('status', 'present')->count(),
-            'absent' => Attendance::whereDate('date', now())->where('status', 'absent')->count(),
-            'late' => Attendance::whereDate('date', now())->where('status', 'late')->count(),
+            'present' => Attendance::where('tenant_id', $tenantId)->whereDate('date', now())->where('status', 'present')->count(),
+            'absent' => Attendance::where('tenant_id', $tenantId)->whereDate('date', now())->where('status', 'absent')->count(),
+            'late' => Attendance::where('tenant_id', $tenantId)->whereDate('date', now())->where('status', 'late')->count(),
         ];
 
-        $recentStudents = Student::with('coachingClass')->latest()->take(5)->get();
+        $recentStudents = Student::with('coachingClass')->where('tenant_id', $tenantId)->latest()->take(5)->get();
+
+        $activeNotices = Notice::where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->whereNull('batch_id')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $upcomingHolidays = Holiday::where('tenant_id', $tenantId)
+            ->where('end_date', '>=', now())
+            ->orderBy('start_date')
+            ->take(5)
+            ->get();
 
         $batchHistory = [
-            'completed' => Batch::where('status', 'completed')->count(),
-            'active' => Batch::where('status', 'active')->count(),
+            'completed' => Batch::where('tenant_id', $tenantId)->where('status', 'completed')->count(),
+            'active' => Batch::where('tenant_id', $tenantId)->where('status', 'active')->count(),
         ];
 
-        $attendanceTrend = collect(range(5, 0))->map(function ($i) {
+        $attendanceTrend = collect(range(5, 0))->map(function ($i) use ($tenantId) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
-                'present' => Attendance::whereDate('date', $date)->where('status', 'present')->count(),
-                'absent' => Attendance::whereDate('date', $date)->where('status', 'absent')->count(),
-                'late' => Attendance::whereDate('date', $date)->where('status', 'late')->count(),
+                'present' => Attendance::where('tenant_id', $tenantId)->whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'present')->count(),
+                'absent' => Attendance::where('tenant_id', $tenantId)->whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'absent')->count(),
+                'late' => Attendance::where('tenant_id', $tenantId)->whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'late')->count(),
             ];
         });
 
-        $enrollmentTrend = collect(range(5, 0))->map(function ($i) {
+        $enrollmentTrend = collect(range(5, 0))->map(function ($i) use ($tenantId) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
-                'enrollments' => Enrollment::whereMonth('created_at', $date->month)
+                'enrollments' => Enrollment::where('tenant_id', $tenantId)->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)->count(),
             ];
         });
 
-        $feeTrend = collect(range(5, 0))->map(function ($i) {
+        $feeTrend = collect(range(5, 0))->map(function ($i) use ($tenantId) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
-                'collected' => (float) FeeStatus::whereMonth('created_at', $date->month)
+                'collected' => (float) FeeStatus::where('tenant_id', $tenantId)->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)->sum('amount_paid'),
             ];
         });
@@ -107,6 +145,8 @@ class DashboardController extends Controller
             'recentFeePayments' => $recentFeePayments,
             'todayAttendance' => $todayAttendance,
             'recentStudents' => $recentStudents,
+            'activeNotices' => $activeNotices,
+            'upcomingHolidays' => $upcomingHolidays,
             'batchHistory' => $batchHistory,
             'attendanceTrend' => $attendanceTrend,
             'enrollmentTrend' => $enrollmentTrend,
@@ -175,6 +215,22 @@ class DashboardController extends Controller
                 ->get();
         }
 
+        $activeNotices = Notice::where('tenant_id', $teacher->tenant_id)
+            ->where('is_active', true)
+            ->where(function ($q) use ($assignedBatchIds) {
+                $q->whereNull('batch_id')
+                    ->orWhereIn('batch_id', $assignedBatchIds);
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $upcomingHolidays = Holiday::where('tenant_id', $teacher->tenant_id)
+            ->where('end_date', '>=', now())
+            ->orderBy('start_date')
+            ->take(5)
+            ->get();
+
         $batchHistory = [
             'completed' => Batch::whereIn('id', $assignedBatchIds)->where('status', 'completed')->count(),
             'active' => Batch::whereIn('id', $assignedBatchIds)->where('status', 'active')->count(),
@@ -182,19 +238,24 @@ class DashboardController extends Controller
 
         $attendanceTrend = collect(range(5, 0))->map(function ($i) use ($assignedBatchIds) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
-                'present' => Attendance::whereDate('date', $date)->where('status', 'present')
+                'present' => Attendance::whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'present')
                     ->whereIn('batch_id', $assignedBatchIds)->count(),
-                'absent' => Attendance::whereDate('date', $date)->where('status', 'absent')
+                'absent' => Attendance::whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'absent')
                     ->whereIn('batch_id', $assignedBatchIds)->count(),
-                'late' => Attendance::whereDate('date', $date)->where('status', 'late')
+                'late' => Attendance::whereMonth('date', $date->month)
+                    ->whereYear('date', $date->year)->where('status', 'late')
                     ->whereIn('batch_id', $assignedBatchIds)->count(),
             ];
         });
 
         $enrollmentTrend = collect(range(5, 0))->map(function ($i) use ($assignedBatchIds) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
                 'enrollments' => Enrollment::whereIn('batch_id', $assignedBatchIds)
@@ -205,6 +266,7 @@ class DashboardController extends Controller
 
         $feeTrend = collect(range(5, 0))->map(function ($i) use ($assignedBatchIds) {
             $date = now()->subMonths($i);
+
             return [
                 'month' => $date->format('M Y'),
                 'collected' => (float) FeeStatus::whereIn('batch_id', $assignedBatchIds)
@@ -220,6 +282,8 @@ class DashboardController extends Controller
             'recentFeePayments' => $recentFeePayments,
             'todayAttendance' => $todayAttendance,
             'recentStudents' => $recentStudents,
+            'activeNotices' => $activeNotices,
+            'upcomingHolidays' => $upcomingHolidays,
             'assignedBatches' => $assignedBatches,
             'batchHistory' => $batchHistory,
             'attendanceTrend' => $attendanceTrend,
