@@ -1,9 +1,12 @@
-import { Head } from '@inertiajs/react';
-import Heading from '@/components/heading';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import FeeForm from '@/components/fee-form';
-import fees from '@/routes/fees';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLocale } from '@/contexts/locale-context';
+import fees from '@/routes/fees';
 
 type Student = {
     id: number;
@@ -39,17 +42,28 @@ export default function FeesCreate({
         <>
             <Head title={t('fees.create')} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading
-                    title={t('fees.create')}
-                    description={t('fees.title')}
-                />
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+            >
+                <div className="flex items-center gap-4 min-w-0">
+                    <Link href={fees.index.url()} className="shrink-0">
+                        <Button variant="ghost" size="sm">
+                            <ArrowLeft className="size-4" />
+                        </Button>
+                    </Link>
+                    <div className="min-w-0">
+                        <Heading
+                            title={t('fees.create')}
+                            description={t('fees.desc')}
+                        />
+                    </div>
+                </div>
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>{t('fees.title')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                         <FeeForm
                             students={students}
                             batches={batches}
@@ -57,7 +71,7 @@ export default function FeesCreate({
                         />
                     </CardContent>
                 </Card>
-            </div>
+            </motion.div>
         </>
     );
 }

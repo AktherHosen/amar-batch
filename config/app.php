@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Karnaphuli Alpha Academy'),
+    'name' => env('APP_NAME', 'Amar Batch'),
 
     /*
     |--------------------------------------------------------------------------

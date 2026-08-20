@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToBranch;
+use App\Concerns\BelongsToTenant;
 use Database\Factories\BatchFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,10 +14,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Batch extends Model
 {
     /** @use HasFactory<BatchFactory> */
-    use HasFactory, SoftDeletes;
+    use BelongsToBranch, BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'subject', 'days', 'time', 'capacity', 'start_date',
+        'tenant_id', 'branch_id', 'name', 'subject', 'days', 'time', 'capacity', 'start_date',
         'end_date', 'status',
     ];
 

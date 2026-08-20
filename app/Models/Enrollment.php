@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToBranch;
+use App\Concerns\BelongsToTenant;
 use Database\Factories\EnrollmentFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,13 +13,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Enrollment extends Model
 {
     /** @use HasFactory<EnrollmentFactory> */
-    use HasFactory;
+    use BelongsToBranch, BelongsToTenant, HasFactory;
 
-    protected $fillable = ['student_id', 'batch_id', 'enrolled_at', 'status'];
+    protected $fillable = ['tenant_id', 'student_id', 'batch_id', 'enrolled_at', 'status'];
 
     protected function casts(): array
     {
         return ['enrolled_at' => 'datetime'];
+    }
+
+    public function branchScopeQuery(Builder $query, int $branchId): void
+    {
+        $query->whereHas('batch', fn ($q) => $q->where('branch_id', $branchId));
     }
 
     /** @return BelongsTo<Student, $this> */

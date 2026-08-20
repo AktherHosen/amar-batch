@@ -2,9 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Batch;
-use App\Models\Student;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -37,19 +36,55 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $tenant = $user?->tenant;
+
+        // Surface the legacy session `toast` flash through Inertia's flash
+        // channel so controllers using `->with('toast', [...])` render toasts.
+        if ($toast = $request->session()->get('toast')) {
+            Inertia::flash('toast', $toast);
+        }
+
+        if ($token = $request->session()->get('token')) {
+            Inertia::flash('token', $token);
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
+            'tenant' => $tenant ? [
+                'id' => $tenant->id,
+                'name' => $tenant->name,
+                'slug' => $tenant->slug,
+                'logo' => $tenant->logo,
+                'currency' => $tenant->currency,
+                'currency_symbol' => $tenant->currency_symbol,
+                'timezone' => $tenant->timezone,
+                'academic_year' => $tenant->academic_year,
+                'receipt_prefix' => $tenant->receipt_prefix,
+                'student_id_prefix' => $tenant->student_id_prefix,
+                'default_attendance' => $tenant->default_attendance,
+                'invoice_footer' => $tenant->invoice_footer,
+                'primary_color' => $tenant->primary_color,
+                'features' => $tenant->subscription?->plan?->features ?? [],
+                'subscription' => $tenant->subscription ? [
+                    'id' => $tenant->subscription->id,
+                    'status' => $tenant->subscription->status,
+                    'plan' => $tenant->subscription->plan ? [
+                        'id' => $tenant->subscription->plan->id,
+                        'name' => $tenant->subscription->plan->name,
+                        'max_students' => $tenant->subscription->plan->max_students,
+                        'max_staff' => $tenant->subscription->plan->max_staff,
+                        'max_batches' => $tenant->subscription->plan->max_batches,
+                        'features' => $tenant->subscription->plan->features,
+                    ] : null,
+                    'trial_ends_at' => $tenant->subscription->trial_ends_at,
+                ] : null,
+            ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'appStats' => [
-                'total_students' => Student::count(),
-                'active_batches' => Batch::where('status', 'active')->count(),
-                'attendance_rate' => 98,
-                'fee_collection_rate' => 100,
-            ],
         ];
     }
 }

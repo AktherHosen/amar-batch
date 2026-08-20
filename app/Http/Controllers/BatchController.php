@@ -9,8 +9,10 @@ use App\Models\BatchHistory;
 use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\User;
+use App\Policies\PlanLimitsPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -49,32 +51,59 @@ class BatchController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response|RedirectResponse
     {
         $this->authorize('create', Batch::class);
 
-        return Inertia::render('batches/create');
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createBatch($request->user())) {
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.',
+            ]);
+        }
+
+        $remaining = $planLimits->remaining($request->user(), 'batches');
+        $limit = $planLimits->getLimit($request->user(), 'batches');
+
+        return Inertia::render('batches/create', [
+            'planLimits' => [
+                'can_create' => true,
+                'remaining' => $remaining,
+                'limit' => $limit,
+            ],
+        ]);
     }
 
     public function store(StoreBatchRequest $request): RedirectResponse
     {
         $this->authorize('create', Batch::class);
 
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createBatch($request->user())) {
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.',
+            ]);
+        }
+
         Batch::create($request->validated());
 
         return to_route('batches.index')->with('toast', ['type' => 'success', 'message' => 'Batch created successfully.']);
     }
 
-    public function show(Batch $batch): Response
+    public function show(Request $request, Batch $batch): Response
     {
         $this->authorize('view', $batch);
 
         $batch->load(['enrollments.student.coachingClass', 'teachers', 'history.student', 'history.user']);
 
-        $teachers = User::where('role', 'teacher')->get();
-        $students = Student::with('coachingClass')->where('status', 'active')->orderBy('name')->get();
+        $tenantId = $request->user()->tenant_id;
+        $teachers = User::where('role', 'teacher')->where('tenant_id', $tenantId)->get();
+        $students = Student::with('coachingClass')->where('status', 'active')->where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $enrolledStudentIds = Enrollment::where('status', 'active')
+            ->where('batch_id', $batch->id)
             ->pluck('student_id')
             ->unique()
             ->toArray();
@@ -118,12 +147,13 @@ class BatchController extends Controller
     {
         $this->authorize('update', $batch);
 
+        $tenantId = $request->user()->tenant_id;
         $request->validate([
-            'teacher_id' => 'required|exists:users,id',
+            'teacher_id' => ['required', Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
         ]);
 
         /** @var User $teacher */
-        $teacher = User::findOrFail($request->teacher_id);
+        $teacher = User::where('tenant_id', $tenantId)->findOrFail($request->teacher_id);
 
         if ($teacher->role !== 'teacher') {
             abort(422, 'Selected user is not a teacher.');
@@ -140,8 +170,9 @@ class BatchController extends Controller
     {
         $this->authorize('update', $batch);
 
+        $tenantId = $request->user()->tenant_id;
         $request->validate([
-            'teacher_id' => 'required|exists:users,id',
+            'teacher_id' => ['required', Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
         ]);
 
         $batch->teachers()->detach($request->teacher_id);
@@ -169,5 +200,39 @@ class BatchController extends Controller
         }
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Batch completed successfully.']);
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $this->authorize('create', Batch::class);
+
+        $rows = $request->input('rows', []);
+        $imported = 0;
+        $skipped = 0;
+
+        foreach ($rows as $row) {
+            try {
+                Batch::create([
+                    'name' => $row['name'] ?? '',
+                    'subject' => $row['subject'] ?? null,
+                    'days' => $row['days'] ?? null,
+                    'time' => $row['time'] ?? null,
+                    'capacity' => $row['capacity'] ?? null,
+                    'start_date' => $row['start_date'] ?? null,
+                    'end_date' => $row['end_date'] ?? null,
+                    'status' => $row['status'] ?? 'active',
+                ]);
+                $imported++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                $skipped++;
+            }
+        }
+
+        $message = $imported . ' batches imported successfully.';
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped (duplicate or invalid).";
+        }
+
+        return to_route('batches.index')->with('toast', ['type' => 'success', 'message' => $message]);
     }
 }

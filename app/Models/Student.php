@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToBranch;
+use App\Concerns\BelongsToTenant;
 use Database\Factories\StudentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,10 +15,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Student extends Model
 {
     /** @use HasFactory<StudentFactory> */
-    use HasFactory, SoftDeletes;
+    use BelongsToBranch, BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',
+        'tenant_id', 'branch_id', 'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',
         'gender', 'guardian_name', 'guardian_phone', 'photo', 'status', 'joined_at', 'left_at',
     ];
 
@@ -59,5 +61,17 @@ class Student extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    /** @return HasMany<ExamResult, $this> */
+    public function examResults(): HasMany
+    {
+        return $this->hasMany(ExamResult::class);
+    }
+
+    /** @return HasMany<BatchHistory, $this> */
+    public function batchHistories(): HasMany
+    {
+        return $this->hasMany(BatchHistory::class);
     }
 }

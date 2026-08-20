@@ -1,13 +1,22 @@
-import { Head, router, Link } from '@inertiajs/react';
+import { Head, router, Link, usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import TeacherForm from '@/components/teacher-form';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
 import teachers from '@/routes/teachers';
 
-export default function TeachersCreate() {
-    const handleSubmit = (data: any) => {
+type Branch = {
+    id: number;
+    name: string;
+};
+
+export default function TeachersCreate({ roles = [], branches = [] }: { roles?: { id: number; name: string; slug: string }[]; branches?: Branch[] }) {
+    const { t } = useLocale();
+    const { errors } = usePage().props;
+    const handleSubmit = (data: FormData) => {
         router.post(teachers.store(), data, {
             preserveScroll: true,
         });
@@ -15,32 +24,40 @@ export default function TeachersCreate() {
 
     return (
         <>
-            <Head title="Create Teacher" />
+            <Head title={t('teachers.create')} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4">
-                    <Link href={teachers.index()}>
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+            >
+                <div className="flex items-center gap-4 min-w-0">
+                    <Link href={teachers.index()} className="shrink-0">
                         <Button variant="ghost" size="sm">
-                            <ArrowLeft className="mr-2 size-4" />
-                            Back
+                            <ArrowLeft className="size-4" />
                         </Button>
                     </Link>
-                    <Heading
-                        title="Create Teacher"
-                        description="Add a new teacher to the system"
-                    />
+                    <div className="min-w-0">
+                        <Heading
+                            title={t('teachers.create')}
+                            description={t('teachers.add_desc')}
+                        />
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
                         <TeacherForm
+                            roles={roles}
+                            branches={branches}
                             onSubmit={handleSubmit}
                             processing={false}
-                            errors={{}}
+                            errors={errors}
                         />
                     </CardContent>
                 </Card>
-            </div>
+            </motion.div>
         </>
     );
 }

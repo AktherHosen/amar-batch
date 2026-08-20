@@ -3,12 +3,18 @@
 namespace Database\Seeders;
 
 use App\Models\CoachingClass;
+use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 
 class CoachingClassSeeder extends Seeder
 {
     public function run(): void
     {
+        $tenant = Tenant::firstOrCreate(
+            ['slug' => 'bright-minds'],
+            ['name' => 'Bright Minds Academy', 'is_active' => true]
+        );
+
         $classes = [
             ['name' => 'Pre School', 'default_fee' => 300],
             ['name' => 'Nursery', 'default_fee' => 300],
@@ -21,7 +27,7 @@ class CoachingClassSeeder extends Seeder
         ];
 
         foreach ($classes as $class) {
-            CoachingClass::create($class);
+            CoachingClass::create(array_merge($class, ['tenant_id' => $tenant->id]));
         }
     }
 }

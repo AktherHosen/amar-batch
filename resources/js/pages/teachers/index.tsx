@@ -1,41 +1,55 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import {
+    EllipsisVertical,
+    Eye,
+    Pencil,
+    Trash2,
+    CheckCircle,
+    XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
-import { Plus, RefreshCw, Search, Eye, EllipsisVertical, Pencil, Trash2, X, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
-import Pagination from '@/components/pagination';
+import PageActions from '@/components/page-actions';
+import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import teachers from '@/routes/teachers';
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useLocale } from '@/contexts/locale-context';
+import { useHasFeature } from '@/lib/features';
+import { isOwner } from '@/lib/role';
+import teachers from '@/routes/teachers';
+
+type TeacherRow = {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    is_approved: boolean;
+    assigned_batches_count: number;
+    branch: { id: number; name: string } | null;
+};
 
 type PageProps = {
     auth: { user: { role: string } };
     teachers: {
-        data: Array<{
-            id: number;
-            name: string;
-            email: string;
-            is_approved: boolean;
-            assigned_batches_count: number;
-        }>;
+        data: TeacherRow[];
         current_page: number;
         last_page: number;
         per_page: number;
@@ -43,227 +57,453 @@ type PageProps = {
     };
     filters: {
         search?: string;
+        status?: string;
     };
+    roles: Array<{
+        id: number;
+        name: string;
+        slug: string;
+    }>;
 };
 
 export default function TeachersIndex({
     teachers: pagination,
     filters,
+    roles = [],
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
-    const isAdmin = auth.user.role === 'admin';
+    const isAdmin = isOwner(auth.user);
+    const hasMultiBranch = useHasFeature('multi_branch');
     const [search, setSearch] = useState(filters.search || '');
+    const [status, setStatus] = useState(filters.status || '');
     const [refreshing, setRefreshing] = useState(false);
+
+    const roleName = (slug: string) => {
+        if (slug === 'inactive') {
+return t('teachers.inactive');
+}
+
+        return roles.find((r) => r.slug === slug)?.name ?? slug;
+    };
+
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get(
+            teachers.index(),
+            { search: value, status },
+            { preserveState: true },
+        );
+    };
+
+    const handleStatusChange = (value: string) => {
+        setStatus(value);
+        router.get(
+            teachers.index(),
+            { search, status: value },
+            { preserveState: true },
+        );
+    };
+
+    const clearAll = () => {
+        setSearch('');
+        setStatus('');
+        router.get(teachers.index(), {}, { preserveState: true });
+    };
+
+    const activeFilterCount = status ? 1 : 0;
+
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: any | null;
     }>({ open: false, item: null });
+    const [approveDialog, setApproveDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
+    const [rejectDialog, setRejectDialog] = useState<{
+        open: boolean;
+        item: any | null;
+    }>({ open: false, item: null });
 
-    const handleSearch = () => {
-        router.get(teachers.index(), { search }, { preserveState: true });
-    };
-
-    const handleDelete = (teacher: { id: number; name: string }) => {
+    const handleDelete = (teacher: {
+        id: number;
+        name: string;
+        role: string;
+    }) => {
         setDeleteDialog({ open: true, item: teacher });
     };
 
     const confirmDelete = () => {
         if (deleteDialog.item) {
             router.delete(teachers.destroy(deleteDialog.item.id));
-            toast.success('Teacher deactivated successfully');
+            toast.success(
+                deleteDialog.item.role === 'inactive'
+                    ? t('toast.updated_successfully')
+                    : t('toast.deactivated_successfully'),
+            );
             setDeleteDialog({ open: false, item: null });
         }
     };
 
     const handleApprove = (teacher: { id: number; name: string }) => {
-        router.post(teachers.approve(teacher.id).url, {}, {
-            onSuccess: () => {
-                toast.success(`${teacher.name} has been approved`);
-                router.reload({ only: ['teachers'] });
-            },
-        });
+        setApproveDialog({ open: true, item: teacher });
+    };
+
+    const confirmApprove = () => {
+        if (approveDialog.item) {
+            router.post(
+                teachers.approve(approveDialog.item.id).url,
+                {},
+                {
+                    onSuccess: () => {
+                        toast.success(
+                            `${approveDialog.item.name} ${t('toast.approved_successfully')}`,
+                        );
+                        router.reload({ only: ['teachers'] });
+                    },
+                },
+            );
+            setApproveDialog({ open: false, item: null });
+        }
     };
 
     const handleReject = (teacher: { id: number; name: string }) => {
-        router.post(teachers.reject(teacher.id).url, {}, {
-            onSuccess: () => {
-                toast.success(`${teacher.name}'s approval has been revoked`);
-                router.reload({ only: ['teachers'] });
-            },
-        });
+        setRejectDialog({ open: true, item: teacher });
     };
+
+    const confirmReject = () => {
+        if (rejectDialog.item) {
+            router.post(
+                teachers.reject(rejectDialog.item.id).url,
+                {},
+                {
+                    onSuccess: () => {
+                        toast.success(
+                            `${rejectDialog.item.name} ${t('toast.revoked_successfully')}`,
+                        );
+                        router.reload({ only: ['teachers'] });
+                    },
+                },
+            );
+            setRejectDialog({ open: false, item: null });
+        }
+    };
+
+    const handleRowStatusChange = (teacher: TeacherRow, value: string) => {
+        const current =
+            teacher.role === 'inactive'
+                ? 'inactive'
+                : teacher.is_approved
+                  ? 'active'
+                  : 'pending';
+
+        if (value === current) {
+return;
+}
+
+        router.patch(
+            teachers.status(teacher.id).url,
+            { status: value },
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(
+                        value === 'inactive'
+                            ? t('toast.deactivated_successfully')
+                            : t('toast.updated_successfully'),
+                    );
+                    router.reload({ only: ['teachers'] });
+                },
+            },
+        );
+    };
+
+    const columns = (() => {
+        type Col = NonNullable<
+            DataTableProps<TeacherRow, unknown>['columns']
+        >[number];
+
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('teachers.name'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <span className="font-medium">{row.original.name}</span>
+                ),
+            } as Col,
+            {
+                id: 'email',
+                accessorKey: 'email',
+                header: t('teachers.email'),
+                enableSorting: true,
+                cell: ({ row }: any) => <span>{row.original.email}</span>,
+            } as Col,
+            ...(hasMultiBranch
+                ? [
+                      {
+                          id: 'branch',
+                          accessorKey: 'branch.name',
+                          header: 'Branch',
+                          enableSorting: false,
+                          cell: ({ row }: any) =>
+                              row.original.branch?.name ?? (
+                                  <span className="text-muted-foreground">
+                                      All
+                                  </span>
+                              ),
+                      } as Col,
+                  ]
+                : []),
+            {
+                id: 'role',
+                accessorKey: 'role',
+                header: t('teachers.role'),
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span className="capitalize">
+                        {roleName(row.original.role)}
+                    </span>
+                ),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: t('teachers.status'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const teacher: TeacherRow = row.original;
+                    const statusValue =
+                        teacher.role === 'inactive'
+                            ? 'inactive'
+                            : teacher.is_approved
+                              ? 'active'
+                              : 'pending';
+
+                    return (
+                        <Select
+                            value={statusValue}
+                            onValueChange={(value) =>
+                                handleRowStatusChange(teacher, value)
+                            }
+                        >
+                            <SelectTrigger className="h-8 w-auto min-w-[7rem]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-green-600" />
+                                        {t('teachers.active')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="pending">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-yellow-500" />
+                                        {t('teachers.pending')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="inactive">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-red-600" />
+                                        {t('teachers.inactive')}
+                                    </span>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    );
+                },
+            } as Col,
+            {
+                id: 'assigned_batches_count',
+                accessorKey: 'assigned_batches_count',
+                header: t('batches.title'),
+                enableSorting: false,
+                cell: ({ row }: any) => row.original.assigned_batches_count,
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const teacher: TeacherRow = row.original;
+
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={teachers.show(teacher.id)}>
+                                        <Eye className="mr-2 size-4" />
+                                        {t('actions.view')}
+                                    </Link>
+                                </DropdownMenuItem>
+                                {isAdmin && (
+                                    <>
+                                        {teacher.role === 'teacher' &&
+                                            !teacher.is_approved && (
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleApprove(teacher)
+                                                    }
+                                                >
+                                                    <CheckCircle className="mr-2 size-4 text-green-600" />
+                                                    {t('teachers.approve')}
+                                                </DropdownMenuItem>
+                                            )}
+                                        {teacher.role === 'teacher' &&
+                                            teacher.is_approved && (
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleReject(teacher)
+                                                    }
+                                                >
+                                                    <XCircle className="mr-2 size-4 text-yellow-600" />
+                                                    {t(
+                                                        'teachers.revoke_approval',
+                                                    )}
+                                                </DropdownMenuItem>
+                                            )}
+                                        <DropdownMenuItem asChild>
+                                            <Link
+                                                href={teachers.edit(teacher.id)}
+                                            >
+                                                <Pencil className="mr-2 size-4" />
+                                                {t('actions.edit')}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                handleDelete(teacher)
+                                            }
+                                            className={
+                                                teacher.role === 'inactive'
+                                                    ? ''
+                                                    : 'text-destructive'
+                                            }
+                                        >
+                                            <Trash2 className="mr-2 size-4" />
+                                            {teacher.role === 'inactive'
+                                                ? t('teachers.reactivate')
+                                                : t('actions.delete')}
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
 
     return (
         <>
             <Head title={t('teachers.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                     <Heading
                         title={t('teachers.title')}
-                        description={t('teachers.title')}
+                        description={t('teachers.desc')}
                     />
-                    {isAdmin && (
-                        <Link href={teachers.create()}>
-                            <Button>
-                                <Plus className="mr-2 size-4" />
-                                {t('teachers.create')}
-                            </Button>
-                        </Link>
-                    )}
+                    <div className="flex items-center gap-1">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({
+                                    only: ['teachers'],
+                                    onFinish: () => setRefreshing(false),
+                                });
+                            }}
+                        />
+                        <PageActions
+                            isAdmin={isAdmin}
+                            createLabel={t('teachers.create')}
+                            onCreate={() => router.get(teachers.create())}
+                            exportTitle={t('teachers.title')}
+                            exportFilename="teachers"
+                            exportHeaders={[
+                                t('teachers.name'),
+                                t('teachers.email'),
+                                t('teachers.role'),
+                                t('batches.title'),
+                            ]}
+                            exportRows={pagination.data.map((t) => [
+                                t.name,
+                                t.email,
+                                roleName(t.role),
+                                t.assigned_batches_count,
+                            ])}
+                            importUrl="/teachers/import"
+                            importFields={['name', 'email', 'phone', 'role']}
+                            onImportSuccess={() =>
+                                router.reload({ only: ['teachers'] })
+                            }
+                        />
+                    </div>
                 </div>
 
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="mb-4 flex items-center gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t('actions.search') + '...'}
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleSearch()
-                                    }
-                                    className="pr-9 pl-9"
-                                />
-                                {search && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearch('');
-                                            router.get(
-                                                teachers.index(),
-                                                {},
-                                                { preserveState: true },
-                                            );
-                                        }}
-                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <Button variant="secondary" onClick={handleSearch}>
-                                <Search className="size-4 sm:mr-2" />
-                                <span className="hidden sm:inline">Search</span>
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                disabled={refreshing}
-                                onClick={() => {
-                                    setRefreshing(true);
-                                    router.reload({
-                                        only: ['teachers'],
-                                        onFinish: () => setRefreshing(false),
-                                    });
-                                }}
-                            >
-                                <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                            </Button>
-                        </div>
-
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="sticky left-0 z-10 min-w-[150px] bg-background">
-                                        {t('teachers.name')}
-                                    </TableHead>
-                                    <TableHead>{t('teachers.email')}</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>{t('batches.title')}</TableHead>
-                                    <TableHead className="w-[100px]"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pagination.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={5}
-                                            className="text-center"
-                                        >
-                                            {t('teachers.title')}{' '}
-                                            {t('actions.search')}
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    pagination.data.map((teacher) => (
-                                        <TableRow key={teacher.id}>
-                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
-                                                {teacher.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {teacher.email}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant={teacher.is_approved ? 'success' : 'danger'}
-                                                >
-                                                    {teacher.is_approved ? 'Approved' : 'Pending'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                {teacher.assigned_batches_count}
-                                            </TableCell>
-                                            <TableCell className="p-1 text-center">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                            <EllipsisVertical className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={teachers.show(teacher.id)}>
-                                                                <Eye className="mr-2 size-4" />
-                                                                {t('actions.view')}
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        {isAdmin && (
-                                                            <>
-                                                                {!teacher.is_approved && (
-                                                                    <DropdownMenuItem onClick={() => handleApprove(teacher)}>
-                                                                        <CheckCircle className="mr-2 size-4 text-green-600" />
-                                                                        Approve
-                                                                    </DropdownMenuItem>
-                                                                )}
-                                                                {teacher.is_approved && (
-                                                                    <DropdownMenuItem onClick={() => handleReject(teacher)}>
-                                                                        <XCircle className="mr-2 size-4 text-yellow-600" />
-                                                                        Revoke Approval
-                                                                    </DropdownMenuItem>
-                                                                )}
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={teachers.edit(teacher.id)}>
-                                                                        <Pencil className="mr-2 size-4" />
-                                                                        {t('actions.edit')}
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() => handleDelete(teacher)} className="text-destructive">
-                                                                    <Trash2 className="mr-2 size-4" />
-                                                                    {t('actions.delete')}
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-
-                        <Pagination
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
                             currentPage={pagination.current_page}
                             lastPage={pagination.last_page}
                             total={pagination.total}
-                            perPage={pagination.per_page}
-                            itemName={t('teachers.title').toLowerCase() + 's'}
-                            baseUrl={teachers.index()}
-                            preserveParams={{ search }}
+                            itemName={t('teachers.title').toLowerCase()}
+                            baseUrl={teachers.index().url}
+                            preserveParams={{ search, status }}
+                            emptyMessage={t('teachers.no_teachers')}
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder={
+                                        t('actions.search') + '...'
+                                    }
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={activeFilterCount}
+                                    onClearAll={clearAll}
+                                    filters={[
+                                        {
+                                            id: 'status',
+                                            placeholder: t(
+                                                'teachers.all_status',
+                                            ),
+                                            value: status,
+                                            options: [
+                                                {
+                                                    label: t('teachers.active'),
+                                                    value: 'active',
+                                                },
+                                                {
+                                                    label: t(
+                                                        'teachers.inactive',
+                                                    ),
+                                                    value: 'inactive',
+                                                },
+                                            ],
+                                            onValueChange: handleStatusChange,
+                                        },
+                                    ]}
+                                />
+                            }
                         />
                     </CardContent>
                 </Card>
@@ -274,11 +514,58 @@ export default function TeachersIndex({
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title="Deactivate Teacher"
-                description={`Are you sure you want to deactivate ${deleteDialog.item?.name}?`}
-                confirmText="Deactivate"
-                variant="destructive"
+                title={
+                    deleteDialog.item?.role === 'inactive'
+                        ? t('teachers.reactivate_title')
+                        : t('teachers.deactivate_title')
+                }
+                description={(deleteDialog.item?.role === 'inactive'
+                    ? t('teachers.reactivate_confirm')
+                    : t('teachers.deactivate_confirm')
+                ).replace('{name}', deleteDialog.item?.name ?? '')}
+                confirmText={
+                    deleteDialog.item?.role === 'inactive'
+                        ? t('teachers.reactivate')
+                        : t('teachers.deactivate')
+                }
+                cancelText={t('actions.cancel')}
+                variant={
+                    deleteDialog.item?.role === 'inactive'
+                        ? 'default'
+                        : 'destructive'
+                }
                 onConfirm={confirmDelete}
+            />
+
+            <ConfirmDialog
+                open={approveDialog.open}
+                onOpenChange={(open) =>
+                    setApproveDialog({ open, item: approveDialog.item })
+                }
+                title={t('teachers.approve_title')}
+                description={t('teachers.approve_confirm').replace(
+                    '{name}',
+                    approveDialog.item?.name ?? '',
+                )}
+                confirmText={t('teachers.approve')}
+                cancelText={t('actions.cancel')}
+                onConfirm={confirmApprove}
+            />
+
+            <ConfirmDialog
+                open={rejectDialog.open}
+                onOpenChange={(open) =>
+                    setRejectDialog({ open, item: rejectDialog.item })
+                }
+                title={t('teachers.revoke_title')}
+                description={t('teachers.revoke_confirm').replace(
+                    '{name}',
+                    rejectDialog.item?.name ?? '',
+                )}
+                confirmText={t('teachers.revoke_approval')}
+                cancelText={t('actions.cancel')}
+                variant="destructive"
+                onConfirm={confirmReject}
             />
         </>
     );

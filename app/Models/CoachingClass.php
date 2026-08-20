@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CoachingClass extends Model
 {
-    protected $fillable = ['name', 'default_fee'];
+    use BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'name', 'default_fee'];
 
     protected function casts(): array
     {

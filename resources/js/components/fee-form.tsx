@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import { FormActions } from '@/components/form-actions';
+import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -9,7 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import InputError from '@/components/input-error';
+import fees from '@/routes/fees';
 
 type Student = {
     id: number;
@@ -253,16 +254,10 @@ export default function FeeForm({
             </div>
 
             <div className="flex justify-end gap-2">
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => window.history.back()}
-                >
-                    Cancel
-                </Button>
-                <Button type="submit" disabled={processing}>
-                    {isEdit ? 'Update' : 'Create'}
-                </Button>
+                <FormActions
+                    cancelHref={fees.index().url}
+                    processing={processing}
+                />
             </div>
         </form>
     );

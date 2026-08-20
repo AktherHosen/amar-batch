@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alpha-academy-v1';
+const CACHE_NAME = 'amar-batch-v1';
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [

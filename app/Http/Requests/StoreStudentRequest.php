@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreStudentRequest extends FormRequest
 {
@@ -14,10 +15,12 @@ class StoreStudentRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
+        $tenantId = $this->user()->tenant_id;
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
-            'coaching_class_id' => ['nullable', 'exists:coaching_classes,id'],
+            'coaching_class_id' => ['required', Rule::exists('coaching_classes', 'id')->where('tenant_id', $tenantId)],
             'section' => ['nullable', 'string', 'max:10'],
             'address' => ['nullable', 'string'],
             'date_of_birth' => ['nullable', 'date'],
@@ -27,6 +30,7 @@ class StoreStudentRequest extends FormRequest
             'status' => ['sometimes', 'in:active,inactive'],
             'joined_at' => ['nullable', 'date'],
             'left_at' => ['nullable', 'date'],
+            'photo' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }

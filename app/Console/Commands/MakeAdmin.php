@@ -9,10 +9,11 @@ use Illuminate\Support\Facades\Hash;
 class MakeAdmin extends Command
 {
     protected $signature = 'make:admin
-                            {email? : Email address of the user to make admin}
-                            {--create : Create a new admin user instead of promoting an existing one}';
+                            {email? : Email address of the user to make owner}
+                            {--create : Create a new owner user instead of promoting an existing one}
+                            {--tenant= : Tenant ID to assign the owner to}';
 
-    protected $description = 'Create a new admin user or promote an existing user to admin';
+    protected $description = 'Create a new owner user or promote an existing user to owner';
 
     public function handle(): int
     {
@@ -31,24 +32,24 @@ class MakeAdmin extends Command
         if (! $user) {
             $this->error("User with email {$email} not found.");
 
-            if ($this->confirm('Would you like to create a new admin with this email?')) {
+            if ($this->confirm('Would you like to create a new owner with this email?')) {
                 return $this->createAdmin($email);
             }
 
             return Command::FAILURE;
         }
 
-        $user->update(['role' => 'admin']);
-        $this->info("User {$user->name} ({$user->email}) has been promoted to admin.");
+        $user->update(['role' => 'owner']);
+        $this->info("User {$user->name} ({$user->email}) has been promoted to owner.");
 
         return Command::SUCCESS;
     }
 
     private function createAdmin(?string $email = null): int
     {
-        $name = $this->ask('What is the admin name?');
-        $email = $email ?? $this->ask('What is the admin email?');
-        $password = $this->secret('What is the admin password?');
+        $name = $this->ask('What is the owner name?');
+        $email = $email ?? $this->ask('What is the owner email?');
+        $password = $this->secret('What is the owner password?');
 
         if (strlen($password) < 8) {
             $this->error('Password must be at least 8 characters.');
@@ -64,19 +65,23 @@ class MakeAdmin extends Command
             return Command::FAILURE;
         }
 
+        $tenantId = $this->option('tenant');
+
         $user = User::create([
             'name' => $name,
             'email' => $email,
             'password' => Hash::make($password),
-            'role' => 'admin',
+            'role' => 'owner',
+            'tenant_id' => $tenantId ?: null,
             'email_verified_at' => now(),
         ]);
 
-        $this->info('Admin user created successfully:');
+        $this->info('Owner user created successfully:');
         $this->table(['Field', 'Value'], [
             ['Name', $user->name],
             ['Email', $user->email],
             ['Role', $user->role],
+            ['Tenant ID', $user->tenant_id ?: 'None (Super Admin)'],
         ]);
 
         return Command::SUCCESS;

@@ -12,7 +12,7 @@ class CheckTeacherApproval
     {
         $user = $request->user();
 
-        if ($user && $user->role === 'teacher' && !$user->is_approved) {
+        if ($user && $user->role === 'teacher' && ! $user->is_approved) {
             return back()->with('toast', [
                 'type' => 'warning',
                 'message' => 'Your account is pending admin approval. Please wait for approval to access the system.',

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -44,27 +44,33 @@
         <meta name="theme-color" content="#18181b">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Karnaphuli Alpha Academy') }}">
+        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Amar Batch') }}">
 
         @fonts
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Karnaphuli Alpha Academy') }}</title>
+            <title>{{ config('app.name', 'Amar Batch') }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />
 
-        @if(app()->environment('production'))
         <script>
             if ('serviceWorker' in navigator) {
+                @if(app()->environment('production'))
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('/sw.js');
                 });
+                @else
+                navigator.serviceWorker.getRegistrations().then((registrations) => {
+                    for (const registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+                @endif
             }
         </script>
-        @endif
     </body>
 </html>
