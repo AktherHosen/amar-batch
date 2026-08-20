@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('description')->nullable();
-            $table->json('permissions')->default('[]');
+            $table->json('permissions');
             $table->boolean('is_system')->default(false);
             $table->timestamps();
 
