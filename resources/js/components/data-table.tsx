@@ -467,10 +467,15 @@ export function ColumnToggle<TData>({
         }
     };
 
+    const visibleCount = hideableColumns.filter(
+        (col) => visibility[col.id] ?? true,
+    ).length;
+
     const handleCheckedChange = (
         column: (typeof hideableColumns)[number],
         value: boolean,
     ) => {
+        if (!value && visibleCount <= 1) return;
         setVisibility((prev) => ({ ...prev, [column.id]: value }));
         column.toggleVisibility(!!value);
     };
