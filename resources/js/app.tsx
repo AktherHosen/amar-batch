@@ -21,6 +21,7 @@ createInertiaApp({
             case name === 'privacy':
                 return null;
             case name.startsWith('auth/'):
+            case name.startsWith('onboarding/'):
                 return AuthLayout;
             case name.startsWith('super-admin/'):
                 return SuperAdminLayout;
