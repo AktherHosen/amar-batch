@@ -188,6 +188,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Feature mapping
+    |--------------------------------------------------------------------------
+    | Maps route groups to plan feature keys. Groups without a feature
+    | mapping are always shown. Groups mapped to a feature are only shown
+    | when the tenant's plan includes that feature.
+    */
+    'feature_map' => [
+        'Students' => 'students',
+        'Batches' => 'batches',
+        'Attendance' => 'attendance',
+        'Fees' => 'fees',
+        'Coaching Classes' => 'students',
+        'Exams' => 'exams',
+        'Notices' => 'notifications',
+        'Reports' => 'reports',
+        'Branches' => 'multi_branch',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | System role defaults
     |--------------------------------------------------------------------------
     | Seed roles created automatically for every new tenant.
