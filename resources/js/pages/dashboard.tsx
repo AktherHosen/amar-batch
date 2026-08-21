@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 import {
     ArcElement,
     BarElement,
@@ -24,6 +25,10 @@ import {
     Layers,
     Megaphone,
     Plus,
+    Sun,
+    Moon,
+    CloudSun,
+    CloudMoon,
     Users,
 } from 'lucide-react';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
@@ -182,6 +187,24 @@ export default function Dashboard({
         return t(months[monthIndex]);
     };
 
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const getGreeting = () => {
+        const hour = currentTime.getHours();
+        if (hour >= 5 && hour < 12) return { text: t('dashboard.good_morning'), icon: Sun };
+        if (hour >= 12 && hour < 17) return { text: t('dashboard.good_afternoon'), icon: CloudSun };
+        if (hour >= 17 && hour < 21) return { text: t('dashboard.good_evening'), icon: CloudMoon };
+        return { text: t('dashboard.good_night'), icon: Moon };
+    };
+
+    const greeting = getGreeting();
+    const GreetingIcon = greeting.icon;
+
     if (isPendingApproval) {
         return (
             <>
@@ -220,29 +243,34 @@ export default function Dashboard({
             <Head title={t('dashboard.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden p-3 pb-20 sm:rounded-xl sm:p-4 sm:pb-4">
-                {/* Header */}
+                {/* Greeting Banner */}
                 <motion.div
-                    className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.4 }}
                 >
-                    <Heading
-                        title={
-                            isTeacher
-                                ? `${t('dashboard.welcome')}, ${auth.user?.name}`
-                                : tenant?.name || t('dashboard.title')
-                        }
-                        description={
-                            isTeacher
-                                ? t('dashboard.assigned_batches_desc')
-                                : tenant?.subscription?.plan
-                                  ? `Plan: ${tenant.subscription.plan.name}${tenant.subscription.status === 'trial' ? ' (Trial)' : ''}`
-                                  : t('app.tagline')
-                        }
-                    />
-                    <div className="hidden sm:block">
-                        <Clock />
+                    <div className="relative overflow-hidden rounded-xl bg-primary/5 px-4 py-3 sm:px-6 sm:py-4">
+                        <div className="absolute -right-4 -top-4 text-primary/10">
+                            <GreetingIcon className="size-24" strokeWidth={1} />
+                        </div>
+                        <div className="relative flex items-center justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                                <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
+                                    {greeting.text}, {isTeacher ? auth.user?.name : tenant?.name}!
+                                </h1>
+                                <p className="truncate text-xs text-muted-foreground sm:text-sm">
+                                    {isTeacher
+                                        ? t('dashboard.assigned_batches_desc')
+                                        : tenant?.subscription?.plan
+                                          ? `${tenant.subscription.plan.name}${tenant.subscription.status === 'trial' ? ' (Trial)' : ''}`
+                                          : t('app.tagline')
+                                    }
+                                </p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground sm:text-sm">
+                                <Clock />
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
 

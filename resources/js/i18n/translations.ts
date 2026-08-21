@@ -131,6 +131,10 @@ export const translations: Record<Locale, Record<string, string>> = {
         'dashboard.mark_attendance': 'উপস্থিতি নিন',
         'dashboard.record_payment': 'পেমেন্ট রেকর্ড করুন',
         'dashboard.post_notice': 'নোটিশ পোস্ট করুন',
+        'dashboard.good_morning': 'শুভ সকাল',
+        'dashboard.good_afternoon': 'শুভ অপরাহ্ন',
+        'dashboard.good_evening': 'শুভ সন্ধ্যা',
+        'dashboard.good_night': 'শুভ রাত্রি',
 
         // Students
         'students.title': 'স্টুডেন্ট',
@@ -888,6 +892,10 @@ export const translations: Record<Locale, Record<string, string>> = {
         'dashboard.mark_attendance': 'Mark Attendance',
         'dashboard.record_payment': 'Record Payment',
         'dashboard.post_notice': 'Post Notice',
+        'dashboard.good_morning': 'Good Morning',
+        'dashboard.good_afternoon': 'Good Afternoon',
+        'dashboard.good_evening': 'Good Evening',
+        'dashboard.good_night': 'Good Night',
 
         // Students
         'students.title': 'Students',
