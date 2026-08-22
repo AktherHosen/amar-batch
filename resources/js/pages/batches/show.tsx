@@ -710,7 +710,8 @@ export default function BatchesShow({
                                                                 value: String(
                                                                     teacher.id,
                                                                 ),
-                                                                label: `${teacher.name} (${teacher.email})`,
+                                                                label: teacher.name,
+                                                                description: teacher.email,
                                                                 searchText: `${teacher.name} ${teacher.email}`,
                                                             }),
                                                         )}

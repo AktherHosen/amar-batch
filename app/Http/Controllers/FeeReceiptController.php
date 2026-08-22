@@ -31,6 +31,19 @@ class FeeReceiptController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        $this->authorize('create', FeeReceipt::class);
+
+        $students = Student::orderBy('name')->get(['id', 'name']);
+        $batches = Batch::orderBy('name')->get(['id', 'name']);
+
+        return Inertia::render('fees/receipts/create', [
+            'students' => $students,
+            'batches' => $batches,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $this->authorize('create', FeeReceipt::class);

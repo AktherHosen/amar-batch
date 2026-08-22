@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Trash2, EllipsisVertical, ChevronDown } from 'lucide-react';
+import { Trash2, EllipsisVertical, ChevronDown, Receipt } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -606,22 +606,67 @@ export default function FeesIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const item: FeeGridItem = row.original;
+                    const totalPaid = months.reduce((sum, m) => {
+                        const fee = item.months[m];
+                        return sum + (fee ? Number(fee.amount_paid) : 0);
+                    }, 0);
 
                     return (
                         <div className="flex justify-center">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                onClick={() =>
-                                    handleDeleteRow(
-                                        item.student.id,
-                                        item.batch.id,
-                                    )
-                                }
-                            >
-                                <Trash2 className="size-4" />
-                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                        <EllipsisVertical className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                        disabled={totalPaid <= 0}
+                                        onClick={() => {
+                                            const paidMonths = months.filter(
+                                                (m) => item.months[m] && Number(item.months[m].amount_paid) > 0,
+                                            );
+                                            if (paidMonths.length === 0) return;
+
+                                            const latestMonth = paidMonths[paidMonths.length - 1];
+                                            const fee = item.months[latestMonth];
+
+                                            router.post(
+                                                '/fees/receipts',
+                                                {
+                                                    student_id: item.student.id,
+                                                    batch_id: item.batch.id,
+                                                    month: latestMonth,
+                                                    year: year,
+                                                    amount_paid: Number(fee.amount_paid),
+                                                    amount_due: Number(fee.amount_paid),
+                                                },
+                                                {
+                                                    preserveScroll: true,
+                                                    onSuccess: () => {
+                                                        toast.success('Receipt generated successfully');
+                                                    },
+                                                },
+                                            );
+                                        }}
+                                    >
+                                        <Receipt className="mr-2 size-4" />
+                                        Generate Receipt
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive"
+                                        onClick={() =>
+                                            handleDeleteRow(
+                                                item.student.id,
+                                                item.batch.id,
+                                            )
+                                        }
+                                    >
+                                        <Trash2 className="mr-2 size-4" />
+                                        Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     );
                 },
