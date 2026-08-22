@@ -154,6 +154,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
         // Students
         'students.title': 'স্টুডেন্ট',
+        'students.student_id': 'আইডি',
         'students.desc': 'সকল স্টুডেন্টদের তালিকা ও ব্যবস্থাপনা',
         'students.create': 'স্টুডেন্ট যোগ করুন',
         'students.edit': 'স্টুডেন্ট এডিট',
@@ -931,6 +932,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
         // Students
         'students.title': 'Students',
+        'students.student_id': 'Student ID',
         'students.desc': 'List and manage all students',
         'students.create': 'New Student',
         'students.edit': 'Edit Student',

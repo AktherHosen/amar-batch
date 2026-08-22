@@ -1,11 +1,13 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, PenLine, Pencil, Trash2 } from 'lucide-react';
+import { EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
+import Heading from '@/components/heading';
+import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,8 +25,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import PageActions from '@/components/page-actions';
-import Heading from '@/components/heading';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import students from '@/routes/students';
@@ -161,11 +161,26 @@ export default function StudentsIndex({
 
         return [
             {
+                id: 'code',
+                accessorKey: 'code',
+                header: t('students.student_id'),
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => {
+                    const s: Student = row.original;
+
+                    return (
+                        <span className="font-mono text-sm font-medium text-muted-foreground">
+                            {s.code}
+                        </span>
+                    );
+                },
+            } as Col,
+            {
                 id: 'name',
                 accessorKey: 'name',
                 header: t('students.name'),
                 enableSorting: true,
-                meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const s: Student = row.original;
                     const className = s.coaching_class
@@ -363,6 +378,7 @@ export default function StudentsIndex({
                             exportTitle={t('students.title')}
                             exportFilename="students"
                             exportHeaders={[
+                                t('students.student_id'),
                                 t('students.name'),
                                 t('students.phone'),
                                 t('students.class'),
@@ -370,6 +386,7 @@ export default function StudentsIndex({
                                 t('students.status'),
                             ]}
                             exportRows={pagination.data.map((s) => [
+                                s.code,
                                 s.name,
                                 s.phone || '',
                                 s.coaching_class?.name || '',

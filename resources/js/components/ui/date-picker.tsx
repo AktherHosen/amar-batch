@@ -1,11 +1,61 @@
 import * as React from "react"
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, isBefore, isAfter, addMonths, isToday } from "date-fns"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+function YearGrid({ year, onSelect }: { year: number; onSelect: (y: number) => void }) {
+  const start = year - 6
+  const years = Array.from({ length: 12 }, (_, i) => start + i)
+
+  return (
+    <div className="w-64 p-3">
+      <div className="grid grid-cols-3 gap-1">
+        {years.map((y) => (
+          <button
+            key={y}
+            type="button"
+            onClick={() => onSelect(y)}
+            className={cn(
+              "h-8 rounded-md text-sm transition-colors",
+              y === year && "bg-primary text-primary-foreground font-medium",
+              y !== year && "hover:bg-accent hover:text-accent-foreground"
+            )}
+          >
+            {y}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MonthGrid({ month, onSelect }: { month: number; onSelect: (m: number) => void }) {
+  return (
+    <div className="w-64 p-3">
+      <div className="grid grid-cols-3 gap-1">
+        {MONTHS.map((m, i) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => onSelect(i)}
+            className={cn(
+              "h-8 rounded-md text-sm transition-colors",
+              i === month && "bg-primary text-primary-foreground font-medium",
+              i !== month && "hover:bg-accent hover:text-accent-foreground"
+            )}
+          >
+            {m}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 function CompactCalendar({
   selected,
@@ -21,6 +71,7 @@ function CompactCalendar({
   const [viewMonth, setViewMonth] = React.useState(
     selected ? new Date(selected.getFullYear(), selected.getMonth(), 1) : startOfMonth(new Date())
   )
+  const [openPicker, setOpenPicker] = React.useState<"year" | "month" | null>(null)
   const today = new Date()
   const monthStart = startOfMonth(viewMonth)
   const monthEnd = endOfMonth(viewMonth)
@@ -32,6 +83,51 @@ function CompactCalendar({
   while (cursor <= gridEnd) {
     days.push(cursor)
     cursor = addDays(cursor, 1)
+  }
+
+  const currentYear = viewMonth.getFullYear()
+  const currentMonth = viewMonth.getMonth()
+
+  if (openPicker === "year") {
+    return (
+      <div className="w-64 p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <Button type="button" variant="ghost" size="sm" className="size-7 p-0" onClick={() => setOpenPicker(null)}>
+            <ChevronLeft className="size-4" />
+          </Button>
+          <span className="text-sm font-medium">{currentYear - 6} – {currentYear + 5}</span>
+          <div className="size-7" />
+        </div>
+        <YearGrid
+          year={currentYear}
+          onSelect={(y) => {
+            setViewMonth(new Date(y, currentMonth, 1))
+            setOpenPicker(null)
+          }}
+        />
+      </div>
+    )
+  }
+
+  if (openPicker === "month") {
+    return (
+      <div className="w-64 p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <Button type="button" variant="ghost" size="sm" className="size-7 p-0" onClick={() => setOpenPicker(null)}>
+            <ChevronLeft className="size-4" />
+          </Button>
+          <span className="text-sm font-medium">{currentYear}</span>
+          <div className="size-7" />
+        </div>
+        <MonthGrid
+          month={currentMonth}
+          onSelect={(m) => {
+            setViewMonth(new Date(currentYear, m, 1))
+            setOpenPicker(null)
+          }}
+        />
+      </div>
+    )
   }
 
   return (
@@ -46,8 +142,21 @@ function CompactCalendar({
         >
           <ChevronLeft className="size-4" />
         </Button>
-        <div className="text-sm font-medium capitalize">
-          {format(viewMonth, "MMMM yyyy")}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            className="rounded-md px-1.5 py-0.5 text-sm font-medium capitalize hover:bg-accent"
+            onClick={() => setOpenPicker("month")}
+          >
+            {format(viewMonth, "MMMM")}
+          </button>
+          <button
+            type="button"
+            className="rounded-md px-1.5 py-0.5 text-sm font-medium hover:bg-accent"
+            onClick={() => setOpenPicker("year")}
+          >
+            {format(viewMonth, "yyyy")}
+          </button>
         </div>
         <Button
           type="button"

@@ -77,7 +77,7 @@ export default function QuickActions({ features }: { features: string[] }) {
                     </CardHeader>
                     <CardContent>
                         <motion.div
-                            className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+                            className={`grid grid-cols-2 gap-2 ${actions.length >= 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}
                             initial="hidden"
                             animate="visible"
                             variants={stagger}

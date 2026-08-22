@@ -559,6 +559,14 @@ export default function StudentsShow({
                                 <div className="grid w-full grid-cols-2 gap-3">
                                     <div className="min-w-0">
                                         <p className="text-xs text-muted-foreground">
+                                            {t('students.student_id')}
+                                        </p>
+                                        <p className="truncate text-sm font-medium">
+                                            {student.code}
+                                        </p>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-xs text-muted-foreground">
                                             {t('students.name')}
                                         </p>
                                         <p className="truncate text-sm font-medium">

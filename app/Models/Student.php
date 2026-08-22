@@ -18,9 +18,36 @@ class Student extends Model
     use BelongsToBranch, BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'tenant_id', 'branch_id', 'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',
+        'tenant_id', 'branch_id', 'code', 'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',
         'gender', 'guardian_name', 'guardian_phone', 'photo', 'status', 'joined_at', 'left_at',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Student $student) {
+            if (! $student->code) {
+                $student->code = static::generateCode($student->tenant_id);
+            }
+        });
+    }
+
+    public static function generateCode(?int $tenantId): string
+    {
+        $tenant = $tenantId ? \App\Models\Tenant::find($tenantId) : null;
+        $prefix = $tenant?->student_id_prefix ?? 'STD';
+
+        $lastCode = static::where('tenant_id', $tenantId)
+            ->orderByRaw("CAST(SUBSTRING_INDEX(code, '-', -1) AS UNSIGNED) DESC")
+            ->value('code');
+
+        if ($lastCode && preg_match('/-(\d+)$/', $lastCode, $matches)) {
+            $next = (int) $matches[1] + 1;
+        } else {
+            $next = 1;
+        }
+
+        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+    }
 
     protected function casts(): array
     {

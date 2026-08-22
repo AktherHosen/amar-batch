@@ -176,6 +176,12 @@ return false;
                     permission: 'fees.index',
                 },
                 {
+                    title: 'Receipts',
+                    href: '/fees/receipts',
+                    icon: FileText,
+                    ownerOnly: true,
+                },
+                {
                     title: t('nav.subscription'),
                     href: subscription.index(),
                     icon: CreditCard,

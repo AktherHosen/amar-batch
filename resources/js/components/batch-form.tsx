@@ -11,6 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { TimePicker } from '@/components/ui/time-picker';
 import batches from '@/routes/batches';
 
 type Batch = {
@@ -121,24 +122,22 @@ export default function BatchForm({
                 <div className="space-y-2">
                     <Label>Time</Label>
                     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-                        <Input
-                            type="time"
-                            id="time_start"
+                        <TimePicker
                             value={data.time?.split(' - ')[0] || data.time?.split('-')[0]?.trim() || ''}
-                            onChange={(e) => {
+                            onValueChange={(val) => {
                                 const end = data.time?.split(' - ')[1] || data.time?.split('-')[1]?.trim() || '';
-                                setData('time', end ? `${e.target.value} - ${end}` : e.target.value);
+                                setData('time', end ? `${val} - ${end}` : val);
                             }}
+                            placeholder="Start time"
                         />
                         <span className="text-muted-foreground text-sm">-</span>
-                        <Input
-                            type="time"
-                            id="time_end"
+                        <TimePicker
                             value={data.time?.split(' - ')[1] || data.time?.split('-')[1]?.trim() || ''}
-                            onChange={(e) => {
+                            onValueChange={(val) => {
                                 const start = data.time?.split(' - ')[0] || data.time?.split('-')[0]?.trim() || '';
-                                setData('time', start ? `${start} - ${e.target.value}` : e.target.value);
+                                setData('time', start ? `${start} - ${val}` : val);
                             }}
+                            placeholder="End time"
                         />
                     </div>
                     <InputError message={errors.time} />
