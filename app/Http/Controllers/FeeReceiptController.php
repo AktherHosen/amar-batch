@@ -25,8 +25,13 @@ class FeeReceiptController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $students = \App\Models\Student::orderBy('name')->get(['id', 'name']);
+        $batches = \App\Models\Batch::orderBy('name')->get(['id', 'name']);
+
         return Inertia::render('fees/receipts/index', [
             'receipts' => $receipts,
+            'students' => $students,
+            'batches' => $batches,
             'filters' => $request->only(['search']),
         ]);
     }

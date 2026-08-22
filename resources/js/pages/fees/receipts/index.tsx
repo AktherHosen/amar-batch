@@ -1,10 +1,10 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Eye, Trash2, Plus, EllipsisVertical } from 'lucide-react';
+﻿import { Head, router, usePage } from '@inertiajs/react';
+import { Eye, Trash2, Plus, EllipsisVertical, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import { RefreshButton } from '@/components/refresh-button';
@@ -16,7 +16,25 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+} from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
+import InputError from '@/components/input-error';
 
 type Receipt = {
     id: number;
@@ -30,6 +48,9 @@ type Receipt = {
     created_at: string;
 };
 
+type Student = { id: number; name: string };
+type Batch = { id: number; name: string };
+
 type PageProps = {
     receipts: {
         data: Receipt[];
@@ -38,6 +59,8 @@ type PageProps = {
         per_page: number;
         total: number;
     };
+    students: Student[];
+    batches: Batch[];
     filters: {
         search?: string;
     };
@@ -48,12 +71,26 @@ const MONTHS = [
     'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-export default function FeeReceiptsIndex({ receipts: pagination, filters }: PageProps) {
+const currentYear = new Date().getFullYear();
+const currentMonth = new Date().getMonth() + 1;
+
+export default function FeeReceiptsIndex({ receipts: pagination, filters, students, batches }: PageProps) {
     const { t, formatCurrency } = useLocale();
-    const { auth } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
     const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Receipt | null }>({ open: false, item: null });
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [processing, setProcessing] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [form, setForm] = useState({
+        student_id: '',
+        batch_id: '',
+        month: String(currentMonth),
+        year: String(currentYear),
+        amount_paid: '',
+        amount_due: '',
+        notes: '',
+    });
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -76,6 +113,44 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
             });
             setDeleteDialog({ open: false, item: null });
         }
+    };
+
+    const resetForm = () => {
+        setForm({
+            student_id: '',
+            batch_id: '',
+            month: String(currentMonth),
+            year: String(currentYear),
+            amount_paid: '',
+            amount_due: '',
+            notes: '',
+        });
+        setErrors({});
+    };
+
+    const handleCreateReceipt = (e: React.FormEvent) => {
+        e.preventDefault();
+        setProcessing(true);
+
+        router.post('/fees/receipts', {
+            ...form,
+            month: Number(form.month),
+            year: Number(form.year),
+            amount_paid: Number(form.amount_paid),
+            amount_due: Number(form.amount_due),
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Receipt generated successfully');
+                setSheetOpen(false);
+                resetForm();
+                router.reload({ only: ['receipts'] });
+            },
+            onError: (err) => {
+                setErrors(err as Record<string, string>);
+            },
+            onFinish: () => setProcessing(false),
+        });
     };
 
     const columns = (() => {
@@ -154,11 +229,11 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
 
                     return (
                         <div className="flex gap-1">
-                            <Link href={`/fees/receipts/${receipt.id}`}>
+                            <a href={`/fees/receipts/${receipt.id}`} target="_blank" rel="noopener noreferrer">
                                 <Button variant="ghost" size="sm" className="size-8 p-0">
                                     <Eye className="size-4" />
                                 </Button>
-                            </Link>
+                            </a>
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -202,9 +277,9 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.get('/fees/receipts/create')}>
+                                <DropdownMenuItem onClick={() => { resetForm(); setSheetOpen(true); }}>
                                     <Plus className="mr-2 size-4" />
-                                    Create Receipt
+                                    New Receipt
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -238,11 +313,134 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters }: Page
                 </Card>
             </div>
 
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>New Receipt</SheetTitle>
+                        <SheetDescription>
+                            Generate a fee receipt for a student.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleCreateReceipt} className="space-y-4 px-4 pb-4">
+                        <div className="space-y-2">
+                            <Label>Student *</Label>
+                            <Select value={form.student_id} onValueChange={(v) => setForm({ ...form, student_id: v })}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select student" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {students.map((s) => (
+                                        <SelectItem key={s.id} value={String(s.id)}>
+                                            {s.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.student_id} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Batch *</Label>
+                            <Select value={form.batch_id} onValueChange={(v) => setForm({ ...form, batch_id: v })}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select batch" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {batches.map((b) => (
+                                        <SelectItem key={b.id} value={String(b.id)}>
+                                            {b.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.batch_id} />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                                <Label>Month *</Label>
+                                <Select value={form.month} onValueChange={(v) => setForm({ ...form, month: v })}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {MONTHS.map((m, i) => (
+                                            <SelectItem key={i + 1} value={String(i + 1)}>
+                                                {m}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.month} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Year *</Label>
+                                <Input
+                                    type="number"
+                                    value={form.year}
+                                    onChange={(e) => setForm({ ...form, year: e.target.value })}
+                                    min="2020"
+                                    max="2100"
+                                />
+                                <InputError message={errors.year} />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                                <Label>Amount Paid *</Label>
+                                <Input
+                                    type="number"
+                                    value={form.amount_paid}
+                                    onChange={(e) => setForm({ ...form, amount_paid: e.target.value })}
+                                    placeholder="0"
+                                    min="0"
+                                />
+                                <InputError message={errors.amount_paid} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Amount Due *</Label>
+                                <Input
+                                    type="number"
+                                    value={form.amount_due}
+                                    onChange={(e) => setForm({ ...form, amount_due: e.target.value })}
+                                    placeholder="0"
+                                    min="0"
+                                />
+                                <InputError message={errors.amount_due} />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Notes</Label>
+                            <Textarea
+                                value={form.notes}
+                                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                                placeholder="Optional notes"
+                                rows={3}
+                            />
+                            <InputError message={errors.notes} />
+                        </div>
+
+                        <div className="flex justify-end gap-2 border-t pt-4">
+                            <Button type="button" variant="outline" onClick={() => setSheetOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? 'Creating...' : 'Create Receipt'}
+                            </Button>
+                        </div>
+                    </form>
+                </SheetContent>
+            </Sheet>
+
             <ConfirmDialog
                 open={deleteDialog.open}
                 onOpenChange={(open) => setDeleteDialog({ open, item: deleteDialog.item })}
                 title="Delete Receipt"
-                description={`Are you sure you want to delete receipt ${deleteDialog.item?.receipt_number}? This action cannot be undone.`}
+                 description={`Are you sure you want to delete receipt ${deleteDialog.item?.receipt_number}? This action cannot be undone.`}
                 confirmText="Delete"
                 variant="destructive"
                 onConfirm={confirmDelete}

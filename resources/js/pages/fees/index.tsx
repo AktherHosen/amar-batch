@@ -651,7 +651,7 @@ export default function FeesIndex({
                                         }}
                                     >
                                         <Receipt className="mr-2 size-4" />
-                                        Generate Receipt
+                                        Receipt
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         className="text-destructive focus:text-destructive"
