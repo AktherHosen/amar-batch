@@ -21,7 +21,6 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
-import { useHasFeature } from '@/lib/features';
 import reports from '@/routes/reports';
 
 type UnpaidStudent = {
@@ -51,7 +50,6 @@ export default function UnpaidStudentsReport({
     filters,
 }: PageProps) {
     const { t } = useLocale();
-    const hasReportsFeature = useHasFeature('reports');
     const [refreshing, setRefreshing] = useState(false);
 
     const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -89,16 +87,6 @@ export default function UnpaidStudentsReport({
         setSelectedBatchId('');
         router.get(reports.unpaidStudents.url(), {}, { preserveState: true });
     };
-
-    if (!hasReportsFeature) {
-        return (
-            <div className="flex h-full items-center justify-center p-8">
-                <p className="text-muted-foreground">
-                    {t('dashboard.feature_locked')}
-                </p>
-            </div>
-        );
-    }
 
     const totalDue = students.reduce((sum, s) => sum + s.default_fee, 0);
 

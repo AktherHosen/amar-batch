@@ -737,17 +737,16 @@ export default function FeesIndex({
                                 });
                             }}
                         />
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => router.get('/reports/unpaid-students', { month: String(new Date().getMonth() + 1), year: String(selectedYear) })}
-                        >
-                            {t('reports.unpaid_title')}
-                        </Button>
                         <PageActions
                             isAdmin={isAdmin}
                             createLabel={t('fees.create')}
                             onCreate={() => router.get(fees.create.url())}
+                            extraItems={
+                                <DropdownMenuItem onClick={() => router.get('/reports/unpaid-students', { month: String(new Date().getMonth() + 1), year: String(selectedYear) })}>
+                                    <Receipt className="mr-2 size-4" />
+                                    {t('reports.unpaid_title')}
+                                </DropdownMenuItem>
+                            }
                             exportTitle={t('fees.title')}
                             exportFilename={`fees-${year}`}
                             exportHeaders={[

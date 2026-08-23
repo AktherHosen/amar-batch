@@ -1,6 +1,6 @@
 ﻿import { Head, router, usePage } from '@inertiajs/react';
 import { Eye, Trash2, Plus, EllipsisVertical, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable } from '@/components/data-table';
@@ -31,6 +31,7 @@ import {
     SheetHeader,
     SheetTitle,
     SheetDescription,
+    SheetFooter,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
@@ -50,6 +51,7 @@ type Receipt = {
 
 type Student = { id: number; name: string };
 type Batch = { id: number; name: string };
+type Enrollment = { student_id: number; batch_id: number };
 
 type PageProps = {
     receipts: {
@@ -61,6 +63,7 @@ type PageProps = {
     };
     students: Student[];
     batches: Batch[];
+    enrollments: Enrollment[];
     filters: {
         search?: string;
     };
@@ -74,7 +77,7 @@ const MONTHS = [
 const currentYear = new Date().getFullYear();
 const currentMonth = new Date().getMonth() + 1;
 
-export default function FeeReceiptsIndex({ receipts: pagination, filters, students, batches }: PageProps) {
+export default function FeeReceiptsIndex({ receipts: pagination, filters, students, batches, enrollments }: PageProps) {
     const { t, formatCurrency } = useLocale();
     const [search, setSearch] = useState(filters.search || '');
     const [refreshing, setRefreshing] = useState(false);
@@ -114,6 +117,14 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
             setDeleteDialog({ open: false, item: null });
         }
     };
+
+    const filteredBatches = useMemo(() => {
+        if (!form.student_id) return batches;
+        const enrolledBatchIds = enrollments
+            .filter((e) => e.student_id === Number(form.student_id))
+            .map((e) => e.batch_id);
+        return batches.filter((b) => enrolledBatchIds.includes(b.id));
+    }, [form.student_id, batches, enrollments]);
 
     const resetForm = () => {
         setForm({
@@ -314,17 +325,17 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
             </div>
 
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
                     <SheetHeader>
                         <SheetTitle>{t('receipts.new')}</SheetTitle>
                         <SheetDescription>
                             {t('receipts.generate_desc')}
                         </SheetDescription>
                     </SheetHeader>
-                    <form onSubmit={handleCreateReceipt} className="space-y-4 px-4 pb-4">
+                    <form id="receipt-form" onSubmit={handleCreateReceipt} className="space-y-4 px-4 pb-4">
                         <div className="space-y-2">
                             <Label>{t('receipts.label_student')} *</Label>
-                            <Select value={form.student_id} onValueChange={(v) => setForm({ ...form, student_id: v })}>
+                            <Select value={form.student_id} onValueChange={(v) => setForm({ ...form, student_id: v, batch_id: '' })}>
                                 <SelectTrigger>
                                     <SelectValue placeholder={t('receipts.select_student')} />
                                 </SelectTrigger>
@@ -341,12 +352,12 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
 
                         <div className="space-y-2">
                             <Label>{t('receipts.label_batch')} *</Label>
-                            <Select value={form.batch_id} onValueChange={(v) => setForm({ ...form, batch_id: v })}>
+                            <Select value={form.batch_id} onValueChange={(v) => setForm({ ...form, batch_id: v })} disabled={!form.student_id}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder={t('receipts.select_batch')} />
+                                    <SelectValue placeholder={form.student_id ? t('receipts.select_batch') : t('receipts.select_student_first')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {batches.map((b) => (
+                                    {filteredBatches.map((b) => (
                                         <SelectItem key={b.id} value={String(b.id)}>
                                             {b.name}
                                         </SelectItem>
@@ -423,16 +434,15 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
                             />
                             <InputError message={errors.notes} />
                         </div>
-
-                        <div className="flex justify-end gap-2 border-t pt-4">
-                            <Button type="button" variant="outline" onClick={() => setSheetOpen(false)}>
-                                {t('actions.cancel')}
-                            </Button>
-                            <Button type="submit" disabled={processing}>
-                                {processing ? t('receipts.creating') : t('actions.create')}
-                            </Button>
-                        </div>
                     </form>
+                    <SheetFooter>
+                        <Button type="button" variant="outline" onClick={() => setSheetOpen(false)}>
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button type="submit" form="receipt-form" disabled={processing}>
+                            {processing ? t('receipts.creating') : t('actions.create')}
+                        </Button>
+                    </SheetFooter>
                 </SheetContent>
             </Sheet>
 

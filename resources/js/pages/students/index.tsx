@@ -183,26 +183,11 @@ export default function StudentsIndex({
 
         return [
             {
-                id: 'code',
-                accessorKey: 'code',
-                header: t('students.student_id'),
-                enableSorting: true,
-                meta: { sticky: true },
-                cell: ({ row }: any) => {
-                    const s: Student = row.original;
-
-                    return (
-                        <span className="font-mono text-sm font-medium text-muted-foreground">
-                            {s.code}
-                        </span>
-                    );
-                },
-            } as Col,
-            {
                 id: 'name',
                 accessorKey: 'name',
-                header: t('students.name'),
+                header: t('students.info'),
                 enableSorting: true,
+                meta: { sticky: true },
                 cell: ({ row }: any) => {
                     const s: Student = row.original;
                     const className = s.coaching_class
@@ -217,11 +202,15 @@ export default function StudentsIndex({
                             >
                                 {s.name}
                             </Link>
-                            {className && (
-                                <div className="text-xs text-muted-foreground">
-                                    {className}
-                                </div>
-                            )}
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span className="font-mono">{s.code}</span>
+                                {className && (
+                                    <>
+                                        <span className="text-muted-foreground/50">•</span>
+                                        <span>{className}</span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     );
                 },

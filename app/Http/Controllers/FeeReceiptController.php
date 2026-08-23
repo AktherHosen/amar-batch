@@ -6,6 +6,7 @@ use App\Models\FeeReceipt;
 use App\Models\FeeStatus;
 use App\Models\Student;
 use App\Models\Batch;
+use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -25,13 +26,17 @@ class FeeReceiptController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $students = \App\Models\Student::orderBy('name')->get(['id', 'name']);
-        $batches = \App\Models\Batch::orderBy('name')->get(['id', 'name']);
+        $students = Student::orderBy('name')->get(['id', 'name']);
+        $batches = Batch::orderBy('name')->get(['id', 'name']);
+        $enrollments = Enrollment::where('status', 'active')
+            ->get()
+            ->map(fn ($e) => ['student_id' => $e->student_id, 'batch_id' => $e->batch_id]);
 
         return Inertia::render('fees/receipts/index', [
             'receipts' => $receipts,
             'students' => $students,
             'batches' => $batches,
+            'enrollments' => $enrollments,
             'filters' => $request->only(['search']),
         ]);
     }
@@ -42,10 +47,14 @@ class FeeReceiptController extends Controller
 
         $students = Student::orderBy('name')->get(['id', 'name']);
         $batches = Batch::orderBy('name')->get(['id', 'name']);
+        $enrollments = Enrollment::where('status', 'active')
+            ->get()
+            ->map(fn ($e) => ['student_id' => $e->student_id, 'batch_id' => $e->batch_id]);
 
         return Inertia::render('fees/receipts/create', [
             'students' => $students,
             'batches' => $batches,
+            'enrollments' => $enrollments,
         ]);
     }
 

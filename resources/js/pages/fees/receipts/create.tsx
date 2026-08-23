@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { FormActions } from '@/components/form-actions';
 import InputError from '@/components/input-error';
@@ -20,6 +20,7 @@ import { useLocale } from '@/contexts/locale-context';
 
 type Student = { id: number; name: string };
 type Batch = { id: number; name: string };
+type Enrollment = { student_id: number; batch_id: number };
 
 const MONTHS = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -30,7 +31,7 @@ const currentYear = new Date().getFullYear();
 const currentMonth = new Date().getMonth() + 1;
 
 export default function FeeReceiptCreate() {
-    const { students, batches } = usePage<{ students: Student[]; batches: Batch[] }>().props;
+    const { students, batches, enrollments } = usePage<{ students: Student[]; batches: Batch[]; enrollments: Enrollment[] }>().props;
     const { t } = useLocale();
     const [data, setData] = useState({
         student_id: '',
@@ -43,6 +44,14 @@ export default function FeeReceiptCreate() {
     });
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const filteredBatches = useMemo(() => {
+        if (!data.student_id) return batches;
+        const enrolledBatchIds = enrollments
+            .filter((e) => e.student_id === Number(data.student_id))
+            .map((e) => e.batch_id);
+        return batches.filter((b) => enrolledBatchIds.includes(b.id));
+    }, [data.student_id, batches, enrollments]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,7 +99,7 @@ export default function FeeReceiptCreate() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
                                 <Label>{t('receipts.label_student')} *</Label>
-                                <Select value={data.student_id} onValueChange={(v) => setData({ ...data, student_id: v })}>
+                                <Select value={data.student_id} onValueChange={(v) => setData({ ...data, student_id: v, batch_id: '' })}>
                                     <SelectTrigger>
                                         <SelectValue placeholder={t('receipts.select_student')} />
                                     </SelectTrigger>
@@ -107,12 +116,12 @@ export default function FeeReceiptCreate() {
 
                             <div className="space-y-2">
                                 <Label>{t('receipts.label_batch')} *</Label>
-                                <Select value={data.batch_id} onValueChange={(v) => setData({ ...data, batch_id: v })}>
+                                <Select value={data.batch_id} onValueChange={(v) => setData({ ...data, batch_id: v })} disabled={!data.student_id}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder={t('receipts.select_batch')} />
+                                        <SelectValue placeholder={data.student_id ? t('receipts.select_batch') : t('receipts.select_student_first')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {batches.map((b) => (
+                                        {filteredBatches.map((b) => (
                                             <SelectItem key={b.id} value={String(b.id)}>
                                                 {b.name}
                                             </SelectItem>

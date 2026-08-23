@@ -40,6 +40,7 @@ type PageActionsProps = {
     importUrl: string;
     importFields: string[];
     onImportSuccess?: () => void;
+    extraItems?: React.ReactNode;
 };
 
 export default function PageActions({
@@ -53,6 +54,7 @@ export default function PageActions({
     importUrl,
     importFields,
     onImportSuccess,
+    extraItems,
 }: PageActionsProps) {
     const { t } = useLocale();
     const [importOpen, setImportOpen] = useState(false);
@@ -141,6 +143,7 @@ return;
                             {createLabel}
                         </DropdownMenuItem>
                     )}
+                    {extraItems}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleExport}>
                         <Download className="mr-2 size-4" />
