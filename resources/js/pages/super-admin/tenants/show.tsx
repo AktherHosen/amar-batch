@@ -63,7 +63,7 @@ export default function TenantShow({ tenant, stats, recentPayments }: PageProps)
     const { formatCurrency, t } = useLocale();
 
     const handleToggle = () => {
-        router.post(`/super-admin/tenants/${tenant.id}/toggle-active`, {}, {
+        router.post(`/dashboard/sa/tenants/${tenant.id}/toggle-active`, {}, {
             onSuccess: () => {
                 toast.success(t('toast.updated_successfully'));
             },
@@ -154,7 +154,7 @@ export default function TenantShow({ tenant, stats, recentPayments }: PageProps)
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => router.get(`/super-admin/tenants/${tenant.id}/detail`)}
+                            onClick={() => router.get(`/dashboard/sa/tenants/${tenant.id}/detail`)}
                         >
                             <Eye className="mr-2 size-4" />
                             View Full History
@@ -276,7 +276,7 @@ export default function TenantShow({ tenant, stats, recentPayments }: PageProps)
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => router.get(`/super-admin/tenants/${tenant.id}/detail`)}
+                            onClick={() => router.get(`/dashboard/sa/tenants/${tenant.id}/detail`)}
                         >
                             View All
                         </Button>
@@ -307,10 +307,3 @@ export default function TenantShow({ tenant, stats, recentPayments }: PageProps)
         </>
     );
 }
-
-TenantShow.layout = {
-    breadcrumbs: [
-        { title: 'Coaching Centers', href: '/super-admin/tenants' },
-        { title: 'Details' },
-    ],
-};

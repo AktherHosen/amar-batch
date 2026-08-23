@@ -19,6 +19,9 @@ import {
     ShieldCheck,
     Palette,
     KeyRound,
+    Crown,
+    CreditCard as PaymentIcon,
+    Mail,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -35,6 +38,7 @@ import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
 import { usePermissions } from '@/lib/permissions';
 import { isOwner } from '@/lib/role';
+import { isSuperAdmin } from '@/lib/role';
 import { dashboard } from '@/routes';
 import { edit as appearanceEdit } from '@/routes/appearance';
 import attendance from '@/routes/attendance';
@@ -59,6 +63,7 @@ export function AppSidebar() {
     const { t } = useLocale();
     const { auth } = usePage().props;
     const isUserOwner = isOwner(auth.user);
+    const isUserSuperAdmin = isSuperAdmin(auth.user);
     const hasExams = useHasFeature('exams');
     const hasReports = useHasFeature('reports');
     const hasMultiBranch = useHasFeature('multi_branch');
@@ -81,9 +86,17 @@ return true;
     };
 
     const filterItem = (item: NavItem): boolean => {
+        if (isUserSuperAdmin) {
+            return !!item.superAdminOnly;
+        }
+
+        if (item.superAdminOnly) {
+            return false;
+        }
+
         if (item.ownerOnly && !isUserOwner) {
-return false;
-}
+            return false;
+        }
 
         if (item.featureRequired === 'exams' && !hasExams) {
 return false;
@@ -116,6 +129,48 @@ return false;
                     title: t('nav.dashboard'),
                     href: dashboard(),
                     icon: LayoutGrid,
+                },
+            ],
+        },
+        {
+            label: 'Super Admin',
+            collapsible: false,
+            items: [
+                {
+                    title: 'Overview',
+                    href: '/dashboard/sa/overview',
+                    icon: Crown,
+                    superAdminOnly: true,
+                },
+                {
+                    title: 'Coaching Centers',
+                    href: '/dashboard/sa/tenants',
+                    icon: Building2,
+                    superAdminOnly: true,
+                },
+                {
+                    title: 'Owners',
+                    href: '/dashboard/sa/owners',
+                    icon: Users,
+                    superAdminOnly: true,
+                },
+                {
+                    title: 'Plans',
+                    href: '/dashboard/sa/plans',
+                    icon: CreditCard,
+                    superAdminOnly: true,
+                },
+                {
+                    title: 'Payments',
+                    href: '/dashboard/sa/payments',
+                    icon: PaymentIcon,
+                    superAdminOnly: true,
+                },
+                {
+                    title: 'Contact Messages',
+                    href: '/dashboard/sa/contacts',
+                    icon: Mail,
+                    superAdminOnly: true,
                 },
             ],
         },
@@ -303,7 +358,7 @@ return false;
                 <NavMain groups={filteredGroups} />
             </SidebarContent>
 
-            <SidebarRail />
+            {isUserSuperAdmin && <SidebarRail />}
         </Sidebar>
     );
 }

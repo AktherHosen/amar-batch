@@ -64,7 +64,7 @@ export default function PlanEdit({ plan }: PageProps) {
         e.preventDefault();
         setProcessing(true);
 
-        router.put(`/super-admin/plans/${plan.id}`, form, {
+        router.put(`/dashboard/sa/plans/${plan.id}`, form, {
             onSuccess: () => toast.success(t('toast.updated_successfully')),
             onFinish: () => setProcessing(false),
         });
@@ -303,7 +303,7 @@ export default function PlanEdit({ plan }: PageProps) {
 
                             <div className="flex justify-end gap-2">
                                 <FormActions
-                                    cancelHref="/super-admin/plans"
+                                    cancelHref="/dashboard/sa/plans"
                                     processing={processing}
                                 />
                             </div>
@@ -315,9 +315,3 @@ export default function PlanEdit({ plan }: PageProps) {
     );
 }
 
-PlanEdit.layout = {
-    breadcrumbs: [
-        { title: 'Plans', href: '/super-admin/plans' },
-        { title: 'Edit' },
-    ],
-};

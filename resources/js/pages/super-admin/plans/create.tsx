@@ -45,7 +45,7 @@ export default function PlanCreate() {
         e.preventDefault();
         setProcessing(true);
 
-        router.post('/super-admin/plans', form, {
+        router.post('/dashboard/sa/plans', form, {
             onSuccess: () => toast.success(t('toast.created_successfully')),
             onFinish: () => setProcessing(false),
         });
@@ -293,7 +293,7 @@ export default function PlanCreate() {
 
                             <div className="flex justify-end gap-2">
                                 <FormActions
-                                    cancelHref="/super-admin/plans"
+                                    cancelHref="/dashboard/sa/plans"
                                     processing={processing}
                                 />
                             </div>
@@ -305,9 +305,3 @@ export default function PlanCreate() {
     );
 }
 
-PlanCreate.layout = {
-    breadcrumbs: [
-        { title: 'Plans', href: '/super-admin/plans' },
-        { title: 'Create' },
-    ],
-};

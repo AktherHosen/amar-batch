@@ -63,12 +63,12 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get('/super-admin/contacts', { search: value, status: filters.status }, { preserveState: true });
+        router.get('/dashboard/sa/contacts', { search: value, status: filters.status }, { preserveState: true });
     };
 
     const resetFilters = () => {
         setSearch('');
-        router.get('/super-admin/contacts', {});
+        router.get('/dashboard/sa/contacts', {});
     };
 
     const markRead = (message: ContactMessage) => {
@@ -76,7 +76,7 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
 return;
 }
 
-        router.post(`/super-admin/contacts/${message.id}/read`, {}, {
+        router.post(`/dashboard/sa/contacts/${message.id}/read`, {}, {
             preserveScroll: true,
             onSuccess: () => toast.success('Message marked as read.'),
         });
@@ -92,7 +92,7 @@ return;
 }
 
         setSending(true);
-        router.post(`/super-admin/contacts/${replyDialog.message.id}/reply`, {
+        router.post(`/dashboard/sa/contacts/${replyDialog.message.id}/reply`, {
             reply: replyDialog.reply,
         }, {
             preserveScroll: true,
@@ -250,7 +250,7 @@ return;
                             lastPage={pagination.last_page}
                             total={pagination.total}
                             itemName="messages"
-                            baseUrl="/super-admin/contacts"
+                            baseUrl="/dashboard/sa/contacts"
                             preserveParams={{ search, status: filters.status }}
                             emptyMessage="No contact messages yet."
                             getRowId={(row) => String(row.id)}
@@ -267,7 +267,7 @@ return;
                                         size="sm"
                                         className={filters.status === 'unread' ? 'bg-muted' : ''}
                                         onClick={() =>
-                                            router.get('/super-admin/contacts', { status: filters.status === 'unread' ? undefined : 'unread', search }, { preserveState: true })
+                                            router.get('/dashboard/sa/contacts', { status: filters.status === 'unread' ? undefined : 'unread', search }, { preserveState: true })
                                         }
                                     >
                                         {filters.status === 'unread' ? 'All' : 'Unread'}
@@ -334,10 +334,3 @@ return;
         </>
     );
 }
-
-ContactMessagesIndex.layout = {
-    breadcrumbs: [
-        { title: 'Dashboard', href: '/super-admin/dashboard' },
-        { title: 'Contact Messages', href: '/super-admin/contacts' },
-    ],
-};

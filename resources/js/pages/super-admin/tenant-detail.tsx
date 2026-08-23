@@ -216,7 +216,7 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
         <>
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-3">
-                    <Link href="/super-admin/payments" className="size-8 inline-flex items-center justify-center rounded-md border hover:bg-accent">
+                    <Link href="/dashboard/sa/payments" className="size-8 inline-flex items-center justify-center rounded-md border hover:bg-accent">
                         <ArrowLeft className="size-4" />
                     </Link>
                     <Heading
@@ -342,7 +342,7 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                                 lastPage={payments.last_page}
                                 total={payments.total}
                                 itemName="payments"
-                                baseUrl={`/super-admin/tenants/${tenant.id}/detail`}
+                                baseUrl={`/dashboard/sa/tenants/${tenant.id}/detail`}
                                 preserveParams={{}}
                                 emptyMessage="No payments yet."
                                 getRowId={(row) => String(row.id)}
@@ -371,11 +371,3 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
         </>
     );
 }
-
-TenantDetail.layout = {
-    breadcrumbs: [
-        { title: 'Dashboard', href: '/super-admin/dashboard' },
-        { title: 'Payments', href: '/super-admin/payments' },
-        { title: 'Tenant Detail' },
-    ],
-};

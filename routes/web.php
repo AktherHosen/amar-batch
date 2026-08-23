@@ -5,6 +5,11 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\UserSettingsController;
+use App\Http\Controllers\SuperAdmin\SuperAdminController;
+use App\Http\Controllers\SuperAdmin\TenantController;
+use App\Http\Controllers\SuperAdmin\PlanController;
+use App\Http\Controllers\SuperAdmin\OwnerController;
+use App\Http\Controllers\SuperAdmin\ContactMessageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
@@ -16,9 +21,6 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 Route::get('/terms', [PageController::class, 'terms'])->name('terms');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
-
-// Super admin routes (no tenant required)
-require __DIR__.'/super-admin.php';
 
 // Onboarding routes (auth required, no tenant required)
 Route::middleware(['auth', 'verified', 'onboarding'])->group(function () {
@@ -50,6 +52,25 @@ Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'role.permission'
     require __DIR__.'/subscription.php';
     require __DIR__.'/tenant-settings.php';
     require __DIR__.'/roles.php';
+});
+
+// Super admin routes (inside tenant middleware, super_admin role check)
+Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('dashboard')->name('super-admin.')->group(function () {
+    Route::get('sa/overview', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+    Route::resource('sa/tenants', TenantController::class)->only(['index', 'show']);
+    Route::post('sa/tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
+    Route::get('sa/tenants/{tenant}/detail', [SuperAdminController::class, 'showTenant'])->name('tenants.detail');
+    Route::resource('sa/plans', PlanController::class)->except(['show']);
+    Route::get('sa/payments', [SuperAdminController::class, 'payments'])->name('payments');
+    Route::post('sa/payments/{payment}/approve', [SuperAdminController::class, 'approvePayment'])->name('payments.approve');
+    Route::post('sa/payments/{payment}/cancel', [SuperAdminController::class, 'cancelPayment'])->name('payments.cancel');
+    Route::get('sa/contacts', [ContactMessageController::class, 'index'])->name('contacts.index');
+    Route::post('sa/contacts/{contactMessage}/reply', [ContactMessageController::class, 'reply'])->name('contacts.reply');
+    Route::post('sa/contacts/{contactMessage}/read', [ContactMessageController::class, 'markRead'])->name('contacts.read');
+    Route::get('sa/owners', [OwnerController::class, 'index'])->name('owners.index');
+    Route::get('sa/owners/{owner}', [OwnerController::class, 'show'])->name('owners.show');
+    Route::post('sa/owners/{owner}/toggle-active', [OwnerController::class, 'toggleActive'])->name('owners.toggle-active');
+    Route::post('sa/owners/{owner}/assign-plan', [OwnerController::class, 'assignPlan'])->name('owners.assign-plan');
 });
 
 require __DIR__.'/settings.php';

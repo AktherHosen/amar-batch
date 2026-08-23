@@ -238,7 +238,7 @@ return <Badge variant="outline" className="whitespace-nowrap">No Plan</Badge>;
                         variant="ghost"
                         size="sm"
                         className="size-8 p-0"
-                        onClick={() => router.get('/super-admin/contacts')}
+                        onClick={() => router.get('/dashboard/sa/contacts')}
                     >
                         <MessageSquareReply className="size-4" />
                     </Button>
@@ -296,7 +296,7 @@ return <Badge variant="outline" className="whitespace-nowrap">No Plan</Badge>;
                         variant="ghost"
                         size="sm"
                         className="size-8 p-0"
-                        onClick={() => router.get(`/super-admin/tenants/${row.original.id}/detail`)}
+                        onClick={() => router.get(`/dashboard/sa/tenants/${row.original.id}/detail`)}
                     >
                         <Eye className="size-4" />
                     </Button>
@@ -382,7 +382,7 @@ return <Badge variant="outline" className="whitespace-nowrap">No Plan</Badge>;
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div className="flex items-center justify-between w-full">
                                 <CardTitle>Recent Payments</CardTitle>
-                                <Link href="/super-admin/payments" className="text-sm text-blue-600 hover:underline">
+                                <Link href="/dashboard/sa/payments" className="text-sm text-blue-600 hover:underline">
                                     View All
                                 </Link>
                             </div>
@@ -405,7 +405,7 @@ return <Badge variant="outline" className="whitespace-nowrap">No Plan</Badge>;
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Contact Messages</CardTitle>
-                        <Link href="/super-admin/contacts" className="text-sm text-blue-600 hover:underline">
+                        <Link href="/dashboard/sa/contacts" className="text-sm text-blue-600 hover:underline">
                             View All
                         </Link>
                     </CardHeader>
@@ -442,9 +442,3 @@ return <Badge variant="outline" className="whitespace-nowrap">No Plan</Badge>;
         </>
     );
 }
-
-SuperAdminDashboard.layout = {
-    breadcrumbs: [
-        { title: 'Dashboard', href: '/super-admin/dashboard' },
-    ],
-};

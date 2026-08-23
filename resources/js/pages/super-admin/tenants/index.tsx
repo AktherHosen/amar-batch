@@ -43,18 +43,18 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get('/super-admin/tenants', { search: value, status }, { preserveState: true });
+        router.get('/dashboard/sa/tenants', { search: value, status }, { preserveState: true });
     };
 
     const handleStatusChange = (value: string) => {
         setStatus(value);
-        router.get('/super-admin/tenants', { search, status: value }, { preserveState: true });
+        router.get('/dashboard/sa/tenants', { search, status: value }, { preserveState: true });
     };
 
     const clearAll = () => {
         setSearch('');
         setStatus('');
-        router.get('/super-admin/tenants', {}, { preserveState: true });
+        router.get('/dashboard/sa/tenants', {}, { preserveState: true });
     };
 
     const activeFilterCount = status ? 1 : 0;
@@ -121,7 +121,7 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
                     const tenant: Tenant = row.original;
 
                     return (
-                        <Link href={`/super-admin/tenants/${tenant.id}`}>
+                        <Link href={`/dashboard/sa/tenants/${tenant.id}`}>
                             <Button variant="ghost" size="sm" className="size-8 p-0">
                                 <Eye className="size-4" />
                             </Button>
@@ -161,7 +161,7 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
                             lastPage={pagination.last_page}
                             total={pagination.total}
                             itemName="coaching centers"
-                            baseUrl="/super-admin/tenants"
+                            baseUrl="/dashboard/sa/tenants"
                             preserveParams={{ search, status }}
                             emptyMessage="No coaching centers found."
                             getRowId={(row) => String(row.id)}
@@ -193,9 +193,3 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
         </>
     );
 }
-
-TenantsIndex.layout = {
-    breadcrumbs: [
-        { title: 'Coaching Centers', href: '/super-admin/tenants' },
-    ],
-};

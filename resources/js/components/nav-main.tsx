@@ -81,7 +81,7 @@ export function NavMain({ groups }: { groups: NavItemGroup[] }) {
     return (
         <>
             {groups.map((group) => {
-                const collapsible = group.label !== t('nav.group.main') && group.items.length >= 1;
+                const collapsible = group.collapsible !== false && group.label !== t('nav.group.main') && group.items.length >= 1;
                 const anyActive = group.items.some((item) =>
                     isCurrentOrParentUrl(item.href),
                 );
