@@ -176,7 +176,7 @@ return false;
                     permission: 'fees.index',
                 },
                 {
-                    title: 'Receipts',
+                    title: t('nav.receipts'),
                     href: '/fees/receipts',
                     icon: FileText,
                     ownerOnly: true,

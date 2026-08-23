@@ -43,6 +43,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
 import { isOwner } from '@/lib/role';
@@ -151,6 +152,7 @@ return t('teachers.inactive');
         name: '',
         email: '',
         password: '',
+        password_confirmation: '',
         role: 'teacher',
         branch_id: '',
     });
@@ -686,15 +688,29 @@ return;
                                 {t('teachers.password')}{' '}
                                 {editingTeacher ? `(${t('teachers.password_hint')})` : '*'}
                             </Label>
-                            <Input
+                            <PasswordInput
                                 id="sheet-password"
-                                type="password"
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
                                 placeholder={t('teachers.password_placeholder')}
                             />
                             <InputError message={errors.password} />
                         </div>
+
+                        {!editingTeacher && (
+                            <div className="space-y-2">
+                                <Label htmlFor="sheet-password_confirmation">
+                                    {t('teachers.confirm_password')} *
+                                </Label>
+                                <PasswordInput
+                                    id="sheet-password_confirmation"
+                                    value={data.password_confirmation}
+                                    onChange={(e) => setData('password_confirmation', e.target.value)}
+                                    placeholder={t('teachers.confirm_password_placeholder')}
+                                />
+                                <InputError message={errors.password_confirmation} />
+                            </div>
+                        )}
 
                         {roles.length > 0 && (
                             <div className="space-y-2">

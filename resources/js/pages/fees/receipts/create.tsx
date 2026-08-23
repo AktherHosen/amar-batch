@@ -16,6 +16,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useLocale } from '@/contexts/locale-context';
 
 type Student = { id: number; name: string };
 type Batch = { id: number; name: string };
@@ -30,6 +31,7 @@ const currentMonth = new Date().getMonth() + 1;
 
 export default function FeeReceiptCreate() {
     const { students, batches } = usePage<{ students: Student[]; batches: Batch[] }>().props;
+    const { t } = useLocale();
     const [data, setData] = useState({
         student_id: '',
         batch_id: '',
@@ -55,7 +57,7 @@ export default function FeeReceiptCreate() {
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success('Receipt generated successfully');
+                toast.success(t('toast.receipt_generated'));
                 router.get('/fees/receipts');
             },
             onError: (err) => {
@@ -67,7 +69,7 @@ export default function FeeReceiptCreate() {
 
     return (
         <>
-            <Head title="Create Receipt" />
+            <Head title={t('receipts.create_title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
@@ -78,7 +80,7 @@ export default function FeeReceiptCreate() {
                     </Link>
                     <div className="min-w-0">
                         <h2 className="truncate text-xl font-semibold tracking-tight">
-                            Create Receipt
+                            {t('receipts.create_title')}
                         </h2>
                     </div>
                 </div>
@@ -87,10 +89,10 @@ export default function FeeReceiptCreate() {
                     <CardContent className="pt-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <Label>Student *</Label>
+                                <Label>{t('receipts.label_student')} *</Label>
                                 <Select value={data.student_id} onValueChange={(v) => setData({ ...data, student_id: v })}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select student" />
+                                        <SelectValue placeholder={t('receipts.select_student')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {students.map((s) => (
@@ -104,10 +106,10 @@ export default function FeeReceiptCreate() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Batch *</Label>
+                                <Label>{t('receipts.label_batch')} *</Label>
                                 <Select value={data.batch_id} onValueChange={(v) => setData({ ...data, batch_id: v })}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select batch" />
+                                        <SelectValue placeholder={t('receipts.select_batch')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {batches.map((b) => (
@@ -122,7 +124,7 @@ export default function FeeReceiptCreate() {
 
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label>Month *</Label>
+                                    <Label>{t('receipts.label_month')} *</Label>
                                     <Select value={data.month} onValueChange={(v) => setData({ ...data, month: v })}>
                                         <SelectTrigger>
                                             <SelectValue />
@@ -139,7 +141,7 @@ export default function FeeReceiptCreate() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Year *</Label>
+                                    <Label>{t('receipts.label_year')} *</Label>
                                     <Input
                                         type="number"
                                         value={data.year}
@@ -153,7 +155,7 @@ export default function FeeReceiptCreate() {
 
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label>Amount Paid *</Label>
+                                    <Label>{t('receipts.label_amount_paid')} *</Label>
                                     <Input
                                         type="number"
                                         value={data.amount_paid}
@@ -165,7 +167,7 @@ export default function FeeReceiptCreate() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Amount Due *</Label>
+                                    <Label>{t('receipts.label_amount_due')} *</Label>
                                     <Input
                                         type="number"
                                         value={data.amount_due}
@@ -178,11 +180,11 @@ export default function FeeReceiptCreate() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Notes</Label>
+                                <Label>{t('receipts.label_notes')}</Label>
                                 <Textarea
                                     value={data.notes}
                                     onChange={(e) => setData({ ...data, notes: e.target.value })}
-                                    placeholder="Optional notes"
+                                    placeholder={t('receipts.notes_placeholder')}
                                     rows={3}
                                 />
                                 <InputError message={errors.notes} />

@@ -141,7 +141,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success('Receipt generated successfully');
+                toast.success(t('toast.receipt_generated'));
                 setSheetOpen(false);
                 resetForm();
                 router.reload({ only: ['receipts'] });
@@ -160,7 +160,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
             {
                 id: 'receipt_number',
                 accessorKey: 'receipt_number',
-                header: 'Receipt #',
+                header: t('receipts.column_number'),
                 enableSorting: true,
                 meta: { sticky: true },
                 cell: ({ row }: any) => (
@@ -170,21 +170,21 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
             {
                 id: 'student',
                 accessorKey: 'student.name',
-                header: 'Student',
+                header: t('receipts.column_student'),
                 enableSorting: true,
                 cell: ({ row }: any) => <span>{row.original.student.name}</span>,
             } as Col,
             {
                 id: 'batch',
                 accessorKey: 'batch.name',
-                header: 'Batch',
+                header: t('receipts.column_batch'),
                 enableSorting: false,
                 cell: ({ row }: any) => <span>{row.original.batch.name}</span>,
             } as Col,
             {
                 id: 'period',
                 accessorKey: 'month',
-                header: 'Period',
+                header: t('receipts.column_period'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
                     <span>
@@ -195,7 +195,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
             {
                 id: 'amount_paid',
                 accessorKey: 'amount_paid',
-                header: 'Amount Paid',
+                header: t('receipts.column_amount_paid'),
                 enableSorting: true,
                 cell: ({ row }: any) => (
                     <span>{formatCurrency(Number(row.original.amount_paid))}</span>
@@ -204,7 +204,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
             {
                 id: 'amount_due',
                 accessorKey: 'amount_due',
-                header: 'Amount Due',
+                header: t('receipts.column_amount_due'),
                 enableSorting: true,
                 cell: ({ row }: any) => (
                     <span>{formatCurrency(Number(row.original.amount_due))}</span>
@@ -213,7 +213,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
             {
                 id: 'date',
                 accessorKey: 'created_at',
-                header: 'Date',
+                header: t('receipts.column_date'),
                 enableSorting: true,
                 cell: ({ row }: any) => (
                     <span>{new Date(row.original.created_at).toLocaleDateString()}</span>
@@ -251,13 +251,13 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
 
     return (
         <>
-            <Head title="Fee Receipts" />
+            <Head title={t('receipts.title')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Fee Receipts"
-                        description="Manage and generate fee receipts"
+                        title={t('receipts.title')}
+                        description={t('receipts.desc')}
                     />
                     <div className="flex items-center gap-1">
                         <RefreshButton
@@ -279,7 +279,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => { resetForm(); setSheetOpen(true); }}>
                                     <Plus className="mr-2 size-4" />
-                                    New Receipt
+                                    {t('receipts.new')}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -298,11 +298,11 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
                             itemName="receipts"
                             baseUrl="/fees/receipts"
                             preserveParams={{ search }}
-                            emptyMessage="No receipts found"
+                            emptyMessage={t('receipts.no_records')}
                             getRowId={(row) => String(row.id)}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder="Search receipts..."
+                                    searchPlaceholder={t('receipts.search_placeholder')}
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     onClearAll={clearAll}
@@ -316,17 +316,17 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetContent className="w-full sm:max-w-md overflow-y-auto">
                     <SheetHeader>
-                        <SheetTitle>New Receipt</SheetTitle>
+                        <SheetTitle>{t('receipts.new')}</SheetTitle>
                         <SheetDescription>
-                            Generate a fee receipt for a student.
+                            {t('receipts.generate_desc')}
                         </SheetDescription>
                     </SheetHeader>
                     <form onSubmit={handleCreateReceipt} className="space-y-4 px-4 pb-4">
                         <div className="space-y-2">
-                            <Label>Student *</Label>
+                            <Label>{t('receipts.label_student')} *</Label>
                             <Select value={form.student_id} onValueChange={(v) => setForm({ ...form, student_id: v })}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select student" />
+                                    <SelectValue placeholder={t('receipts.select_student')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {students.map((s) => (
@@ -340,10 +340,10 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Batch *</Label>
+                            <Label>{t('receipts.label_batch')} *</Label>
                             <Select value={form.batch_id} onValueChange={(v) => setForm({ ...form, batch_id: v })}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select batch" />
+                                    <SelectValue placeholder={t('receipts.select_batch')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {batches.map((b) => (
@@ -358,7 +358,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
-                                <Label>Month *</Label>
+                                <Label>{t('receipts.label_month')} *</Label>
                                 <Select value={form.month} onValueChange={(v) => setForm({ ...form, month: v })}>
                                     <SelectTrigger>
                                         <SelectValue />
@@ -375,7 +375,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Year *</Label>
+                                <Label>{t('receipts.label_year')} *</Label>
                                 <Input
                                     type="number"
                                     value={form.year}
@@ -389,7 +389,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
-                                <Label>Amount Paid *</Label>
+                                <Label>{t('receipts.label_amount_paid')} *</Label>
                                 <Input
                                     type="number"
                                     value={form.amount_paid}
@@ -401,7 +401,7 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Amount Due *</Label>
+                                <Label>{t('receipts.label_amount_due')} *</Label>
                                 <Input
                                     type="number"
                                     value={form.amount_due}
@@ -414,11 +414,11 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Notes</Label>
+                            <Label>{t('receipts.label_notes')}</Label>
                             <Textarea
                                 value={form.notes}
                                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                                placeholder="Optional notes"
+                                placeholder={t('receipts.notes_placeholder')}
                                 rows={3}
                             />
                             <InputError message={errors.notes} />
@@ -426,10 +426,10 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
 
                         <div className="flex justify-end gap-2 border-t pt-4">
                             <Button type="button" variant="outline" onClick={() => setSheetOpen(false)}>
-                                Cancel
+                                {t('actions.cancel')}
                             </Button>
                             <Button type="submit" disabled={processing}>
-                                {processing ? 'Creating...' : 'Create Receipt'}
+                                {processing ? t('receipts.creating') : t('actions.create')}
                             </Button>
                         </div>
                     </form>
@@ -439,9 +439,9 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
             <ConfirmDialog
                 open={deleteDialog.open}
                 onOpenChange={(open) => setDeleteDialog({ open, item: deleteDialog.item })}
-                title="Delete Receipt"
-                 description={`Are you sure you want to delete receipt ${deleteDialog.item?.receipt_number}? This action cannot be undone.`}
-                confirmText="Delete"
+                title={t('receipts.delete_title')}
+                 description={t('receipts.delete_confirm')}
+                confirmText={t('actions.delete')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />
