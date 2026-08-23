@@ -56,21 +56,21 @@ Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'role.permission'
 
 // Super admin routes (inside tenant middleware, super_admin role check)
 Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('dashboard')->name('super-admin.')->group(function () {
-    Route::get('sa/overview', [SuperAdminController::class, 'dashboard'])->name('dashboard');
-    Route::resource('sa/tenants', TenantController::class)->only(['index', 'show']);
-    Route::post('sa/tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
-    Route::get('sa/tenants/{tenant}/detail', [SuperAdminController::class, 'showTenant'])->name('tenants.detail');
-    Route::resource('sa/plans', PlanController::class)->except(['show']);
-    Route::get('sa/payments', [SuperAdminController::class, 'payments'])->name('payments');
-    Route::post('sa/payments/{payment}/approve', [SuperAdminController::class, 'approvePayment'])->name('payments.approve');
-    Route::post('sa/payments/{payment}/cancel', [SuperAdminController::class, 'cancelPayment'])->name('payments.cancel');
-    Route::get('sa/contacts', [ContactMessageController::class, 'index'])->name('contacts.index');
-    Route::post('sa/contacts/{contactMessage}/reply', [ContactMessageController::class, 'reply'])->name('contacts.reply');
-    Route::post('sa/contacts/{contactMessage}/read', [ContactMessageController::class, 'markRead'])->name('contacts.read');
-    Route::get('sa/owners', [OwnerController::class, 'index'])->name('owners.index');
-    Route::get('sa/owners/{owner}', [OwnerController::class, 'show'])->name('owners.show');
-    Route::post('sa/owners/{owner}/toggle-active', [OwnerController::class, 'toggleActive'])->name('owners.toggle-active');
-    Route::post('sa/owners/{owner}/assign-plan', [OwnerController::class, 'assignPlan'])->name('owners.assign-plan');
+    Route::get('overview', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+    Route::resource('tenants', TenantController::class)->only(['index', 'show']);
+    Route::post('tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
+    Route::get('tenants/{tenant}/detail', [SuperAdminController::class, 'showTenant'])->name('tenants.detail');
+    Route::resource('plans', PlanController::class)->except(['show']);
+    Route::get('payments', [SuperAdminController::class, 'payments'])->name('payments');
+    Route::post('payments/{payment}/approve', [SuperAdminController::class, 'approvePayment'])->name('payments.approve');
+    Route::post('payments/{payment}/cancel', [SuperAdminController::class, 'cancelPayment'])->name('payments.cancel');
+    Route::get('contacts', [ContactMessageController::class, 'index'])->name('contacts.index');
+    Route::post('contacts/{contactMessage}/reply', [ContactMessageController::class, 'reply'])->name('contacts.reply');
+    Route::post('contacts/{contactMessage}/read', [ContactMessageController::class, 'markRead'])->name('contacts.read');
+    Route::get('owners', [OwnerController::class, 'index'])->name('owners.index');
+    Route::get('owners/{owner}', [OwnerController::class, 'show'])->name('owners.show');
+    Route::post('owners/{owner}/toggle-active', [OwnerController::class, 'toggleActive'])->name('owners.toggle-active');
+    Route::post('owners/{owner}/assign-plan', [OwnerController::class, 'assignPlan'])->name('owners.assign-plan');
 });
 
 require __DIR__.'/settings.php';

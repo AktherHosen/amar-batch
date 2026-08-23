@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     Building2,
@@ -8,7 +8,6 @@ import {
     Users,
     Mail,
     Phone,
-    Calendar,
     Check,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -93,7 +92,7 @@ type PageProps = {
 };
 
 export default function OwnerShow({ owner, stats, plans }: PageProps) {
-    const { formatCurrency, t } = useLocale();
+    const { formatCurrency } = useLocale();
     const [planDialog, setPlanDialog] = useState(false);
     const [selectedPlanId, setSelectedPlanId] = useState(
         String(owner.tenant?.subscription?.plan?.id || '')
@@ -106,7 +105,7 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
     const handleAssignPlan = () => {
         if (!selectedPlanId) return;
 
-        router.post(`/dashboard/sa/owners/${owner.id}/assign-plan`, {
+        router.post(`/dashboard/owners/${owner.id}/assign-plan`, {
             plan_id: Number(selectedPlanId),
         }, {
             preserveScroll: true,
@@ -119,11 +118,9 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
 
     return (
         <>
-            <Head title={`${owner.name} - Owner`} />
-
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/sa/owners">
+                    <Link href="/dashboard/owners">
                         <Button variant="ghost" size="icon" className="size-9">
                             <ArrowLeft className="size-4" />
                         </Button>
@@ -139,7 +136,7 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                     </div>
                 </div>
 
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
                     <Card className="py-3">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                             <CardTitle className="text-sm font-medium">Coaching Center</CardTitle>
@@ -205,7 +202,7 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                 </div>
 
                 {stats && (
-                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
                         <Card className="py-3">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
                                 <CardTitle className="text-sm font-medium">Batches</CardTitle>
@@ -223,24 +220,6 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                             </CardHeader>
                             <CardContent className="px-3 pb-2 pt-0">
                                 <div className="text-2xl font-bold">{stats.total_users}</div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                <CardTitle className="text-sm font-medium">Owner</CardTitle>
-                                <Users className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent className="px-3 pb-2 pt-0">
-                                <div className="flex items-center gap-2">
-                                    <div className="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                                        {owner.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="truncate text-sm font-medium">{owner.name}</p>
-                                        <p className="truncate text-xs text-muted-foreground">{owner.email}</p>
-                                    </div>
-                                </div>
                             </CardContent>
                         </Card>
 
@@ -264,18 +243,36 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                                 </div>
                             </CardContent>
                         </Card>
+
+                        <Card className="py-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
+                                <CardTitle className="text-sm font-medium">Owner</CardTitle>
+                                <Users className="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent className="px-3 pb-2 pt-0">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                                        {owner.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-medium">{owner.name}</p>
+                                        <p className="truncate text-xs text-muted-foreground">{owner.email}</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
                 )}
 
-                {currentPlan && (
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>Plan Details</CardTitle>
-                            <Button variant="outline" size="sm" onClick={() => setPlanDialog(true)}>
-                                Change Plan
-                            </Button>
-                        </CardHeader>
-                        <CardContent>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>Plan Details</CardTitle>
+                        <Button variant="outline" size="sm" onClick={() => setPlanDialog(true)}>
+                            Change Plan
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        {currentPlan ? (
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 <div className="space-y-1">
                                     <p className="text-sm text-muted-foreground">Monthly Price</p>
@@ -294,22 +291,24 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                                     <p className="text-lg font-bold">{currentPlan.max_staff === -1 ? 'Unlimited' : currentPlan.max_staff}</p>
                                 </div>
                             </div>
-                            {currentPlan.features && currentPlan.features.length > 0 && (
-                                <div className="mt-4">
-                                    <p className="text-sm text-muted-foreground mb-2">Features</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {currentPlan.features.map((feature) => (
-                                            <Badge key={feature} variant="secondary" className="gap-1">
-                                                <Check className="size-3" />
-                                                {feature}
-                                            </Badge>
-                                        ))}
-                                    </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No plan assigned.</p>
+                        )}
+                        {currentPlan?.features && currentPlan.features.length > 0 && (
+                            <div className="mt-4">
+                                <p className="text-sm text-muted-foreground mb-2">Features</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {currentPlan.features.map((feature) => (
+                                        <Badge key={feature} variant="secondary" className="gap-1">
+                                            <Check className="size-3" />
+                                            {feature}
+                                        </Badge>
+                                    ))}
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             <Dialog open={planDialog} onOpenChange={setPlanDialog}>
@@ -370,4 +369,3 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
         </>
     );
 }
-

@@ -57,26 +57,26 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get('/dashboard/sa/payments', { search: value, status: filters.status ?? 'all' }, { preserveState: true });
+        router.get('/dashboard/payments', { search: value, status: filters.status ?? 'all' }, { preserveState: true });
     };
 
     const handleReset = () => {
         setSearch('');
-        router.get('/dashboard/sa/payments', { status: 'all' }, { preserveState: true });
+        router.get('/dashboard/payments', { status: 'all' }, { preserveState: true });
     };
 
     const handleStatusFilter = (status: string) => {
-        router.get('/dashboard/sa/payments', { status, search }, { preserveState: true });
+        router.get('/dashboard/payments', { status, search }, { preserveState: true });
     };
 
     const handleApprove = (paymentId: number) => {
-        router.post(`/dashboard/sa/payments/${paymentId}/approve`, {}, {
+        router.post(`/dashboard/payments/${paymentId}/approve`, {}, {
             onSuccess: () => toast.success(t('toast.approved_successfully')),
         });
     };
 
     const handleCancel = (paymentId: number) => {
-        router.post(`/dashboard/sa/payments/${paymentId}/cancel`, {}, {
+        router.post(`/dashboard/payments/${paymentId}/cancel`, {}, {
             onSuccess: () => toast.success(t('toast.deleted_successfully')),
         });
     };
@@ -186,7 +186,7 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.get(`/dashboard/sa/tenants/${payment.tenant_id}/detail`)}>
+                                <DropdownMenuItem onClick={() => router.get(`/dashboard/tenants/${payment.tenant_id}/detail`)}>
                                     <Eye className="mr-2 size-4" />
                                     View Tenant
                                 </DropdownMenuItem>
@@ -291,10 +291,11 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
                             lastPage={payments.last_page}
                             total={payments.total}
                             itemName="payments"
-                            baseUrl="/dashboard/sa/payments"
+                            baseUrl="/dashboard/payments"
                             preserveParams={{ search, status: filters.status ?? 'all' }}
                             emptyMessage="No payments found."
                             getRowId={(row) => String(row.id)}
+                            enableColumnVisibility={false}
                             toolbar={
                                 <FilterBar
                                     searchPlaceholder="Search tenant or TX ID..."

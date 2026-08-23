@@ -64,7 +64,7 @@ export default function PlanEdit({ plan }: PageProps) {
         e.preventDefault();
         setProcessing(true);
 
-        router.put(`/dashboard/sa/plans/${plan.id}`, form, {
+        router.put(`/dashboard/plans/${plan.id}`, form, {
             onSuccess: () => toast.success(t('toast.updated_successfully')),
             onFinish: () => setProcessing(false),
         });
@@ -303,7 +303,7 @@ export default function PlanEdit({ plan }: PageProps) {
 
                             <div className="flex justify-end gap-2">
                                 <FormActions
-                                    cancelHref="/dashboard/sa/plans"
+                                    cancelHref="/dashboard/plans"
                                     processing={processing}
                                 />
                             </div>

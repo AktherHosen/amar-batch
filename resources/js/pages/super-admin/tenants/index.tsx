@@ -43,18 +43,18 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get('/dashboard/sa/tenants', { search: value, status }, { preserveState: true });
+        router.get('/dashboard/tenants', { search: value, status }, { preserveState: true });
     };
 
     const handleStatusChange = (value: string) => {
         setStatus(value);
-        router.get('/dashboard/sa/tenants', { search, status: value }, { preserveState: true });
+        router.get('/dashboard/tenants', { search, status: value }, { preserveState: true });
     };
 
     const clearAll = () => {
         setSearch('');
         setStatus('');
-        router.get('/dashboard/sa/tenants', {}, { preserveState: true });
+        router.get('/dashboard/tenants', {}, { preserveState: true });
     };
 
     const activeFilterCount = status ? 1 : 0;
@@ -121,11 +121,13 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
                     const tenant: Tenant = row.original;
 
                     return (
-                        <Link href={`/dashboard/sa/tenants/${tenant.id}`}>
-                            <Button variant="ghost" size="sm" className="size-8 p-0">
-                                <Eye className="size-4" />
-                            </Button>
-                        </Link>
+                        <div className="flex items-center gap-1">
+                            <Link href={`/dashboard/tenants/${tenant.id}`}>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <Eye className="size-4" />
+                                </Button>
+                            </Link>
+                        </div>
                     );
                 },
             } as Col,
@@ -161,10 +163,11 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
                             lastPage={pagination.last_page}
                             total={pagination.total}
                             itemName="coaching centers"
-                            baseUrl="/dashboard/sa/tenants"
+                            baseUrl="/dashboard/tenants"
                             preserveParams={{ search, status }}
                             emptyMessage="No coaching centers found."
                             getRowId={(row) => String(row.id)}
+                            enableColumnVisibility={false}
                             toolbar={
                                 <FilterBar
                                     searchPlaceholder="Search coaching centers..."

@@ -138,37 +138,37 @@ return false;
             items: [
                 {
                     title: 'Overview',
-                    href: '/dashboard/sa/overview',
+                    href: '/dashboard/overview',
                     icon: Crown,
                     superAdminOnly: true,
                 },
                 {
-                    title: 'Coaching Centers',
-                    href: '/dashboard/sa/tenants',
-                    icon: Building2,
-                    superAdminOnly: true,
-                },
-                {
                     title: 'Owners',
-                    href: '/dashboard/sa/owners',
+                    href: '/dashboard/owners',
                     icon: Users,
                     superAdminOnly: true,
                 },
                 {
+                    title: 'Coaching Centers',
+                    href: '/dashboard/tenants',
+                    icon: Building2,
+                    superAdminOnly: true,
+                },
+                {
                     title: 'Plans',
-                    href: '/dashboard/sa/plans',
+                    href: '/dashboard/plans',
                     icon: CreditCard,
                     superAdminOnly: true,
                 },
                 {
                     title: 'Payments',
-                    href: '/dashboard/sa/payments',
+                    href: '/dashboard/payments',
                     icon: PaymentIcon,
                     superAdminOnly: true,
                 },
                 {
                     title: 'Contact Messages',
-                    href: '/dashboard/sa/contacts',
+                    href: '/dashboard/contacts',
                     icon: Mail,
                     superAdminOnly: true,
                 },

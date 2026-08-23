@@ -45,7 +45,7 @@ export default function PlanCreate() {
         e.preventDefault();
         setProcessing(true);
 
-        router.post('/dashboard/sa/plans', form, {
+        router.post('/dashboard/plans', form, {
             onSuccess: () => toast.success(t('toast.created_successfully')),
             onFinish: () => setProcessing(false),
         });
@@ -293,7 +293,7 @@ export default function PlanCreate() {
 
                             <div className="flex justify-end gap-2">
                                 <FormActions
-                                    cancelHref="/dashboard/sa/plans"
+                                    cancelHref="/dashboard/plans"
                                     processing={processing}
                                 />
                             </div>

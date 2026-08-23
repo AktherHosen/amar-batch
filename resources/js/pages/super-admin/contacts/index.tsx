@@ -63,12 +63,12 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get('/dashboard/sa/contacts', { search: value, status: filters.status }, { preserveState: true });
+        router.get('/dashboard/contacts', { search: value, status: filters.status }, { preserveState: true });
     };
 
     const resetFilters = () => {
         setSearch('');
-        router.get('/dashboard/sa/contacts', {});
+        router.get('/dashboard/contacts', {});
     };
 
     const markRead = (message: ContactMessage) => {
@@ -76,7 +76,7 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
 return;
 }
 
-        router.post(`/dashboard/sa/contacts/${message.id}/read`, {}, {
+        router.post(`/dashboard/contacts/${message.id}/read`, {}, {
             preserveScroll: true,
             onSuccess: () => toast.success('Message marked as read.'),
         });
@@ -92,7 +92,7 @@ return;
 }
 
         setSending(true);
-        router.post(`/dashboard/sa/contacts/${replyDialog.message.id}/reply`, {
+        router.post(`/dashboard/contacts/${replyDialog.message.id}/reply`, {
             reply: replyDialog.reply,
         }, {
             preserveScroll: true,
@@ -250,10 +250,11 @@ return;
                             lastPage={pagination.last_page}
                             total={pagination.total}
                             itemName="messages"
-                            baseUrl="/dashboard/sa/contacts"
+                            baseUrl="/dashboard/contacts"
                             preserveParams={{ search, status: filters.status }}
                             emptyMessage="No contact messages yet."
                             getRowId={(row) => String(row.id)}
+                            enableColumnVisibility={false}
                             toolbar={
                                 <FilterBar
                                     searchPlaceholder="Search name, email, subject..."
@@ -267,7 +268,7 @@ return;
                                         size="sm"
                                         className={filters.status === 'unread' ? 'bg-muted' : ''}
                                         onClick={() =>
-                                            router.get('/dashboard/sa/contacts', { status: filters.status === 'unread' ? undefined : 'unread', search }, { preserveState: true })
+                                            router.get('/dashboard/contacts', { status: filters.status === 'unread' ? undefined : 'unread', search }, { preserveState: true })
                                         }
                                     >
                                         {filters.status === 'unread' ? 'All' : 'Unread'}

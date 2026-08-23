@@ -12,7 +12,6 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
-import { isSuperAdmin } from '@/lib/role';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
 export function AppSidebarHeader({
@@ -22,12 +21,11 @@ export function AppSidebarHeader({
 }) {
     const { auth } = usePage().props;
     const getInitials = useInitials();
-    const isUserSuperAdmin = isSuperAdmin(auth.user);
 
     return (
         <header className="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
             <div className="flex items-center gap-2">
-                {!isUserSuperAdmin && <SidebarTrigger className="-ml-1 size-9" />}
+                <SidebarTrigger className="-ml-1 size-9" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
             <div className="ml-auto flex items-center gap-2">

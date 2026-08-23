@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ContactMessage;
 use App\Models\Payment;
-use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
@@ -20,18 +18,15 @@ class SuperAdminController extends Controller
             'total_tenants' => Tenant::count(),
             'active_tenants' => Tenant::where('is_active', true)->count(),
             'total_users' => \App\Models\User::count(),
-            'total_students' => \App\Models\Student::count(),
-            'total_batches' => \App\Models\Batch::count(),
-            'active_batches' => \App\Models\Batch::where('status', 'active')->count(),
             'total_revenue' => (float) Payment::where('status', 'success')->sum('amount'),
             'active_subscriptions' => Subscription::where('status', 'active')->count(),
             'trial_subscriptions' => Subscription::where('status', 'trial')->count(),
         ];
 
-        $tenantStats = Tenant::withCount(['users', 'students', 'batches'])
+        $tenantStats = Tenant::withCount('students')
             ->with('subscription.plan')
             ->latest()
-            ->take(10)
+            ->take(5)
             ->get();
 
         $recentPayments = Payment::with(['tenant', 'plan'])
@@ -39,23 +34,10 @@ class SuperAdminController extends Controller
             ->take(10)
             ->get();
 
-        $revenueByPlan = Plan::withCount(['payments as successful_payments' => function ($q) {
-            $q->where('status', 'success');
-        }])
-            ->withSum('payments as total_revenue', 'amount')
-            ->get();
-
-        $recentContactMessages = ContactMessage::latest()
-            ->take(5)
-            ->get();
-
         return Inertia::render('super-admin/dashboard', [
             'stats' => $stats,
-            'recentTenants' => $tenantStats,
             'tenantStats' => $tenantStats,
             'recentPayments' => $recentPayments,
-            'revenueByPlan' => $revenueByPlan,
-            'recentContactMessages' => $recentContactMessages,
         ]);
     }
 

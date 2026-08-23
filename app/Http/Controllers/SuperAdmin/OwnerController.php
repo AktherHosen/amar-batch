@@ -14,12 +14,20 @@ class OwnerController extends Controller
     public function index(Request $request): Response
     {
         $query = User::with('tenant')
-            ->where('role', 'owner')
             ->when($request->search, function ($q, $search) {
                 $q->where(function ($q2) use ($search) {
                     $q2->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                 });
+            })
+            ->when($request->status, function ($q, $status) {
+                if ($status === 'active') {
+                    $q->where('role', 'owner');
+                } elseif ($status === 'inactive') {
+                    $q->where('role', 'inactive');
+                }
+            }, function ($q) {
+                $q->where('role', 'owner');
             });
 
         $owners = $query->orderByDesc('created_at')
@@ -28,7 +36,7 @@ class OwnerController extends Controller
 
         return Inertia::render('super-admin/owners/index', [
             'owners' => $owners,
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'status']),
         ]);
     }
 

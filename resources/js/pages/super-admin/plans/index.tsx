@@ -42,7 +42,7 @@ export default function PlansIndex({ plans }: PageProps) {
 
     const confirmDelete = () => {
         if (deleteDialog.item) {
-            router.delete(`/dashboard/sa/plans/${deleteDialog.item.id}`);
+            router.delete(`/dashboard/plans/${deleteDialog.item.id}`);
             toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
@@ -55,7 +55,7 @@ export default function PlansIndex({ plans }: PageProps) {
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <Heading title="Subscription Plans" description="Manage pricing and limits" />
-                    <Link href="/dashboard/sa/plans/create">
+                    <Link href="/dashboard/plans/create">
                         <Button>
                             <Plus className="mr-2 size-4" />
                             Create Plan
@@ -82,7 +82,7 @@ export default function PlansIndex({ plans }: PageProps) {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem asChild>
-                                                <Link href={`/dashboard/sa/plans/${plan.id}/edit`}>
+                                                <Link href={`/dashboard/plans/${plan.id}/edit`}>
                                                     <Pencil className="mr-2 size-4" />
                                                     Edit
                                                 </Link>
