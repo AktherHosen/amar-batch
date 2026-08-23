@@ -40,6 +40,7 @@ class RoleController extends Controller
         return Inertia::render('roles/index', [
             'roles' => $roles,
             'filters' => $request->only(['search']),
+            'groups' => $this->getFilteredGroups($request),
         ]);
     }
 

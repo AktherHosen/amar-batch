@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     EllipsisVertical,
     Eye,
@@ -6,6 +6,7 @@ import {
     Trash2,
     CheckCircle,
     XCircle,
+    Plus,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -14,6 +15,7 @@ import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
@@ -24,6 +26,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -31,6 +35,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
 import { isOwner } from '@/lib/role';
@@ -64,12 +76,17 @@ type PageProps = {
         name: string;
         slug: string;
     }>;
+    branches: Array<{
+        id: number;
+        name: string;
+    }>;
 };
 
 export default function TeachersIndex({
     teachers: pagination,
     filters,
     roles = [],
+    branches = [],
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
@@ -125,6 +142,66 @@ return t('teachers.inactive');
         open: boolean;
         item: any | null;
     }>({ open: false, item: null });
+
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [editingTeacher, setEditingTeacher] = useState<TeacherRow | null>(null);
+    const [processing, setProcessing] = useState(false);
+
+    const { data, setData, post, put, errors, reset } = useForm({
+        name: '',
+        email: '',
+        password: '',
+        role: 'teacher',
+        branch_id: '',
+    });
+
+    const handleCreate = () => {
+        reset();
+        setEditingTeacher(null);
+        setSheetOpen(true);
+    };
+
+    const handleEdit = (teacher: TeacherRow) => {
+        setEditingTeacher(teacher);
+        setData({
+            name: teacher.name,
+            email: teacher.email,
+            password: '',
+            role: teacher.role === 'inactive' ? 'teacher' : teacher.role,
+            branch_id: teacher.branch?.id ? String(teacher.branch.id) : '',
+        });
+        setSheetOpen(true);
+    };
+
+    const handleSheetSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setProcessing(true);
+
+        if (editingTeacher) {
+            put(teachers.update(editingTeacher.id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSheetOpen(false);
+                    setEditingTeacher(null);
+                    reset();
+                    toast.success(t('toast.updated_successfully'));
+                    router.reload({ only: ['teachers'] });
+                },
+                onFinish: () => setProcessing(false),
+            });
+        } else {
+            post(teachers.store(), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSheetOpen(false);
+                    reset();
+                    toast.success(t('toast.created_successfully'));
+                    router.reload({ only: ['teachers'] });
+                },
+                onFinish: () => setProcessing(false),
+            });
+        }
+    };
 
     const handleDelete = (teacher: {
         id: number;
@@ -376,13 +453,11 @@ return;
                                                     )}
                                                 </DropdownMenuItem>
                                             )}
-                                        <DropdownMenuItem asChild>
-                                            <Link
-                                                href={teachers.edit(teacher.id)}
-                                            >
-                                                <Pencil className="mr-2 size-4" />
-                                                {t('actions.edit')}
-                                            </Link>
+                                        <DropdownMenuItem
+                                            onClick={() => handleEdit(teacher)}
+                                        >
+                                            <Pencil className="mr-2 size-4" />
+                                            {t('actions.edit')}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() =>
@@ -433,7 +508,7 @@ return;
                         <PageActions
                             isAdmin={isAdmin}
                             createLabel={t('teachers.create')}
-                            onCreate={() => router.get(teachers.create())}
+                            onCreate={handleCreate}
                             exportTitle={t('teachers.title')}
                             exportFilename="teachers"
                             exportHeaders={[
@@ -567,6 +642,121 @@ return;
                 variant="destructive"
                 onConfirm={confirmReject}
             />
+
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>
+                            {editingTeacher
+                                ? `${t('actions.edit')} ${editingTeacher.name}`
+                                : t('actions.create')}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {editingTeacher
+                                ? t('teachers.edit_desc')
+                                : t('teachers.add_desc')}
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleSheetSubmit} className="space-y-4 p-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-name">{t('teachers.name')} *</Label>
+                            <Input
+                                id="sheet-name"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                                placeholder={t('teachers.name_placeholder')}
+                            />
+                            <InputError message={errors.name} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-email">{t('teachers.email')} *</Label>
+                            <Input
+                                id="sheet-email"
+                                type="email"
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
+                                placeholder={t('teachers.email_placeholder')}
+                            />
+                            <InputError message={errors.email} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-password">
+                                {t('teachers.password')}{' '}
+                                {editingTeacher ? `(${t('teachers.password_hint')})` : '*'}
+                            </Label>
+                            <Input
+                                id="sheet-password"
+                                type="password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                placeholder={t('teachers.password_placeholder')}
+                            />
+                            <InputError message={errors.password} />
+                        </div>
+
+                        {roles.length > 0 && (
+                            <div className="space-y-2">
+                                <Label htmlFor="sheet-role">{t('teachers.role')} *</Label>
+                                <Select
+                                    value={data.role}
+                                    onValueChange={(value) => setData('role', value)}
+                                >
+                                    <SelectTrigger id="sheet-role" className="w-full">
+                                        <SelectValue placeholder={t('teachers.select_role')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {roles.map((role) => (
+                                            <SelectItem key={role.id} value={role.slug}>
+                                                {role.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.role} />
+                            </div>
+                        )}
+
+                        {hasMultiBranch && branches.length > 0 && (
+                            <div className="space-y-2">
+                                <Label htmlFor="sheet-branch_id">Branch</Label>
+                                <Select
+                                    value={data.branch_id || 'all'}
+                                    onValueChange={(value) =>
+                                        setData('branch_id', value === 'all' ? '' : value)
+                                    }
+                                >
+                                    <SelectTrigger id="sheet-branch_id" className="w-full">
+                                        <SelectValue placeholder="Select branch" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All branches</SelectItem>
+                                        {branches.map((branch) => (
+                                            <SelectItem key={branch.id} value={String(branch.id)}>
+                                                {branch.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.branch_id} />
+                            </div>
+                        )}
+                    </form>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSheetOpen(false)}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button type="submit" disabled={processing} onClick={handleSheetSubmit}>
+                            {editingTeacher ? t('actions.update') : t('actions.create')}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

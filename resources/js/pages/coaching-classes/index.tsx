@@ -1,12 +1,13 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,16 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import coachingClasses from '@/routes/coaching-classes';
@@ -56,6 +67,12 @@ export default function CoachingClassesIndex({
         item: any | null;
     }>({ open: false, item: null });
 
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [editingClass, setEditingClass] = useState<CoachingClass | null>(null);
+    const [formData, setFormData] = useState({ name: '', default_fee: '' });
+    const [processing, setProcessing] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
     const handleSearch = (value: string) => {
         setSearch(value);
         router.get(
@@ -79,6 +96,56 @@ export default function CoachingClassesIndex({
             router.delete(coachingClasses.destroy(deleteDialog.item.id));
             toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({ name: '', default_fee: '' });
+        setErrors({});
+        setEditingClass(null);
+    };
+
+    const handleCreate = () => {
+        resetForm();
+        setSheetOpen(true);
+    };
+
+    const handleEdit = (cls: CoachingClass) => {
+        setEditingClass(cls);
+        setFormData({ name: cls.name, default_fee: String(cls.default_fee) });
+        setErrors({});
+        setSheetOpen(true);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setProcessing(true);
+        setErrors({});
+
+        if (editingClass) {
+            router.put(coachingClasses.update(editingClass.id).url, formData, {
+                onSuccess: () => {
+                    toast.success(t('toast.updated_successfully'));
+                    setSheetOpen(false);
+                    resetForm();
+                },
+                onError: (err) => {
+                    setErrors(err);
+                },
+                onFinish: () => setProcessing(false),
+            });
+        } else {
+            router.post(coachingClasses.index().url, formData, {
+                onSuccess: () => {
+                    toast.success(t('toast.created_successfully'));
+                    setSheetOpen(false);
+                    resetForm();
+                },
+                onError: (err) => {
+                    setErrors(err);
+                },
+                onFinish: () => setProcessing(false),
+            });
         }
     };
 
@@ -138,15 +205,11 @@ export default function CoachingClassesIndex({
                                           </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
-                                          <DropdownMenuItem asChild>
-                                              <Link
-                                                  href={coachingClasses.edit(
-                                                      cls.id,
-                                                  )}
-                                              >
-                                                  <Pencil className="mr-2 size-4" />
-                                                  {t('actions.edit')}
-                                              </Link>
+                                          <DropdownMenuItem
+                                              onClick={() => handleEdit(cls)}
+                                          >
+                                              <Pencil className="mr-2 size-4" />
+                                              {t('actions.edit')}
                                           </DropdownMenuItem>
                                           <DropdownMenuItem
                                               onClick={() => handleDelete(cls)}
@@ -189,9 +252,7 @@ export default function CoachingClassesIndex({
                         <PageActions
                             isAdmin={isAdmin}
                             createLabel={t('classes.create')}
-                            onCreate={() =>
-                                router.get(coachingClasses.create())
-                            }
+                            onCreate={handleCreate}
                             exportTitle={t('classes.title')}
                             exportFilename="coaching_classes"
                             exportHeaders={[
@@ -241,6 +302,75 @@ export default function CoachingClassesIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>
+                            {editingClass
+                                ? t('actions.edit')
+                                : t('actions.create')}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {editingClass
+                                ? `${t('actions.edit')} ${editingClass.name}`
+                                : t('classes.desc')}
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4 px-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="name">
+                                {t('classes.name')} *
+                            </Label>
+                            <Input
+                                id="name"
+                                value={formData.name}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, name: e.target.value })
+                                }
+                                placeholder="e.g. Nursery, KG, Class 1"
+                            />
+                            <InputError message={errors.name} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="default_fee">
+                                {t('classes.default_fee')} *
+                            </Label>
+                            <Input
+                                id="default_fee"
+                                type="number"
+                                value={formData.default_fee}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, default_fee: e.target.value })
+                                }
+                                placeholder="e.g. 500"
+                                min="0"
+                            />
+                            <InputError message={errors.default_fee} />
+                        </div>
+                    </form>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setSheetOpen(false);
+                                resetForm();
+                            }}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button type="submit" disabled={processing} onClick={handleSubmit}>
+                            {processing
+                                ? '...'
+                                : editingClass
+                                  ? t('actions.update')
+                                  : t('actions.create')}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
 
             <ConfirmDialog
                 open={deleteDialog.open}

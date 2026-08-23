@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { EllipsisVertical, PenLine, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -6,6 +6,8 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
+import RolePermissionsForm from '@/components/role-permissions-form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +17,18 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
+import { useLocale } from '@/contexts/locale-context';
 import roles from '@/routes/roles';
 
 type RoleItem = {
@@ -36,14 +50,92 @@ type PageProps = {
         per_page: number;
         total: number;
     };
+    groups: Record<string, Record<string, string>>;
 };
 
-export default function RolesIndex({ roles: pagination }: PageProps) {
-    const { auth } = usePage<PageProps>().props;
+export default function RolesIndex({ roles: pagination, groups = {} }: PageProps) {
+    const { t } = useLocale();
+    const { auth, errors } = usePage<PageProps>().props;
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: RoleItem | null;
     }>({ open: false, item: null });
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<RoleItem | null>(null);
+    const [name, setName] = useState('');
+    const [slug, setSlug] = useState('');
+    const [description, setDescription] = useState('');
+    const [selected, setSelected] = useState<string[]>([]);
+    const [processing, setProcessing] = useState(false);
+
+    const handleToggle = (route: string) => {
+        setSelected((prev) =>
+            prev.includes(route)
+                ? prev.filter((r) => r !== route)
+                : [...prev, route],
+        );
+    };
+
+    const handleCreate = () => {
+        setEditingItem(null);
+        setName('');
+        setSlug('');
+        setDescription('');
+        setSelected([]);
+        setSheetOpen(true);
+    };
+
+    const handleEdit = (role: RoleItem) => {
+        setEditingItem(role);
+        setName(role.name);
+        setSlug(role.slug);
+        setDescription(role.description || '');
+        setSelected(role.permissions);
+        setSheetOpen(true);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setProcessing(true);
+        if (editingItem) {
+            router.put(
+                roles.update(editingItem.id),
+                { name, description, permissions: selected },
+                {
+                    onSuccess: () => {
+                        toast.success(t('roles.updated'));
+                        setSheetOpen(false);
+                        setEditingItem(null);
+                        setProcessing(false);
+                    },
+                    onError: (errs) => {
+                        toast.error(
+                            Object.values(errs)[0] || t('roles.save_error'),
+                        );
+                        setProcessing(false);
+                    },
+                },
+            );
+        } else {
+            router.post(
+                roles.store(),
+                { name, slug, description, permissions: selected },
+                {
+                    onSuccess: () => {
+                        toast.success(t('roles.created'));
+                        setSheetOpen(false);
+                        setProcessing(false);
+                    },
+                    onError: (errs) => {
+                        toast.error(
+                            Object.values(errs)[0] || t('roles.save_error'),
+                        );
+                        setProcessing(false);
+                    },
+                },
+            );
+        }
+    };
 
     const handleDelete = (role: RoleItem) => {
         setDeleteDialog({ open: true, item: role });
@@ -146,11 +238,11 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 {role.slug !== 'owner' && (
-                                    <DropdownMenuItem asChild>
-                                        <Link href={roles.edit(role.id)}>
-                                            <PenLine className="mr-2 size-4" />
-                                            Edit
-                                        </Link>
+                                    <DropdownMenuItem
+                                        onClick={() => handleEdit(role)}
+                                    >
+                                        <PenLine className="mr-2 size-4" />
+                                        Edit
                                     </DropdownMenuItem>
                                 )}
                                 {!role.is_system && (
@@ -191,11 +283,9 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                                <Link href={roles.create()}>
-                                    <Plus className="mr-2 size-4" />
-                                    New Role
-                                </Link>
+                            <DropdownMenuItem onClick={handleCreate}>
+                                <Plus className="mr-2 size-4" />
+                                New Role
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -233,6 +323,104 @@ export default function RolesIndex({ roles: pagination }: PageProps) {
                 variant="destructive"
                 onConfirm={confirmDelete}
             />
+
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>
+                            {editingItem ? `${t('actions.edit')} ${editingItem.name}` : t('actions.create') + ' Role'}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {editingItem
+                                ? 'Choose which routes this role can access.'
+                                : 'Create a new role and choose which routes it can access.'}
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4 px-4 pb-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-name">Role Name *</Label>
+                            <Input
+                                id="sheet-name"
+                                value={name}
+                                onChange={(e) => {
+                                    setName(e.target.value);
+                                    if (!editingItem) {
+                                        setSlug(
+                                            e.target.value
+                                                .toLowerCase()
+                                                .trim()
+                                                .replace(/[^a-z0-9]+/g, '-')
+                                                .replace(/(^-|-$)/g, ''),
+                                        );
+                                    }
+                                }}
+                                placeholder="e.g. Teacher"
+                                required
+                            />
+                            <InputError message={errors.name} />
+                        </div>
+                        {!editingItem && (
+                            <div className="space-y-2">
+                                <Label htmlFor="sheet-slug">Slug *</Label>
+                                <Input
+                                    id="sheet-slug"
+                                    value={slug}
+                                    onChange={(e) => setSlug(e.target.value)}
+                                    placeholder="e.g. teacher"
+                                    required
+                                />
+                                <InputError message={errors.slug} />
+                            </div>
+                        )}
+                        {editingItem && (
+                            <div className="space-y-2">
+                                <Label>Slug</Label>
+                                <div className="flex h-9 items-center justify-between rounded-md border bg-muted px-3 text-sm">
+                                    <span>{editingItem.slug}</span>
+                                    {editingItem.is_system && (
+                                        <Badge variant="secondary">
+                                            System
+                                        </Badge>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-description">Description</Label>
+                            <Textarea
+                                id="sheet-description"
+                                rows={2}
+                                value={description}
+                                onChange={(e) =>
+                                    setDescription(e.target.value)
+                                }
+                                placeholder="What can this role do?"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="font-semibold">Route Permissions</h3>
+                            <RolePermissionsForm
+                                groups={groups}
+                                selected={selected}
+                                onToggle={handleToggle}
+                            />
+                            <InputError message={errors.permissions} />
+                        </div>
+                    </form>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSheetOpen(false)}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button type="submit" disabled={processing} onClick={handleSubmit}>
+                            {editingItem ? t('actions.update') : t('actions.create')}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -8,16 +8,36 @@ import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import exams from '@/routes/exams';
@@ -78,6 +98,69 @@ export default function ExamsIndex({
         open: boolean;
         item: Exam | null;
     }>({ open: false, item: null });
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<Exam | null>(null);
+
+    const { data, setData, post, put, processing, errors, reset } = useForm({
+        title: '',
+        subject: '',
+        batch_id: '',
+        date: '',
+        total_marks: '100',
+        passing_marks: '40',
+        notes: '',
+    });
+
+    const handleCreate = () => {
+        setEditingItem(null);
+        reset();
+        setData({
+            title: '',
+            subject: '',
+            batch_id: '',
+            date: '',
+            total_marks: '100',
+            passing_marks: '40',
+            notes: '',
+        });
+        setSheetOpen(true);
+    };
+
+    const handleEdit = (exam: Exam) => {
+        setEditingItem(exam);
+        setData({
+            title: exam.title,
+            subject: exam.subject || '',
+            batch_id: exam.batch ? String(exam.batch.id) : '',
+            date: exam.date ? exam.date.split('T')[0] : '',
+            total_marks: String(exam.total_marks),
+            passing_marks: String(exam.passing_marks),
+            notes: '',
+        });
+        setSheetOpen(true);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (editingItem) {
+            put(exams.update(editingItem.id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success(t('toast.updated_successfully'));
+                    setSheetOpen(false);
+                    setEditingItem(null);
+                },
+            });
+        } else {
+            post(exams.store(), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success(t('toast.created_successfully'));
+                    setSheetOpen(false);
+                },
+            });
+        }
+    };
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -192,9 +275,7 @@ export default function ExamsIndex({
                                 {isAdmin && (
                                     <>
                                         <DropdownMenuItem
-                                            onClick={() =>
-                                                router.get(exams.edit(exam.id))
-                                            }
+                                            onClick={() => handleEdit(exam)}
                                         >
                                             <Pencil className="mr-2 size-4" />
                                             {t('actions.edit')}
@@ -234,7 +315,7 @@ export default function ExamsIndex({
                         <PageActions
                             isAdmin={isAdmin}
                             createLabel={t('exams.create')}
-                            onCreate={() => router.get(exams.create())}
+                            onCreate={handleCreate}
                             exportTitle={t('exams.title')}
                             exportFilename="exams"
                             exportHeaders={[
@@ -325,6 +406,148 @@ export default function ExamsIndex({
                 confirmText={t('confirm.delete')}
                 onConfirm={confirmDelete}
             />
+
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>
+                            {editingItem ? t('exams.edit') : t('exams.create')}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {editingItem
+                                ? t('exams.update_details')
+                                : t('exams.desc')}
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4 px-4 pb-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-title">
+                                {t('exams.title')} *
+                            </Label>
+                            <Input
+                                id="sheet-title"
+                                value={data.title}
+                                onChange={(e) =>
+                                    setData('title', e.target.value)
+                                }
+                                placeholder={t('exams.title_placeholder')}
+                            />
+                            <InputError message={errors.title} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-subject">
+                                {t('exams.subject')}
+                            </Label>
+                            <Input
+                                id="sheet-subject"
+                                value={data.subject}
+                                onChange={(e) =>
+                                    setData('subject', e.target.value)
+                                }
+                                placeholder={t('exams.subject_placeholder')}
+                            />
+                            <InputError message={errors.subject} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>{t('exams.batch')}</Label>
+                            <Select
+                                value={data.batch_id}
+                                onValueChange={(value) =>
+                                    setData('batch_id', value)
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue
+                                        placeholder={t('exams.select_batch')}
+                                    />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {batches.map((batch) => (
+                                        <SelectItem
+                                            key={batch.id}
+                                            value={String(batch.id)}
+                                        >
+                                            {batch.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.batch_id} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-date">
+                                {t('exams.date')}
+                            </Label>
+                            <DatePicker
+                                value={data.date}
+                                onValueChange={(value) =>
+                                    setData('date', value)
+                                }
+                                placeholder={t('exams.date')}
+                            />
+                            <InputError message={errors.date} />
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="sheet-total_marks">
+                                    {t('exams.total_marks')} *
+                                </Label>
+                                <Input
+                                    id="sheet-total_marks"
+                                    type="number"
+                                    min="1"
+                                    value={data.total_marks}
+                                    onChange={(e) =>
+                                        setData('total_marks', e.target.value)
+                                    }
+                                />
+                                <InputError message={errors.total_marks} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="sheet-passing_marks">
+                                    {t('exams.passing_marks')} *
+                                </Label>
+                                <Input
+                                    id="sheet-passing_marks"
+                                    type="number"
+                                    min="0"
+                                    value={data.passing_marks}
+                                    onChange={(e) =>
+                                        setData('passing_marks', e.target.value)
+                                    }
+                                />
+                                <InputError message={errors.passing_marks} />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-notes">
+                                {t('exams.notes')}
+                            </Label>
+                            <Textarea
+                                id="sheet-notes"
+                                value={data.notes}
+                                onChange={(e) =>
+                                    setData('notes', e.target.value)
+                                }
+                                placeholder={t('exams.notes_placeholder')}
+                            />
+                            <InputError message={errors.notes} />
+                        </div>
+                    </form>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSheetOpen(false)}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button type="submit" disabled={processing} onClick={handleSubmit}>
+                            {editingItem ? t('actions.update') : t('actions.create')}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

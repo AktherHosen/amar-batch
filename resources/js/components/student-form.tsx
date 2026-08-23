@@ -51,6 +51,8 @@ type StudentFormProps = {
     onSubmit: (data: FormData) => void;
     processing: boolean;
     errors: Record<string, string>;
+    submitLabel?: string;
+    hideActions?: boolean;
 };
 
 function SectionHeader({
@@ -76,6 +78,8 @@ export default function StudentForm({
     onSubmit,
     processing,
     errors,
+    submitLabel,
+    hideActions,
 }: StudentFormProps) {
     const { t } = useLocale();
     const { data, setData } = useForm({
@@ -182,7 +186,7 @@ export default function StudentForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="student-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col items-center gap-4">
                 <div className="relative">
                     <button
@@ -544,12 +548,15 @@ export default function StudentForm({
                 </div>
             </div>
 
-            <div className="flex justify-end gap-2 border-t pt-4">
-                <FormActions
-                    cancelHref={students.index().url}
-                    processing={processing}
-                />
-            </div>
+            {!hideActions && (
+                <div className="flex justify-end gap-2 border-t pt-4">
+                    <FormActions
+                        cancelHref={students.index().url}
+                        processing={processing}
+                        submitLabel={submitLabel}
+                    />
+                </div>
+            )}
         </form>
     );
 }

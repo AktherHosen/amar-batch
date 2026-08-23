@@ -31,6 +31,8 @@ type BatchFormProps = {
     onSubmit: (data: any) => void;
     processing: boolean;
     errors: Record<string, string>;
+    submitLabel?: string;
+    hideActions?: boolean;
 };
 
 const DAY_OPTIONS = [
@@ -57,6 +59,8 @@ export default function BatchForm({
     onSubmit,
     processing,
     errors,
+    submitLabel,
+    hideActions,
 }: BatchFormProps) {
     const { data, setData } = useForm({
         name: batch?.name || '',
@@ -75,7 +79,7 @@ export default function BatchForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="batch-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="name">Name *</Label>
@@ -202,10 +206,13 @@ export default function BatchForm({
                 </div>
             </div>
 
-            <FormActions
-                cancelHref={batches.index().url}
-                processing={processing}
-            />
+            {!hideActions && (
+                <FormActions
+                    cancelHref={batches.index().url}
+                    processing={processing}
+                    submitLabel={submitLabel}
+                />
+            )}
         </form>
     );
 }
