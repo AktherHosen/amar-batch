@@ -62,11 +62,11 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
 
     const handleReset = () => {
         setSearch('');
-        router.get('/dashboard/payments', { status: 'all' }, { preserveState: true });
+        router.get('/dashboard/payments', {}, { preserveState: true });
     };
 
-    const handleStatusFilter = (status: string) => {
-        router.get('/dashboard/payments', { status, search }, { preserveState: true });
+    const handleStatusFilter = (value: string) => {
+        router.get('/dashboard/payments', { status: value || undefined, search }, { preserveState: true });
     };
 
     const handleApprove = (paymentId: number) => {
@@ -94,7 +94,7 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
         }
     };
 
-    const activeFilterCount = filters.status && filters.status !== 'all' ? 1 : 0;
+    const activeFilterCount = filters.status ? 1 : 0;
 
     const columns = (() => {
         type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
@@ -292,7 +292,7 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
                             total={payments.total}
                             itemName="payments"
                             baseUrl="/dashboard/payments"
-                            preserveParams={{ search, status: filters.status ?? 'all' }}
+                            preserveParams={{ search, status: filters.status ?? '' }}
                             emptyMessage="No payments found."
                             getRowId={(row) => String(row.id)}
                             enableColumnVisibility={false}
@@ -303,21 +303,20 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
                                     onClearAll={handleReset}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {['all', 'success', 'pending', 'failed'].map((status) => (
-                                            <Button
-                                                key={status}
-                                                variant={(filters.status ?? 'all') === status ? 'default' : 'outline'}
-                                                size="sm"
-                                                onClick={() => handleStatusFilter(status)}
-                                                className="capitalize"
-                                            >
-                                                {status}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                </FilterBar>
+                                    filters={[
+                                        {
+                                            id: 'status',
+                                            placeholder: 'All Status',
+                                            value: filters.status ?? '',
+                                            options: [
+                                                { label: 'Success', value: 'success' },
+                                                { label: 'Pending', value: 'pending' },
+                                                { label: 'Failed', value: 'failed' },
+                                            ],
+                                            onValueChange: handleStatusFilter,
+                                        },
+                                    ]}
+                                />
                             }
                         />
                     </CardContent>
