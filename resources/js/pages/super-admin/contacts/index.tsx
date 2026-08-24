@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { Mail, MailOpen, MessageSquareReply } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -205,34 +206,29 @@ return;
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.all')}</CardTitle>
-                            <Mail className="size-3.5 text-muted-foreground sm:size-4" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold sm:text-2xl">{stats.total}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.unread')}</CardTitle>
-                            <MailOpen className="size-3.5 text-muted-foreground sm:size-4" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold sm:text-2xl">{stats.unread}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.replied')}</CardTitle>
-                            <MessageSquareReply className="size-3.5 text-muted-foreground sm:size-4" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold sm:text-2xl">{stats.replied}</div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {[
+                        { label: t('super_admin.all'), value: stats.total, icon: Mail, color: 'text-muted-foreground' },
+                        { label: t('super_admin.unread'), value: stats.unread, icon: MailOpen, color: 'text-yellow-600' },
+                        { label: t('super_admin.replied'), value: stats.replied, icon: MessageSquareReply, color: 'text-green-600' },
+                    ].map((stat, i) => (
+                        <motion.div
+                            key={stat.label}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: i * 0.05 }}
+                        >
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{stat.label}</CardTitle>
+                                    <stat.icon className={`size-3.5 ${stat.color} sm:size-4`} />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className={`text-xl font-bold sm:text-2xl ${stat.color}`}>{stat.value}</div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))}
                 </div>
 
                 <Card>

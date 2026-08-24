@@ -161,7 +161,7 @@ return false;
                     superAdminOnly: true,
                 },
                 {
-                    title: 'Contact Messages',
+                    title: 'Messages',
                     href: '/dashboard/contacts',
                     icon: Mail,
                     superAdminOnly: true,

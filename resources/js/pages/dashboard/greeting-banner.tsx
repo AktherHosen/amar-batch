@@ -52,13 +52,13 @@ export default function GreetingBanner({ userName, subtitle, isTrial, trialEndsA
             transition={{ duration: 0.4 }}
         >
             <div className="relative overflow-hidden rounded-xl bg-primary/5 px-4 py-3 sm:px-6 sm:py-4">
-                <div className="absolute -right-4 -top-4 text-primary/10">
-                    <GreetingIcon className="size-24" strokeWidth={1} />
+                <div className="absolute -right-4 -top-4 text-primary/10 sm:-right-2 sm:-top-2">
+                    <GreetingIcon className="size-16 sm:size-20 md:size-24" strokeWidth={1} />
                 </div>
-                <div className="relative flex items-center justify-between gap-3">
+                <div className="relative flex items-center gap-3">
                     <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                            <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
+                        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                            <h1 className="min-w-0 truncate text-base font-semibold tracking-tight sm:text-xl">
                                 {greeting.text}, {userName}!
                             </h1>
                             {isTrial && trialDaysLeft !== null && trialDaysLeft !== undefined && (
@@ -67,11 +67,11 @@ export default function GreetingBanner({ userName, subtitle, isTrial, trialEndsA
                                 </Badge>
                             )}
                         </div>
-                        <p className="truncate text-xs text-muted-foreground sm:text-sm">
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-sm">
                             {subtitle}
                         </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground sm:text-sm">
+                    <div className="hidden shrink-0 items-center text-xs text-muted-foreground sm:flex sm:text-sm">
                         <Clock />
                     </div>
                 </div>

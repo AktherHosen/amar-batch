@@ -1,9 +1,10 @@
 import { router } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { CreditCard, TrendingUp, Clock, CheckCircle, XCircle, EllipsisVertical, Check, Ban, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import { RefreshButton } from '@/components/refresh-button';
@@ -94,7 +95,7 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
         }
     };
 
-    const activeFilterCount = filters.status ? 1 : 0;
+    const activeFilterCount = filters.status && filters.status !== 'all' ? 1 : 0;
 
     const columns: NonNullable<DataTableProps<PaymentRecord, unknown>['columns']> = [
         {
@@ -140,7 +141,9 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
             header: t('super_admin.billing'),
             enableSorting: false,
             cell: ({ row }: any) => (
-                <span className="capitalize">{row.original.billing_type ?? '—'}</span>
+                <Badge variant="outline" className="capitalize whitespace-nowrap">
+                    {row.original.billing_type ?? '—'}
+                </Badge>
             ),
         },
         {
@@ -207,117 +210,92 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
     ];
 
     return (
-        <>
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-3 sm:p-4">
-                <div className="flex items-start justify-between">
-                    <Heading
-                        title={t('super_admin.payments')}
-                        description={t('super_admin.all_payments_description')}
-                    />
-                    <div className="flex items-center gap-1">
-                        <RefreshButton
-                            refreshing={refreshing}
-                            onRefresh={() => {
-                                setRefreshing(true);
-                                router.reload({ onFinish: () => setRefreshing(false) });
-                            }}
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.all')}</CardTitle>
-                            <CreditCard className="size-3.5 text-muted-foreground sm:size-4" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold sm:text-2xl">{stats.total}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.active_payments')}</CardTitle>
-                            <CheckCircle className="size-3.5 text-green-600 sm:size-4" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold text-green-600 sm:text-2xl">{stats.successful}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.pending')}</CardTitle>
-                            <Clock className="size-3.5 text-yellow-600 sm:size-4" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold text-yellow-600 sm:text-2xl">{stats.pending}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.failed')}</CardTitle>
-                            <XCircle className="size-3.5 text-red-600 sm:size-4" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold text-red-600 sm:text-2xl">{stats.failed}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">Revenue</CardTitle>
-                            <TrendingUp className="size-3.5 text-muted-foreground sm:size-4" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-xl font-bold sm:text-2xl">{formatCurrency(stats.total_revenue)}</div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <Card>
-                    <CardContent className="pt-6">
-                        <DataTable
-                            columns={columns}
-                            data={payments.data}
-                            loading={refreshing}
-                            currentPage={payments.current_page}
-                            lastPage={payments.last_page}
-                            total={payments.total}
-                            itemName="payments"
-                            baseUrl="/dashboard/payments"
-                            preserveParams={{ search, status: filters.status ?? '' }}
-                            emptyMessage={t('super_admin.no_payments')}
-                            getRowId={(row) => String(row.id)}
-                            enableColumnVisibility={false}
-                            toolbar={
-                                <FilterBar
-                                    searchPlaceholder={`${t('actions.search')}...`}
-                                    searchValue={search}
-                                    onSearchChange={handleSearch}
-                                    activeFilterCount={activeFilterCount}
-                                    onClearAll={handleReset}
-                                    filters={[
-                                        {
-                                            id: 'status',
-                                            placeholder: t('super_admin.all_status'),
-                                            value: filters.status ?? '',
-                                            options: [
-                                                { label: t('super_admin.active_payments'), value: 'success' },
-                                                { label: t('super_admin.pending'), value: 'pending' },
-                                                { label: t('super_admin.failed'), value: 'failed' },
-                                            ],
-                                            onValueChange: handleStatusFilter,
-                                        },
-                                    ]}
-                                />
-                            }
-                        />
-                    </CardContent>
-                </Card>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl p-3 sm:p-4"
+        >
+            <div className="flex items-start justify-between">
+                <Heading
+                    title={t('super_admin.payments')}
+                    description={t('super_admin.all_payments_description')}
+                />
+                <RefreshButton
+                    refreshing={refreshing}
+                    onRefresh={() => {
+                        setRefreshing(true);
+                        router.reload({ onFinish: () => setRefreshing(false) });
+                    }}
+                />
             </div>
-        </>
+
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+                {[
+                    { label: t('super_admin.active_payments'), value: stats.successful, icon: CheckCircle, color: 'text-green-600' },
+                    { label: t('super_admin.pending'), value: stats.pending, icon: Clock, color: 'text-yellow-600' },
+                    { label: t('super_admin.failed'), value: stats.failed, icon: XCircle, color: 'text-red-600' },
+                    { label: t('super_admin.total_revenue'), value: formatCurrency(stats.total_revenue), icon: TrendingUp, color: 'text-muted-foreground' },
+                ].map((stat, i) => (
+                    <motion.div
+                        key={stat.label}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: i * 0.05 }}
+                    >
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{stat.label}</CardTitle>
+                                <stat.icon className={`size-3.5 ${stat.color} sm:size-4`} />
+                            </CardHeader>
+                            <CardContent>
+                                <div className={`text-xl font-bold sm:text-2xl ${stat.color}`}>{stat.value}</div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ))}
+            </div>
+
+            <Card>
+                <CardContent className="pt-6">
+                    <DataTable
+                        columns={columns}
+                        data={payments.data}
+                        loading={refreshing}
+                        currentPage={payments.current_page}
+                        lastPage={payments.last_page}
+                        total={payments.total}
+                        itemName="payments"
+                        baseUrl="/dashboard/payments"
+                        preserveParams={{ search, status: filters.status ?? '' }}
+                        emptyMessage={t('super_admin.no_payments')}
+                        getRowId={(row) => String(row.id)}
+                        enableColumnVisibility={false}
+                        toolbar={
+                            <FilterBar
+                                searchPlaceholder={`${t('actions.search')}...`}
+                                searchValue={search}
+                                onSearchChange={handleSearch}
+                                activeFilterCount={activeFilterCount}
+                                onClearAll={handleReset}
+                                filters={[
+                                    {
+                                        id: 'status',
+                                        placeholder: t('super_admin.all_status'),
+                                        value: filters.status ?? '',
+                                        options: [
+                                            { label: t('super_admin.active_payments'), value: 'success' },
+                                            { label: t('super_admin.pending'), value: 'pending' },
+                                            { label: t('super_admin.failed'), value: 'failed' },
+                                        ],
+                                        onValueChange: handleStatusFilter,
+                                    },
+                                ]}
+                            />
+                        }
+                    />
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 }
