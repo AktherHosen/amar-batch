@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,27 +19,49 @@ class SuperAdminController extends Controller
         $stats = [
             'total_tenants' => Tenant::count(),
             'active_tenants' => Tenant::where('is_active', true)->count(),
-            'total_users' => \App\Models\User::count(),
+            'total_users' => User::count(),
             'total_revenue' => (float) Payment::where('status', 'success')->sum('amount'),
             'active_subscriptions' => Subscription::where('status', 'active')->count(),
             'trial_subscriptions' => Subscription::where('status', 'trial')->count(),
         ];
-
-        $tenantStats = Tenant::withCount('students')
-            ->with('subscription.plan')
-            ->latest()
-            ->take(5)
-            ->get();
 
         $recentPayments = Payment::with(['tenant', 'plan'])
             ->latest()
             ->take(10)
             ->get();
 
+        $ownerActivity = User::where('role', 'owner')
+            ->with('tenant')
+            ->whereIn('id', function ($query) {
+                $query->select('user_id')
+                    ->from('sessions')
+                    ->where('last_activity', '>', now()->subDays(30)->timestamp)
+                    ->groupBy('user_id');
+            })
+            ->latest('updated_at')
+            ->take(10)
+            ->get()
+            ->map(function ($user) {
+                $lastSession = DB::table('sessions')
+                    ->where('user_id', $user->id)
+                    ->where('last_activity', '>', now()->subDays(30)->timestamp)
+                    ->orderByDesc('last_activity')
+                    ->first();
+
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'tenant' => $user->tenant ? ['id' => $user->tenant->id, 'name' => $user->tenant->name] : null,
+                    'last_login_at' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->diffForHumans() : null,
+                    'last_activity' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->toISOString() : null,
+                ];
+            });
+
         return Inertia::render('super-admin/dashboard', [
             'stats' => $stats,
-            'tenantStats' => $tenantStats,
             'recentPayments' => $recentPayments,
+            'ownerActivity' => $ownerActivity,
         ]);
     }
 

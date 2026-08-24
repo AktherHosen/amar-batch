@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useLocale } from '@/contexts/locale-context';
 
 type Owner = {
     id: number;
@@ -37,6 +38,7 @@ type PageProps = {
 };
 
 export default function OwnersIndex({ owners: pagination, filters }: PageProps) {
+    const { t } = useLocale();
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [refreshing, setRefreshing] = useState(false);
@@ -64,102 +66,98 @@ export default function OwnersIndex({ owners: pagination, filters }: PageProps) 
         if (!toggleDialog.owner) return;
         router.post(`/dashboard/owners/${toggleDialog.owner.id}/toggle-active`, {}, {
             onSuccess: () => {
-                toast.success('Owner status updated.');
+                toast.success(t('toast.updated_successfully'));
             },
         });
         setToggleDialog({ open: false, owner: null });
     };
 
-    const columns = (() => {
-        type Col = NonNullable<DataTableProps<Owner, unknown>['columns']>[number];
+    const columns: NonNullable<DataTableProps<Owner, unknown>['columns']> = [
+        {
+            id: 'name',
+            accessorKey: 'name',
+            header: t('super_admin.name'),
+            enableSorting: true,
+            meta: { sticky: true },
+            cell: ({ row }: any) => (
+                <Link
+                    href={`/dashboard/owners/${row.original.id}`}
+                    className="font-medium hover:underline"
+                >
+                    {row.original.name}
+                </Link>
+            ),
+        },
+        {
+            id: 'email',
+            accessorKey: 'email',
+            header: t('super_admin.email'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.email || '-',
+        },
+        {
+            id: 'tenant',
+            accessorKey: 'tenant',
+            header: t('super_admin.coaching_centers'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.tenant?.name || '—',
+        },
+        {
+            id: 'status',
+            accessorKey: 'role',
+            header: t('super_admin.status'),
+            enableSorting: false,
+            cell: ({ row }: any) => {
+                const isActive = row.original.role === 'owner';
+                return (
+                    <Badge variant={isActive ? 'default' : 'destructive'}>
+                        {isActive ? t('super_admin.active') : t('super_admin.inactive')}
+                    </Badge>
+                );
+            },
+        },
+        {
+            id: 'actions',
+            header: '',
+            enableSorting: false,
+            enableHiding: false,
+            cell: ({ row }: any) => {
+                const owner: Owner = row.original;
+                const isActive = owner.role === 'owner';
 
-        return [
-            {
-                id: 'name',
-                accessorKey: 'name',
-                header: 'Name',
-                enableSorting: true,
-                meta: { sticky: true },
-                cell: ({ row }: any) => (
-                    <Link
-                        href={`/dashboard/owners/${row.original.id}`}
-                        className="font-medium hover:underline"
-                    >
-                        {row.original.name}
-                    </Link>
-                ),
-            } as Col,
-            {
-                id: 'email',
-                accessorKey: 'email',
-                header: 'Email',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.email || '-',
-            } as Col,
-            {
-                id: 'tenant',
-                accessorKey: 'tenant',
-                header: 'Coaching Center',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.tenant?.name || '—',
-            } as Col,
-            {
-                id: 'status',
-                accessorKey: 'role',
-                header: 'Status',
-                enableSorting: false,
-                cell: ({ row }: any) => {
-                    const isActive = row.original.role === 'owner';
-                    return (
-                        <Badge variant={isActive ? 'default' : 'destructive'}>
-                            {isActive ? 'Active' : 'Inactive'}
-                        </Badge>
-                    );
-                },
-            } as Col,
-            {
-                id: 'actions',
-                header: '',
-                enableSorting: false,
-                enableHiding: false,
-                cell: ({ row }: any) => {
-                    const owner: Owner = row.original;
-                    const isActive = owner.role === 'owner';
-
-                    return (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
-                                    <EllipsisVertical className="size-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                    <Link href={`/dashboard/owners/${owner.id}`}>
-                                        <Eye className="mr-2 size-4" />
-                                        View
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    className={isActive ? 'text-destructive focus:text-destructive' : ''}
-                                    onClick={() => setToggleDialog({ open: true, owner })}
-                                >
-                                    <Trash2 className="mr-2 size-4" />
-                                    {isActive ? 'Deactivate' : 'Activate'}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    );
-                },
-            } as Col,
-        ];
-    })();
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <EllipsisVertical className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                                <Link href={`/dashboard/owners/${owner.id}`}>
+                                    <Eye className="mr-2 size-4" />
+                                    {t('super_admin.view_details')}
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className={isActive ? 'text-destructive focus:text-destructive' : ''}
+                                onClick={() => setToggleDialog({ open: true, owner })}
+                            >
+                                <Trash2 className="mr-2 size-4" />
+                                {isActive ? t('super_admin.deactivate') : t('super_admin.activate')}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            },
+        },
+    ];
 
     return (
         <>
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <Heading title="Owners" description="Manage coaching center owners" />
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-3 sm:p-4">
+                <div className="flex items-start justify-between">
+                    <Heading title={t('super_admin.owners')} description={t('super_admin.manage_owners')} />
                     <div className="flex items-center gap-1">
                         <RefreshButton
                             refreshing={refreshing}
@@ -186,12 +184,12 @@ export default function OwnersIndex({ owners: pagination, filters }: PageProps) 
                             itemName="owners"
                             baseUrl="/dashboard/owners"
                             preserveParams={{ search, status }}
-                            emptyMessage="No owners found."
+                            emptyMessage={t('super_admin.no_owners')}
                             getRowId={(row) => String(row.id)}
                             enableColumnVisibility={false}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder="Search owners..."
+                                    searchPlaceholder={`${t('actions.search')}...`}
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -199,11 +197,11 @@ export default function OwnersIndex({ owners: pagination, filters }: PageProps) 
                                     filters={[
                                         {
                                             id: 'status',
-                                            placeholder: 'All Status',
+                                            placeholder: t('super_admin.all_status'),
                                             value: status,
                                             options: [
-                                                { label: 'Active', value: 'active' },
-                                                { label: 'Inactive', value: 'inactive' },
+                                                { label: t('super_admin.active'), value: 'active' },
+                                                { label: t('super_admin.inactive'), value: 'inactive' },
                                             ],
                                             onValueChange: handleStatusChange,
                                         },

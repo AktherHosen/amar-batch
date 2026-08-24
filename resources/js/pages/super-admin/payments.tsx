@@ -84,11 +84,11 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'success':
-                return <Badge className="bg-green-600 text-white whitespace-nowrap">Success</Badge>;
+                return <Badge className="bg-green-600 text-white whitespace-nowrap">{t('super_admin.active_payments')}</Badge>;
             case 'pending':
-                return <Badge className="bg-yellow-600 text-white whitespace-nowrap">Pending</Badge>;
+                return <Badge className="bg-yellow-600 text-white whitespace-nowrap">{t('super_admin.pending')}</Badge>;
             case 'failed':
-                return <Badge className="bg-red-600 text-white whitespace-nowrap">Failed</Badge>;
+                return <Badge className="bg-red-600 text-white whitespace-nowrap">{t('super_admin.failed')}</Badge>;
             default:
                 return <Badge variant="secondary" className="whitespace-nowrap">{status}</Badge>;
         }
@@ -96,127 +96,123 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
 
     const activeFilterCount = filters.status ? 1 : 0;
 
-    const columns = (() => {
-        type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
+    const columns: NonNullable<DataTableProps<PaymentRecord, unknown>['columns']> = [
+        {
+            id: 'tenant',
+            accessorKey: 'tenant',
+            header: t('super_admin.coaching_centers'),
+            enableSorting: false,
+            meta: { sticky: true },
+            cell: ({ row }: any) => (
+                <span className="font-medium">{row.original.tenant?.name ?? '—'}</span>
+            ),
+        },
+        {
+            id: 'plan',
+            accessorKey: 'plan',
+            header: t('super_admin.plan_name'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.plan?.name ?? '—',
+        },
+        {
+            id: 'txid',
+            accessorKey: 'txid',
+            header: 'TX ID',
+            enableSorting: false,
+            cell: ({ row }: any) => (
+                <span className="font-mono text-xs">{row.original.txid ?? '—'}</span>
+            ),
+        },
+        {
+            id: 'amount',
+            accessorKey: 'amount',
+            header: t('super_admin.amount'),
+            enableSorting: false,
+            cell: ({ row }: any) => (
+                <div className="text-right font-semibold">
+                    {formatCurrency(row.original.amount)}
+                </div>
+            ),
+        },
+        {
+            id: 'billing_type',
+            accessorKey: 'billing_type',
+            header: t('super_admin.billing'),
+            enableSorting: false,
+            cell: ({ row }: any) => (
+                <span className="capitalize">{row.original.billing_type ?? '—'}</span>
+            ),
+        },
+        {
+            id: 'status',
+            accessorKey: 'status',
+            header: t('super_admin.status'),
+            enableSorting: false,
+            cell: ({ row }: any) => getStatusBadge(row.original.status),
+        },
+        {
+            id: 'payment_method',
+            accessorKey: 'payment_method',
+            header: t('super_admin.method'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.payment_method ?? '—',
+        },
+        {
+            id: 'paid_at',
+            accessorKey: 'paid_at',
+            header: t('super_admin.paid_at'),
+            enableSorting: false,
+            cell: ({ row }: any) =>
+                row.original.paid_at
+                    ? new Date(row.original.paid_at).toLocaleDateString()
+                    : '—',
+        },
+        {
+            id: 'actions',
+            header: '',
+            enableSorting: false,
+            enableHiding: false,
+            cell: ({ row }: any) => {
+                const payment: PaymentRecord = row.original;
 
-        return [
-            {
-                id: 'tenant',
-                accessorKey: 'tenant',
-                header: 'Tenant',
-                enableSorting: false,
-                meta: { sticky: true },
-                cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.tenant?.name ?? '—'}</span>
-                ),
-            } as Col,
-            {
-                id: 'plan',
-                accessorKey: 'plan',
-                header: 'Plan',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.plan?.name ?? '—',
-            } as Col,
-            {
-                id: 'txid',
-                accessorKey: 'txid',
-                header: 'TX ID',
-                enableSorting: false,
-                cell: ({ row }: any) => (
-                    <span className="font-mono text-xs">{row.original.txid ?? '—'}</span>
-                ),
-            } as Col,
-            {
-                id: 'amount',
-                accessorKey: 'amount',
-                header: 'Amount',
-                enableSorting: false,
-                cell: ({ row }: any) => (
-                    <div className="text-right font-semibold">
-                        {formatCurrency(row.original.amount)}
-                    </div>
-                ),
-            } as Col,
-            {
-                id: 'billing_type',
-                accessorKey: 'billing_type',
-                header: 'Billing',
-                enableSorting: false,
-                cell: ({ row }: any) => (
-                    <span className="capitalize">{row.original.billing_type ?? '—'}</span>
-                ),
-            } as Col,
-            {
-                id: 'status',
-                accessorKey: 'status',
-                header: 'Status',
-                enableSorting: false,
-                cell: ({ row }: any) => getStatusBadge(row.original.status),
-            } as Col,
-            {
-                id: 'payment_method',
-                accessorKey: 'payment_method',
-                header: 'Method',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.payment_method ?? '—',
-            } as Col,
-            {
-                id: 'paid_at',
-                accessorKey: 'paid_at',
-                header: 'Paid At',
-                enableSorting: false,
-                cell: ({ row }: any) =>
-                    row.original.paid_at
-                        ? new Date(row.original.paid_at).toLocaleDateString()
-                        : '—',
-            } as Col,
-            {
-                id: 'actions',
-                header: '',
-                enableSorting: false,
-                enableHiding: false,
-                cell: ({ row }: any) => {
-                    const payment: PaymentRecord = row.original;
-
-                    return (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
-                                    <EllipsisVertical className="size-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.get(`/dashboard/tenants/${payment.tenant_id}/detail`)}>
-                                    <Eye className="mr-2 size-4" />
-                                    View Tenant
-                                </DropdownMenuItem>
-                                {payment.status === 'pending' && (
-                                    <>
-                                        <DropdownMenuItem onClick={() => handleApprove(payment.id)}>
-                                            <Check className="mr-2 size-4 text-green-600" />
-                                            Approve
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleCancel(payment.id)}>
-                                            <Ban className="mr-2 size-4" />
-                                            Cancel
-                                        </DropdownMenuItem>
-                                    </>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    );
-                },
-            } as Col,
-        ];
-    })();
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <EllipsisVertical className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/tenants/${payment.tenant_id}/detail`)}>
+                                <Eye className="mr-2 size-4" />
+                                {t('super_admin.view_tenant')}
+                            </DropdownMenuItem>
+                            {payment.status === 'pending' && (
+                                <>
+                                    <DropdownMenuItem onClick={() => handleApprove(payment.id)}>
+                                        <Check className="mr-2 size-4 text-green-600" />
+                                        {t('super_admin.approve')}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleCancel(payment.id)}>
+                                        <Ban className="mr-2 size-4" />
+                                        {t('super_admin.cancel')}
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            },
+        },
+    ];
 
     return (
         <>
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-3 sm:p-4">
                 <div className="flex items-start justify-between">
                     <Heading
-                        title="Payment History"
-                        description="All transactions across coaching centers"
+                        title={t('super_admin.payments')}
+                        description={t('super_admin.all_payments_description')}
                     />
                     <div className="flex items-center gap-1">
                         <RefreshButton
@@ -229,54 +225,54 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
                     </div>
                 </div>
 
-                <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Total</CardTitle>
-                            <CreditCard className="size-4 text-muted-foreground" />
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.all')}</CardTitle>
+                            <CreditCard className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{stats.total}</div>
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{stats.total}</div>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Successful</CardTitle>
-                            <CheckCircle className="size-4 text-green-600" />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.active_payments')}</CardTitle>
+                            <CheckCircle className="size-3.5 text-green-600 sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold text-green-600">{stats.successful}</div>
+                        <CardContent>
+                            <div className="text-xl font-bold text-green-600 sm:text-2xl">{stats.successful}</div>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                            <Clock className="size-4 text-yellow-600" />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.pending')}</CardTitle>
+                            <Clock className="size-3.5 text-yellow-600 sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+                        <CardContent>
+                            <div className="text-xl font-bold text-yellow-600 sm:text-2xl">{stats.pending}</div>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Failed</CardTitle>
-                            <XCircle className="size-4 text-red-600" />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.failed')}</CardTitle>
+                            <XCircle className="size-3.5 text-red-600 sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
+                        <CardContent>
+                            <div className="text-xl font-bold text-red-600 sm:text-2xl">{stats.failed}</div>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                            <TrendingUp className="size-4 text-muted-foreground" />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">Revenue</CardTitle>
+                            <TrendingUp className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{formatCurrency(stats.total_revenue)}</div>
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{formatCurrency(stats.total_revenue)}</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -293,12 +289,12 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
                             itemName="payments"
                             baseUrl="/dashboard/payments"
                             preserveParams={{ search, status: filters.status ?? '' }}
-                            emptyMessage="No payments found."
+                            emptyMessage={t('super_admin.no_payments')}
                             getRowId={(row) => String(row.id)}
                             enableColumnVisibility={false}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder="Search tenant or TX ID..."
+                                    searchPlaceholder={`${t('actions.search')}...`}
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -306,12 +302,12 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
                                     filters={[
                                         {
                                             id: 'status',
-                                            placeholder: 'All Status',
+                                            placeholder: t('super_admin.all_status'),
                                             value: filters.status ?? '',
                                             options: [
-                                                { label: 'Success', value: 'success' },
-                                                { label: 'Pending', value: 'pending' },
-                                                { label: 'Failed', value: 'failed' },
+                                                { label: t('super_admin.active_payments'), value: 'success' },
+                                                { label: t('super_admin.pending'), value: 'pending' },
+                                                { label: t('super_admin.failed'), value: 'failed' },
                                             ],
                                             onValueChange: handleStatusFilter,
                                         },

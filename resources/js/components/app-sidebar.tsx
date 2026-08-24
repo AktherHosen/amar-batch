@@ -149,12 +149,6 @@ return false;
                     superAdminOnly: true,
                 },
                 {
-                    title: 'Coaching Centers',
-                    href: '/dashboard/tenants',
-                    icon: Building2,
-                    superAdminOnly: true,
-                },
-                {
                     title: 'Plans',
                     href: '/dashboard/plans',
                     icon: CreditCard,

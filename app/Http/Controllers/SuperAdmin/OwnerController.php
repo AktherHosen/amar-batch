@@ -14,6 +14,7 @@ class OwnerController extends Controller
     public function index(Request $request): Response
     {
         $query = User::with('tenant')
+            ->whereIn('role', ['owner', 'inactive'])
             ->when($request->search, function ($q, $search) {
                 $q->where(function ($q2) use ($search) {
                     $q2->where('name', 'like', "%{$search}%")
@@ -26,8 +27,6 @@ class OwnerController extends Controller
                 } elseif ($status === 'inactive') {
                     $q->where('role', 'inactive');
                 }
-            }, function ($q) {
-                $q->where('role', 'owner');
             });
 
         $owners = $query->orderByDesc('created_at')
@@ -78,15 +77,21 @@ class OwnerController extends Controller
 
     public function toggleActive(User $owner)
     {
+        $isActive = $owner->role !== 'owner';
+
         $owner->update([
-            'role' => $owner->role === 'owner' ? 'inactive' : 'owner',
+            'role' => $isActive ? 'owner' : 'inactive',
         ]);
+
+        if ($owner->tenant) {
+            $owner->tenant->update(['is_active' => $isActive]);
+        }
 
         return redirect()->back()->with('toast', [
             'type' => 'success',
-            'message' => $owner->role === 'inactive'
-                ? 'Owner deactivated successfully.'
-                : 'Owner activated successfully.',
+            'message' => $isActive
+                ? 'Owner activated successfully.'
+                : 'Owner deactivated successfully.',
         ]);
     }
 

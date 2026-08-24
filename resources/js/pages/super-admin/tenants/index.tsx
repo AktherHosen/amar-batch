@@ -9,6 +9,7 @@ import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
 
 type Tenant = {
     id: number;
@@ -37,6 +38,7 @@ type PageProps = {
 };
 
 export default function TenantsIndex({ tenants: pagination, filters }: PageProps) {
+    const { t } = useLocale();
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [refreshing, setRefreshing] = useState(false);
@@ -59,86 +61,82 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
 
     const activeFilterCount = status ? 1 : 0;
 
-    const columns = (() => {
-        type Col = NonNullable<DataTableProps<Tenant, unknown>['columns']>[number];
+    const columns: NonNullable<DataTableProps<Tenant, unknown>['columns']> = [
+        {
+            id: 'name',
+            accessorKey: 'name',
+            header: t('super_admin.name'),
+            enableSorting: true,
+            meta: { sticky: true },
+            cell: ({ row }: any) => (
+                <span className="font-medium">{row.original.name}</span>
+            ),
+        },
+        {
+            id: 'email',
+            accessorKey: 'email',
+            header: t('super_admin.email'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.email || '-',
+        },
+        {
+            id: 'users_count',
+            accessorKey: 'users_count',
+            header: t('super_admin.users'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.users_count,
+        },
+        {
+            id: 'students_count',
+            accessorKey: 'students_count',
+            header: t('super_admin.students'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.students_count,
+        },
+        {
+            id: 'batches_count',
+            accessorKey: 'batches_count',
+            header: t('super_admin.batches'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.batches_count,
+        },
+        {
+            id: 'status',
+            accessorKey: 'is_active',
+            header: t('super_admin.status'),
+            enableSorting: false,
+            cell: ({ row }: any) => (
+                <Badge variant={row.original.is_active ? 'default' : 'destructive'}>
+                    {row.original.is_active ? t('super_admin.active') : t('super_admin.inactive')}
+                </Badge>
+            ),
+        },
+        {
+            id: 'actions',
+            header: '',
+            enableSorting: false,
+            enableHiding: false,
+            cell: ({ row }: any) => {
+                const tenant: Tenant = row.original;
 
-        return [
-            {
-                id: 'name',
-                accessorKey: 'name',
-                header: 'Name',
-                enableSorting: true,
-                meta: { sticky: true },
-                cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.name}</span>
-                ),
-            } as Col,
-            {
-                id: 'email',
-                accessorKey: 'email',
-                header: 'Email',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.email || '-',
-            } as Col,
-            {
-                id: 'users_count',
-                accessorKey: 'users_count',
-                header: 'Users',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.users_count,
-            } as Col,
-            {
-                id: 'students_count',
-                accessorKey: 'students_count',
-                header: 'Students',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.students_count,
-            } as Col,
-            {
-                id: 'batches_count',
-                accessorKey: 'batches_count',
-                header: 'Batches',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.batches_count,
-            } as Col,
-            {
-                id: 'status',
-                accessorKey: 'is_active',
-                header: 'Status',
-                enableSorting: false,
-                cell: ({ row }: any) => (
-                    <Badge variant={row.original.is_active ? 'default' : 'destructive'}>
-                        {row.original.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
-                ),
-            } as Col,
-            {
-                id: 'actions',
-                header: '',
-                enableSorting: false,
-                enableHiding: false,
-                cell: ({ row }: any) => {
-                    const tenant: Tenant = row.original;
-
-                    return (
-                        <div className="flex items-center gap-1">
-                            <Link href={`/dashboard/tenants/${tenant.id}`}>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
-                                    <Eye className="size-4" />
-                                </Button>
-                            </Link>
-                        </div>
-                    );
-                },
-            } as Col,
-        ];
-    })();
+                return (
+                    <div className="flex items-center gap-1">
+                        <Link href={`/dashboard/tenants/${tenant.id}`}>
+                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Eye className="size-4" />
+                            </Button>
+                        </Link>
+                    </div>
+                );
+            },
+        },
+    ];
 
     return (
         <>
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <Heading title="Coaching Centers" description="Manage all coaching centers" />
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-3 sm:p-4">
+                <div className="flex items-start justify-between">
+                    <Heading title={t('super_admin.coaching_centers')} description={t('super_admin.manage_coaching_centers')} />
                     <div className="flex items-center gap-1">
                         <RefreshButton
                             refreshing={refreshing}
@@ -170,7 +168,7 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
                             enableColumnVisibility={false}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder="Search coaching centers..."
+                                    searchPlaceholder={`${t('actions.search')}...`}
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -178,11 +176,11 @@ export default function TenantsIndex({ tenants: pagination, filters }: PageProps
                                     filters={[
                                         {
                                             id: 'status',
-                                            placeholder: 'All Status',
+                                            placeholder: t('super_admin.all_status'),
                                             value: status,
                                             options: [
-                                                { label: 'Active', value: 'active' },
-                                                { label: 'Inactive', value: 'inactive' },
+                                                { label: t('super_admin.active'), value: 'active' },
+                                                { label: t('super_admin.inactive'), value: 'inactive' },
                                             ],
                                             onValueChange: handleStatusChange,
                                         },

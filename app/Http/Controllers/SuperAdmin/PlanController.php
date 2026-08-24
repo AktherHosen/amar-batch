@@ -31,11 +31,6 @@ class PlanController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        return Inertia::render('super-admin/plans/create');
-    }
-
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -56,13 +51,6 @@ class PlanController extends Controller
 
         return to_route('super-admin.plans.index')
             ->with('toast', ['type' => 'success', 'message' => 'Plan created successfully.']);
-    }
-
-    public function edit(Plan $plan): Response
-    {
-        return Inertia::render('super-admin/plans/edit', [
-            'plan' => $plan,
-        ]);
     }
 
     public function update(Request $request, Plan $plan): RedirectResponse

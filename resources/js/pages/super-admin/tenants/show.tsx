@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 
 type Tenant = {
     id: number;
@@ -163,7 +164,7 @@ export default function TenantShow({
 
     return (
         <>
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-3 sm:p-4">
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start">
                         <Button
@@ -194,70 +195,70 @@ export default function TenantShow({
                     </Button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">
-                                Students
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
+                                {t('super_admin.students')}
                             </CardTitle>
-                            <GraduationCap className="size-4 text-muted-foreground" />
+                            <GraduationCap className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pt-0 pb-2">
-                            <div className="text-2xl font-bold">
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">
                                 {stats.total_students}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                {stats.active_students} active
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {stats.active_students} {t('super_admin.active')}
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">
-                                Batches
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
+                                {t('super_admin.batches')}
                             </CardTitle>
-                            <Layers className="size-4 text-muted-foreground" />
+                            <Layers className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pt-0 pb-2">
-                            <div className="text-2xl font-bold">
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">
                                 {stats.total_batches}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                {stats.active_batches} active
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {stats.active_batches} {t('super_admin.active')}
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">
-                                Revenue
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
+                                {t('super_admin.total_revenue')}
                             </CardTitle>
-                            <CreditCard className="size-4 text-muted-foreground" />
+                            <CreditCard className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pt-0 pb-2">
-                            <div className="text-2xl font-bold">
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">
                                 {formatCurrency(stats.total_spent)}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                {stats.successful_payments} paid
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {stats.successful_payments} {t('super_admin.active_payments')}
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">
-                                Subscription
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
+                                {t('super_admin.subscriptions')}
                             </CardTitle>
-                            <Building2 className="size-4 text-muted-foreground" />
+                            <Building2 className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pt-0 pb-2">
-                            <div className="text-lg font-bold">
-                                {tenant.subscription?.plan?.name || 'No Plan'}
+                        <CardContent>
+                            <div className="text-base font-bold sm:text-lg">
+                                {tenant.subscription?.plan?.name || t('super_admin.no_plan')}
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="mt-1 flex items-center gap-2">
                                 <Badge
                                     variant={
                                         tenant.subscription?.status === 'active'
@@ -282,7 +283,7 @@ export default function TenantShow({
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Recent Payments</CardTitle>
+                        <CardTitle>{t('super_admin.recent_payments')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <DataTable
@@ -292,46 +293,22 @@ export default function TenantShow({
                             enableColumnVisibility={false}
                             total={recentPayments.length}
                             itemName="payments"
-                            emptyMessage="No payments yet."
+                            emptyMessage={t('super_admin.no_payments')}
                             getRowId={(row) => String(row.id)}
                         />
                     </CardContent>
                 </Card>
             </div>
 
-            {toggleDialog && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
-                        <h3 className="text-lg font-semibold">
-                            {tenant.is_active
-                                ? 'Deactivate Tenant'
-                                : 'Activate Tenant'}
-                        </h3>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                            Are you sure you want to{' '}
-                            {tenant.is_active ? 'deactivate' : 'activate'} "
-                            {tenant.name}"?{' '}
-                            {tenant.is_active && 'All users will lose access.'}
-                        </p>
-                        <div className="mt-4 flex justify-end gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => setToggleDialog(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant={
-                                    tenant.is_active ? 'destructive' : 'default'
-                                }
-                                onClick={handleToggle}
-                            >
-                                {tenant.is_active ? 'Deactivate' : 'Activate'}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmDialog
+                open={toggleDialog}
+                onOpenChange={setToggleDialog}
+                title={tenant.is_active ? 'Deactivate Tenant' : 'Activate Tenant'}
+                description={`Are you sure you want to ${tenant.is_active ? 'deactivate' : 'activate'} "${tenant.name}"? ${tenant.is_active ? 'All users will lose access.' : ''}`}
+                confirmText={tenant.is_active ? 'Deactivate' : 'Activate'}
+                variant={tenant.is_active ? 'destructive' : 'default'}
+                onConfirm={handleToggle}
+            />
         </>
     );
 }

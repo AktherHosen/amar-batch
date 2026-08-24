@@ -3,11 +3,6 @@ import {
     ArrowLeft,
     Building2,
     CreditCard,
-    GraduationCap,
-    Layers,
-    Users,
-    Mail,
-    Phone,
     Check,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -80,19 +75,11 @@ type Plan = {
 
 type PageProps = {
     owner: Owner;
-    stats: {
-        total_students: number;
-        active_students: number;
-        total_batches: number;
-        total_users: number;
-        total_payments: number;
-        total_spent: number;
-    } | null;
     plans: Plan[];
 };
 
-export default function OwnerShow({ owner, stats, plans }: PageProps) {
-    const { formatCurrency } = useLocale();
+export default function OwnerShow({ owner, plans }: PageProps) {
+    const { formatCurrency, t } = useLocale();
     const [planDialog, setPlanDialog] = useState(false);
     const [selectedPlanId, setSelectedPlanId] = useState(
         String(owner.tenant?.subscription?.plan?.id || '')
@@ -110,7 +97,7 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success('Plan updated successfully');
+                toast.success(t('toast.updated_successfully'));
                 setPlanDialog(false);
             },
         });
@@ -118,8 +105,8 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
 
     return (
         <>
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-3">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-3 sm:p-4">
+                <div className="flex items-start gap-3">
                     <Button variant="ghost" size="icon" className="size-9 shrink-0" onClick={() => window.history.back()}>
                         <ArrowLeft className="size-4" />
                     </Button>
@@ -128,37 +115,32 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                         description={owner.email}
                     />
                     <div className="ml-auto flex items-center gap-2">
-                        <Badge variant={owner.role === 'owner' ? 'default' : 'destructive'} className="hidden sm:inline-flex">
-                            {owner.role === 'owner' ? 'Active' : 'Inactive'}
+                        <Badge variant={owner.role === 'owner' ? 'default' : 'destructive'}>
+                            {owner.role === 'owner' ? t('super_admin.active') : t('super_admin.inactive')}
                         </Badge>
                     </div>
                 </div>
 
-                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Coaching Center</CardTitle>
-                            <Building2 className="size-4 text-muted-foreground" />
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.coaching_centers')}</CardTitle>
+                            <Building2 className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-lg font-bold">{tenant?.name || '—'}</div>
-                            {tenant && (
-                                <Badge variant={tenant.is_active ? 'default' : 'destructive'} className="mt-1 text-xs">
-                                    {tenant.is_active ? 'Active' : 'Inactive'}
-                                </Badge>
-                            )}
+                        <CardContent>
+                            <div className="text-base font-bold sm:text-lg">{tenant?.name || '—'}</div>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Plan</CardTitle>
-                            <CreditCard className="size-4 text-muted-foreground" />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.plan_name')}</CardTitle>
+                            <CreditCard className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-lg font-bold">{currentPlan?.name || 'No Plan'}</div>
+                        <CardContent>
+                            <div className="text-base font-bold sm:text-lg">{currentPlan?.name || t('super_admin.no_plan')}</div>
                             {subscription && (
-                                <div className="flex items-center gap-2 mt-1">
+                                <div className="mt-1 flex items-center gap-2">
                                     <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'} className="text-xs">
                                         {subscription.status}
                                     </Badge>
@@ -171,39 +153,13 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                             )}
                         </CardContent>
                     </Card>
-
-                    {stats && (
-                        <>
-                            <Card className="py-3">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                    <CardTitle className="text-sm font-medium">Students</CardTitle>
-                                    <GraduationCap className="size-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent className="px-3 pb-2 pt-0">
-                                    <div className="text-2xl font-bold">{stats.total_students}</div>
-                                    <p className="text-xs text-muted-foreground">{stats.active_students} active</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="py-3">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                    <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                                    <CreditCard className="size-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent className="px-3 pb-2 pt-0">
-                                    <div className="text-2xl font-bold">{formatCurrency(stats.total_spent)}</div>
-                                    <p className="text-xs text-muted-foreground">{stats.total_payments} payments</p>
-                                </CardContent>
-                            </Card>
-                        </>
-                    )}
                 </div>
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Plan Details</CardTitle>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>{t('super_admin.plan_details')}</CardTitle>
                         <Button variant="outline" size="sm" onClick={() => setPlanDialog(true)}>
-                            Change Plan
+                            {t('super_admin.change_plan')}
                         </Button>
                     </CardHeader>
                     <CardContent>
@@ -221,24 +177,24 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                                     </Badge>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div className="rounded-lg border p-3 text-center">
-                                        <p className="text-2xl font-bold">{currentPlan.max_students === -1 ? '∞' : currentPlan.max_students}</p>
-                                        <p className="text-xs text-muted-foreground">Students</p>
+                                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                                    <div className="rounded-lg border p-2 text-center sm:p-3">
+                                        <p className="text-xl font-bold sm:text-2xl">{currentPlan.max_students === -1 ? '∞' : currentPlan.max_students}</p>
+                                        <p className="text-xs text-muted-foreground">{t('super_admin.students')}</p>
                                     </div>
-                                    <div className="rounded-lg border p-3 text-center">
-                                        <p className="text-2xl font-bold">{currentPlan.max_staff === -1 ? '∞' : currentPlan.max_staff}</p>
-                                        <p className="text-xs text-muted-foreground">Staff</p>
+                                    <div className="rounded-lg border p-2 text-center sm:p-3">
+                                        <p className="text-xl font-bold sm:text-2xl">{currentPlan.max_staff === -1 ? '∞' : currentPlan.max_staff}</p>
+                                        <p className="text-xs text-muted-foreground">{t('super_admin.users')}</p>
                                     </div>
-                                    <div className="rounded-lg border p-3 text-center">
-                                        <p className="text-2xl font-bold">{currentPlan.max_batches === -1 ? '∞' : currentPlan.max_batches}</p>
-                                        <p className="text-xs text-muted-foreground">Batches</p>
+                                    <div className="rounded-lg border p-2 text-center sm:p-3">
+                                        <p className="text-xl font-bold sm:text-2xl">{currentPlan.max_batches === -1 ? '∞' : currentPlan.max_batches}</p>
+                                        <p className="text-xs text-muted-foreground">{t('super_admin.batches')}</p>
                                     </div>
                                 </div>
 
                                 {currentPlan.features && currentPlan.features.length > 0 && (
                                     <div>
-                                        <p className="text-sm font-medium mb-2">Features</p>
+                                        <p className="text-sm font-medium mb-2">{t('super_admin.features')}</p>
                                         <div className="flex flex-wrap gap-2">
                                             {currentPlan.features.map((feature) => (
                                                 <Badge key={feature} variant="secondary" className="gap-1">
@@ -251,7 +207,7 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                                 )}
                             </div>
                         ) : (
-                            <p className="text-sm text-muted-foreground">No plan assigned.</p>
+                            <p className="text-sm text-muted-foreground">{t('super_admin.no_plan')}</p>
                         )}
                     </CardContent>
                 </Card>
@@ -260,16 +216,16 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
             <Dialog open={planDialog} onOpenChange={setPlanDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Change Plan</DialogTitle>
+                        <DialogTitle>{t('super_admin.change_plan')}</DialogTitle>
                         <DialogDescription>
-                            Select a new plan for {tenant?.name || 'this coaching center'}.
+                            {t('super_admin.manage_owners')} {tenant?.name || ''}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4">
                         <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a plan" />
+                                <SelectValue placeholder={t('super_admin.select_plan')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {plans.map((plan) => (
@@ -292,10 +248,10 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                                 <div className="rounded-lg border p-3 text-sm space-y-2">
                                     <div className="font-medium">{plan.name}</div>
                                     <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                                        <div>Students: {plan.max_students === -1 ? 'Unlimited' : plan.max_students}</div>
-                                        <div>Staff: {plan.max_staff === -1 ? 'Unlimited' : plan.max_staff}</div>
-                                        <div>Batches: {plan.max_batches === -1 ? 'Unlimited' : plan.max_batches}</div>
-                                        <div>Price: {formatCurrency(Number(plan.price_monthly))}/mo</div>
+                                        <div>{t('super_admin.students')}: {plan.max_students === -1 ? t('super_admin.unlimited') : plan.max_students}</div>
+                                        <div>{t('super_admin.users')}: {plan.max_staff === -1 ? t('super_admin.unlimited') : plan.max_staff}</div>
+                                        <div>{t('super_admin.batches')}: {plan.max_batches === -1 ? t('super_admin.unlimited') : plan.max_batches}</div>
+                                        <div>{t('super_admin.amount')}: {formatCurrency(Number(plan.price_monthly))}/mo</div>
                                     </div>
                                 </div>
                             );
@@ -304,10 +260,10 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setPlanDialog(false)}>
-                            Cancel
+                            {t('actions.cancel')}
                         </Button>
                         <Button onClick={handleAssignPlan} disabled={!selectedPlanId}>
-                            Assign Plan
+                            {t('super_admin.change_plan')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

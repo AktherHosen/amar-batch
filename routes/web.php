@@ -57,10 +57,8 @@ Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'block.superadmin
 // Super admin routes (inside tenant middleware, super_admin role check)
 Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('dashboard')->name('super-admin.')->group(function () {
     Route::get('overview', [SuperAdminController::class, 'dashboard'])->name('dashboard');
-    Route::resource('tenants', TenantController::class)->only(['index', 'show']);
-    Route::post('tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
     Route::get('tenants/{tenant}/detail', [SuperAdminController::class, 'showTenant'])->name('tenants.detail');
-    Route::resource('plans', PlanController::class)->except(['show']);
+    Route::resource('plans', PlanController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('payments', [SuperAdminController::class, 'payments'])->name('payments');
     Route::post('payments/{payment}/approve', [SuperAdminController::class, 'approvePayment'])->name('payments.approve');
     Route::post('payments/{payment}/cancel', [SuperAdminController::class, 'cancelPayment'])->name('payments.cancel');
