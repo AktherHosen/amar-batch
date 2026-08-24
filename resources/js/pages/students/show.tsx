@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Download,
-    Pencil,
+    PenLine,
     Trash2,
     CheckCircle,
     XCircle,
@@ -518,7 +518,7 @@ export default function StudentsShow({
                         <div className="flex gap-2">
                             <Link href={students.edit(student.id)}>
                                 <Button variant="outline" className="h-9">
-                                    <Pencil className="size-4" />
+                                    <PenLine className="size-4" />
                                     <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
@@ -668,7 +668,7 @@ export default function StudentsShow({
                                     return total > 0 ? (
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-2xl font-bold">
+                                                <span className="text-xl font-bold sm:text-2xl">
                                                     {percentage}%
                                                 </span>
                                                 <Badge
@@ -754,7 +754,7 @@ export default function StudentsShow({
                                     return feeCount > 0 ? (
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-2xl font-bold text-green-600">
+                                                <span className="text-xl font-bold text-green-600 sm:text-2xl">
                                                     {totalPaid.toFixed(0)}
                                                 </span>
                                                 <Badge variant="success">

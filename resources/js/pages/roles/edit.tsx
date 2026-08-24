@@ -85,7 +85,7 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                     <div className="min-w-0">
                         <Heading
                             title={`${t('actions.edit')} ${role.name}`}
-                            description="Choose which routes this role can access."
+                            description={t('roles.edit_desc')}
                         />
                     </div>
                 </div>
@@ -94,7 +94,7 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                     <Card>
                         <CardContent className="grid gap-4 pt-6 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Role Name *</Label>
+                                <Label htmlFor="name">{t('roles.name')}</Label>
                                 <Input
                                     id="name"
                                     value={name}
@@ -104,7 +104,7 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                                 <InputError message={errors.name} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="slug">Slug</Label>
+                                <Label htmlFor="slug">{t('roles.slug')}</Label>
                                 <div className="flex h-9 items-center justify-between rounded-md border bg-muted px-3 text-sm">
                                     <span>{role.slug}</span>
                                     {role.is_system && (
@@ -115,7 +115,7 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                                 </div>
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="description">Description</Label>
+                                <Label htmlFor="description">{t('roles.form_description')}</Label>
                                 <Textarea
                                     id="description"
                                     rows={2}
@@ -131,7 +131,7 @@ export default function RolesEdit({ role, groups = {} }: Props) {
                     <Card>
                         <CardContent className="pt-6">
                             <h3 className="mb-4 font-semibold">
-                                Route Permissions
+                                {t('roles.route_permissions')}
                             </h3>
                             <RolePermissionsForm
                                 groups={groups}

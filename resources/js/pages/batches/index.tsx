@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Eye,
     EllipsisVertical,
-    Pencil,
+    PenLine,
     Plus,
     Trash2,
     CheckCircle,
@@ -286,7 +286,7 @@ export default function BatchesIndex({
                                         <DropdownMenuItem
                                             onClick={() => handleEdit(batch)}
                                         >
-                                            <Pencil className="mr-2 size-4" />
+                                            <PenLine className="mr-2 size-4" />
                                             {t('actions.edit')}
                                         </DropdownMenuItem>
                                         {batch.status !== 'completed' && (

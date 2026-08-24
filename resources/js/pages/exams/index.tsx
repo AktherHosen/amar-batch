@@ -1,5 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import CellTitle from '@/components/cell-title';
@@ -277,7 +277,7 @@ export default function ExamsIndex({
                                         <DropdownMenuItem
                                             onClick={() => handleEdit(exam)}
                                         >
-                                            <Pencil className="mr-2 size-4" />
+                                            <PenLine className="mr-2 size-4" />
                                             {t('actions.edit')}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem

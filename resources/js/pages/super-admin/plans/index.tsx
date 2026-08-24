@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { EllipsisVertical, PenLine, Plus, Trash2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -255,7 +255,7 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openEdit(plan)}>
-                                <Pencil className="mr-2 size-4" />
+                                <PenLine className="mr-2 size-4" />
                                 {t('actions.edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem

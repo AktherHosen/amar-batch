@@ -2,7 +2,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     EllipsisVertical,
     Eye,
-    Pencil,
+    PenLine,
     Trash2,
     CheckCircle,
     XCircle,
@@ -458,7 +458,7 @@ return;
                                         <DropdownMenuItem
                                             onClick={() => handleEdit(teacher)}
                                         >
-                                            <Pencil className="mr-2 size-4" />
+                                            <PenLine className="mr-2 size-4" />
                                             {t('actions.edit')}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem

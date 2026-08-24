@@ -304,7 +304,7 @@ export default function Dashboard({
                             <CardContent>
                                 <div className="flex gap-4">
                                     <div className="text-center">
-                                        <div className="text-2xl font-bold text-green-600">
+                                        <div className="text-xl font-bold text-green-600 sm:text-2xl">
                                             {batchHistory.completed}
                                         </div>
                                         <div className="text-xs text-muted-foreground">
@@ -312,7 +312,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                     <div className="text-center">
-                                        <div className="text-2xl font-bold text-blue-600">
+                                        <div className="text-xl font-bold text-blue-600 sm:text-2xl">
                                             {batchHistory.active}
                                         </div>
                                         <div className="text-xs text-muted-foreground">

@@ -703,7 +703,7 @@ export default function FeesIndex({
                                         }
                                     >
                                         <Trash2 className="mr-2 size-4" />
-                                        Delete
+                                        {t('actions.delete')}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>

@@ -88,7 +88,7 @@ export default function FeeReceiptCreate() {
                         </Button>
                     </Link>
                     <div className="min-w-0">
-                        <h2 className="truncate text-xl font-semibold tracking-tight">
+                        <h2 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
                             {t('receipts.create_title')}
                         </h2>
                     </div>

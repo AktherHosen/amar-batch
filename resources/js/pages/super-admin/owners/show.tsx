@@ -167,7 +167,7 @@ export default function OwnerShow({ owner, plans }: PageProps) {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between rounded-lg border p-4">
                                     <div>
-                                        <p className="text-lg font-semibold">{currentPlan.name}</p>
+                                        <p className="text-base font-semibold sm:text-lg">{currentPlan.name}</p>
                                         <p className="text-sm text-muted-foreground">
                                             {formatCurrency(Number(currentPlan.price_monthly))}/month · {formatCurrency(Number(currentPlan.price_yearly))}/year
                                         </p>

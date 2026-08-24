@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
+import { EllipsisVertical, PenLine, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -208,7 +208,7 @@ export default function CoachingClassesIndex({
                                           <DropdownMenuItem
                                               onClick={() => handleEdit(cls)}
                                           >
-                                              <Pencil className="mr-2 size-4" />
+                                              <PenLine className="mr-2 size-4" />
                                               {t('actions.edit')}
                                           </DropdownMenuItem>
                                           <DropdownMenuItem

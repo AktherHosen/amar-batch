@@ -146,10 +146,10 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
             setDeleteDialog({ open: false, item: null });
             router.delete(roles.destroy(deleteDialog.item.id), {
                 onSuccess: () => {
-                    toast.success('Role deleted successfully.');
+                    toast.success(t('roles.deleted'));
                 },
                 onError: () => {
-                    toast.error('Could not delete role. Make sure no users are assigned to it.');
+                    toast.error(t('roles.delete_error'));
                 },
             });
         }
@@ -164,7 +164,7 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
             {
                 id: 'name',
                 accessorKey: 'name',
-                header: 'Name',
+                header: t('roles.col_name'),
                 enableSorting: true,
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
@@ -175,7 +175,7 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                             {role.name}
                             {role.is_system && (
                                 <Badge variant="secondary" className="ml-2">
-                                    System
+                                    {t('roles.system')}
                                 </Badge>
                             )}
                         </span>
@@ -185,21 +185,21 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
             {
                 id: 'slug',
                 accessorKey: 'slug',
-                header: 'Slug',
+                header: t('roles.col_slug'),
                 enableSorting: false,
                 cell: ({ row }: any) => <span>{row.original.slug}</span>,
             } as Col,
             {
                 id: 'users_count',
                 accessorKey: 'users_count',
-                header: 'Users',
+                header: t('roles.col_users'),
                 enableSorting: false,
                 cell: ({ row }: any) => <span>{row.original.users_count}</span>,
             } as Col,
             {
                 id: 'permissions',
                 accessorKey: 'permissions',
-                header: 'Permissions',
+                header: t('roles.col_permissions'),
                 enableSorting: false,
                 cell: ({ row }: any) => {
                     const role: RoleItem = row.original;
@@ -207,8 +207,8 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                     return (
                         <span>
                             {role.permissions.includes('*')
-                                ? 'All'
-                                : `${role.permissions.length} routes`}
+                                ? t('roles.all')
+                                : `${role.permissions.length} ${t('roles.routes')}`}
                         </span>
                     );
                 },
@@ -242,7 +242,7 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                                         onClick={() => handleEdit(role)}
                                     >
                                         <PenLine className="mr-2 size-4" />
-                                        Edit
+                                        {t('actions.edit')}
                                     </DropdownMenuItem>
                                 )}
                                 {!role.is_system && (
@@ -251,7 +251,7 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                                         onClick={() => handleDelete(role)}
                                     >
                                         <Trash2 className="mr-2 size-4" />
-                                        Delete
+                                        {t('actions.delete')}
                                     </DropdownMenuItem>
                                 )}
                             </DropdownMenuContent>
@@ -264,13 +264,13 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
 
     return (
         <>
-            <Head title="Roles" />
+            <Head title={t('roles.index')} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-start justify-between">
                     <Heading
-                        title="Roles & Permissions"
-                        description="Manage roles and the routes each role can access."
+                        title={t('roles.index')}
+                        description={t('roles.description')}
                     />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -285,7 +285,7 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={handleCreate}>
                                 <Plus className="mr-2 size-4" />
-                                New Role
+                                {t('roles.new_role')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -303,8 +303,8 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                             baseUrl={roles.index().url}
                             preserveParams={{}}
                             searchable
-                            searchPlaceholder="Search roles..."
-                            emptyMessage="No roles found."
+                            searchPlaceholder={t('roles.search')}
+                            emptyMessage={t('roles.no_roles')}
                             getRowId={(row) => String(row.id)}
                         />
                     </CardContent>
@@ -316,10 +316,10 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                 onOpenChange={(open) =>
                     setDeleteDialog({ open, item: deleteDialog.item })
                 }
-                title="Delete Role"
-                description={`Are you sure you want to delete the "${deleteDialog.item?.name}" role? Users assigned to this role will no longer be able to access restricted features.`}
-                confirmText="Delete"
-                cancelText="Cancel"
+                title={t('roles.delete_title')}
+                description={t('roles.delete_confirm').replace('{name}', deleteDialog.item?.name || '')}
+                confirmText={t('confirm.delete')}
+                cancelText={t('confirm.cancel')}
                 variant="destructive"
                 onConfirm={confirmDelete}
             />
@@ -328,17 +328,17 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                 <SheetContent className="sm:max-w-2xl overflow-y-auto">
                     <SheetHeader>
                         <SheetTitle>
-                            {editingItem ? `${t('actions.edit')} ${editingItem.name}` : t('actions.create') + ' Role'}
+                            {editingItem ? `${t('actions.edit')} ${editingItem.name}` : t('roles.create')}
                         </SheetTitle>
                         <SheetDescription>
                             {editingItem
-                                ? 'Choose which routes this role can access.'
-                                : 'Create a new role and choose which routes it can access.'}
+                                ? t('roles.edit_desc')
+                                : t('roles.create_desc')}
                         </SheetDescription>
                     </SheetHeader>
                     <form onSubmit={handleSubmit} className="space-y-4 px-4 pb-4">
                         <div className="space-y-2">
-                            <Label htmlFor="sheet-name">Role Name *</Label>
+                            <Label htmlFor="sheet-name">{t('roles.name')}</Label>
                             <Input
                                 id="sheet-name"
                                 value={name}
@@ -354,19 +354,19 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                                         );
                                     }
                                 }}
-                                placeholder="e.g. Teacher"
+                                placeholder={t('roles.name_placeholder')}
                                 required
                             />
                             <InputError message={errors.name} />
                         </div>
                         {!editingItem && (
                             <div className="space-y-2">
-                                <Label htmlFor="sheet-slug">Slug *</Label>
+                                <Label htmlFor="sheet-slug">{t('roles.slug')}</Label>
                                 <Input
                                     id="sheet-slug"
                                     value={slug}
                                     onChange={(e) => setSlug(e.target.value)}
-                                    placeholder="e.g. teacher"
+                                    placeholder={t('roles.slug_placeholder')}
                                     required
                                 />
                                 <InputError message={errors.slug} />
@@ -374,7 +374,7 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                         )}
                         {editingItem && (
                             <div className="space-y-2">
-                                <Label>Slug</Label>
+                                <Label>{t('roles.slug')}</Label>
                                 <div className="flex h-9 items-center justify-between rounded-md border bg-muted px-3 text-sm">
                                     <span>{editingItem.slug}</span>
                                     {editingItem.is_system && (
@@ -386,7 +386,7 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                             </div>
                         )}
                         <div className="space-y-2">
-                            <Label htmlFor="sheet-description">Description</Label>
+                            <Label htmlFor="sheet-description">{t('roles.form_description')}</Label>
                             <Textarea
                                 id="sheet-description"
                                 rows={2}
@@ -394,11 +394,11 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                                 onChange={(e) =>
                                     setDescription(e.target.value)
                                 }
-                                placeholder="What can this role do?"
+                                placeholder={t('roles.description_placeholder')}
                             />
                         </div>
                         <div className="space-y-2">
-                            <h3 className="font-semibold">Route Permissions</h3>
+                            <h3 className="font-semibold">{t('roles.route_permissions')}</h3>
                             <RolePermissionsForm
                                 groups={groups}
                                 selected={selected}

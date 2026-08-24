@@ -63,7 +63,7 @@ export default function FeeReceiptShow() {
                 <Card className="print:border-0 print:shadow-none">
                     <CardContent className="p-6 print:p-0">
                         <div className="mb-8 text-center">
-                            <h2 className="text-2xl font-bold">{auth.user?.tenant?.name || t('receipts.coaching_center')}</h2>
+                            <h2 className="text-xl font-bold sm:text-2xl">{auth.user?.tenant?.name || t('receipts.coaching_center')}</h2>
                             <p className="text-muted-foreground">{t('receipts.fee_receipt')}</p>
                         </div>
 
@@ -115,11 +115,11 @@ export default function FeeReceiptShow() {
                         <div className="mb-6 grid grid-cols-2 gap-4 border-b pb-4">
                             <div>
                                 <p className="text-sm text-muted-foreground">{t('receipts.amount_due')}</p>
-                                <p className="text-lg font-bold">{formatCurrency(Number(receipt.amount_due))}</p>
+                                <p className="text-base font-bold sm:text-lg">{formatCurrency(Number(receipt.amount_due))}</p>
                             </div>
                             <div>
                                 <p className="text-sm text-muted-foreground">{t('receipts.amount_paid')}</p>
-                                <p className="text-lg font-bold text-green-600">{formatCurrency(Number(receipt.amount_paid))}</p>
+                                <p className="text-base font-bold text-green-600 sm:text-lg">{formatCurrency(Number(receipt.amount_paid))}</p>
                             </div>
                         </div>
 

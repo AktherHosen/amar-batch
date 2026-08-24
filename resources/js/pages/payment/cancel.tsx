@@ -22,7 +22,7 @@ export default function PaymentCancel({ message }: Props) {
                             <XCircle className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold">{t('payment.cancel_title')}</h1>
+                            <h1 className="text-xl font-bold sm:text-2xl">{t('payment.cancel_title')}</h1>
                             <p className="mt-2 text-muted-foreground">
                                 {message || t('payment.cancel_desc')}
                             </p>

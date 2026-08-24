@@ -1,5 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import CellTitle from '@/components/cell-title';
@@ -268,7 +268,7 @@ export default function NoticesIndex({
                                     }
                                 >
                                     <Eye className="mr-2 size-4" />
-                                    View
+                                    {t('actions.view')}
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                     <>
@@ -277,15 +277,15 @@ export default function NoticesIndex({
                                                 handleEdit(notice)
                                             }
                                         >
-                                            <Pencil className="mr-2 size-4" />
-                                            Edit
+                                            <PenLine className="mr-2 size-4" />
+                                            {t('actions.edit')}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             className="text-destructive focus:text-destructive"
                                             onClick={() => handleDelete(notice)}
                                         >
                                             <Trash2 className="mr-2 size-4" />
-                                            Delete
+                                            {t('actions.delete')}
                                         </DropdownMenuItem>
                                     </>
                                 )}

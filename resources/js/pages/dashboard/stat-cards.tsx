@@ -80,12 +80,10 @@ export default function StatCards({ stats }: { stats: StatCard[] }) {
                         <Link href={stat.href} className="block h-full">
                             <Card className="h-full transition-colors hover:bg-muted/50">
                                 <CardHeader>
-                                    <div className="flex items-center justify-between">
-                                        <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
-                                            {stat.title}
-                                        </CardTitle>
-                                        <Icon className="size-3.5 text-muted-foreground sm:size-4" />
-                                    </div>
+                                    <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
+                                        {stat.title}
+                                    </CardTitle>
+                                    <Icon className="size-3.5 text-muted-foreground sm:size-4" />
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex items-end justify-between">

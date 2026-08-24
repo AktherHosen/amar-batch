@@ -176,7 +176,7 @@ return {};
         getPaginationRowModel: showPagination
             ? getPaginationRowModel()
             : undefined,
-        manualPagination: showPagination,
+        manualPagination: !!(baseUrl || onPaginationChange),
         manualSorting: !!onSortingChange,
     });
 

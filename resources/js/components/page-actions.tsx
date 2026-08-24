@@ -152,7 +152,7 @@ return;
                     {isAdmin && (
                         <DropdownMenuItem onClick={() => setImportOpen(true)}>
                             <Upload className="mr-2 size-4" />
-                            Import
+                            {t('actions.import')}
                         </DropdownMenuItem>
                     )}
                 </DropdownMenuContent>

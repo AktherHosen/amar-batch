@@ -235,7 +235,7 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-lg font-semibold">
+                                        <h3 className="text-base font-semibold sm:text-lg">
                                             {subscription?.plan?.name ?? 'No Plan'}
                                         </h3>
                                         {getStatusBadge(subscription?.status ?? 'none')}

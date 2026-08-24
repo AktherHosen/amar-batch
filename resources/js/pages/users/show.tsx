@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, EllipsisVertical, Pencil, Shield, ShieldOff } from 'lucide-react';
+import { ArrowLeft, EllipsisVertical, PenLine, Shield, ShieldOff } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -181,7 +181,7 @@ return t('users.inactive');
                         <div className="flex gap-2 shrink-0">
                             <Link href={users.edit(user.id)}>
                                 <Button variant="outline" className="h-9">
-                                    <Pencil className="size-4" />
+                                    <PenLine className="size-4" />
                                     <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>

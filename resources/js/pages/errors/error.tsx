@@ -50,7 +50,7 @@ export default function ErrorPage({
                         <p className="text-sm font-medium text-muted-foreground">
                             {status}
                         </p>
-                        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+                        <h1 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
                             {title}
                         </h1>
                         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
