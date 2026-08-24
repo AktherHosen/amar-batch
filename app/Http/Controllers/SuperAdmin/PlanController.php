@@ -11,12 +11,23 @@ use Inertia\Response;
 
 class PlanController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $plans = Plan::latest()->get();
+        $query = Plan::query();
+
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $plans = $query->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('super-admin/plans/index', [
             'plans' => $plans,
+            'filters' => $request->only(['search']),
         ]);
     }
 

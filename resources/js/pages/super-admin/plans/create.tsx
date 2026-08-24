@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useLocale } from '@/contexts/locale-context';
 
 const AVAILABLE_FEATURES = [
     'students',
@@ -26,6 +27,7 @@ const AVAILABLE_FEATURES = [
 ];
 
 export default function PlanCreate() {
+    const { t } = useLocale();
     const [form, setForm] = useState({
         name: '',
         slug: '',

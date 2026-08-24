@@ -3,7 +3,11 @@ import { EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DataTable } from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,15 +30,31 @@ type Plan = {
 };
 
 type PageProps = {
-    plans: Plan[];
+    plans: {
+        data: Plan[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    };
+    filters: {
+        search?: string;
+    };
 };
 
-export default function PlansIndex({ plans }: PageProps) {
-    const { t } = useLocale();
+export default function PlansIndex({ plans: pagination, filters }: PageProps) {
+    const { t, formatCurrency } = useLocale();
+    const [search, setSearch] = useState(filters.search || '');
+    const [refreshing, setRefreshing] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Plan | null }>({
         open: false,
         item: null,
     });
+
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        router.get('/dashboard/plans', { search: value }, { preserveState: true });
+    };
 
     const handleDelete = (plan: Plan) => {
         setDeleteDialog({ open: true, item: plan });
@@ -48,99 +68,165 @@ export default function PlansIndex({ plans }: PageProps) {
         }
     };
 
-    const formatLimit = (value: number) => (value === -1 ? '∞' : value.toString());
+    const formatLimit = (value: number) => (value === -1 ? 'Unlimited' : value.toString());
+
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<Plan, unknown>['columns']>[number];
+
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: 'Plan',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <div className="flex items-center gap-2">
+                        <span className="font-medium">{row.original.name}</span>
+                        {row.original.is_default && (
+                            <Badge variant="secondary" className="text-xs">Default</Badge>
+                        )}
+                    </div>
+                ),
+            } as Col,
+            {
+                id: 'price',
+                accessorKey: 'price_monthly',
+                header: 'Monthly Price',
+                enableSorting: true,
+                cell: ({ row }: any) => (
+                    <span className="font-semibold">
+                        {row.original.price_monthly === 0 ? 'Free' : formatCurrency(row.original.price_monthly)}
+                    </span>
+                ),
+            } as Col,
+            {
+                id: 'students',
+                accessorKey: 'max_students',
+                header: 'Students',
+                enableSorting: false,
+                cell: ({ row }: any) => formatLimit(row.original.max_students),
+            } as Col,
+            {
+                id: 'staff',
+                accessorKey: 'max_staff',
+                header: 'Staff',
+                enableSorting: false,
+                cell: ({ row }: any) => formatLimit(row.original.max_staff),
+            } as Col,
+            {
+                id: 'batches',
+                accessorKey: 'max_batches',
+                header: 'Batches',
+                enableSorting: false,
+                cell: ({ row }: any) => formatLimit(row.original.max_batches),
+            } as Col,
+            {
+                id: 'features',
+                accessorKey: 'features',
+                header: 'Features',
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const features = row.original.features;
+                    if (!features || features.length === 0) return '—';
+                    return (
+                        <div className="flex flex-wrap gap-1">
+                            {features.slice(0, 3).map((f: string) => (
+                                <Badge key={f} variant="outline" className="text-xs">{f}</Badge>
+                            ))}
+                            {features.length > 3 && (
+                                <Badge variant="outline" className="text-xs">+{features.length - 3}</Badge>
+                            )}
+                        </div>
+                    );
+                },
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    const plan: Plan = row.original;
+
+                    return (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                    <EllipsisVertical className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/dashboard/plans/${plan.id}/edit`}>
+                                        <Pencil className="mr-2 size-4" />
+                                        Edit
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => handleDelete(plan)}
+                                    className="text-destructive focus:text-destructive"
+                                >
+                                    <Trash2 className="mr-2 size-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                },
+            } as Col,
+        ];
+    })();
 
     return (
         <>
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <Heading title="Subscription Plans" description="Manage pricing and limits" />
-                    <Link href="/dashboard/plans/create">
-                        <Button>
-                            <Plus className="mr-2 size-4" />
-                            Create Plan
-                        </Button>
-                    </Link>
+                    <Heading title="Plans" description="Manage subscription plans" />
+                    <div className="flex items-center gap-2">
+                        <RefreshButton
+                            refreshing={refreshing}
+                            onRefresh={() => {
+                                setRefreshing(true);
+                                router.reload({ only: ['plans'], onFinish: () => setRefreshing(false) });
+                            }}
+                        />
+                        <Link href="/dashboard/plans/create">
+                            <Button>
+                                <Plus className="mr-2 size-4" />
+                                Create Plan
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    {plans.map((plan) => (
-                        <Card key={plan.id} className="relative">
-                            <CardContent className="pt-6">
-                                <div className="mb-2 flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">{plan.name}</h3>
-                                        {plan.is_default && (
-                                            <Badge variant="secondary" className="mt-1">Default</Badge>
-                                        )}
-                                    </div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="sm" className="size-8 p-0">
-                                                <EllipsisVertical className="size-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem asChild>
-                                                <Link href={`/dashboard/plans/${plan.id}/edit`}>
-                                                    <Pencil className="mr-2 size-4" />
-                                                    Edit
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => handleDelete(plan)}
-                                                className="text-destructive"
-                                            >
-                                                <Trash2 className="mr-2 size-4" />
-                                                Delete
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-
-                                {plan.description && (
-                                    <p className="mb-4 text-sm text-muted-foreground">{plan.description}</p>
-                                )}
-
-                                <div className="mb-4">
-                                    <div className="text-3xl font-bold">
-                                        {plan.price_monthly === 0 ? 'Free' : `৳${plan.price_monthly}`}
-                                    </div>
-                                    {plan.price_monthly > 0 && (
-                                        <p className="text-xs text-muted-foreground">
-                                            ৳{plan.price_yearly}/year (save {Math.round((1 - plan.price_yearly / (plan.price_monthly * 12)) * 100)}%)
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Students</span>
-                                        <span className="font-medium">{formatLimit(plan.max_students)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Staff</span>
-                                        <span className="font-medium">{formatLimit(plan.max_staff)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Batches</span>
-                                        <span className="font-medium">{formatLimit(plan.max_batches)}</span>
-                                    </div>
-                                </div>
-
-                                {plan.features && plan.features.length > 0 && (
-                                    <div className="mt-4 flex flex-wrap gap-1">
-                                        {plan.features.map((feature) => (
-                                            <Badge key={feature} variant="outline" className="text-xs">
-                                                {feature}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                <Card>
+                    <CardContent className="pt-6">
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
+                            currentPage={pagination.current_page}
+                            lastPage={pagination.last_page}
+                            total={pagination.total}
+                            itemName="plans"
+                            baseUrl="/dashboard/plans"
+                            preserveParams={{ search }}
+                            emptyMessage="No plans found."
+                            getRowId={(row) => String(row.id)}
+                            enableColumnVisibility={false}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder="Search plans..."
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={0}
+                                    onClearAll={() => handleSearch('')}
+                                />
+                            }
+                        />
+                    </CardContent>
+                </Card>
             </div>
 
             <ConfirmDialog
@@ -155,4 +241,3 @@ export default function PlansIndex({ plans }: PageProps) {
         </>
     );
 }
-

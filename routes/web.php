@@ -34,7 +34,7 @@ Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'role.permission'
     Route::post('user/settings', [UserSettingsController::class, 'update'])->name('user.settings.update');
 });
 
-Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'role.permission', 'teacher.approved'])->group(function () {
+Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'block.superadmin', 'role.permission', 'teacher.approved'])->group(function () {
     require __DIR__.'/students.php';
     require __DIR__.'/batches.php';
     require __DIR__.'/teachers.php';

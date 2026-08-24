@@ -7,6 +7,7 @@ use App\Http\Middleware\OnboardingMiddleware;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\TenantMiddleware;
 use App\Http\Middleware\CheckRoutePermission;
+use App\Http\Middleware\BlockSuperAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -42,6 +43,7 @@ $middleware->alias([
             'tenant' => TenantMiddleware::class,
             'teacher.approved' => CheckTeacherApproval::class,
             'onboarding' => OnboardingMiddleware::class,
+            'block.superadmin' => BlockSuperAdmin::class,
         ]);
     })
     ->withSchedule(function ($schedule) {

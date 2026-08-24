@@ -119,18 +119,16 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
     return (
         <>
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4">
-                    <Link href="/dashboard/owners">
-                        <Button variant="ghost" size="icon" className="size-9">
-                            <ArrowLeft className="size-4" />
-                        </Button>
-                    </Link>
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="size-9 shrink-0" onClick={() => window.history.back()}>
+                        <ArrowLeft className="size-4" />
+                    </Button>
                     <Heading
                         title={owner.name}
                         description={owner.email}
                     />
-                    <div className="ml-auto">
-                        <Badge variant={owner.role === 'owner' ? 'default' : 'destructive'}>
+                    <div className="ml-auto flex items-center gap-2">
+                        <Badge variant={owner.role === 'owner' ? 'default' : 'destructive'} className="hidden sm:inline-flex">
                             {owner.role === 'owner' ? 'Active' : 'Inactive'}
                         </Badge>
                     </div>
@@ -154,7 +152,7 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
 
                     <Card className="py-3">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Current Plan</CardTitle>
+                            <CardTitle className="text-sm font-medium">Plan</CardTitle>
                             <CreditCard className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent className="px-3 pb-2 pt-0">
@@ -201,71 +199,8 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                     )}
                 </div>
 
-                {stats && (
-                    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-                        <Card className="py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                <CardTitle className="text-sm font-medium">Batches</CardTitle>
-                                <Layers className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent className="px-3 pb-2 pt-0">
-                                <div className="text-2xl font-bold">{stats.total_batches}</div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                <CardTitle className="text-sm font-medium">Users</CardTitle>
-                                <Users className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent className="px-3 pb-2 pt-0">
-                                <div className="text-2xl font-bold">{stats.total_users}</div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                <CardTitle className="text-sm font-medium">Contact</CardTitle>
-                                <Phone className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent className="px-3 pb-2 pt-0">
-                                <div className="space-y-1 text-sm">
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                        <Mail className="size-3" />
-                                        <span className="truncate">{tenant?.email || owner.email}</span>
-                                    </div>
-                                    {(tenant?.phone || owner.phone) && (
-                                        <div className="flex items-center gap-1 text-muted-foreground">
-                                            <Phone className="size-3" />
-                                            <span>{tenant?.phone || owner.phone}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="py-3">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                                <CardTitle className="text-sm font-medium">Owner</CardTitle>
-                                <Users className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent className="px-3 pb-2 pt-0">
-                                <div className="flex items-center gap-2">
-                                    <div className="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                                        {owner.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="truncate text-sm font-medium">{owner.name}</p>
-                                        <p className="truncate text-xs text-muted-foreground">{owner.email}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
-
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
+                    <CardHeader>
                         <CardTitle>Plan Details</CardTitle>
                         <Button variant="outline" size="sm" onClick={() => setPlanDialog(true)}>
                             Change Plan
@@ -273,39 +208,50 @@ export default function OwnerShow({ owner, stats, plans }: PageProps) {
                     </CardHeader>
                     <CardContent>
                         {currentPlan ? (
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                <div className="space-y-1">
-                                    <p className="text-sm text-muted-foreground">Monthly Price</p>
-                                    <p className="text-lg font-bold">{formatCurrency(Number(currentPlan.price_monthly))}</p>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                    <div>
+                                        <p className="text-lg font-semibold">{currentPlan.name}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {formatCurrency(Number(currentPlan.price_monthly))}/month · {formatCurrency(Number(currentPlan.price_yearly))}/year
+                                        </p>
+                                    </div>
+                                    <Badge variant={subscription?.status === 'active' ? 'default' : 'secondary'}>
+                                        {subscription?.status || 'inactive'}
+                                    </Badge>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm text-muted-foreground">Yearly Price</p>
-                                    <p className="text-lg font-bold">{formatCurrency(Number(currentPlan.price_yearly))}</p>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="rounded-lg border p-3 text-center">
+                                        <p className="text-2xl font-bold">{currentPlan.max_students === -1 ? '∞' : currentPlan.max_students}</p>
+                                        <p className="text-xs text-muted-foreground">Students</p>
+                                    </div>
+                                    <div className="rounded-lg border p-3 text-center">
+                                        <p className="text-2xl font-bold">{currentPlan.max_staff === -1 ? '∞' : currentPlan.max_staff}</p>
+                                        <p className="text-xs text-muted-foreground">Staff</p>
+                                    </div>
+                                    <div className="rounded-lg border p-3 text-center">
+                                        <p className="text-2xl font-bold">{currentPlan.max_batches === -1 ? '∞' : currentPlan.max_batches}</p>
+                                        <p className="text-xs text-muted-foreground">Batches</p>
+                                    </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm text-muted-foreground">Max Students</p>
-                                    <p className="text-lg font-bold">{currentPlan.max_students === -1 ? 'Unlimited' : currentPlan.max_students}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm text-muted-foreground">Max Staff</p>
-                                    <p className="text-lg font-bold">{currentPlan.max_staff === -1 ? 'Unlimited' : currentPlan.max_staff}</p>
-                                </div>
+
+                                {currentPlan.features && currentPlan.features.length > 0 && (
+                                    <div>
+                                        <p className="text-sm font-medium mb-2">Features</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {currentPlan.features.map((feature) => (
+                                                <Badge key={feature} variant="secondary" className="gap-1">
+                                                    <Check className="size-3" />
+                                                    {feature}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <p className="text-sm text-muted-foreground">No plan assigned.</p>
-                        )}
-                        {currentPlan?.features && currentPlan.features.length > 0 && (
-                            <div className="mt-4">
-                                <p className="text-sm text-muted-foreground mb-2">Features</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {currentPlan.features.map((feature) => (
-                                        <Badge key={feature} variant="secondary" className="gap-1">
-                                            <Check className="size-3" />
-                                            {feature}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </div>
                         )}
                     </CardContent>
                 </Card>
