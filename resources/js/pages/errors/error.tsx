@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Home, LayoutDashboard, ShieldAlert } from 'lucide-react';
+import { Home, LayoutDashboard, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/contexts/locale-context';
 import { dashboard } from '@/routes';
@@ -36,50 +36,35 @@ export default function ErrorPage({
     return (
         <>
             <Head title={title} />
-            <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{
-                    opacity: 1,
-                    y: 0,
-                    transition: { duration: 0.3, ease: 'easeOut' },
-                }}
-                className="flex min-h-[60vh] items-center justify-center p-4"
-            >
-                <div className="w-full max-w-md rounded-2xl border bg-card p-8 text-center shadow-sm">
+            <div className="flex min-h-[60vh] items-center justify-center p-6">
+                <div className="w-full max-w-sm">
                     <motion.div
-                        initial={{ scale: 0.85, opacity: 0 }}
-                        animate={{
-                            scale: 1,
-                            opacity: 1,
-                            transition: {
-                                delay: 0.1,
-                                duration: 0.25,
-                                ease: 'easeOut',
-                            },
-                        }}
-                        className="mx-auto mb-5 flex size-16 items-center justify-center rounded-2xl bg-destructive/10"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-center"
                     >
-                        <ShieldAlert className="size-8 text-destructive" />
+                        <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/30">
+                            <Lock className="size-10 text-red-500 dark:text-red-400" />
+                        </div>
+                        <p className="text-sm font-medium text-muted-foreground">
+                            {status}
+                        </p>
+                        <h1 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
+                            {title}
+                        </h1>
+                        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                            {body}
+                        </p>
                     </motion.div>
-
-                    <div className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
-                        {status}
-                    </div>
-                    <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-                        {title}
-                    </h1>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {body}
-                    </p>
-
-                    <div className="mt-8 flex flex-col gap-2">
-                        <Button asChild size="lg">
+                    <div className="mt-8 flex flex-col gap-2.5">
+                        <Button asChild>
                             <Link href={dashboard()}>
                                 <LayoutDashboard className="mr-2 size-4" />
                                 {t('errors.back_to_dashboard')}
                             </Link>
                         </Button>
-                        <Button asChild variant="outline" size="lg">
+                        <Button asChild variant="outline">
                             <Link href="/">
                                 <Home className="mr-2 size-4" />
                                 {t('errors.go_home')}
@@ -87,7 +72,7 @@ export default function ErrorPage({
                         </Button>
                     </div>
                 </div>
-            </motion.div>
+            </div>
         </>
     );
 }

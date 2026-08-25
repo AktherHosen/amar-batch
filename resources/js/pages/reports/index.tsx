@@ -425,7 +425,7 @@ params.batch_id = newBatchId ?? batchId;
                             <div className="text-sm text-muted-foreground">
                                 {t('reports.total_students')}
                             </div>
-                            <div className="text-2xl font-bold">
+                            <div className="text-xl font-bold sm:text-2xl">
                                 {studentSummary.total}
                             </div>
                             <div className="mt-1 text-xs text-muted-foreground">
@@ -439,7 +439,7 @@ params.batch_id = newBatchId ?? batchId;
                             <div className="text-sm text-muted-foreground">
                                 {t('reports.attendance_rate')}
                             </div>
-                            <div className="text-2xl font-bold">
+                            <div className="text-xl font-bold sm:text-2xl">
                                 {totalAttendance > 0
                                     ? Math.round(
                                           (attendanceSummary.present /
@@ -460,7 +460,7 @@ params.batch_id = newBatchId ?? batchId;
                             <div className="text-sm text-muted-foreground">
                                 {t('reports.fees_collected')}
                             </div>
-                            <div className="text-2xl font-bold">
+                            <div className="text-xl font-bold sm:text-2xl">
                                 {formatCurrency(feeSummary.total_collected)}
                             </div>
                             <div className="mt-1 text-xs text-muted-foreground">
@@ -474,7 +474,7 @@ params.batch_id = newBatchId ?? batchId;
                             <div className="text-sm text-muted-foreground">
                                 {t('reports.active_enrollments')}
                             </div>
-                            <div className="text-2xl font-bold">
+                            <div className="text-xl font-bold sm:text-2xl">
                                 {enrollmentSummary.active}
                             </div>
                             <div className="mt-1 text-xs text-muted-foreground">
@@ -564,7 +564,6 @@ params.batch_id = newBatchId ?? batchId;
                             columns={columns}
                             data={filteredBatchPerformance}
                             loading={refreshing}
-                            showPagination={false}
                             total={filteredBatchPerformance.length}
                             itemName="batches"
                             emptyMessage={t('reports.no_batches')}

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useLocale } from '@/contexts/locale-context';
 import attendance from '@/routes/attendance';
 
 type AttendanceRecord = {
@@ -21,6 +22,7 @@ type PageProps = {
 };
 
 export default function AttendanceEdit({ attendance: record }: PageProps) {
+    const { t } = useLocale();
     const [status, setStatus] = useState<'present' | 'absent' | 'late'>(record.status);
     const [notes, setNotes] = useState(record.notes || '');
 
@@ -97,9 +99,9 @@ export default function AttendanceEdit({ attendance: record }: PageProps) {
 
                         <div className="flex justify-end gap-2">
                             <Button variant="outline" onClick={() => window.history.back()}>
-                                Cancel
+                                {t('actions.cancel')}
                             </Button>
-                            <Button onClick={handleSubmit}>Update</Button>
+                            <Button onClick={handleSubmit}>{t('actions.update')}</Button>
                         </div>
                     </CardContent>
                 </Card>

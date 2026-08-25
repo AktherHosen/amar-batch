@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 type Option = {
     value: string;
     label: string;
+    description?: string;
     searchText?: string;
 };
 
@@ -113,7 +114,14 @@ export function SearchableSelect({
                                         : 'hover:bg-accent hover:text-accent-foreground',
                                 )}
                             >
-                                <span className="truncate">{opt.label}</span>
+                                <span className="min-w-0 flex-1">
+                                    <span className="block truncate">{opt.label}</span>
+                                    {opt.description && (
+                                        <span className="block truncate text-xs text-muted-foreground">
+                                            {opt.description}
+                                        </span>
+                                    )}
+                                </span>
                                 {opt.value === value && (
                                     <Check className="size-4 shrink-0" />
                                 )}

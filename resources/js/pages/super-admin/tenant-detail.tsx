@@ -214,9 +214,9 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
 
     return (
         <>
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-3 sm:p-4">
                 <div className="flex items-center gap-3">
-                    <Link href="/super-admin/payments" className="size-8 inline-flex items-center justify-center rounded-md border hover:bg-accent">
+                    <Link href="/dashboard/payments" className="size-8 inline-flex items-center justify-center rounded-md border hover:bg-accent">
                         <ArrowLeft className="size-4" />
                     </Link>
                     <Heading
@@ -235,7 +235,7 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-lg font-semibold">
+                                        <h3 className="text-base font-semibold sm:text-lg">
                                             {subscription?.plan?.name ?? 'No Plan'}
                                         </h3>
                                         {getStatusBadge(subscription?.status ?? 'none')}
@@ -274,54 +274,54 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                 </Card>
 
                 {/* Stats Grid */}
-                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                            <CreditCard className="size-4 text-muted-foreground" />
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">Revenue</CardTitle>
+                            <CreditCard className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{formatCurrency(stats.total_spent)}</div>
-                            <p className="text-xs text-muted-foreground">
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{formatCurrency(stats.total_spent)}</div>
+                            <p className="mt-1 text-xs text-muted-foreground">
                                 {stats.successful_payments} paid, {stats.pending_payments} pending
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Students</CardTitle>
-                            <GraduationCap className="size-4 text-muted-foreground" />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">Students</CardTitle>
+                            <GraduationCap className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{stats.students_count}</div>
-                            <p className="text-xs text-muted-foreground">
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{stats.students_count}</div>
+                            <p className="mt-1 text-xs text-muted-foreground">
                                 {stats.active_students_count} active
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Batches</CardTitle>
-                            <Layers className="size-4 text-muted-foreground" />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">Batches</CardTitle>
+                            <Layers className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{stats.batches_count}</div>
-                            <p className="text-xs text-muted-foreground">
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{stats.batches_count}</div>
+                            <p className="mt-1 text-xs text-muted-foreground">
                                 {stats.active_batches_count} active
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Staff</CardTitle>
-                            <Users className="size-4 text-muted-foreground" />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">Staff</CardTitle>
+                            <Users className="size-3.5 text-muted-foreground sm:size-4" />
                         </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{stats.users_count}</div>
-                            <p className="text-xs text-muted-foreground">
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{stats.users_count}</div>
+                            <p className="mt-1 text-xs text-muted-foreground">
                                 {stats.total_enrollments} total enrollments
                             </p>
                         </CardContent>
@@ -342,7 +342,7 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                                 lastPage={payments.last_page}
                                 total={payments.total}
                                 itemName="payments"
-                                baseUrl={`/super-admin/tenants/${tenant.id}/detail`}
+                                baseUrl={`/dashboard/tenants/${tenant.id}/detail`}
                                 preserveParams={{}}
                                 emptyMessage="No payments yet."
                                 getRowId={(row) => String(row.id)}
@@ -358,7 +358,6 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                             <DataTable
                                 columns={subscriptionColumns}
                                 data={subscriptionHistory}
-                                showPagination={false}
                                 total={subscriptionHistory.length}
                                 itemName="subscriptions"
                                 emptyMessage="No subscription history."
@@ -371,11 +370,3 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
         </>
     );
 }
-
-TenantDetail.layout = {
-    breadcrumbs: [
-        { title: 'Dashboard', href: '/super-admin/dashboard' },
-        { title: 'Payments', href: '/super-admin/payments' },
-        { title: 'Tenant Detail' },
-    ],
-};

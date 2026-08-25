@@ -5,6 +5,7 @@ import { FormActions } from '@/components/form-actions';
 import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import {
     Select,
     SelectContent,
@@ -176,9 +177,8 @@ export default function UserForm({
                         {t('users.password')}{' '}
                         {user ? `(${t('users.password_hint')})` : '*'}
                     </Label>
-                    <Input
+                    <PasswordInput
                         id="password"
-                        type="password"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         placeholder={t('users.password_placeholder')}
@@ -190,9 +190,8 @@ export default function UserForm({
                     <Label htmlFor="password_confirmation">
                         {t('users.confirm_password')} {user ? '' : '*'}
                     </Label>
-                    <Input
+                    <PasswordInput
                         id="password_confirmation"
-                        type="password"
                         value={data.password_confirmation}
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)

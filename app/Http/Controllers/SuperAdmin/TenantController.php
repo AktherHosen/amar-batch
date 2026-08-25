@@ -75,6 +75,11 @@ class TenantController extends Controller
     {
         $tenant->update(['is_active' => ! $tenant->is_active]);
 
+        $owner = $tenant->users()->where('role', 'owner')->first();
+        if ($owner) {
+            $owner->update(['role' => $tenant->is_active ? 'owner' : 'inactive']);
+        }
+
         $status = $tenant->is_active ? 'activated' : 'deactivated';
 
         return back()->with('toast', ['type' => 'success', 'message' => "Tenant {$status} successfully."]);

@@ -22,7 +22,7 @@ export default function PaymentFailure({ message }: Props) {
                             <XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold">{t('payment.failure_title')}</h1>
+                            <h1 className="text-xl font-bold sm:text-2xl">{t('payment.failure_title')}</h1>
                             <p className="mt-2 text-muted-foreground">
                                 {message || t('payment.failure_desc')}
                             </p>

@@ -75,7 +75,7 @@ export default function RolesCreate({ groups = {} }: Props) {
                     <div className="min-w-0">
                         <Heading
                             title={t('roles.create')}
-                            description="Create a new role and choose which routes it can access."
+                            description={t('roles.create_desc')}
                         />
                     </div>
                 </div>
@@ -84,7 +84,7 @@ export default function RolesCreate({ groups = {} }: Props) {
                     <Card>
                         <CardContent className="grid gap-4 pt-6 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Role Name *</Label>
+                                <Label htmlFor="name">{t('roles.name')}</Label>
                                 <Input
                                     id="name"
                                     value={name}
@@ -98,24 +98,24 @@ export default function RolesCreate({ groups = {} }: Props) {
                                                 .replace(/(^-|-$)/g, ''),
                                         );
                                     }}
-                                    placeholder="e.g. Teacher"
+                                    placeholder={t('roles.name_placeholder')}
                                     required
                                 />
                                 <InputError message={errors.name} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="slug">Slug *</Label>
+                                <Label htmlFor="slug">{t('roles.slug')}</Label>
                                 <Input
                                     id="slug"
                                     value={slug}
                                     onChange={(e) => setSlug(e.target.value)}
-                                    placeholder="e.g. teacher"
+                                    placeholder={t('roles.slug_placeholder')}
                                     required
                                 />
                                 <InputError message={errors.slug} />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="description">Description</Label>
+                                <Label htmlFor="description">{t('roles.form_description')}</Label>
                                 <Textarea
                                     id="description"
                                     rows={2}
@@ -123,7 +123,7 @@ export default function RolesCreate({ groups = {} }: Props) {
                                     onChange={(e) =>
                                         setDescription(e.target.value)
                                     }
-                                    placeholder="What can this role do?"
+                                    placeholder={t('roles.description_placeholder')}
                                 />
                             </div>
                         </CardContent>
@@ -132,7 +132,7 @@ export default function RolesCreate({ groups = {} }: Props) {
                     <Card>
                         <CardContent className="pt-6">
                             <h3 className="mb-4 font-semibold">
-                                Route Permissions
+                                {t('roles.route_permissions')}
                             </h3>
                             <RolePermissionsForm
                                 groups={groups}

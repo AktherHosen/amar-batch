@@ -1,5 +1,5 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import CellTitle from '@/components/cell-title';
@@ -8,6 +8,7 @@ import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,25 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import notices from '@/routes/notices';
@@ -28,8 +48,11 @@ type Notice = {
     title: string;
     content: string;
     batch: { id: number; name: string } | null;
+    batch_id: number | null;
     creator: { id: number; name: string };
     is_active: boolean;
+    target_audience: string;
+    priority: string;
     published_at: string | null;
     created_at: string;
 };
@@ -69,6 +92,16 @@ export default function NoticesIndex({
         open: boolean;
         item: Notice | null;
     }>({ open: false, item: null });
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<Notice | null>(null);
+    const { data, setData, post, put, processing, errors, reset } = useForm({
+        title: '',
+        content: '',
+        batch_id: '',
+        target_audience: 'all',
+        priority: 'medium',
+        is_active: true,
+    });
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -89,6 +122,55 @@ export default function NoticesIndex({
                 onSuccess: () => toast.success(t('toast.deleted_successfully')),
             });
             setDeleteDialog({ open: false, item: null });
+        }
+    };
+
+    const handleCreate = () => {
+        setEditingItem(null);
+        reset();
+        setData({
+            title: '',
+            content: '',
+            batch_id: '',
+            target_audience: 'all',
+            priority: 'medium',
+            is_active: true,
+        });
+        setSheetOpen(true);
+    };
+
+    const handleEdit = (notice: Notice) => {
+        setEditingItem(notice);
+        setData({
+            title: notice.title,
+            content: notice.content,
+            batch_id: notice.batch_id ? String(notice.batch_id) : '',
+            target_audience: notice.target_audience || 'all',
+            priority: notice.priority || 'medium',
+            is_active: notice.is_active,
+        });
+        setSheetOpen(true);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (editingItem) {
+            put(`/notices/${editingItem.id}`, {
+                onSuccess: () => {
+                    setSheetOpen(false);
+                    setEditingItem(null);
+                    reset();
+                    toast.success(t('toast.updated_successfully'));
+                },
+            });
+        } else {
+            post('/notices', {
+                onSuccess: () => {
+                    setSheetOpen(false);
+                    reset();
+                    toast.success(t('toast.created_successfully'));
+                },
+            });
         }
     };
 
@@ -186,26 +268,24 @@ export default function NoticesIndex({
                                     }
                                 >
                                     <Eye className="mr-2 size-4" />
-                                    View
+                                    {t('actions.view')}
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                     <>
                                         <DropdownMenuItem
                                             onClick={() =>
-                                                router.get(
-                                                    `/notices/${notice.id}/edit`,
-                                                )
+                                                handleEdit(notice)
                                             }
                                         >
-                                            <Pencil className="mr-2 size-4" />
-                                            Edit
+                                            <PenLine className="mr-2 size-4" />
+                                            {t('actions.edit')}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             className="text-destructive focus:text-destructive"
                                             onClick={() => handleDelete(notice)}
                                         >
                                             <Trash2 className="mr-2 size-4" />
-                                            Delete
+                                            {t('actions.delete')}
                                         </DropdownMenuItem>
                                     </>
                                 )}
@@ -241,7 +321,7 @@ export default function NoticesIndex({
                         <PageActions
                             isAdmin={isAdmin}
                             createLabel="New Notice"
-                            onCreate={() => router.get('/notices/create')}
+                            onCreate={handleCreate}
                             exportTitle="Notices"
                             exportFilename="notices"
                             exportHeaders={[
@@ -338,6 +418,163 @@ export default function NoticesIndex({
                 variant="destructive"
                 onConfirm={confirmDelete}
             />
+
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>
+                            {editingItem ? t('actions.edit') + ' Notice' : t('actions.create') + ' Notice'}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {editingItem
+                                ? t('actions.update') + ' notice details'
+                                : 'Post a new announcement'}
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4 px-4 pb-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-title">Title *</Label>
+                            <Input
+                                id="sheet-title"
+                                value={data.title}
+                                onChange={(e) =>
+                                    setData('title', e.target.value)
+                                }
+                                placeholder="Enter notice title"
+                            />
+                            <InputError message={errors.title} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-content">Content *</Label>
+                            <Textarea
+                                id="sheet-content"
+                                value={data.content}
+                                onChange={(e) =>
+                                    setData('content', e.target.value)
+                                }
+                                placeholder="Enter notice content"
+                                rows={6}
+                            />
+                            <InputError message={errors.content} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="sheet-batch_id">
+                                Batch (optional)
+                            </Label>
+                            <Select
+                                value={data.batch_id}
+                                onValueChange={(value) =>
+                                    setData('batch_id', value)
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Center-wide (all batches)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="center">
+                                        Center-wide (all batches)
+                                    </SelectItem>
+                                    {batches.map((batch) => (
+                                        <SelectItem
+                                            key={batch.id}
+                                            value={String(batch.id)}
+                                        >
+                                            {batch.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.batch_id} />
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="sheet-target_audience">
+                                    Target Audience
+                                </Label>
+                                <Select
+                                    value={data.target_audience}
+                                    onValueChange={(value) =>
+                                        setData('target_audience', value)
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All</SelectItem>
+                                        <SelectItem value="teachers">
+                                            Teachers
+                                        </SelectItem>
+                                        <SelectItem value="students">
+                                            Students
+                                        </SelectItem>
+                                        <SelectItem value="parents">
+                                            Parents
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.target_audience} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="sheet-priority">Priority</Label>
+                                <Select
+                                    value={data.priority}
+                                    onValueChange={(value) =>
+                                        setData('priority', value)
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="medium">
+                                            Medium
+                                        </SelectItem>
+                                        <SelectItem value="high">
+                                            High
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.priority} />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Status</Label>
+                            <div className="flex items-center gap-2">
+                                <Switch
+                                    checked={data.is_active}
+                                    onCheckedChange={(checked) =>
+                                        setData('is_active', checked)
+                                    }
+                                />
+                                <span className="text-sm text-muted-foreground">
+                                    {data.is_active
+                                        ? 'Active (published)'
+                                        : 'Draft'}
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSheetOpen(false)}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button type="submit" disabled={processing} onClick={handleSubmit}>
+                            {editingItem ? t('actions.update') : t('actions.create')}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

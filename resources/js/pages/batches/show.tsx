@@ -4,7 +4,7 @@ import {
     CheckCircle2,
     Download,
     EllipsisVertical,
-    Pencil,
+    PenLine,
     Trash2,
     UserMinus,
     UserX,
@@ -538,7 +538,7 @@ export default function BatchesShow({
                         <div className="flex shrink-0 gap-2">
                             <Link href={batches.edit(batch.id)}>
                                 <Button variant="outline" className="h-9">
-                                    <Pencil className="size-4" />
+                                    <PenLine className="size-4" />
                                     <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
@@ -710,7 +710,8 @@ export default function BatchesShow({
                                                                 value: String(
                                                                     teacher.id,
                                                                 ),
-                                                                label: `${teacher.name} (${teacher.email})`,
+                                                                label: teacher.name,
+                                                                description: teacher.email,
                                                                 searchText: `${teacher.name} ${teacher.email}`,
                                                             }),
                                                         )}
@@ -850,7 +851,6 @@ export default function BatchesShow({
                                 <DataTable
                                     columns={teacherColumns}
                                     data={batch.teachers}
-                                    showPagination={false}
                                     searchable
                                     searchPlaceholder={
                                         t('teachers.title') + '...'
@@ -902,7 +902,6 @@ export default function BatchesShow({
                         <DataTable
                             columns={enrollmentColumns}
                             data={batch.enrollments}
-                            showPagination={false}
                             searchable
                             searchPlaceholder={t('students.name') + '...'}
                             emptyMessage={t('batches.enrolled')}
@@ -961,7 +960,6 @@ export default function BatchesShow({
                             <DataTable
                                 columns={historyColumns}
                                 data={batch.history}
-                                showPagination={false}
                                 searchable
                                 searchPlaceholder={t('actions.search') + '...'}
                                 emptyMessage="No history records"

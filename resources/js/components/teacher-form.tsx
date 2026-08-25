@@ -5,6 +5,7 @@ import { FormActions } from '@/components/form-actions';
 import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import {
     Select,
     SelectContent,
@@ -179,9 +180,8 @@ export default function TeacherForm({
                         {t('teachers.password')}{' '}
                         {teacher ? `(${t('teachers.password_hint')})` : '*'}
                     </Label>
-                    <Input
+                    <PasswordInput
                         id="password"
-                        type="password"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         placeholder={t('teachers.password_placeholder')}
@@ -193,9 +193,8 @@ export default function TeacherForm({
                     <Label htmlFor="password_confirmation">
                         {t('teachers.confirm_password')} {teacher ? '' : '*'}
                     </Label>
-                    <Input
+                    <PasswordInput
                         id="password_confirmation"
-                        type="password"
                         value={data.password_confirmation}
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)

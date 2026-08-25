@@ -1,9 +1,10 @@
 import { router } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { CreditCard, TrendingUp, Clock, CheckCircle, XCircle, EllipsisVertical, Check, Ban, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import { RefreshButton } from '@/components/refresh-button';
@@ -57,26 +58,26 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get('/super-admin/payments', { search: value, status: filters.status ?? 'all' }, { preserveState: true });
+        router.get('/dashboard/payments', { search: value, status: filters.status ?? 'all' }, { preserveState: true });
     };
 
     const handleReset = () => {
         setSearch('');
-        router.get('/super-admin/payments', { status: 'all' }, { preserveState: true });
+        router.get('/dashboard/payments', {}, { preserveState: true });
     };
 
-    const handleStatusFilter = (status: string) => {
-        router.get('/super-admin/payments', { status, search }, { preserveState: true });
+    const handleStatusFilter = (value: string) => {
+        router.get('/dashboard/payments', { status: value || undefined, search }, { preserveState: true });
     };
 
     const handleApprove = (paymentId: number) => {
-        router.post(`/super-admin/payments/${paymentId}/approve`, {}, {
+        router.post(`/dashboard/payments/${paymentId}/approve`, {}, {
             onSuccess: () => toast.success(t('toast.approved_successfully')),
         });
     };
 
     const handleCancel = (paymentId: number) => {
-        router.post(`/super-admin/payments/${paymentId}/cancel`, {}, {
+        router.post(`/dashboard/payments/${paymentId}/cancel`, {}, {
             onSuccess: () => toast.success(t('toast.deleted_successfully')),
         });
     };
@@ -84,11 +85,11 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'success':
-                return <Badge className="bg-green-600 text-white whitespace-nowrap">Success</Badge>;
+                return <Badge className="bg-green-600 text-white whitespace-nowrap">{t('super_admin.active_payments')}</Badge>;
             case 'pending':
-                return <Badge className="bg-yellow-600 text-white whitespace-nowrap">Pending</Badge>;
+                return <Badge className="bg-yellow-600 text-white whitespace-nowrap">{t('super_admin.pending')}</Badge>;
             case 'failed':
-                return <Badge className="bg-red-600 text-white whitespace-nowrap">Failed</Badge>;
+                return <Badge className="bg-red-600 text-white whitespace-nowrap">{t('super_admin.failed')}</Badge>;
             default:
                 return <Badge variant="secondary" className="whitespace-nowrap">{status}</Badge>;
         }
@@ -96,239 +97,205 @@ export default function SuperAdminPayments({ payments, stats, filters }: PagePro
 
     const activeFilterCount = filters.status && filters.status !== 'all' ? 1 : 0;
 
-    const columns = (() => {
-        type Col = NonNullable<DataTableProps<PaymentRecord, unknown>['columns']>[number];
+    const columns: NonNullable<DataTableProps<PaymentRecord, unknown>['columns']> = [
+        {
+            id: 'tenant',
+            accessorKey: 'tenant',
+            header: t('super_admin.coaching_centers'),
+            enableSorting: false,
+            meta: { sticky: true },
+            cell: ({ row }: any) => (
+                <span className="font-medium">{row.original.tenant?.name ?? '—'}</span>
+            ),
+        },
+        {
+            id: 'plan',
+            accessorKey: 'plan',
+            header: t('super_admin.plan_name'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.plan?.name ?? '—',
+        },
+        {
+            id: 'txid',
+            accessorKey: 'txid',
+            header: 'TX ID',
+            enableSorting: false,
+            cell: ({ row }: any) => (
+                <span className="font-mono text-xs">{row.original.txid ?? '—'}</span>
+            ),
+        },
+        {
+            id: 'amount',
+            accessorKey: 'amount',
+            header: t('super_admin.amount'),
+            enableSorting: false,
+            cell: ({ row }: any) => (
+                <div className="text-right font-semibold">
+                    {formatCurrency(row.original.amount)}
+                </div>
+            ),
+        },
+        {
+            id: 'billing_type',
+            accessorKey: 'billing_type',
+            header: t('super_admin.billing'),
+            enableSorting: false,
+            cell: ({ row }: any) => (
+                <Badge variant="outline" className="capitalize whitespace-nowrap">
+                    {row.original.billing_type ?? '—'}
+                </Badge>
+            ),
+        },
+        {
+            id: 'status',
+            accessorKey: 'status',
+            header: t('super_admin.status'),
+            enableSorting: false,
+            cell: ({ row }: any) => getStatusBadge(row.original.status),
+        },
+        {
+            id: 'payment_method',
+            accessorKey: 'payment_method',
+            header: t('super_admin.method'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.payment_method ?? '—',
+        },
+        {
+            id: 'paid_at',
+            accessorKey: 'paid_at',
+            header: t('super_admin.paid_at'),
+            enableSorting: false,
+            cell: ({ row }: any) =>
+                row.original.paid_at
+                    ? new Date(row.original.paid_at).toLocaleDateString()
+                    : '—',
+        },
+        {
+            id: 'actions',
+            header: '',
+            enableSorting: false,
+            enableHiding: false,
+            cell: ({ row }: any) => {
+                const payment: PaymentRecord = row.original;
 
-        return [
-            {
-                id: 'tenant',
-                accessorKey: 'tenant',
-                header: 'Tenant',
-                enableSorting: false,
-                meta: { sticky: true },
-                cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.tenant?.name ?? '—'}</span>
-                ),
-            } as Col,
-            {
-                id: 'plan',
-                accessorKey: 'plan',
-                header: 'Plan',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.plan?.name ?? '—',
-            } as Col,
-            {
-                id: 'txid',
-                accessorKey: 'txid',
-                header: 'TX ID',
-                enableSorting: false,
-                cell: ({ row }: any) => (
-                    <span className="font-mono text-xs">{row.original.txid ?? '—'}</span>
-                ),
-            } as Col,
-            {
-                id: 'amount',
-                accessorKey: 'amount',
-                header: 'Amount',
-                enableSorting: false,
-                cell: ({ row }: any) => (
-                    <div className="text-right font-semibold">
-                        {formatCurrency(row.original.amount)}
-                    </div>
-                ),
-            } as Col,
-            {
-                id: 'billing_type',
-                accessorKey: 'billing_type',
-                header: 'Billing',
-                enableSorting: false,
-                cell: ({ row }: any) => (
-                    <span className="capitalize">{row.original.billing_type ?? '—'}</span>
-                ),
-            } as Col,
-            {
-                id: 'status',
-                accessorKey: 'status',
-                header: 'Status',
-                enableSorting: false,
-                cell: ({ row }: any) => getStatusBadge(row.original.status),
-            } as Col,
-            {
-                id: 'payment_method',
-                accessorKey: 'payment_method',
-                header: 'Method',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.payment_method ?? '—',
-            } as Col,
-            {
-                id: 'paid_at',
-                accessorKey: 'paid_at',
-                header: 'Paid At',
-                enableSorting: false,
-                cell: ({ row }: any) =>
-                    row.original.paid_at
-                        ? new Date(row.original.paid_at).toLocaleDateString()
-                        : '—',
-            } as Col,
-            {
-                id: 'actions',
-                header: '',
-                enableSorting: false,
-                enableHiding: false,
-                cell: ({ row }: any) => {
-                    const payment: PaymentRecord = row.original;
-
-                    return (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
-                                    <EllipsisVertical className="size-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.get(`/super-admin/tenants/${payment.tenant_id}/detail`)}>
-                                    <Eye className="mr-2 size-4" />
-                                    View Tenant
-                                </DropdownMenuItem>
-                                {payment.status === 'pending' && (
-                                    <>
-                                        <DropdownMenuItem onClick={() => handleApprove(payment.id)}>
-                                            <Check className="mr-2 size-4 text-green-600" />
-                                            Approve
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleCancel(payment.id)}>
-                                            <Ban className="mr-2 size-4" />
-                                            Cancel
-                                        </DropdownMenuItem>
-                                    </>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    );
-                },
-            } as Col,
-        ];
-    })();
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <EllipsisVertical className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => router.get(`/dashboard/tenants/${payment.tenant_id}/detail`)}>
+                                <Eye className="mr-2 size-4" />
+                                {t('super_admin.view_tenant')}
+                            </DropdownMenuItem>
+                            {payment.status === 'pending' && (
+                                <>
+                                    <DropdownMenuItem onClick={() => handleApprove(payment.id)}>
+                                        <Check className="mr-2 size-4 text-green-600" />
+                                        {t('super_admin.approve')}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleCancel(payment.id)}>
+                                        <Ban className="mr-2 size-4" />
+                                        {t('super_admin.cancel')}
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            },
+        },
+    ];
 
     return (
-        <>
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-start justify-between">
-                    <Heading
-                        title="Payment History"
-                        description="All transactions across coaching centers"
-                    />
-                    <div className="flex items-center gap-1">
-                        <RefreshButton
-                            refreshing={refreshing}
-                            onRefresh={() => {
-                                setRefreshing(true);
-                                router.reload({ onFinish: () => setRefreshing(false) });
-                            }}
-                        />
-                    </div>
-                </div>
-
-                <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Total</CardTitle>
-                            <CreditCard className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{stats.total}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Successful</CardTitle>
-                            <CheckCircle className="size-4 text-green-600" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold text-green-600">{stats.successful}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                            <Clock className="size-4 text-yellow-600" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Failed</CardTitle>
-                            <XCircle className="size-4 text-red-600" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                            <TrendingUp className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{formatCurrency(stats.total_revenue)}</div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <Card>
-                    <CardContent className="pt-6">
-                        <DataTable
-                            columns={columns}
-                            data={payments.data}
-                            loading={refreshing}
-                            currentPage={payments.current_page}
-                            lastPage={payments.last_page}
-                            total={payments.total}
-                            itemName="payments"
-                            baseUrl="/super-admin/payments"
-                            preserveParams={{ search, status: filters.status ?? 'all' }}
-                            emptyMessage="No payments found."
-                            getRowId={(row) => String(row.id)}
-                            toolbar={
-                                <FilterBar
-                                    searchPlaceholder="Search tenant or TX ID..."
-                                    searchValue={search}
-                                    onSearchChange={handleSearch}
-                                    activeFilterCount={activeFilterCount}
-                                    onClearAll={handleReset}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {['all', 'success', 'pending', 'failed'].map((status) => (
-                                            <Button
-                                                key={status}
-                                                variant={(filters.status ?? 'all') === status ? 'default' : 'outline'}
-                                                size="sm"
-                                                onClick={() => handleStatusFilter(status)}
-                                                className="capitalize"
-                                            >
-                                                {status}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                </FilterBar>
-                            }
-                        />
-                    </CardContent>
-                </Card>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl p-3 sm:p-4"
+        >
+            <div className="flex items-start justify-between">
+                <Heading
+                    title={t('super_admin.payments')}
+                    description={t('super_admin.all_payments_description')}
+                />
+                <RefreshButton
+                    refreshing={refreshing}
+                    onRefresh={() => {
+                        setRefreshing(true);
+                        router.reload({ onFinish: () => setRefreshing(false) });
+                    }}
+                />
             </div>
-        </>
+
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+                {[
+                    { label: t('super_admin.active_payments'), value: stats.successful, icon: CheckCircle, color: 'text-green-600' },
+                    { label: t('super_admin.pending'), value: stats.pending, icon: Clock, color: 'text-yellow-600' },
+                    { label: t('super_admin.failed'), value: stats.failed, icon: XCircle, color: 'text-red-600' },
+                    { label: t('super_admin.total_revenue'), value: formatCurrency(stats.total_revenue), icon: TrendingUp, color: 'text-muted-foreground' },
+                ].map((stat, i) => (
+                    <motion.div
+                        key={stat.label}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: i * 0.05 }}
+                    >
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{stat.label}</CardTitle>
+                                <stat.icon className={`size-3.5 ${stat.color} sm:size-4`} />
+                            </CardHeader>
+                            <CardContent>
+                                <div className={`text-xl font-bold sm:text-2xl ${stat.color}`}>{stat.value}</div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ))}
+            </div>
+
+            <Card>
+                <CardContent className="pt-6">
+                    <DataTable
+                        columns={columns}
+                        data={payments.data}
+                        loading={refreshing}
+                        currentPage={payments.current_page}
+                        lastPage={payments.last_page}
+                        total={payments.total}
+                        itemName="payments"
+                        baseUrl="/dashboard/payments"
+                        preserveParams={{ search, status: filters.status ?? '' }}
+                        emptyMessage={t('super_admin.no_payments')}
+                        getRowId={(row) => String(row.id)}
+                        enableColumnVisibility={false}
+                        toolbar={
+                            <FilterBar
+                                searchPlaceholder={`${t('actions.search')}...`}
+                                searchValue={search}
+                                onSearchChange={handleSearch}
+                                activeFilterCount={activeFilterCount}
+                                onClearAll={handleReset}
+                                filters={[
+                                    {
+                                        id: 'status',
+                                        placeholder: t('super_admin.all_status'),
+                                        value: filters.status ?? '',
+                                        options: [
+                                            { label: t('super_admin.active_payments'), value: 'success' },
+                                            { label: t('super_admin.pending'), value: 'pending' },
+                                            { label: t('super_admin.failed'), value: 'failed' },
+                                        ],
+                                        onValueChange: handleStatusFilter,
+                                    },
+                                ]}
+                            />
+                        }
+                    />
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 }
-
-SuperAdminPayments.layout = {
-    breadcrumbs: [
-        { title: 'Dashboard', href: '/super-admin/dashboard' },
-        { title: 'Payments', href: '/super-admin/payments' },
-    ],
-};

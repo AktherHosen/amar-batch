@@ -21,7 +21,6 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        // Super admin goes to platform dashboard
         if ($user->isSuperAdmin()) {
             return to_route('super-admin.dashboard');
         }
@@ -30,9 +29,6 @@ class DashboardController extends Controller
             return $this->adminDashboard($request);
         }
 
-        // Custom tenant roles (created via the role editor) with dashboard
-        // access should get the admin dashboard rather than an empty teacher
-        // dashboard. Teachers keep their scoped dashboard below.
         if (! $user->isTeacher()) {
             return $this->adminDashboard($request);
         }
@@ -50,9 +46,32 @@ class DashboardController extends Controller
         return $this->teacherDashboard($request);
     }
 
+    private function getPlanFeatures(Request $request): array
+    {
+        return $request->user()->tenant?->subscription?->plan?->features ?? [];
+    }
+
+    private function computeTrend(float $current, float $previous): array
+    {
+        if ($previous == 0) {
+            return $current > 0 ? ['percent' => 100, 'direction' => 'up'] : ['percent' => 0, 'direction' => 'neutral'];
+        }
+
+        $change = (($current - $previous) / $previous) * 100;
+
+        if ($change > 0) {
+            return ['percent' => round($change), 'direction' => 'up'];
+        } elseif ($change < 0) {
+            return ['percent' => round(abs($change)), 'direction' => 'down'];
+        }
+
+        return ['percent' => 0, 'direction' => 'neutral'];
+    }
+
     private function adminDashboard(Request $request): Response
     {
         $tenantId = $request->user()->tenant_id;
+        $features = $this->getPlanFeatures($request);
 
         $stats = [
             'total_students' => Student::where('tenant_id', $tenantId)->where('status', 'active')->count(),
@@ -61,10 +80,71 @@ class DashboardController extends Controller
             'total_enrollments' => Enrollment::where('tenant_id', $tenantId)->where('status', 'active')->count(),
         ];
 
+        $lastMonthStats = [
+            'total_students' => Student::where('tenant_id', $tenantId)->where('status', 'active')
+                ->whereMonth('created_at', now()->subMonth()->month)
+                ->whereYear('created_at', now()->subMonth()->year)
+                ->count(),
+            'total_teachers' => User::where('tenant_id', $tenantId)->where('role', 'teacher')
+                ->whereMonth('created_at', now()->subMonth()->month)
+                ->whereYear('created_at', now()->subMonth()->year)
+                ->count(),
+            'active_batches' => Batch::where('tenant_id', $tenantId)->where('status', 'active')
+                ->whereMonth('created_at', now()->subMonth()->month)
+                ->whereYear('created_at', now()->subMonth()->year)
+                ->count(),
+            'total_enrollments' => Enrollment::where('tenant_id', $tenantId)->where('status', 'active')
+                ->whereMonth('created_at', now()->subMonth()->month)
+                ->whereYear('created_at', now()->subMonth()->year)
+                ->count(),
+        ];
+
+        $statsTrend = [
+            'total_students' => $this->computeTrend($stats['total_students'], $lastMonthStats['total_students']),
+            'total_teachers' => $this->computeTrend($stats['total_teachers'], $lastMonthStats['total_teachers']),
+            'active_batches' => $this->computeTrend($stats['active_batches'], $lastMonthStats['active_batches']),
+            'total_enrollments' => $this->computeTrend($stats['total_enrollments'], $lastMonthStats['total_enrollments']),
+        ];
+
         $feeStats = [
             'total_collected' => FeeStatus::where('tenant_id', $tenantId)->sum('amount_paid'),
             'total_records' => FeeStatus::where('tenant_id', $tenantId)->count(),
         ];
+
+        $monthlyRevenue = [
+            'current' => (float) FeeStatus::where('tenant_id', $tenantId)
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('amount_paid'),
+            'previous' => (float) FeeStatus::where('tenant_id', $tenantId)
+                ->whereMonth('created_at', now()->subMonth()->month)
+                ->whereYear('created_at', now()->subMonth()->year)
+                ->sum('amount_paid'),
+        ];
+        $monthlyRevenue['trend'] = $this->computeTrend($monthlyRevenue['current'], $monthlyRevenue['previous']);
+
+        $pendingApprovals = User::where('tenant_id', $tenantId)
+            ->where('role', 'teacher')
+            ->where('is_approved', false)
+            ->count();
+
+        $lowCapacityBatches = Batch::where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->where('capacity', '>', 0)
+            ->withCount(['enrollments' => function ($q) {
+                $q->where('status', 'active');
+            }])
+            ->get()
+            ->filter(fn ($batch) => $batch->capacity > 0 && ($batch->enrollments_count / $batch->capacity) >= 0.8)
+            ->map(fn ($batch) => [
+                'id' => $batch->id,
+                'name' => $batch->name,
+                'capacity' => $batch->capacity,
+                'enrollments_count' => $batch->enrollments_count,
+                'percentage' => round(($batch->enrollments_count / $batch->capacity) * 100),
+            ])
+            ->values()
+            ->all();
 
         $recentEnrollments = Enrollment::with(['student', 'batch'])
             ->where('tenant_id', $tenantId)
@@ -138,9 +218,48 @@ class DashboardController extends Controller
             ];
         });
 
+        $recentActivity = collect();
+
+        foreach ($recentStudents as $student) {
+            $recentActivity->push([
+                'type' => 'student',
+                'title' => $student->name,
+                'subtitle' => $student->coachingClass?->name ?? '',
+                'date' => $student->created_at,
+                'url' => "/students/{$student->id}",
+            ]);
+        }
+
+        foreach ($recentEnrollments as $enrollment) {
+            $recentActivity->push([
+                'type' => 'enrollment',
+                'title' => $enrollment->student?->name ?? 'Unknown',
+                'subtitle' => $enrollment->batch?->name ?? '',
+                'date' => $enrollment->created_at,
+                'url' => "/batches/{$enrollment->batch_id}",
+            ]);
+        }
+
+        foreach ($recentFeePayments as $payment) {
+            $recentActivity->push([
+                'type' => 'fee',
+                'title' => $payment->student?->name ?? 'Unknown',
+                'subtitle' => number_format($payment->amount_paid, 0),
+                'date' => $payment->created_at,
+                'url' => '/fees',
+            ]);
+        }
+
+        $recentActivity = $recentActivity->sortByDesc('date')->take(10)->values()->all();
+
         return Inertia::render('dashboard', [
+            'planFeatures' => $features,
             'stats' => $stats,
+            'statsTrend' => $statsTrend,
             'feeStats' => $feeStats,
+            'monthlyRevenue' => $monthlyRevenue,
+            'pendingApprovals' => $pendingApprovals,
+            'lowCapacityBatches' => $lowCapacityBatches,
             'recentEnrollments' => $recentEnrollments,
             'recentFeePayments' => $recentFeePayments,
             'todayAttendance' => $todayAttendance,
@@ -151,6 +270,7 @@ class DashboardController extends Controller
             'attendanceTrend' => $attendanceTrend,
             'enrollmentTrend' => $enrollmentTrend,
             'feeTrend' => $feeTrend,
+            'recentActivity' => $recentActivity,
         ]);
     }
 
@@ -158,6 +278,7 @@ class DashboardController extends Controller
     {
         $teacher = $request->user();
         $assignedBatchIds = $teacher->assignedBatches()->pluck('batches.id');
+        $features = $this->getPlanFeatures($request);
 
         $assignedBatches = Batch::withCount(['enrollments' => function ($q) {
             $q->where('status', 'active');
@@ -180,10 +301,29 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
+        $statsTrend = [
+            'total_students' => ['percent' => 0, 'direction' => 'neutral'],
+            'total_teachers' => null,
+            'active_batches' => ['percent' => 0, 'direction' => 'neutral'],
+            'total_enrollments' => ['percent' => 0, 'direction' => 'neutral'],
+        ];
+
         $feeStats = [
             'total_collected' => $assignedBatchIds->isEmpty() ? 0 : FeeStatus::whereIn('batch_id', $assignedBatchIds)->sum('amount_paid'),
             'total_records' => $assignedBatchIds->isEmpty() ? 0 : FeeStatus::whereIn('batch_id', $assignedBatchIds)->count(),
         ];
+
+        $monthlyRevenue = [
+            'current' => $assignedBatchIds->isEmpty() ? 0 : (float) FeeStatus::whereIn('batch_id', $assignedBatchIds)
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('amount_paid'),
+            'previous' => $assignedBatchIds->isEmpty() ? 0 : (float) FeeStatus::whereIn('batch_id', $assignedBatchIds)
+                ->whereMonth('created_at', now()->subMonth()->month)
+                ->whereYear('created_at', now()->subMonth()->year)
+                ->sum('amount_paid'),
+        ];
+        $monthlyRevenue['trend'] = $this->computeTrend($monthlyRevenue['current'], $monthlyRevenue['previous']);
 
         $recentEnrollments = Enrollment::with(['student', 'batch'])
             ->whereIn('batch_id', $assignedBatchIds)
@@ -275,9 +415,48 @@ class DashboardController extends Controller
             ];
         });
 
+        $recentActivity = collect();
+
+        foreach ($recentStudents as $student) {
+            $recentActivity->push([
+                'type' => 'student',
+                'title' => $student->name,
+                'subtitle' => $student->coachingClass?->name ?? '',
+                'date' => $student->created_at,
+                'url' => "/students/{$student->id}",
+            ]);
+        }
+
+        foreach ($recentEnrollments as $enrollment) {
+            $recentActivity->push([
+                'type' => 'enrollment',
+                'title' => $enrollment->student?->name ?? 'Unknown',
+                'subtitle' => $enrollment->batch?->name ?? '',
+                'date' => $enrollment->created_at,
+                'url' => "/batches/{$enrollment->batch_id}",
+            ]);
+        }
+
+        foreach ($recentFeePayments as $payment) {
+            $recentActivity->push([
+                'type' => 'fee',
+                'title' => $payment->student?->name ?? 'Unknown',
+                'subtitle' => number_format($payment->amount_paid, 0),
+                'date' => $payment->created_at,
+                'url' => '/fees',
+            ]);
+        }
+
+        $recentActivity = $recentActivity->sortByDesc('date')->take(10)->values()->all();
+
         return Inertia::render('dashboard', [
+            'planFeatures' => $features,
             'stats' => $stats,
+            'statsTrend' => $statsTrend,
             'feeStats' => $feeStats,
+            'monthlyRevenue' => $monthlyRevenue,
+            'pendingApprovals' => 0,
+            'lowCapacityBatches' => [],
             'recentEnrollments' => $recentEnrollments,
             'recentFeePayments' => $recentFeePayments,
             'todayAttendance' => $todayAttendance,
@@ -289,6 +468,7 @@ class DashboardController extends Controller
             'attendanceTrend' => $attendanceTrend,
             'enrollmentTrend' => $enrollmentTrend,
             'feeTrend' => $feeTrend,
+            'recentActivity' => $recentActivity,
         ]);
     }
 }

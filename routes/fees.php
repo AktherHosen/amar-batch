@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->prefix('fees')->name('fees.')->group(fu
 
 Route::middleware(['auth', 'verified'])->prefix('fees/receipts')->name('fees.receipts.')->group(function () {
     Route::get('/', [FeeReceiptController::class, 'index'])->name('index');
+    Route::get('/create', [FeeReceiptController::class, 'create'])->name('create');
     Route::post('/', [FeeReceiptController::class, 'store'])->name('store');
     Route::get('/{receipt}', [FeeReceiptController::class, 'show'])->name('show');
     Route::delete('/{receipt}', [FeeReceiptController::class, 'destroy'])->name('destroy');

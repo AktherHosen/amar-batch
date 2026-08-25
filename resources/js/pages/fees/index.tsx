@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Trash2, EllipsisVertical, ChevronDown } from 'lucide-react';
+import { Trash2, EllipsisVertical, ChevronDown, Receipt, Search, X } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -7,6 +7,7 @@ import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,22 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import fees from '@/routes/fees';
@@ -373,6 +390,15 @@ export default function FeesIndex({
         item: { studentId: number; batchId: number } | null;
     }>({ open: false, item: null });
 
+    const [receiptSheetOpen, setReceiptSheetOpen] = useState(false);
+    const [receiptStudent, setReceiptStudent] = useState<{ id: number; name: string } | null>(null);
+    const [receiptBatch, setReceiptBatch] = useState<{ id: number; name: string } | null>(null);
+    const [receiptMonth, setReceiptMonth] = useState(String(new Date().getMonth() + 1));
+    const [receiptPaidAmount, setReceiptPaidAmount] = useState(0);
+    const [receiptProcessing, setReceiptProcessing] = useState(false);
+
+    const [unpaidFilterMonth, setUnpaidFilterMonth] = useState('');
+
     const currentYear = new Date().getFullYear();
     const yearOptionsList =
         yearOptions.length > 0 ? yearOptions : [currentYear];
@@ -447,7 +473,41 @@ export default function FeesIndex({
         router.get(fees.index.url(), {}, { preserveState: true });
     };
 
-    const activeFilterCount = selectedYear !== currentYear ? 1 : 0;
+    const activeFilterCount = (selectedYear !== currentYear ? 1 : 0) + (unpaidFilterMonth ? 1 : 0);
+
+    const handleGenerateReceipt = () => {
+        if (!receiptStudent || !receiptBatch) return;
+        setReceiptProcessing(true);
+
+        router.post('/fees/receipts', {
+            student_id: receiptStudent.id,
+            batch_id: receiptBatch.id,
+            month: Number(receiptMonth),
+            year: selectedYear,
+            amount_paid: receiptPaidAmount,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(t('toast.receipt_generated'));
+                setReceiptSheetOpen(false);
+                setReceiptStudent(null);
+                setReceiptBatch(null);
+            },
+            onError: (err) => {
+                const msg = err?.message || t('toast.error_occurred');
+                toast.error(msg);
+            },
+            onFinish: () => setReceiptProcessing(false),
+        });
+    };
+
+    const filteredFeeGrid = unpaidFilterMonth
+        ? feeGrid.filter((item) => {
+            const m = Number(unpaidFilterMonth);
+            const fee = item.months[m];
+            return !fee || Number(fee.amount_paid) <= 0;
+        })
+        : feeGrid;
 
     const columns = (() => {
         type Col = NonNullable<
@@ -606,22 +666,47 @@ export default function FeesIndex({
                 enableHiding: false,
                 cell: ({ row }: any) => {
                     const item: FeeGridItem = row.original;
+                    const totalPaid = months.reduce((sum, m) => {
+                        const fee = item.months[m];
+                        return sum + (fee ? Number(fee.amount_paid) : 0);
+                    }, 0);
 
                     return (
                         <div className="flex justify-center">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                onClick={() =>
-                                    handleDeleteRow(
-                                        item.student.id,
-                                        item.batch.id,
-                                    )
-                                }
-                            >
-                                <Trash2 className="size-4" />
-                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                        <EllipsisVertical className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                        disabled={totalPaid <= 0}
+                                        onClick={() => {
+                                            setReceiptStudent({ id: item.student.id, name: item.student.name });
+                                            setReceiptBatch({ id: item.batch.id, name: item.batch.name });
+                                            setReceiptMonth(String(new Date().getMonth() + 1));
+                                            setReceiptPaidAmount(totalPaid);
+                                            setReceiptSheetOpen(true);
+                                        }}
+                                    >
+                                        <Receipt className="mr-2 size-4" />
+                                        {t('nav.receipts')}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive"
+                                        onClick={() =>
+                                            handleDeleteRow(
+                                                item.student.id,
+                                                item.batch.id,
+                                            )
+                                        }
+                                    >
+                                        <Trash2 className="mr-2 size-4" />
+                                        {t('actions.delete')}
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     );
                 },
@@ -656,6 +741,12 @@ export default function FeesIndex({
                             isAdmin={isAdmin}
                             createLabel={t('fees.create')}
                             onCreate={() => router.get(fees.create.url())}
+                            extraItems={
+                                <DropdownMenuItem onClick={() => router.get('/reports/unpaid-students', { month: String(new Date().getMonth() + 1), year: String(selectedYear) })}>
+                                    <Receipt className="mr-2 size-4" />
+                                    {t('reports.unpaid_title')}
+                                </DropdownMenuItem>
+                            }
                             exportTitle={t('fees.title')}
                             exportFilename={`fees-${year}`}
                             exportHeaders={[
@@ -713,7 +804,7 @@ export default function FeesIndex({
                             searchValue={search}
                             onSearchChange={handleSearch}
                             activeFilterCount={activeFilterCount}
-                            active={selectedYear !== currentYear}
+                            active={selectedYear !== currentYear || !!unpaidFilterMonth}
                             onClearAll={clearAll}
                             filters={[
                                 {
@@ -726,17 +817,27 @@ export default function FeesIndex({
                                     })),
                                     onValueChange: handleYearChange,
                                 },
+                                {
+                                    id: 'unpaidMonth',
+                                    placeholder: t('fees.unpaid_filter'),
+                                    value: unpaidFilterMonth,
+                                    options: months.map((m) => ({
+                                        label: monthNames[m],
+                                        value: String(m),
+                                    })),
+                                    onValueChange: setUnpaidFilterMonth,
+                                },
                             ]}
                         />
 
                         <div className="hidden lg:block">
                             <DataTable
                                 columns={columns}
-                                data={feeGrid}
+                                data={filteredFeeGrid}
                                 loading={refreshing}
                                 currentPage={1}
                                 lastPage={1}
-                                total={feeGrid.length}
+                                total={filteredFeeGrid.length}
                                 itemName={t('fees.title').toLowerCase()}
                                 baseUrl={fees.index.url()}
                                 preserveParams={{ search, year: selectedYear }}
@@ -753,7 +854,7 @@ export default function FeesIndex({
                                         searchValue={search}
                                         onSearchChange={handleSearch}
                                         activeFilterCount={activeFilterCount}
-                                        active={selectedYear !== currentYear}
+                                        active={selectedYear !== currentYear || !!unpaidFilterMonth}
                                         onClearAll={clearAll}
                                         filters={[
                                             {
@@ -768,6 +869,16 @@ export default function FeesIndex({
                                                 ),
                                                 onValueChange: handleYearChange,
                                             },
+                                            {
+                                                id: 'unpaidMonth',
+                                                placeholder: t('fees.unpaid_filter'),
+                                                value: unpaidFilterMonth,
+                                                options: months.map((m) => ({
+                                                    label: monthNames[m],
+                                                    value: String(m),
+                                                })),
+                                                onValueChange: setUnpaidFilterMonth,
+                                            },
                                         ]}
                                     />
                                 }
@@ -776,7 +887,7 @@ export default function FeesIndex({
 
                         <div className="lg:hidden">
                             <MobileFeeList
-                                feeGrid={feeGrid}
+                                feeGrid={filteredFeeGrid}
                                 months={months}
                                 monthNames={monthNames}
                                 year={year}
@@ -789,6 +900,67 @@ export default function FeesIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            <Sheet open={receiptSheetOpen} onOpenChange={setReceiptSheetOpen}>
+                <SheetContent className="sm:max-w-2xl overflow-y-auto" side="right">
+                    <SheetHeader>
+                        <SheetTitle>{t('fees.generate_receipt')}</SheetTitle>
+                        <SheetDescription>{t('fees.receipt_desc')}</SheetDescription>
+                    </SheetHeader>
+
+                    <div className="grid gap-4 py-4 px-4">
+                        <div className="grid gap-2">
+                            <Label>{t('fees.student')}</Label>
+                            <Input
+                                value={receiptStudent?.name || ''}
+                                disabled
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>{t('fees.batch')}</Label>
+                            <Input
+                                value={receiptBatch?.name || ''}
+                                disabled
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>{t('fees.month')}</Label>
+                            <Select
+                                value={receiptMonth}
+                                onValueChange={setReceiptMonth}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue>
+                                        {monthNames[Number(receiptMonth)]}
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {months.map((m) => (
+                                        <SelectItem key={m} value={String(m)}>
+                                            {monthNames[m]}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <SheetFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setReceiptSheetOpen(false)}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button
+                            onClick={handleGenerateReceipt}
+                            disabled={receiptProcessing}
+                        >
+                            {receiptProcessing ? t('actions.processing') : t('actions.create')}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
 
             <ConfirmDialog
                 open={deleteDialog.open}

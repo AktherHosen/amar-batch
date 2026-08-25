@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { Mail, MailOpen, MessageSquareReply } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useLocale } from '@/contexts/locale-context';
 
 type ContactMessage = {
     id: number;
@@ -52,6 +54,7 @@ type PageProps = {
 };
 
 export default function ContactMessagesIndex({ messages: pagination, stats, filters }: PageProps) {
+    const { t } = useLocale();
     const [search, setSearch] = useState(filters.search || '');
     const [refreshing, setRefreshing] = useState(false);
     const [replyDialog, setReplyDialog] = useState<{ open: boolean; message: ContactMessage | null; reply: string }>({
@@ -63,12 +66,12 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get('/super-admin/contacts', { search: value, status: filters.status }, { preserveState: true });
+        router.get('/dashboard/contacts', { search: value, status: filters.status }, { preserveState: true });
     };
 
     const resetFilters = () => {
         setSearch('');
-        router.get('/super-admin/contacts', {});
+        router.get('/dashboard/contacts', {});
     };
 
     const markRead = (message: ContactMessage) => {
@@ -76,9 +79,9 @@ export default function ContactMessagesIndex({ messages: pagination, stats, filt
 return;
 }
 
-        router.post(`/super-admin/contacts/${message.id}/read`, {}, {
+        router.post(`/dashboard/contacts/${message.id}/read`, {}, {
             preserveScroll: true,
-            onSuccess: () => toast.success('Message marked as read.'),
+            onSuccess: () => toast.success(t('toast.updated_successfully')),
         });
     };
 
@@ -92,12 +95,12 @@ return;
 }
 
         setSending(true);
-        router.post(`/super-admin/contacts/${replyDialog.message.id}/reply`, {
+        router.post(`/dashboard/contacts/${replyDialog.message.id}/reply`, {
             reply: replyDialog.reply,
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success('Reply sent successfully.');
+                toast.success(t('toast.updated_successfully'));
                 setReplyDialog({ open: false, message: null, reply: '' });
             },
             onFinish: () => setSending(false),
@@ -106,95 +109,91 @@ return;
 
     const activeFilterCount = filters.status === 'unread' ? 1 : 0;
 
-    const columns = (() => {
-        type Col = NonNullable<DataTableProps<ContactMessage, unknown>['columns']>[number];
+    const columns: NonNullable<DataTableProps<ContactMessage, unknown>['columns']> = [
+        {
+            id: 'name',
+            accessorKey: 'name',
+            header: t('super_admin.name'),
+            enableSorting: true,
+            meta: { sticky: true },
+            cell: ({ row }: any) => (
+                <span className="font-medium">{row.original.name}</span>
+            ),
+        },
+        {
+            id: 'email',
+            accessorKey: 'email',
+            header: t('super_admin.email'),
+            enableSorting: false,
+            cell: ({ row }: any) => row.original.email,
+        },
+        {
+            id: 'subject',
+            accessorKey: 'subject',
+            header: t('super_admin.subject'),
+            enableSorting: false,
+            cell: ({ row }: any) => (
+                <span className="block max-w-[240px] truncate">{row.original.subject}</span>
+            ),
+        },
+        {
+            id: 'status',
+            accessorKey: 'is_read',
+            header: t('super_admin.status'),
+            enableSorting: false,
+            cell: ({ row }: any) => {
+                const message: ContactMessage = row.original;
 
-        return [
-            {
-                id: 'name',
-                accessorKey: 'name',
-                header: 'Name',
-                enableSorting: true,
-                meta: { sticky: true },
-                cell: ({ row }: any) => (
-                    <span className="font-medium">{row.original.name}</span>
-                ),
-            } as Col,
-            {
-                id: 'email',
-                accessorKey: 'email',
-                header: 'Email',
-                enableSorting: false,
-                cell: ({ row }: any) => row.original.email,
-            } as Col,
-            {
-                id: 'subject',
-                accessorKey: 'subject',
-                header: 'Subject',
-                enableSorting: false,
-                cell: ({ row }: any) => (
-                    <span className="block max-w-[240px] truncate">{row.original.subject}</span>
-                ),
-            } as Col,
-            {
-                id: 'status',
-                accessorKey: 'is_read',
-                header: 'Status',
-                enableSorting: false,
-                cell: ({ row }: any) => {
-                    const message: ContactMessage = row.original;
+                return !message.is_read ? (
+                    <Badge className="bg-yellow-600 text-white whitespace-nowrap">{t('super_admin.unread')}</Badge>
+                ) : (
+                    <Badge variant="secondary" className="whitespace-nowrap">
+                        {message.replied_at ? t('super_admin.replied') : t('super_admin.active')}
+                    </Badge>
+                );
+            },
+        },
+        {
+            id: 'created_at',
+            accessorKey: 'created_at',
+            header: t('super_admin.received'),
+            enableSorting: false,
+            cell: ({ row }: any) =>
+                new Date(row.original.created_at).toLocaleDateString(),
+        },
+        {
+            id: 'actions',
+            header: '',
+            enableSorting: false,
+            enableHiding: false,
+            cell: ({ row }: any) => {
+                const message: ContactMessage = row.original;
 
-                    return !message.is_read ? (
-                        <Badge className="bg-yellow-600 text-white whitespace-nowrap">Unread</Badge>
-                    ) : (
-                        <Badge variant="secondary" className="whitespace-nowrap">
-                            {message.replied_at ? 'Replied' : 'Read'}
-                        </Badge>
-                    );
-                },
-            } as Col,
-            {
-                id: 'created_at',
-                accessorKey: 'created_at',
-                header: 'Received',
-                enableSorting: false,
-                cell: ({ row }: any) =>
-                    new Date(row.original.created_at).toLocaleDateString(),
-            } as Col,
-            {
-                id: 'actions',
-                header: '',
-                enableSorting: false,
-                enableHiding: false,
-                cell: ({ row }: any) => {
-                    const message: ContactMessage = row.original;
-
-                    return (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="size-8 p-0"
-                            onClick={() => {
-                                markRead(message);
-                                openReply(message);
-                            }}
-                        >
-                            <MessageSquareReply className="size-4" />
-                        </Button>
-                    );
-                },
-            } as Col,
-        ];
-    })();
+                return (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="size-8 p-0"
+                        onClick={() => {
+                            markRead(message);
+                            openReply(message);
+                        }}
+                    >
+                        <MessageSquareReply className="size-4" />
+                    </Button>
+                );
+            },
+        },
+    ];
 
     return (
         <>
-            <Head title="Contact Messages" />
+            <Head title={t('super_admin.contacts')} />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden rounded-xl p-3 sm:p-4">
                 <div className="flex items-start justify-between">
                     <Heading
-                        title="Contact Messages"
-                        description="Messages submitted through the contact form"
+                        title={t('super_admin.contacts')}
+                        description={t('super_admin.all_contacts_description')}
                     />
                     <div className="flex items-center gap-1">
                         <RefreshButton
@@ -207,39 +206,34 @@ return;
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Total</CardTitle>
-                            <Mail className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{stats.total}</div>
-                        </CardContent>
-                    </Card>
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Unread</CardTitle>
-                            <MailOpen className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{stats.unread}</div>
-                        </CardContent>
-                    </Card>
-                    <Card className="py-3">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-1">
-                            <CardTitle className="text-sm font-medium">Replied</CardTitle>
-                            <MessageSquareReply className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="px-3 pb-2 pt-0">
-                            <div className="text-2xl font-bold">{stats.replied}</div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {[
+                        { label: t('super_admin.all'), value: stats.total, icon: Mail, color: 'text-muted-foreground' },
+                        { label: t('super_admin.unread'), value: stats.unread, icon: MailOpen, color: 'text-yellow-600' },
+                        { label: t('super_admin.replied'), value: stats.replied, icon: MessageSquareReply, color: 'text-green-600' },
+                    ].map((stat, i) => (
+                        <motion.div
+                            key={stat.label}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: i * 0.05 }}
+                        >
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{stat.label}</CardTitle>
+                                    <stat.icon className={`size-3.5 ${stat.color} sm:size-4`} />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className={`text-xl font-bold sm:text-2xl ${stat.color}`}>{stat.value}</div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))}
                 </div>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Inbox</CardTitle>
+                        <CardTitle>{t('super_admin.contacts')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <DataTable
@@ -250,13 +244,14 @@ return;
                             lastPage={pagination.last_page}
                             total={pagination.total}
                             itemName="messages"
-                            baseUrl="/super-admin/contacts"
+                            baseUrl="/dashboard/contacts"
                             preserveParams={{ search, status: filters.status }}
-                            emptyMessage="No contact messages yet."
+                            emptyMessage={t('super_admin.no_contacts')}
                             getRowId={(row) => String(row.id)}
+                            enableColumnVisibility={false}
                             toolbar={
                                 <FilterBar
-                                    searchPlaceholder="Search name, email, subject..."
+                                    searchPlaceholder={`${t('actions.search')}...`}
                                     searchValue={search}
                                     onSearchChange={handleSearch}
                                     activeFilterCount={activeFilterCount}
@@ -267,10 +262,10 @@ return;
                                         size="sm"
                                         className={filters.status === 'unread' ? 'bg-muted' : ''}
                                         onClick={() =>
-                                            router.get('/super-admin/contacts', { status: filters.status === 'unread' ? undefined : 'unread', search }, { preserveState: true })
+                                            router.get('/dashboard/contacts', { status: filters.status === 'unread' ? undefined : 'unread', search }, { preserveState: true })
                                         }
                                     >
-                                        {filters.status === 'unread' ? 'All' : 'Unread'}
+                                        {filters.status === 'unread' ? t('super_admin.all') : t('super_admin.unread')}
                                     </Button>
                                 </FilterBar>
                             }
@@ -334,10 +329,3 @@ return;
         </>
     );
 }
-
-ContactMessagesIndex.layout = {
-    breadcrumbs: [
-        { title: 'Dashboard', href: '/super-admin/dashboard' },
-        { title: 'Contact Messages', href: '/super-admin/contacts' },
-    ],
-};

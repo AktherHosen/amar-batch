@@ -6,6 +6,7 @@ use App\Models\FeeReceipt;
 use App\Models\FeeStatus;
 use App\Models\Student;
 use App\Models\Batch;
+use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -25,9 +26,35 @@ class FeeReceiptController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $students = Student::orderBy('name')->get(['id', 'name']);
+        $batches = Batch::orderBy('name')->get(['id', 'name']);
+        $enrollments = Enrollment::where('status', 'active')
+            ->get()
+            ->map(fn ($e) => ['student_id' => $e->student_id, 'batch_id' => $e->batch_id]);
+
         return Inertia::render('fees/receipts/index', [
             'receipts' => $receipts,
+            'students' => $students,
+            'batches' => $batches,
+            'enrollments' => $enrollments,
             'filters' => $request->only(['search']),
+        ]);
+    }
+
+    public function create()
+    {
+        $this->authorize('create', FeeReceipt::class);
+
+        $students = Student::orderBy('name')->get(['id', 'name']);
+        $batches = Batch::orderBy('name')->get(['id', 'name']);
+        $enrollments = Enrollment::where('status', 'active')
+            ->get()
+            ->map(fn ($e) => ['student_id' => $e->student_id, 'batch_id' => $e->batch_id]);
+
+        return Inertia::render('fees/receipts/create', [
+            'students' => $students,
+            'batches' => $batches,
+            'enrollments' => $enrollments,
         ]);
     }
 
@@ -40,10 +67,36 @@ class FeeReceiptController extends Controller
             'batch_id' => 'required|exists:batches,id',
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer|min:2020|max:2100',
-            'amount_paid' => 'required|numeric|min:0',
-            'amount_due' => 'required|numeric|min:0',
+            'amount_paid' => 'nullable|numeric|min:0',
+            'amount_due' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
+
+        $existing = FeeReceipt::where('student_id', $validated['student_id'])
+            ->where('batch_id', $validated['batch_id'])
+            ->where('month', $validated['month'])
+            ->where('year', $validated['year'])
+            ->first();
+
+        if ($existing) {
+            $existing->load(['student', 'batch', 'creator']);
+            return redirect()->route('fees.receipts.show', $existing->id)
+                ->with('toast', ['type' => 'info', 'message' => 'A receipt already exists for this period.']);
+        }
+
+        if (empty($validated['amount_due']) || $validated['amount_due'] <= 0) {
+            $student = Student::with('coachingClass')->find($validated['student_id']);
+            $validated['amount_due'] = $student?->coachingClass?->default_fee ?? 0;
+        }
+
+        if (empty($validated['amount_paid']) || $validated['amount_paid'] <= 0) {
+            $feeStatus = FeeStatus::where('student_id', $validated['student_id'])
+                ->where('batch_id', $validated['batch_id'])
+                ->where('month', $validated['month'])
+                ->where('year', $validated['year'])
+                ->first();
+            $validated['amount_paid'] = $feeStatus?->amount_paid ?? 0;
+        }
 
         $receipt = FeeReceipt::create([
             ...$validated,

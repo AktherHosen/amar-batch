@@ -12,6 +12,7 @@ export type NavItem = {
     icon?: LucideIcon | null;
     isActive?: boolean;
     ownerOnly?: boolean;
+    superAdminOnly?: boolean;
     featureRequired?: string;
     permission?: string;
 };
@@ -19,4 +20,5 @@ export type NavItem = {
 export type NavItemGroup = {
     label: string;
     items: NavItem[];
+    collapsible?: boolean;
 };

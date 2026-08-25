@@ -444,11 +444,11 @@ export default function Welcome({ stats, plans }: Props) {
                                             <CardContent className="flex flex-1 flex-col">
                                                 <div className="mb-6">
                                                     {price === 0 ? (
-                                                        <div className="text-4xl font-bold">
+                                                        <div className="text-2xl font-bold sm:text-3xl lg:text-4xl">
                                                             {t('plan.free')}
                                                         </div>
                                                     ) : (
-                                                        <div className="text-4xl font-bold">
+                                                        <div className="text-2xl font-bold sm:text-3xl lg:text-4xl">
                                                             {formatCurrency(
                                                                 price,
                                                             )}

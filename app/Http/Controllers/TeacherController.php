@@ -47,6 +47,7 @@ public function index(Request $request): Response
             'teachers' => $teachers,
             'filters' => $request->only(['search', 'status']),
             'roles' => Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get([ 'id', 'name', 'slug']),
+            'branches' => Branch::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

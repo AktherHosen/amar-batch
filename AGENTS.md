@@ -4,6 +4,27 @@
 
 **Amar Batch** — Multi-tenant coaching center management SaaS built with Laravel 13 + Inertia.js 3 (React 19).
 
+## Tech Stack
+
+### Backend
+- **Framework:** Laravel 13
+- **Auth:** Laravel Fortify (registration, login, password reset, 2FA)
+- **API Tokens:** Sanctum
+- **Payment Gateway:** SSLCommerz (BDT currency)
+- **Excel:** Maatwebsite Excel (import/export)
+- **PDF:** barryvdh/laravel-dompdf (receipts)
+- **Scheduling:** `subscriptions:check-expiry` runs daily
+
+### Frontend
+- **UI Framework:** React 19 + Inertia.js 3
+- **Styling:** Tailwind CSS + shadcn/ui components
+- **Animations:** Framer Motion
+- **Charts:** Chart.js + react-chartjs-2 (NOT recharts — React 19 incompatibility)
+- **i18next:** Internationalization (English + Bangla)
+- **Excel:** xlsx library for client-side parsing
+- **PDF:** jspdf + jspdf-autotable for client-side PDF generation
+- **State:** useSyncExternalStore for theme/locale persistence
+
 ## Code Style
 
 - Use `whitespace-nowrap` on all `TableHead` and `TableCell` components
@@ -207,6 +228,8 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 - Tenant scoping is automatic via `BelongsToTenant` trait on models
 - Owner = admin role for tenant. Staff = teacher role.
 - Use `$this->authorize('action', Model::class)` in controllers (Policies handle tenant scoping)
+- All controllers use Form Request classes for validation (21 request classes in `app/Http/Requests/`)
+- Soft deletes on most models (students, batches, teachers, users, etc.)
 
 ## User Roles
 
@@ -215,10 +238,227 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 | Super Admin | `super_admin` | Global — tenants, plans, cross-tenant stats |
 | Owner | `owner` | Tenant admin — full CRUD on all tenant resources |
 | Staff | `staff` | Tenant teacher — view assigned batches, mark attendance (requires approval) |
+| Inactive | `inactive` | Deactivated user — no access |
+| Student | `student` | Referenced in code but no dedicated controllers |
+| Parent | `parent` | Referenced in code but no dedicated controllers |
+
+## RBAC (Role-Based Access Control)
+
+- Central permissions catalog: `config/role-routes.php` defines 15 route groups
+- `Role` model with `permissions` (JSON array of route-name patterns), `slug`, `is_system`
+- `User::hasRoutePermission($routeName)` — super_admin/owner get wildcard `['*']` access
+- `Str::is()` glob matching for permission checks
+- Middleware: `role.permission` (CheckRoutePermission) enforces route-level access
+- Always-allowed routes: dashboard, notifications, profile, password, security, subscription, payment, onboarding
+- System roles seeded via `app/Support/DefaultRoles.php` — Owner (wildcard) + Staff (limited)
+- Frontend: `usePermissions()` and `useHasPermission()` from `resources/js/lib/permissions.ts`
+- Role helpers: `isOwner()`, `isStaff()`, `isSuperAdmin()` from `resources/js/lib/role.ts`
 
 ## Middleware Stack
 
-Tenant routes use this middleware chain: `auth → verified → onboarding → tenant → teacher.approved`
+Tenant routes use this middleware chain: `auth → verified → onboarding → tenant → role.permission → teacher.approved`
+
+- **OnboardingMiddleware:** Redirects owners with `onboarding_complete=false` to setup wizard. Also redirects expired subscriptions to payment page.
+- **TenantMiddleware:** Sets `app('branch_id')` for branch-scoped users. Bypassed for super_admin.
+- **CheckRoutePermission:** Enforces RBAC for non-admin users. Resolves user's Role by slug, checks route permission.
+- **CheckTeacherApproval:** Blocks unapproved teachers with warning toast redirect.
+
+## Branch-Scoped Data Access
+
+- `BelongsToBranch` trait (`app/Concerns/BelongsToBranch.php`) — auto-fills `branch_id`, adds global scope
+- `scopeForBranch($query, $branchId)` — manual scoping helper
+- Used by: `Student`, `Batch`, `Enrollment`, `FeeStatus`, `ExamResult`
+- Models without direct `branch_id` override `branchScopeQuery()` (e.g., Enrollment scopes via batch)
+- `TenantMiddleware` sets `app('branch_id')` when `$user->isBranchScoped()` is true
+
+## Plan Limits
+
+- `PlanLimitsPolicy` (`app/Policies/PlanLimitsPolicy.php`) — utility class, not a standard policy
+- 3 limit types: `students` (max_students), `staff` (max_staff), `batches` (max_batches)
+- `-1` = unlimited. Otherwise compares current count < max.
+- Current counts: active students, staff/teacher role users, all batches
+- Enforcement in controllers: `createStudent()`, `createStaff()`, `createBatch()`
+- Exceeded limit redirects to `subscription.index` with warning toast
+
+## Subscription & Payment
+
+- **Gateway:** SSLCommerz (sandbox: `sandbox.sslcommerz.com`, prod: `securepay.sslcommerz.com`)
+- **Currency:** BDT (Bangladeshi Taka)
+- **Subscription model:** `tenant_id`, `plan_id`, `status` (active/trial), `billing_type`, `trial_ends_at`, `ends_at`
+- **Payment model:** `tenant_id`, `subscription_id`, `txid`, `amount`, `status` (pending/success/failed/cancelled), `gateway_response` (JSON)
+- **Plan model:** `name`, `slug`, `price_monthly`, `price_yearly`, `max_students`, `max_staff`, `max_batches`, `features` (JSON)
+- **Flow:** Upgrade → initiate payment → redirect to gateway → callbacks (success/failure/cancel/ipn) → `markPaidAndActivate()` in DB transaction with `lockForUpdate()`
+- **Scheduled:** `subscriptions:check-expiry` runs daily
+- **Controller:** `SubscriptionController` (upgrade), `PaymentController` (initiate + callbacks)
+- **Service:** `SslcommerzService` handles gateway API calls
+
+## Super Admin Panel
+
+- Prefix: `super-admin/`, middleware: `['auth', 'verified', 'role:super_admin']`
+- **Dashboard:** Global stats (tenants, users, students, batches, revenue), revenue by plan chart, recent tenants/payments/contacts
+- **Tenants:** List with search/status, detail with stats, toggle active/inactive
+- **Plans:** Full CRUD. Validates prices, limits (-1 = unlimited), features array
+- **Payments:** List with status/search, approve/cancel pending payments
+- **Contacts:** List with search/unread, reply via email (Mailable), mark as read
+- **Controllers:** `SuperAdminController`, `TenantController`, `PlanController`, `ContactMessageController`
+
+## Onboarding Flow
+
+1. User registers → `onboarding_complete = false`
+2. `OnboardingMiddleware` redirects to `GET onboarding`
+3. User submits coaching name/email/phone
+4. System creates `Tenant` with auto-generated slug
+5. Assigns **default plan** as 14-day trial subscription
+6. Links user to tenant, sets `onboarding_complete = true`
+7. Seeds default roles via `DefaultRoles::createForTenant()`
+8. Redirects to dashboard with success toast
+
+## Enrollment Management
+
+- `Enrollment` model: `student_id`, `batch_id`, `enrolled_at`, `status` (active/completed/dropped)
+- Traits: `BelongsToBranch` (scoped via batch), `BelongsToTenant`
+- Creates `BatchHistory` record on enroll/update/remove
+- Routes nested under batches: `POST batches/{batch}/enroll`, `PUT/DELETE enrollments/{enrollment}`
+- Duplicate enrollment validation, enrollment date >= batch start date check
+
+## Fee Status Management
+
+- `FeeStatus` model: `student_id`, `batch_id`, `month` (1-12), `year`, `amount_paid`, `notes`
+- Grid view: all students × months for a given year
+- `updateOrCreate()` upserts by student+batch+month+year
+- `destroyStudentBatch()` deletes ALL fee records for a student+batch combination
+- Auto-creates `InAppNotification` on fee recording
+- Admin-only controller (checks `isAdmin()`)
+- Routes: `/fees`, `/fees/create`, `/fees/{feeStatus}`
+
+## Exam Results
+
+- `ExamResult` model: `exam_id`, `student_id`, `marks_obtained`, `notes`
+- Branch scoping via: `exam → batch → branch_id`
+- `ExamController::storeResults` — `POST exams/{exam}/results`
+- Validates `marks_obtained <= exam.total_marks`
+- `updateOrCreate()` upserts results
+- Exam show page loads results + enrolled students for entry form
+
+## Coaching Class Management
+
+- `CoachingClass` model: `name`, `default_fee`
+- Relationships: `hasMany(Student::class)`
+- CRUD + import from Excel (`name`, `default_fee` rows)
+- Plan-limited creation via `PlanLimitsPolicy`
+- Routes: `resource('coaching-classes', ...)`, `POST coaching-classes/import`
+
+## Teacher/Staff Approval Workflow
+
+1. Admin creates teacher → default `role='teacher'`, plan limits checked
+2. `updateStatus` endpoint sets `is_approved = false` for pending state
+3. `CheckTeacherApproval` middleware blocks unapproved teachers
+4. Admin approves: `POST teachers/{teacher}/approve` → `is_approved = true`
+5. Admin rejects: `POST teachers/{teacher}/reject` → `is_approved = false`
+6. Deactivation: toggles `role='inactive'`, detaches assigned batches
+7. All actions require specific `teachers.*` route permissions
+- Import: `POST teachers/import` accepts `name`, `email`, `password`, `role`, `branch_id`
+
+## User Management
+
+- Full CRUD with plan-limited creation
+- Filters: `status` (active/inactive), `role`, `search`
+- Owner users cannot be edited, role-changed, deactivated, or deleted
+- `changeRole` endpoint: `POST users/{user}/role`
+- Deactivation/reactivation with batch detachment
+- Approval workflow: `approve`, `reject` endpoints
+- Avatar upload handling on create/update
+- Routes: `resource('users', ...)`, plus `/users/{user}/role`, `/users/{user}/deactivate`, etc.
+
+## Bulk Import/Export
+
+**Import supported for:** Students, Teachers, Batches, Coaching Classes, Branches, Attendance, Fees, Exams, Notices, Holidays
+
+**Pattern:** Frontend parses Excel → sends rows to Laravel → backend loops with try/catch → reports imported/skipped count
+
+**Export:** Students only — CSV with ID, Name, Phone, Class, Section, Status, Guardian info, Joined At
+
+**Frontend utilities:**
+- `resources/js/lib/excel.ts` — `exportToExcel()`, `importFromExcel()` (xlsx library)
+- `resources/js/lib/pdf-table.ts` — `generateTablePDF()` (jspdf + jspdf-autotable) with branded header, page numbers
+
+## Public Pages
+
+| Route | Page |
+|-------|------|
+| `GET /` | Landing page with global stats + active plans |
+| `GET /up` | Health check (`{"status": "ok"}`) |
+| `GET /docs` | Documentation |
+| `GET /contact` | Contact form |
+| `POST /contact` | Store ContactMessage + email notification |
+| `GET /terms` | Terms of Service |
+| `GET /privacy` | Privacy Policy |
+
+**Payment callbacks (CSRF-exempt):** `/payment/success`, `/payment/failure`, `/payment/cancel`, `/payment/ipn`
+
+## Internationalization (i18n)
+
+- **Languages:** English (`en`) + Bangla (`bn`)
+- **Library:** i18next + react-i18next
+- **Config:** `resources/js/i18n/index.ts` — initializes with `initReactI18next`, stores locale in `localStorage`
+- **Translations:** `resources/js/i18n/translations.ts` — hundreds of keys organized by domain (`app.*`, `nav.*`, `dashboard.*`, `students.*`, etc.)
+- **Context:** `resources/js/contexts/locale-context.tsx` — provides `t()`, `formatDate()`, `formatTime()`, `formatCurrency()`, `formatNumber()` via `useLocale()` hook
+- **Formatting:** `formatCurrency()` uses `৳` symbol for Bangla. `formatBanglaNumber()` converts digits.
+- **No PHP-side translations** — all i18n is frontend/client-side only
+
+## Custom Hooks
+
+| Hook | File | Purpose |
+|------|------|---------|
+| `useAppearance()` | `hooks/use-appearance.tsx` | Theme system: light/dark/system, 9 accent colors, corner radius, date/time format, sidebar style. Persists to localStorage + cookies. |
+| `useClipboard()` | `hooks/use-clipboard.ts` | Copy to clipboard via `navigator.clipboard.writeText()` |
+| `useCurrentUrl()` | `hooks/use-current-url.ts` | Active-link highlighting via Inertia page URL comparison |
+| `useFlashToast()` | `hooks/use-flash-toast.ts` | Listens to Inertia `flash` events → sonner toasts |
+| `useInitials()` | `hooks/use-initials.tsx` | Extracts initials from full name |
+| `useIsMobile()` | `hooks/use-mobile.tsx` | Boolean based on `matchMedia(max-width: 767px)` |
+| `useMobileNavigation()` | `hooks/use-mobile-navigation.ts` | Cleanup function for mobile nav pointer-events |
+| `useTwoFactorAuth()` | `hooks/use-two-factor-auth.ts` | 2FA setup flow: QR code, manual key, recovery codes |
+
+## Frontend Utilities
+
+| File | Exports | Purpose |
+|------|---------|---------|
+| `lib/utils.ts` | `cn()`, `toUrl()` | Tailwind class merging (clsx + twMerge), URL extraction from Inertia props |
+| `lib/features.ts` | `useFeatures()`, `useHasFeature()` | Reads `tenant.features` from Inertia props, checks feature membership |
+| `lib/permissions.ts` | `usePermissions()`, `useHasPermission()` | Reads `auth.user.permissions`, glob matching for route access |
+| `lib/role.ts` | `isOwner()`, `isStaff()`, `isSuperAdmin()` | Simple role-check helpers |
+| `lib/excel.ts` | `exportToExcel()`, `importFromExcel()` | xlsx library — export with auto-fit, import returning headers + rows |
+| `lib/pdf-table.ts` | `generateTablePDF()` | jspdf + jspdf-autotable — branded PDF with header, alternating rows, page numbers |
+
+## Policies
+
+| Policy | Key Rules |
+|--------|-----------|
+| `AttendancePolicy` | Admin always; teacher only if assigned to batch |
+| `BatchPolicy` | Route permission based. Teacher if assigned; student if enrolled |
+| `BranchPolicy` | Pure route permission checks (`branches.*`) |
+| `CoachingClassPolicy` | Pure route permission checks (`coaching-classes.*`) |
+| `EnrollmentPolicy` | Admin always; teacher if assigned to batch. Create: admin only |
+| `ExamPolicy` | Route permission. Teacher if assigned to exam's batch |
+| `FeeReceiptPolicy` | Admin only |
+| `HolidayPolicy` | View: admin or teacher. Create/update/delete: admin only |
+| `NoticePolicy` | View: admin or teacher. Create/update/delete: admin only |
+| `RolePolicy` | Admin only. Cannot edit/delete system roles or roles with users |
+| `StudentPolicy` | Route permission. Teacher if student in assigned batches; student can view self |
+| `TeacherPolicy` | Route permission. Users can always view themselves |
+
+## Seeders
+
+| Seeder | Creates |
+|--------|---------|
+| `PlanSeeder` | 4 plans: Free Trial (default), Basic, Pro, Enterprise with BDT pricing |
+| `SuperAdminSeeder` | `superadmin@amarbatch.com` / `password` |
+| `AdminSeeder` | "Bright Minds Academy" tenant + owner `admin@amarbatch.com` / `password` + default roles |
+| `TeacherSeeder` | 2 teachers for Bright Minds Academy |
+| `CoachingClassSeeder` | 8 classes (Pre School through Class 5, fees ৳300-৳700) |
+| `StudentSeeder` | 12 students with class assignments |
+
+**Seed order:** Plans → Super Admin → Admin → Teachers → Coaching Classes → Students
 
 ## Route Generation
 

@@ -13,7 +13,7 @@ use Inertia\Response;
 
 class OnboardingController extends Controller
 {
-    public function show(Request $request): Response
+    public function show(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
 

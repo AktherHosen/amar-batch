@@ -7,12 +7,14 @@ type FormActionsProps = {
     cancelHref?: string;
     onCancel?: () => void;
     processing: boolean;
+    submitLabel?: string;
 };
 
 export function FormActions({
     cancelHref,
     onCancel,
     processing,
+    submitLabel,
 }: FormActionsProps) {
     const { t } = useLocale();
 
@@ -33,7 +35,7 @@ export function FormActions({
             ) : null}
             <Button type="submit" disabled={processing}>
                 <Save className="size-4" />
-                {processing ? t('actions.saving') : t('actions.save')}
+                {processing ? t('actions.saving') : submitLabel || t('actions.save')}
             </Button>
         </div>
     );

@@ -76,10 +76,15 @@ class ExamController extends Controller
                 ->toArray();
         }
 
-        $students = Student::where('tenant_id', $exam->tenant_id)
+        $query = Student::where('tenant_id', $exam->tenant_id)
             ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
+            ->orderBy('name');
+
+        if (count($enrolledStudentIds) > 0) {
+            $query->whereIn('id', $enrolledStudentIds);
+        }
+
+        $students = $query->get();
 
         return Inertia::render('exams/show', [
             'exam' => $exam,

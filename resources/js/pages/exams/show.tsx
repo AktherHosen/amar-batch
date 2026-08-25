@@ -1,7 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { ArrowLeft, Download, Pencil, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, PenLine, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -437,7 +437,7 @@ export default function ExamsShow({
                         <div className="flex shrink-0 gap-2">
                             <Link href={exams.edit(exam.id)}>
                                 <Button variant="outline" className="h-9">
-                                    <Pencil className="size-4" />
+                                    <PenLine className="size-4" />
                                     <span className="ml-2 hidden sm:inline">
                                         {t('actions.edit')}
                                     </span>
@@ -537,7 +537,6 @@ export default function ExamsShow({
                         <DataTable
                             columns={columns}
                             data={displayStudents}
-                            showPagination={false}
                             searchable
                             searchPlaceholder={t('exams.student') + '...'}
                             emptyMessage={t('exams.no_students')}

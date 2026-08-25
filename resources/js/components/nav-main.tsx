@@ -14,6 +14,7 @@ import {
     SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useLocale } from '@/contexts/locale-context';
 import type { NavItem, NavItemGroup } from '@/types';
 
 function GroupItems({ items }: { items: NavItem[] }) {
@@ -64,6 +65,7 @@ function GroupLabel({ label }: { label: string }) {
 
 export function NavMain({ groups }: { groups: NavItemGroup[] }) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { t } = useLocale();
 
     const activeLabel =
         groups.find((group) =>
@@ -79,7 +81,7 @@ export function NavMain({ groups }: { groups: NavItemGroup[] }) {
     return (
         <>
             {groups.map((group) => {
-                const collapsible = group.items.length > 1;
+                const collapsible = group.collapsible !== false && group.label !== t('nav.group.main') && group.items.length >= 1;
                 const anyActive = group.items.some((item) =>
                     isCurrentOrParentUrl(item.href),
                 );
