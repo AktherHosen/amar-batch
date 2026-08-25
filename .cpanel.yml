@@ -1,5 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/aktherho/amarbatch.aktherhosen.com/
-    - /bin/cp -R * $DEPLOYPATH
+    - export DEPLOYPATH=/home/aktherho/amarbatch.aktherhosen.com
+    - /bin/cp -R . $DEPLOYPATH
