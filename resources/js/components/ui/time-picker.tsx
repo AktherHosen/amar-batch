@@ -21,6 +21,23 @@ function Spinner({
   max: number
   label: string
 }) {
+  const [inputVal, setInputVal] = React.useState(String(value).padStart(2, "0"))
+
+  // Sync input display when value changes externally (e.g. arrow click)
+  React.useEffect(() => {
+    setInputVal(String(value).padStart(2, "0"))
+  }, [value])
+
+  const commit = (raw: string) => {
+    const num = parseInt(raw, 10)
+    if (!isNaN(num)) {
+      onChange(clamp(num, min, max))
+    } else {
+      // Reset to current value on invalid input
+      setInputVal(String(value).padStart(2, "0"))
+    }
+  }
+
   return (
     <div className="flex flex-col items-center gap-0.5">
       <Button
@@ -28,20 +45,43 @@ function Spinner({
         variant="ghost"
         size="sm"
         className="size-7 p-0"
-        onClick={() => onChange(clamp(value + 1, min, max))}
+        onClick={() => onChange(value === max ? min : clamp(value + 1, min, max))}
       >
         <ChevronUp className="size-3.5" />
       </Button>
-      <span className="w-10 text-center text-sm font-medium tabular-nums">
-        {String(value).padStart(2, "0")}
-      </span>
+
+      <input
+        type="text"
+        inputMode="numeric"
+        value={inputVal}
+        onChange={(e) => setInputVal(e.target.value)}
+        onBlur={(e) => commit(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            commit(inputVal)
+            e.preventDefault()
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault()
+            onChange(value === max ? min : clamp(value + 1, min, max))
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault()
+            onChange(value === min ? max : clamp(value - 1, min, max))
+          }
+        }}
+        onFocus={(e) => e.target.select()}
+        className="w-10 rounded border border-input bg-background text-center text-sm font-medium tabular-nums focus:outline-none focus:ring-2 focus:ring-ring py-0.5"
+        maxLength={2}
+        aria-label={label}
+      />
+
       <span className="text-[10px] text-muted-foreground">{label}</span>
+
       <Button
         type="button"
         variant="ghost"
         size="sm"
         className="size-7 p-0"
-        onClick={() => onChange(clamp(value - 1, min, max))}
+        onClick={() => onChange(value === min ? max : clamp(value - 1, min, max))}
       >
         <ChevronDown className="size-3.5" />
       </Button>
