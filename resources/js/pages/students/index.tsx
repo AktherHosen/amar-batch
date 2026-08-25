@@ -530,7 +530,13 @@ export default function StudentsIndex({
                             {t('actions.cancel')}
                         </Button>
                         <Button type="submit" form="student-form" disabled={processing}>
-                            {editingStudent ? t('actions.update') : t('actions.create')}
+                            {processing
+                                ? editingStudent
+                                    ? t('actions.updating')
+                                    : t('actions.creating')
+                                : editingStudent
+                                  ? t('actions.update')
+                                  : t('actions.create')}
                         </Button>
                     </SheetFooter>
                 </SheetContent>

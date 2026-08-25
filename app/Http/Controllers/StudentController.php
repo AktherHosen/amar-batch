@@ -192,6 +192,17 @@ class StudentController extends Controller
             abort(422);
         }
 
+        // Check plan limit when reactivating a student
+        if ($status === 'active') {
+            $planLimits = new PlanLimitsPolicy;
+            if (! $planLimits->createStudent($request->user())) {
+                return to_route('subscription.index')->with('toast', [
+                    'type' => 'warning',
+                    'message' => 'You have reached the student limit for your current plan. Please upgrade to reactivate this student.',
+                ]);
+            }
+        }
+
         $student->update([
             'status' => $status,
             'left_at' => $status === 'inactive' ? now() : null,
@@ -222,11 +233,25 @@ class StudentController extends Controller
     {
         $this->authorize('create', Student::class);
 
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createStudent($request->user())) {
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the student limit for your current plan. Please upgrade to import more students.',
+            ]);
+        }
+
         $rows = $request->input('rows', []);
         $imported = 0;
         $skipped = 0;
 
         foreach ($rows as $row) {
+            // Re-check limit before each student to respect exact cap
+            if (! $planLimits->createStudent($request->user())) {
+                $skipped += count($rows) - $imported - $skipped;
+                break;
+            }
+
             try {
                 $coachingClassId = $row['coaching_class_id'] ?? null;
 
@@ -259,7 +284,7 @@ class StudentController extends Controller
 
         $message = $imported . ' students imported successfully.';
         if ($skipped > 0) {
-            $message .= " {$skipped} skipped (duplicate or invalid).";
+            $message .= " {$skipped} skipped (plan limit reached or invalid).";
         }
 
         return to_route('students.index')->with('toast', ['type' => 'success', 'message' => $message]);

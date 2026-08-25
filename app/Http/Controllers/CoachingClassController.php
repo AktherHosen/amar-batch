@@ -37,11 +37,18 @@ class CoachingClassController extends Controller
         return Inertia::render('coaching-classes/create');
     }
 
-    public function store(StoreCoachingClassRequest $request): RedirectResponse
+    public function store(StoreCoachingClassRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorize('create', CoachingClass::class);
 
-        CoachingClass::create($request->validated());
+        $coachingClass = CoachingClass::create($request->validated());
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Class created successfully.',
+                'class' => $coachingClass,
+            ], 201);
+        }
 
         return to_route('coaching-classes.index')->with('toast', ['type' => 'success', 'message' => 'Class created successfully.']);
     }

@@ -269,6 +269,9 @@ export const translations: Record<Locale, Record<string, string>> = {
         'teachers.avatar': 'প্রোফাইল ছবি',
         'teachers.avatar_hint': 'JPG, PNG বা GIF — সর্বোচ্চ ২MB',
         'teachers.select_role': 'রোল নির্বাচন করুন',
+        'teachers.account_info': 'অ্যাকাউন্ট তথ্য',
+        'teachers.access': 'অ্যাক্সেস',
+        'teachers.security': 'নিরাপত্তা',
         'teachers.phone': 'ফোন',
         'teachers.status': 'অবস্থা',
         'teachers.approved': 'অনুমোদিত',
@@ -381,6 +384,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'teachers.add_new': 'নতুন শিক্ষক যোগ করুন',
         'teachers.add_desc': 'সিস্টেমে একজন নতুন শিক্ষক যোগ করুন',
         'teachers.update_info': 'শিক্ষকের তথ্য আপডেট করুন',
+        'teachers.edit_desc': 'শিক্ষকের তথ্য সম্পাদনা করুন',
 
         // Attendance
         'attendance.title': 'উপস্থিতি',
@@ -574,22 +578,6 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.coaching_center': 'কোচিং সেন্টার',
         'receipts.print': 'প্রিন্ট',
 
-        // Plan
-        'plan.popular': 'সর্বাধিক জনপ্রিয়',
-        'plan.free_trial': 'বিনামূল্যে ট্রায়াল',
-        'plan.free': 'বিনামূল্যে',
-        'plan.month': 'মাস',
-        'plan.monthly': 'মাসিক',
-        'plan.year': 'বছর',
-        'plan.yearly': 'বার্ষিক',
-        'plan.limits': 'সীমা',
-        'plan.includes': 'অন্তর্ভুক্ত',
-        'plan.students': 'জন স্টুডেন্ট',
-        'plan.staff': 'জন স্টাফ',
-        'plan.batches': 'টি ব্যাচ',
-        'plan.unlimited_students': 'অসীম স্টুডেন্ট',
-        'plan.unlimited_staff': 'অসীম স্টাফ',
-        'plan.unlimited_batches': 'অসীম ব্যাচ',
 
         // Payment
         'payment.success_title': 'পেমেন্ট সফল হয়েছে',
@@ -784,21 +772,24 @@ export const translations: Record<Locale, Record<string, string>> = {
         'auth.or': 'অথবা',
 
         // Actions
-        'actions.save': 'সংরক্ষণ',
+        'actions.save': 'সংরক্ষণ করুন',
         'actions.saving': 'সংরক্ষণ হচ্ছে...',
-        'actions.cancel': 'বাতিল',
-        'actions.edit': 'আপডেট',
-        'actions.update': 'আপডেট',
-        'actions.processing': 'প্রক্রিয়াকরণ হচ্ছে...',
         'actions.create': 'তৈরি করুন',
+        'actions.creating': 'তৈরি হচ্ছে...',
+        'actions.update': 'আপডেট করুন',
+        'actions.updating': 'আপডেট হচ্ছে...',
+        'actions.edit': 'এডিট',
         'actions.delete': 'মুছুন',
+        'actions.deleting': 'মুছে ফেলা হচ্ছে...',
+        'actions.cancel': 'বাতিল',
+        'actions.back': 'ফিরে যান',
+        'actions.search': 'অনুসন্ধান',
         'actions.view': 'দেখুন',
         'actions.view_all': 'সব দেখুন',
-        'actions.search': 'অনুসন্ধান',
+        'actions.processing': 'প্রক্রিয়াধীন...',
         'actions.export_csv': 'এক্সপোর্ট',
         'actions.import': 'ইম্পোর্ট',
         'actions.complete': 'সম্পন্ন',
-        'actions.back': 'পিছনে',
 
         // Super Admin
         'super_admin.platform_dashboard': 'প্ল্যাটফর্ম ড্যাশবোর্ড',
@@ -904,7 +895,6 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.owner_login_activity': 'মালিকদের লগইন কার্যক্রম',
         'super_admin.no_active_owners': 'সাম্প্রতিকে কোনো মালিক সক্রিয় হননি।',
         'super_admin.active_payments': 'সফল',
-        'super_admin.no_plan': 'কোনো প্ল্যান নেই',
         'super_admin.all_payments_description': 'সমস্ত কোচিং সেন্টারের পেমেন্ট',
         'super_admin.all_contacts_description': 'যোগাযোগ ফর্মের বার্তা',
         'super_admin.name': 'নাম',
@@ -929,6 +919,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'errors.generic_message': 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে।',
         'errors.back_to_dashboard': 'ড্যাশবোর্ডে ফিরে যান',
         'errors.go_home': 'হোম পেজে যান',
+
 
         // Confirm Dialogs
         'confirm.delete': 'মুছুন',
@@ -1305,6 +1296,9 @@ export const translations: Record<Locale, Record<string, string>> = {
         'teachers.avatar': 'Profile Picture',
         'teachers.avatar_hint': 'JPG, PNG or GIF — max 2MB',
         'teachers.select_role': 'Select a role',
+        'teachers.account_info': 'Account Info',
+        'teachers.access': 'Access',
+        'teachers.security': 'Security',
         'teachers.phone': 'Phone',
         'teachers.status': 'Status',
         'teachers.approved': 'Approved',
@@ -1369,6 +1363,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'teachers.add_new': 'Add a new teacher',
         'teachers.add_desc': 'Add a new teacher to the system',
         'teachers.update_info': 'Update teacher information',
+        'teachers.edit_desc': 'Edit teacher information',
+
 
         // Users
         'users.title': 'Users',
@@ -1760,19 +1756,22 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Actions
         'actions.save': 'Save',
         'actions.saving': 'Saving...',
-        'actions.cancel': 'Cancel',
-        'actions.edit': 'Edit',
-        'actions.update': 'Update',
-        'actions.processing': 'Processing...',
         'actions.create': 'Create',
+        'actions.creating': 'Creating...',
+        'actions.update': 'Update',
+        'actions.updating': 'Updating...',
+        'actions.edit': 'Edit',
         'actions.delete': 'Delete',
+        'actions.deleting': 'Deleting...',
+        'actions.cancel': 'Cancel',
+        'actions.back': 'Back',
+        'actions.search': 'Search',
         'actions.view': 'View',
         'actions.view_all': 'View all',
-        'actions.search': 'Search',
+        'actions.processing': 'Processing...',
         'actions.export_csv': 'Export',
         'actions.import': 'Import',
         'actions.complete': 'Complete',
-        'actions.back': 'Back',
 
         // Super Admin
         'super_admin.platform_dashboard': 'Platform Dashboard',
@@ -1878,7 +1877,6 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.active_payments': 'Successful',
         'super_admin.owner_login_activity': 'Owner Login Activity',
         'super_admin.no_active_owners': 'No owners active recently.',
-        'super_admin.active_payments': 'Successful',
         'super_admin.all_payments_description': 'All transactions across coaching centers',
         'super_admin.all_contacts_description': 'Messages submitted through the contact form',
         'super_admin.name': 'Name',

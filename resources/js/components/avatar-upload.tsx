@@ -1,6 +1,7 @@
 import { X, User } from 'lucide-react';
 import { useRef, useState } from 'react';
 import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
 type AvatarUploadProps = {
@@ -45,12 +46,14 @@ export function AvatarUpload({
 
     return (
         <div className="space-y-2">
-            <div className="flex flex-col items-center gap-4">
-                <div className="relative">
+            <Label>{label}</Label>
+            <div className="flex items-center gap-4">
+                {/* Avatar circle */}
+                <div className="relative shrink-0">
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex size-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-muted-foreground/25 bg-muted transition-colors hover:border-muted-foreground/50"
+                        className="flex size-20 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-primary/40 bg-muted transition-colors hover:border-primary hover:bg-muted/80"
                     >
                         {preview ? (
                             <img
@@ -59,14 +62,14 @@ export function AvatarUpload({
                                 className="size-full object-cover"
                             />
                         ) : (
-                            <User className="size-8 text-muted-foreground/50" />
+                            <User className="size-8 text-muted-foreground" />
                         )}
                     </button>
                     {preview && (
                         <button
                             type="button"
                             onClick={removeAvatar}
-                            className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground"
+                            className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground shadow"
                         >
                             <X className="size-3" />
                         </button>
@@ -79,8 +82,18 @@ export function AvatarUpload({
                         className="hidden"
                     />
                 </div>
-                <div className="space-y-2 text-center">
-                    <Label>{label}</Label>
+
+                {/* Text */}
+                <div className="space-y-1">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs"
+                        onClick={() => fileInputRef.current?.click()}
+                    >
+                        {preview ? 'Change Photo' : 'Upload Photo'}
+                    </Button>
                     {hint && (
                         <p className="text-xs text-muted-foreground">{hint}</p>
                     )}
