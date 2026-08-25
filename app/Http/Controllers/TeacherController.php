@@ -134,8 +134,11 @@ public function show(User $teacher): Response
                 'active_batches' => $activeBatches,
                 'total_students' => $totalStudents,
             ],
+            'roles' => \App\Models\Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get(['id', 'name', 'slug']),
+            'branches' => \App\Models\Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
+
 
     public function edit(User $teacher): Response
     {
