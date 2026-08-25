@@ -1,13 +1,16 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
+    BookOpen,
+    CheckCircle,
     Download,
     EllipsisVertical,
-    PenLine,
-    Trash2,
-    Mail,
-    Phone,
     Layers,
+    Mail,
+    PenLine,
+    Phone,
+    Trash2,
+    Users,
     Calendar,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -337,7 +340,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     </Card>
                     <Card>
                         <CardContent className="flex items-center gap-3 p-4">
-                            <Calendar className="size-5 shrink-0 text-muted-foreground" />
+                            <BookOpen className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
                                 <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {stats.active_batches}
@@ -350,7 +353,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     </Card>
                     <Card>
                         <CardContent className="flex items-center gap-3 p-4">
-                            <Mail className="size-5 shrink-0 text-muted-foreground" />
+                            <Users className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
                                 <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {stats.total_students}
@@ -363,7 +366,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     </Card>
                     <Card>
                         <CardContent className="flex items-center gap-3 p-4">
-                            <Phone className="size-5 shrink-0 text-muted-foreground" />
+                            <CheckCircle className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
                                 <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {teacher.assigned_batches_count > 0
