@@ -75,7 +75,8 @@ class User extends Authenticatable implements PasskeyUser
     {
         return $this->belongsToMany(Batch::class, 'teacher_batch', 'teacher_id', 'batch_id')
             ->withoutGlobalScope('tenant')
-            ->where('batches.tenant_id', $this->tenant_id)
+            ->withoutGlobalScope('branch')
+            ->where('batches.tenant_id', app()->bound('tenant_id') ? app('tenant_id') : $this->tenant_id)
             ->withPivot('assigned_at')
             ->withTimestamps();
     }
