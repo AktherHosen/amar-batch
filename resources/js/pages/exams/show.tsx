@@ -537,7 +537,6 @@ export default function ExamsShow({
                         <DataTable
                             columns={columns}
                             data={displayStudents}
-                            showPagination={false}
                             searchable
                             searchPlaceholder={t('exams.student') + '...'}
                             emptyMessage={t('exams.no_students')}

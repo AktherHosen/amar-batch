@@ -96,11 +96,20 @@ class BatchController extends Controller
     {
         $this->authorize('view', $batch);
 
-        $batch->load(['enrollments.student.coachingClass', 'teachers', 'history.student', 'history.user']);
+        $batch->load([
+            'enrollments.student.coachingClass',
+            'teachers',
+            'history' => fn ($q) => $q->with('student', 'user')->latest()->take(200),
+        ]);
 
         $tenantId = $request->user()->tenant_id;
         $teachers = User::where('role', 'teacher')->where('tenant_id', $tenantId)->get();
-        $students = Student::with('coachingClass')->where('status', 'active')->where('tenant_id', $tenantId)->orderBy('name')->get();
+        $students = Student::with('coachingClass')
+            ->where('status', 'active')
+            ->where('tenant_id', $tenantId)
+            ->orderBy('name')
+            ->take(500)
+            ->get();
 
         $enrolledStudentIds = Enrollment::where('status', 'active')
             ->where('batch_id', $batch->id)

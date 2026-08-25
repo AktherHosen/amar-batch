@@ -358,7 +358,6 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                             <DataTable
                                 columns={subscriptionColumns}
                                 data={subscriptionHistory}
-                                showPagination={false}
                                 total={subscriptionHistory.length}
                                 itemName="subscriptions"
                                 emptyMessage="No subscription history."

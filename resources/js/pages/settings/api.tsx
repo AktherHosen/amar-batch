@@ -279,7 +279,6 @@ export default function ApiSettings({ tokens, filters }: PageProps) {
                         <DataTable
                             columns={columns}
                             data={tokens}
-                            showPagination={false}
                             total={tokens.length}
                             itemName="tokens"
                             emptyMessage="No API tokens yet."

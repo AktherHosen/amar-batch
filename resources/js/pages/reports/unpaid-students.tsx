@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import Pagination from '@/components/pagination';
 import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,8 +33,16 @@ type UnpaidStudent = {
     batches: { id: number; name: string }[];
 };
 
+type PaginatedStudents = {
+    data: UnpaidStudent[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    per_page: number;
+};
+
 type PageProps = {
-    students: UnpaidStudent[];
+    students: PaginatedStudents;
     batches: { id: number; name: string }[];
     monthNames: Record<number, string>;
     filters: {
@@ -88,7 +97,7 @@ export default function UnpaidStudentsReport({
         router.get(reports.unpaidStudents.url(), {}, { preserveState: true });
     };
 
-    const totalDue = students.reduce((sum, s) => sum + s.default_fee, 0);
+    const totalDue = students.data.reduce((sum, s) => sum + s.default_fee, 0);
 
     return (
         <>
@@ -170,7 +179,7 @@ export default function UnpaidStudentsReport({
                         <div className="mb-4 flex flex-wrap gap-3">
                             <div className="flex items-center gap-2">
                                 <Badge variant="outline">
-                                    {students.length} {t('reports.unpaid_students_count')}
+                                    {students.total} {t('reports.unpaid_students_count')}
                                 </Badge>
                             </div>
                             <div className="flex items-center gap-2">

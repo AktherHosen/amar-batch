@@ -386,7 +386,6 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <DataTable
                             columns={columns}
                             data={teacher.assigned_batches ?? []}
-                            showPagination={false}
                             searchable
                             searchPlaceholder={t('batches.title') + '...'}
                             emptyMessage={t('batches.title')}

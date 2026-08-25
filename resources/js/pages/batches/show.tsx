@@ -851,7 +851,6 @@ export default function BatchesShow({
                                 <DataTable
                                     columns={teacherColumns}
                                     data={batch.teachers}
-                                    showPagination={false}
                                     searchable
                                     searchPlaceholder={
                                         t('teachers.title') + '...'
@@ -903,7 +902,6 @@ export default function BatchesShow({
                         <DataTable
                             columns={enrollmentColumns}
                             data={batch.enrollments}
-                            showPagination={false}
                             searchable
                             searchPlaceholder={t('students.name') + '...'}
                             emptyMessage={t('batches.enrolled')}
@@ -962,7 +960,6 @@ export default function BatchesShow({
                             <DataTable
                                 columns={historyColumns}
                                 data={batch.history}
-                                showPagination={false}
                                 searchable
                                 searchPlaceholder={t('actions.search') + '...'}
                                 emptyMessage="No history records"

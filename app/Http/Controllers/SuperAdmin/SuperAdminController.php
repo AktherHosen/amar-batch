@@ -79,7 +79,7 @@ class SuperAdminController extends Controller
                 ->orWhere('txid', 'like', "%{$search}%");
         }
 
-        $payments = $query->latest()->paginate(15)->withQueryString();
+        $payments = $query->latest()->paginate(10)->withQueryString();
 
         $stats = [
             'total' => Payment::count(),
@@ -130,7 +130,7 @@ class SuperAdminController extends Controller
         $payments = Payment::where('tenant_id', $tenant->id)
             ->with('plan')
             ->latest()
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         $subscriptionHistory = Subscription::where('tenant_id', $tenant->id)

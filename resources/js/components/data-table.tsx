@@ -423,6 +423,37 @@ return {};
                         baseUrl={baseUrl ?? ''}
                         preserveParams={preserveParams}
                     />
+                ) : showPagination &&
+                  !baseUrl &&
+                  !onPaginationChange &&
+                  table.getPageCount() > 1 ? (
+                    <div className="flex w-full items-center justify-between">
+                        <div className="text-sm text-muted-foreground">
+                            {data.length} {itemName}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                                Page {table.getState().pagination.pageIndex + 1} of{' '}
+                                {table.getPageCount()}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => table.previousPage()}
+                                disabled={!table.getCanPreviousPage()}
+                            >
+                                Previous
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => table.nextPage()}
+                                disabled={!table.getCanNextPage()}
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    </div>
                 ) : (
                     total > 0 && (
                         <div className="text-sm text-muted-foreground">

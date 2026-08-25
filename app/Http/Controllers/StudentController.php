@@ -117,7 +117,13 @@ class StudentController extends Controller
     {
         $this->authorize('view', $student);
 
-        $student->load(['coachingClass', 'enrollments.batch', 'feeStatuses.batch', 'examResults.exam.batch', 'batchHistories.batch', 'batchHistories.user']);
+        $student->load([
+            'coachingClass',
+            'enrollments' => fn ($q) => $q->with('batch')->latest(),
+            'feeStatuses' => fn ($q) => $q->with('batch')->latest()->take(100),
+            'examResults' => fn ($q) => $q->with('exam.batch')->latest()->take(100),
+            'batchHistories' => fn ($q) => $q->with('batch', 'user')->latest()->take(100),
+        ]);
 
         $attendanceSummary = Attendance::where('student_id', $student->id)
             ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')

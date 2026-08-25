@@ -30,7 +30,7 @@ class ContactMessageController extends Controller
             $query->unread();
         }
 
-        $messages = $query->latest()->paginate(15)->withQueryString();
+        $messages = $query->latest()->paginate(10)->withQueryString();
 
         $stats = [
             'total' => ContactMessage::count(),

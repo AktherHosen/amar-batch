@@ -246,16 +246,17 @@ class ReportController extends Controller
             $query->whereHas('batches', fn ($q) => $q->where('batches.id', $batchId));
         }
 
-        $students = $query->orderBy('name')->get()->map(function ($student) {
-            return [
+        $students = $query->orderBy('name')
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn ($student) => [
                 'id' => $student->id,
                 'name' => $student->name,
                 'phone' => $student->phone,
                 'coaching_class' => $student->coachingClass?->name,
                 'default_fee' => $student->coachingClass?->default_fee ?? 0,
                 'batches' => $student->batches->map(fn ($b) => ['id' => $b->id, 'name' => $b->name]),
-            ];
-        });
+            ]);
 
         $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get(['id', 'name']);
         $monthNames = [

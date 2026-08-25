@@ -264,7 +264,6 @@ return t('users.inactive');
                         <DataTable
                             columns={columns}
                             data={user.assigned_batches ?? []}
-                            showPagination={false}
                             searchable
                             searchPlaceholder={t('batches.title') + '...'}
                             emptyMessage={t('users.no_batches')}

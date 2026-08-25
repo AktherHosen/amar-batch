@@ -791,7 +791,6 @@ export default function StudentsShow({
                             <DataTable
                                 columns={enrollmentColumns}
                                 data={student.enrollments ?? []}
-                                showPagination={false}
                                 searchable
                                 searchPlaceholder={
                                     t('batches.enrolled') + '...'
@@ -845,7 +844,6 @@ export default function StudentsShow({
                         <DataTable
                             columns={attendanceColumns}
                             data={attendanceRows}
-                            showPagination={false}
                             searchable
                             searchPlaceholder={t('attendance.title') + '...'}
                             emptyMessage={t('students.no_attendance')}
@@ -900,7 +898,6 @@ export default function StudentsShow({
                             <DataTable
                                 columns={examColumns}
                                 data={student.examResults}
-                                showPagination={false}
                                 searchable
                                 searchPlaceholder={t('exams.title') + '...'}
                                 emptyMessage={t('exams.no_results')}
@@ -961,7 +958,6 @@ export default function StudentsShow({
                                 <DataTable
                                     columns={batchHistoryColumns}
                                     data={student.batchHistories}
-                                    showPagination={false}
                                     searchable
                                     searchPlaceholder={
                                         t('batches.history') + '...'
@@ -1045,7 +1041,6 @@ export default function StudentsShow({
                                       )
                                     : []
                             }
-                            showPagination={false}
                             searchable
                             searchPlaceholder={
                                 t('fees.payment_history') + '...'

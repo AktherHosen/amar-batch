@@ -564,7 +564,6 @@ params.batch_id = newBatchId ?? batchId;
                             columns={columns}
                             data={filteredBatchPerformance}
                             loading={refreshing}
-                            showPagination={false}
                             total={filteredBatchPerformance.length}
                             itemName="batches"
                             emptyMessage={t('reports.no_batches')}

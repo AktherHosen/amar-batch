@@ -206,7 +206,6 @@ export default function SuperAdminDashboard({ stats, recentPayments, ownerActivi
                         <DataTable
                             columns={recentPaymentsColumns}
                             data={recentPayments}
-                            showPagination={false}
                             enableColumnVisibility={false}
                             total={recentPayments.length}
                             itemName="payments"

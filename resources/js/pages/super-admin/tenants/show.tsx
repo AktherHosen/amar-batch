@@ -289,7 +289,6 @@ export default function TenantShow({
                         <DataTable
                             columns={columns}
                             data={recentPayments}
-                            showPagination={false}
                             enableColumnVisibility={false}
                             total={recentPayments.length}
                             itemName="payments"
