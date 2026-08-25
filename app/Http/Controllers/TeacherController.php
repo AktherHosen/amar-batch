@@ -134,8 +134,11 @@ public function show(User $teacher): Response
                 'active_batches' => $activeBatches,
                 'total_students' => $totalStudents,
             ],
+            'roles' => \App\Models\Role::query()->where('slug', '!=', 'owner')->orderBy('name')->get(['id', 'name', 'slug']),
+            'branches' => \App\Models\Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
+
 
     public function edit(User $teacher): Response
     {
@@ -183,6 +186,14 @@ public function destroy(Request $request, User $teacher): RedirectResponse
         }
 
         if ($teacher->role === 'inactive') {
+            // Check plan limit before reactivating
+            $planLimits = new PlanLimitsPolicy;
+            if (! $planLimits->createStaff($request->user())) {
+                return to_route('subscription.index')->with('toast', [
+                    'type' => 'warning',
+                    'message' => 'You have reached the staff limit for your current plan. Please upgrade to reactivate this staff member.',
+                ]);
+            }
             $teacher->update(['role' => 'teacher']);
             return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Staff member reactivated successfully.']);
         }
@@ -246,11 +257,25 @@ public function reject(Request $request, User $teacher): RedirectResponse
             abort(403);
         }
 
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createStaff($request->user())) {
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the staff limit for your current plan. Please upgrade to import more staff.',
+            ]);
+        }
+
         $rows = $request->input('rows', []);
         $imported = 0;
         $skipped = 0;
 
         foreach ($rows as $row) {
+            // Re-check limit before each staff member to respect exact cap
+            if (! $planLimits->createStaff($request->user())) {
+                $skipped += count($rows) - $imported - $skipped;
+                break;
+            }
+
             try {
                 User::create([
                     'name' => $row['name'] ?? '',
@@ -268,7 +293,7 @@ public function reject(Request $request, User $teacher): RedirectResponse
 
         $message = $imported . ' staff members imported successfully.';
         if ($skipped > 0) {
-            $message .= " {$skipped} skipped (duplicate or invalid).";
+            $message .= " {$skipped} skipped (plan limit reached or invalid).";
         }
 
         return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => $message]);

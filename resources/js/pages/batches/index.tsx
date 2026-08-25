@@ -534,7 +534,13 @@ export default function BatchesIndex({
                             {t('actions.cancel')}
                         </Button>
                         <Button type="submit" form="batch-form" disabled={processing}>
-                            {editingBatch ? t('actions.update') : t('actions.create')}
+                            {processing
+                                ? editingBatch
+                                    ? t('actions.updating')
+                                    : t('actions.creating')
+                                : editingBatch
+                                  ? t('actions.update')
+                                  : t('actions.create')}
                         </Button>
                     </SheetFooter>
                 </SheetContent>

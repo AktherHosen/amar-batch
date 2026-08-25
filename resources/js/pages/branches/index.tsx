@@ -447,7 +447,13 @@ export default function BranchesIndex({
                             {t('actions.cancel')}
                         </Button>
                         <Button type="submit" disabled={processing} onClick={handleSubmit}>
-                            {editingItem ? t('actions.update') : t('actions.create')}
+                            {processing
+                                ? editingItem
+                                    ? t('actions.updating')
+                                    : t('actions.creating')
+                                : editingItem
+                                  ? t('actions.update')
+                                  : t('actions.create')}
                         </Button>
                     </SheetFooter>
                 </SheetContent>

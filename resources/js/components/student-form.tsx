@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import {
     Camera,
     X,
@@ -12,6 +12,7 @@ import {
     Loader2,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { FormActions } from '@/components/form-actions';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     Select,
     SelectContent,
@@ -153,36 +155,62 @@ export default function StudentForm({
         onSubmit(formData);
     };
 
-    const handleCreateClass = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleCreateClass = async (e?: React.SyntheticEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         setClassCreating(true);
         setClassErrors({});
 
-        router.post(
-            '/coaching-classes',
-            { name: newClassName, default_fee: newClassFee },
-            {
-                preserveScroll: true,
-                only: [],
-                onSuccess: () => {
-                    const newItem = {
-                        id: Date.now(),
-                        name: newClassName,
-                        default_fee: Number(newClassFee),
-                    };
-                    setClasses((prev) => [...prev, newItem]);
-                    setData('coaching_class_id', String(newItem.id));
-                    setNewClassName('');
-                    setNewClassFee('');
-                    setClassModalOpen(false);
-                    setClassCreating(false);
+        try {
+            const xsrfToken = decodeURIComponent(
+                document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '',
+            );
+
+            const response = await fetch('/coaching-classes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-XSRF-TOKEN': xsrfToken,
                 },
-                onError: (errors) => {
-                    setClassErrors(errors as Record<string, string>);
-                    setClassCreating(false);
-                },
-            },
-        );
+                body: JSON.stringify({
+                    name: newClassName,
+                    default_fee: newClassFee ? Number(newClassFee) : '',
+                }),
+            });
+
+            const resData = await response.json();
+
+            if (!response.ok) {
+                if (response.status === 422 && resData.errors) {
+                    const formattedErrors: Record<string, string> = {};
+                    Object.entries(resData.errors).forEach(([k, msgs]: [string, any]) => {
+                        formattedErrors[k] = Array.isArray(msgs)
+                            ? msgs[0]
+                            : String(msgs);
+                    });
+                    setClassErrors(formattedErrors);
+                } else {
+                    toast.error(resData.message || 'Failed to create class.');
+                }
+                return;
+            }
+
+            const createdClass = resData.class || resData;
+            setClasses((prev) => [...prev, createdClass]);
+            setData('coaching_class_id', String(createdClass.id));
+            setNewClassName('');
+            setNewClassFee('');
+            setClassModalOpen(false);
+            toast.success(resData.message || 'Class created successfully.');
+        } catch {
+            toast.error('An error occurred while creating class.');
+        } finally {
+            setClassCreating(false);
+        }
     };
 
     return (
@@ -305,27 +333,25 @@ export default function StudentForm({
                         <Label htmlFor="coaching_class_id">
                             {t('students.class')} *
                         </Label>
-                        <div className="flex gap-1.5">
-                            <Select
+                        <div className="flex gap-1.5 items-center">
+                            <SearchableSelect
+                                options={classes.map((cls) => ({
+                                    value: String(cls.id),
+                                    label: cls.name,
+                                    description: cls.default_fee
+                                        ? `Default Fee: ৳${cls.default_fee}`
+                                        : undefined,
+                                    searchText: cls.name,
+                                }))}
                                 value={data.coaching_class_id}
                                 onValueChange={(value) =>
                                     setData('coaching_class_id', value)
                                 }
-                            >
-                                <SelectTrigger className="flex-1">
-                                    <SelectValue placeholder="Select class" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {classes.map((cls) => (
-                                        <SelectItem
-                                            key={cls.id}
-                                            value={String(cls.id)}
-                                        >
-                                            {cls.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                placeholder={t('students.class') || 'Select class'}
+                                emptyText="No classes available"
+                                noResultsText="No classes found"
+                                className="w-full flex-1"
+                            />
                             <Dialog
                                 open={classModalOpen}
                                 onOpenChange={setClassModalOpen}
@@ -350,8 +376,14 @@ export default function StudentForm({
                                             leaving this form.
                                         </DialogDescription>
                                     </DialogHeader>
-                                    <form
-                                        onSubmit={handleCreateClass}
+                                    <div
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleCreateClass(e);
+                                            }
+                                        }}
                                         className="space-y-4"
                                     >
                                         <div className="space-y-2">
@@ -405,7 +437,8 @@ export default function StudentForm({
                                                 Cancel
                                             </Button>
                                             <Button
-                                                type="submit"
+                                                type="button"
+                                                onClick={handleCreateClass}
                                                 disabled={classCreating}
                                             >
                                                 {classCreating && (
@@ -414,7 +447,7 @@ export default function StudentForm({
                                                 Create
                                             </Button>
                                         </DialogFooter>
-                                    </form>
+                                    </div>
                                 </DialogContent>
                             </Dialog>
                         </div>

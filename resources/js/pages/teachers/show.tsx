@@ -1,21 +1,21 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
+    BookOpen,
+    CheckCircle,
     Download,
     EllipsisVertical,
+    Layers,
     PenLine,
     Trash2,
-    Mail,
-    Phone,
-    Layers,
-    Calendar,
+    Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
-import Heading from '@/components/heading';
+import type { DataTableProps } from '@/components/data-table';
+import TeacherForm from '@/components/teacher-form';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
 import { generateTablePDF } from '@/lib/pdf-table';
 import { isOwner } from '@/lib/role';
@@ -44,6 +53,9 @@ type Batch = {
     enrollments_count: number;
     status: string;
 };
+
+type Role = { id: number; name: string; slug: string };
+type Branch = { id: number; name: string };
 
 type Teacher = {
     id: number;
@@ -64,12 +76,14 @@ type TeachersShowProps = {
         active_batches: number;
         total_students: number;
     };
+    roles: Role[];
+    branches: Branch[];
 };
 
 function formatDate(dateStr: string | null): string {
     if (!dateStr) {
-return '-';
-}
+        return '-';
+    }
 
     const d = new Date(dateStr);
 
@@ -80,12 +94,14 @@ return '-';
     });
 }
 
-export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
+export default function TeachersShow({ teacher, stats, roles, branches }: TeachersShowProps) {
     const { t } = useLocale();
     const { auth, tenant } = usePage<PageProps>().props;
     const primaryColor = tenant?.primary_color || '#6366f1';
     const isAdmin = isOwner(auth.user);
     const [deleteDialog, setDeleteDialog] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [processing, setProcessing] = useState(false);
 
     const handleDelete = () => {
         setDeleteDialog(true);
@@ -95,6 +111,21 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
         router.delete(teachers.destroy(teacher.id));
         toast.success(t('toast.deactivated_successfully'));
         setDeleteDialog(false);
+    };
+
+    const handleEditSubmit = (data: FormData) => {
+        data.append('_method', 'PUT');
+        setProcessing(true);
+        router.post(teachers.update(teacher.id), data, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditOpen(false);
+                setProcessing(false);
+            },
+            onError: () => {
+                setProcessing(false);
+            },
+        });
     };
 
     const columns = (() => {
@@ -207,12 +238,47 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     </div>
                     {isAdmin && (
                         <div className="flex shrink-0 gap-2">
-                            <Link href={teachers.edit(teacher.id)}>
-                                <Button variant="outline" className="h-9">
-                                    <PenLine className="size-4" />
-                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
-                                </Button>
-                            </Link>
+                            {/* Edit Sheet */}
+                            <Sheet open={editOpen} onOpenChange={setEditOpen}>
+                                <SheetTrigger asChild>
+                                    <Button variant="outline" className="h-9">
+                                        <PenLine className="size-4" />
+                                        <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                                    <SheetHeader>
+                                        <SheetTitle>{t('actions.edit')} {teacher.name}</SheetTitle>
+                                        <SheetDescription>
+                                            {t('teachers.add_desc')}
+                                        </SheetDescription>
+                                    </SheetHeader>
+                                    <div className="px-4 pb-4">
+                                        <TeacherForm
+                                            teacher={teacher}
+                                            roles={roles}
+                                            branches={branches}
+                                            onSubmit={handleEditSubmit}
+                                            processing={processing}
+                                            errors={(usePage().props.errors as Record<string, string>) ?? {}}
+                                            hideActions
+                                        />
+                                    </div>
+                                    <SheetFooter>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => setEditOpen(false)}
+                                        >
+                                            {t('actions.cancel')}
+                                        </Button>
+                                        <Button type="submit" form="teacher-form" disabled={processing}>
+                                            {processing ? t('actions.updating') : t('actions.update')}
+                                        </Button>
+                                    </SheetFooter>
+                                </SheetContent>
+                            </Sheet>
+
                             <Button
                                 variant="destructive"
                                 className="h-9"
@@ -337,7 +403,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     </Card>
                     <Card>
                         <CardContent className="flex items-center gap-3 p-4">
-                            <Calendar className="size-5 shrink-0 text-muted-foreground" />
+                            <BookOpen className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
                                 <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {stats.active_batches}
@@ -350,7 +416,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     </Card>
                     <Card>
                         <CardContent className="flex items-center gap-3 p-4">
-                            <Mail className="size-5 shrink-0 text-muted-foreground" />
+                            <Users className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
                                 <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {stats.total_students}
@@ -363,7 +429,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                     </Card>
                     <Card>
                         <CardContent className="flex items-center gap-3 p-4">
-                            <Phone className="size-5 shrink-0 text-muted-foreground" />
+                            <CheckCircle className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
                                 <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {teacher.assigned_batches_count > 0

@@ -1,23 +1,22 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
+    CheckCircle,
     EllipsisVertical,
     Eye,
     PenLine,
     Trash2,
-    CheckCircle,
     XCircle,
-    Plus,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
 import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
+import TeacherForm from '@/components/teacher-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -26,8 +25,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -43,7 +40,6 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
-import { PasswordInput } from '@/components/ui/password-input';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
 import { isOwner } from '@/lib/role';
@@ -56,6 +52,7 @@ type TeacherRow = {
     role: string;
     is_approved: boolean;
     assigned_batches_count: number;
+    avatar: string | null;
     branch: { id: number; name: string } | null;
 };
 
@@ -148,55 +145,36 @@ return t('teachers.inactive');
     const [editingTeacher, setEditingTeacher] = useState<TeacherRow | null>(null);
     const [processing, setProcessing] = useState(false);
 
-    const { data, setData, post, put, errors, reset } = useForm({
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
-        role: 'teacher',
-        branch_id: '',
-    });
-
     const handleCreate = () => {
-        reset();
         setEditingTeacher(null);
         setSheetOpen(true);
     };
 
     const handleEdit = (teacher: TeacherRow) => {
         setEditingTeacher(teacher);
-        setData({
-            name: teacher.name,
-            email: teacher.email,
-            password: '',
-            role: teacher.role === 'inactive' ? 'teacher' : teacher.role,
-            branch_id: teacher.branch?.id ? String(teacher.branch.id) : '',
-        });
         setSheetOpen(true);
     };
 
-    const handleSheetSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSheetSubmit = (formData: FormData) => {
         setProcessing(true);
 
         if (editingTeacher) {
-            put(teachers.update(editingTeacher.id), {
+            formData.append('_method', 'PUT');
+            router.post(teachers.update(editingTeacher.id), formData, {
                 preserveScroll: true,
                 onSuccess: () => {
                     setSheetOpen(false);
                     setEditingTeacher(null);
-                    reset();
                     toast.success(t('toast.updated_successfully'));
                     router.reload({ only: ['teachers'] });
                 },
                 onFinish: () => setProcessing(false),
             });
         } else {
-            post(teachers.store(), {
+            router.post(teachers.store(), formData, {
                 preserveScroll: true,
                 onSuccess: () => {
                     setSheetOpen(false);
-                    reset();
                     toast.success(t('toast.created_successfully'));
                     router.reload({ only: ['teachers'] });
                 },
@@ -651,7 +629,7 @@ return;
                         <SheetTitle>
                             {editingTeacher
                                 ? `${t('actions.edit')} ${editingTeacher.name}`
-                                : t('actions.create')}
+                                : t('teachers.create')}
                         </SheetTitle>
                         <SheetDescription>
                             {editingTeacher
@@ -659,106 +637,26 @@ return;
                                 : t('teachers.add_desc')}
                         </SheetDescription>
                     </SheetHeader>
-                    <form onSubmit={handleSheetSubmit} className="space-y-4 p-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="sheet-name">{t('teachers.name')} *</Label>
-                            <Input
-                                id="sheet-name"
-                                value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
-                                placeholder={t('teachers.name_placeholder')}
-                            />
-                            <InputError message={errors.name} />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="sheet-email">{t('teachers.email')} *</Label>
-                            <Input
-                                id="sheet-email"
-                                type="email"
-                                value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
-                                placeholder={t('teachers.email_placeholder')}
-                            />
-                            <InputError message={errors.email} />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="sheet-password">
-                                {t('teachers.password')}{' '}
-                                {editingTeacher ? `(${t('teachers.password_hint')})` : '*'}
-                            </Label>
-                            <PasswordInput
-                                id="sheet-password"
-                                value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
-                                placeholder={t('teachers.password_placeholder')}
-                            />
-                            <InputError message={errors.password} />
-                        </div>
-
-                        {!editingTeacher && (
-                            <div className="space-y-2">
-                                <Label htmlFor="sheet-password_confirmation">
-                                    {t('teachers.confirm_password')} *
-                                </Label>
-                                <PasswordInput
-                                    id="sheet-password_confirmation"
-                                    value={data.password_confirmation}
-                                    onChange={(e) => setData('password_confirmation', e.target.value)}
-                                    placeholder={t('teachers.confirm_password_placeholder')}
-                                />
-                                <InputError message={errors.password_confirmation} />
-                            </div>
-                        )}
-
-                        {roles.length > 0 && (
-                            <div className="space-y-2">
-                                <Label htmlFor="sheet-role">{t('teachers.role')} *</Label>
-                                <Select
-                                    value={data.role}
-                                    onValueChange={(value) => setData('role', value)}
-                                >
-                                    <SelectTrigger id="sheet-role" className="w-full">
-                                        <SelectValue placeholder={t('teachers.select_role')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {roles.map((role) => (
-                                            <SelectItem key={role.id} value={role.slug}>
-                                                {role.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.role} />
-                            </div>
-                        )}
-
-                        {hasMultiBranch && branches.length > 0 && (
-                            <div className="space-y-2">
-                                <Label htmlFor="sheet-branch_id">Branch</Label>
-                                <Select
-                                    value={data.branch_id || 'all'}
-                                    onValueChange={(value) =>
-                                        setData('branch_id', value === 'all' ? '' : value)
-                                    }
-                                >
-                                    <SelectTrigger id="sheet-branch_id" className="w-full">
-                                        <SelectValue placeholder="Select branch" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All branches</SelectItem>
-                                        {branches.map((branch) => (
-                                            <SelectItem key={branch.id} value={String(branch.id)}>
-                                                {branch.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.branch_id} />
-                            </div>
-                        )}
-                    </form>
+                    <div className="px-4 pb-4">
+                        <TeacherForm
+                            key={editingTeacher ? `edit-${editingTeacher.id}` : 'create'}
+                            teacher={editingTeacher ? {
+                                id: editingTeacher.id,
+                                name: editingTeacher.name,
+                                email: editingTeacher.email,
+                                role: editingTeacher.role,
+                                branch_id: editingTeacher.branch?.id ?? null,
+                                avatar: editingTeacher.avatar ?? null,
+                            } : undefined}
+                            roles={roles}
+                            branches={branches}
+                            onSubmit={handleSheetSubmit}
+                            onCancel={() => setSheetOpen(false)}
+                            processing={processing}
+                            errors={(usePage().props.errors as Record<string, string>) ?? {}}
+                            hideActions
+                        />
+                    </div>
                     <SheetFooter>
                         <Button
                             type="button"
@@ -767,8 +665,14 @@ return;
                         >
                             {t('actions.cancel')}
                         </Button>
-                        <Button type="submit" disabled={processing} onClick={handleSheetSubmit}>
-                            {editingTeacher ? t('actions.update') : t('actions.create')}
+                        <Button type="submit" form="teacher-form" disabled={processing}>
+                            {processing
+                                ? editingTeacher
+                                    ? t('actions.updating')
+                                    : t('actions.creating')
+                                : editingTeacher
+                                  ? t('actions.update')
+                                  : t('actions.create')}
                         </Button>
                     </SheetFooter>
                 </SheetContent>
