@@ -1,12 +1,15 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, PenLine, Pencil, Trash2 } from 'lucide-react';
+import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
+import Heading from '@/components/heading';
+import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
+import StudentForm from '@/components/student-form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,8 +26,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import PageActions from '@/components/page-actions';
-import Heading from '@/components/heading';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import students from '@/routes/students';
@@ -79,6 +88,9 @@ export default function StudentsIndex({
         open: boolean;
         item: Student | null;
     }>({ open: false, item: null });
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+    const [processing, setProcessing] = useState(false);
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -102,6 +114,16 @@ export default function StudentsIndex({
         setSearch('');
         setStatus('');
         router.get(students.index(), {}, { preserveState: true });
+    };
+
+    const handleCreate = () => {
+        setEditingStudent(null);
+        setSheetOpen(true);
+    };
+
+    const handleEdit = (student: Student) => {
+        setEditingStudent(student);
+        setSheetOpen(true);
     };
 
     const handleDelete = (student: Student) => {
@@ -163,7 +185,7 @@ export default function StudentsIndex({
             {
                 id: 'name',
                 accessorKey: 'name',
-                header: t('students.name'),
+                header: t('students.info'),
                 enableSorting: true,
                 meta: { sticky: true },
                 cell: ({ row }: any) => {
@@ -180,11 +202,15 @@ export default function StudentsIndex({
                             >
                                 {s.name}
                             </Link>
-                            {className && (
-                                <div className="text-xs text-muted-foreground">
-                                    {className}
-                                </div>
-                            )}
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span className="font-mono">{s.code}</span>
+                                {className && (
+                                    <>
+                                        <span className="text-muted-foreground/50">•</span>
+                                        <span>{className}</span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     );
                 },
@@ -312,11 +338,9 @@ export default function StudentsIndex({
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                     <>
-                                        <DropdownMenuItem asChild>
-                                            <Link href={students.edit(s.id)}>
-                                                <Pencil className="mr-2 size-4" />
+                                        <DropdownMenuItem onClick={() => handleEdit(s)}>
+                                                <PenLine className="mr-2 size-4" />
                                                 {t('actions.edit')}
-                                            </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() => handleDelete(s)}
@@ -359,10 +383,11 @@ export default function StudentsIndex({
                         <PageActions
                             isAdmin={isAdmin}
                             createLabel={t('students.create')}
-                            onCreate={() => router.get(students.create())}
+                            onCreate={handleCreate}
                             exportTitle={t('students.title')}
                             exportFilename="students"
                             exportHeaders={[
+                                t('students.student_id'),
                                 t('students.name'),
                                 t('students.phone'),
                                 t('students.class'),
@@ -370,6 +395,7 @@ export default function StudentsIndex({
                                 t('students.status'),
                             ]}
                             exportRows={pagination.data.map((s) => [
+                                s.code,
                                 s.name,
                                 s.phone || '',
                                 s.coaching_class?.name || '',
@@ -444,6 +470,71 @@ export default function StudentsIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>
+                            {editingStudent ? t('actions.edit') : t('actions.create')}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {editingStudent
+                                ? t('actions.update') + ' student information below.'
+                                : 'Fill in the details to add a new student.'}
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="px-4 pb-4">
+                        <StudentForm
+                            coachingClasses={coachingClasses}
+                            student={editingStudent ?? undefined}
+                            onSubmit={(formData) => {
+                                setProcessing(true);
+                                if (editingStudent) {
+                                    router.post(
+                                        `/students/${editingStudent.id}`,
+                                        {
+                                            _method: 'put',
+                                            ...Object.fromEntries(formData),
+                                        },
+                                        {
+                                            forceFormData: true,
+                                            onFinish: () => setProcessing(false),
+                                            onSuccess: () => {
+                                                setSheetOpen(false);
+                                                toast.success(t('toast.updated_successfully'));
+                                            },
+                                        },
+                                    );
+                                } else {
+                                    router.post('/students', formData, {
+                                        forceFormData: true,
+                                        onFinish: () => setProcessing(false),
+                                        onSuccess: () => {
+                                            setSheetOpen(false);
+                                            toast.success(t('toast.created_successfully'));
+                                        },
+                                    });
+                                }
+                            }}
+                            processing={processing}
+                            errors={{}}
+                            hideActions
+                        />
+                    </div>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSheetOpen(false)}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button type="submit" form="student-form" disabled={processing}>
+                            {editingStudent ? t('actions.update') : t('actions.create')}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
 
             <ConfirmDialog
                 open={deleteDialog.open}

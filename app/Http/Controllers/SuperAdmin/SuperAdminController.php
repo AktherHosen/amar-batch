@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ContactMessage;
 use App\Models\Payment;
-use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,43 +19,49 @@ class SuperAdminController extends Controller
         $stats = [
             'total_tenants' => Tenant::count(),
             'active_tenants' => Tenant::where('is_active', true)->count(),
-            'total_users' => \App\Models\User::count(),
-            'total_students' => \App\Models\Student::count(),
-            'total_batches' => \App\Models\Batch::count(),
-            'active_batches' => \App\Models\Batch::where('status', 'active')->count(),
+            'total_users' => User::count(),
             'total_revenue' => (float) Payment::where('status', 'success')->sum('amount'),
             'active_subscriptions' => Subscription::where('status', 'active')->count(),
             'trial_subscriptions' => Subscription::where('status', 'trial')->count(),
         ];
-
-        $tenantStats = Tenant::withCount(['users', 'students', 'batches'])
-            ->with('subscription.plan')
-            ->latest()
-            ->take(10)
-            ->get();
 
         $recentPayments = Payment::with(['tenant', 'plan'])
             ->latest()
             ->take(10)
             ->get();
 
-        $revenueByPlan = Plan::withCount(['payments as successful_payments' => function ($q) {
-            $q->where('status', 'success');
-        }])
-            ->withSum('payments as total_revenue', 'amount')
-            ->get();
+        $ownerActivity = User::where('role', 'owner')
+            ->with('tenant')
+            ->whereIn('id', function ($query) {
+                $query->select('user_id')
+                    ->from('sessions')
+                    ->where('last_activity', '>', now()->subDays(30)->timestamp)
+                    ->groupBy('user_id');
+            })
+            ->latest('updated_at')
+            ->take(10)
+            ->get()
+            ->map(function ($user) {
+                $lastSession = DB::table('sessions')
+                    ->where('user_id', $user->id)
+                    ->where('last_activity', '>', now()->subDays(30)->timestamp)
+                    ->orderByDesc('last_activity')
+                    ->first();
 
-        $recentContactMessages = ContactMessage::latest()
-            ->take(5)
-            ->get();
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'tenant' => $user->tenant ? ['id' => $user->tenant->id, 'name' => $user->tenant->name] : null,
+                    'last_login_at' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->diffForHumans() : null,
+                    'last_activity' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->toISOString() : null,
+                ];
+            });
 
         return Inertia::render('super-admin/dashboard', [
             'stats' => $stats,
-            'recentTenants' => $tenantStats,
-            'tenantStats' => $tenantStats,
             'recentPayments' => $recentPayments,
-            'revenueByPlan' => $revenueByPlan,
-            'recentContactMessages' => $recentContactMessages,
+            'ownerActivity' => $ownerActivity,
         ]);
     }
 
@@ -73,7 +79,7 @@ class SuperAdminController extends Controller
                 ->orWhere('txid', 'like', "%{$search}%");
         }
 
-        $payments = $query->latest()->paginate(15)->withQueryString();
+        $payments = $query->latest()->paginate(10)->withQueryString();
 
         $stats = [
             'total' => Payment::count(),
@@ -124,7 +130,7 @@ class SuperAdminController extends Controller
         $payments = Payment::where('tenant_id', $tenant->id)
             ->with('plan')
             ->latest()
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         $subscriptionHistory = Subscription::where('tenant_id', $tenant->id)

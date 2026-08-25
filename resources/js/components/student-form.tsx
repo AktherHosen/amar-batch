@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import {
     Camera,
     X,
@@ -8,11 +8,23 @@ import {
     Calendar,
     Shield,
     MapPin,
+    Plus,
+    Loader2,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { FormActions } from '@/components/form-actions';
 import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -39,6 +51,8 @@ type StudentFormProps = {
     onSubmit: (data: FormData) => void;
     processing: boolean;
     errors: Record<string, string>;
+    submitLabel?: string;
+    hideActions?: boolean;
 };
 
 function SectionHeader({
@@ -64,6 +78,8 @@ export default function StudentForm({
     onSubmit,
     processing,
     errors,
+    submitLabel,
+    hideActions,
 }: StudentFormProps) {
     const { t } = useLocale();
     const { data, setData } = useForm({
@@ -90,6 +106,12 @@ export default function StudentForm({
         student?.photo ? `/storage/${student.photo}` : null,
     );
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [classModalOpen, setClassModalOpen] = useState(false);
+    const [newClassName, setNewClassName] = useState('');
+    const [newClassFee, setNewClassFee] = useState('');
+    const [classCreating, setClassCreating] = useState(false);
+    const [classErrors, setClassErrors] = useState<Record<string, string>>({});
+    const [classes, setClasses] = useState(coachingClasses);
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -131,8 +153,40 @@ export default function StudentForm({
         onSubmit(formData);
     };
 
+    const handleCreateClass = (e: React.FormEvent) => {
+        e.preventDefault();
+        setClassCreating(true);
+        setClassErrors({});
+
+        router.post(
+            '/coaching-classes',
+            { name: newClassName, default_fee: newClassFee },
+            {
+                preserveScroll: true,
+                only: [],
+                onSuccess: () => {
+                    const newItem = {
+                        id: Date.now(),
+                        name: newClassName,
+                        default_fee: Number(newClassFee),
+                    };
+                    setClasses((prev) => [...prev, newItem]);
+                    setData('coaching_class_id', String(newItem.id));
+                    setNewClassName('');
+                    setNewClassFee('');
+                    setClassModalOpen(false);
+                    setClassCreating(false);
+                },
+                onError: (errors) => {
+                    setClassErrors(errors as Record<string, string>);
+                    setClassCreating(false);
+                },
+            },
+        );
+    };
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="student-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col items-center gap-4">
                 <div className="relative">
                     <button
@@ -251,26 +305,119 @@ export default function StudentForm({
                         <Label htmlFor="coaching_class_id">
                             {t('students.class')} *
                         </Label>
-                        <Select
-                            value={data.coaching_class_id}
-                            onValueChange={(value) =>
-                                setData('coaching_class_id', value)
-                            }
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select class" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {coachingClasses.map((cls) => (
-                                    <SelectItem
-                                        key={cls.id}
-                                        value={String(cls.id)}
+                        <div className="flex gap-1.5">
+                            <Select
+                                value={data.coaching_class_id}
+                                onValueChange={(value) =>
+                                    setData('coaching_class_id', value)
+                                }
+                            >
+                                <SelectTrigger className="flex-1">
+                                    <SelectValue placeholder="Select class" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {classes.map((cls) => (
+                                        <SelectItem
+                                            key={cls.id}
+                                            value={String(cls.id)}
+                                        >
+                                            {cls.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Dialog
+                                open={classModalOpen}
+                                onOpenChange={setClassModalOpen}
+                            >
+                                <DialogTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="size-9 shrink-0"
                                     >
-                                        {cls.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                                        <Plus className="size-4" />
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>
+                                            Add Coaching Class
+                                        </DialogTitle>
+                                        <DialogDescription>
+                                            Quickly add a new class without
+                                            leaving this form.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <form
+                                        onSubmit={handleCreateClass}
+                                        className="space-y-4"
+                                    >
+                                        <div className="space-y-2">
+                                            <Label htmlFor="new_class_name">
+                                                Name *
+                                            </Label>
+                                            <Input
+                                                id="new_class_name"
+                                                value={newClassName}
+                                                onChange={(e) =>
+                                                    setNewClassName(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g. Nursery, KG, Class 1"
+                                            />
+                                            <InputError
+                                                message={classErrors.name}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="new_class_fee">
+                                                Default Fee *
+                                            </Label>
+                                            <Input
+                                                id="new_class_fee"
+                                                type="number"
+                                                value={newClassFee}
+                                                onChange={(e) =>
+                                                    setNewClassFee(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g. 500"
+                                                min="0"
+                                            />
+                                            <InputError
+                                                message={
+                                                    classErrors.default_fee
+                                                }
+                                            />
+                                        </div>
+                                        <DialogFooter>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    setClassModalOpen(false)
+                                                }
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                disabled={classCreating}
+                                            >
+                                                {classCreating && (
+                                                    <Loader2 className="mr-2 size-4 animate-spin" />
+                                                )}
+                                                Create
+                                            </Button>
+                                        </DialogFooter>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
                         <InputError message={errors.coaching_class_id} />
                     </div>
 
@@ -286,28 +433,6 @@ export default function StudentForm({
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="status">{t('students.status')}</Label>
-                    <Select
-                        value={data.status}
-                        onValueChange={(value) =>
-                            setData('status', value as 'active' | 'inactive')
-                        }
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="active">
-                                {t('students.active')}
-                            </SelectItem>
-                            <SelectItem value="inactive">
-                                {t('students.inactive')}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <InputError message={errors.status} />
-                </div>
             </div>
 
             <div className="space-y-4">
@@ -325,6 +450,32 @@ export default function StudentForm({
                             placeholder={t('students.joined_at')}
                         />
                         <InputError message={errors.joined_at} />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="status">{t('students.status')}</Label>
+                        <Select
+                            value={data.status}
+                            onValueChange={(value) =>
+                                setData(
+                                    'status',
+                                    value as 'active' | 'inactive',
+                                )
+                            }
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">
+                                    {t('students.active')}
+                                </SelectItem>
+                                <SelectItem value="inactive">
+                                    {t('students.inactive')}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors.status} />
                     </div>
 
                     {student && (
@@ -397,12 +548,15 @@ export default function StudentForm({
                 </div>
             </div>
 
-            <div className="flex justify-end gap-2 border-t pt-4">
-                <FormActions
-                    cancelHref={students.index().url}
-                    processing={processing}
-                />
-            </div>
+            {!hideActions && (
+                <div className="flex justify-end gap-2 border-t pt-4">
+                    <FormActions
+                        cancelHref={students.index().url}
+                        processing={processing}
+                        submitLabel={submitLabel}
+                    />
+                </div>
+            )}
         </form>
     );
 }

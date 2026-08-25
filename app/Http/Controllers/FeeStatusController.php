@@ -31,6 +31,7 @@ class FeeStatusController extends Controller
     public function index(Request $request): Response
     {
         $year = $request->input('year', date('Y'));
+        $batchId = $request->input('batch_id');
 
         $years = FeeStatus::query()
             ->select('year')
@@ -50,6 +51,10 @@ class FeeStatusController extends Controller
             ->where('year', $year)
             ->whereHas('student', fn ($q) => $q->where('status', 'active'));
 
+        if ($batchId) {
+            $query->where('batch_id', $batchId);
+        }
+
         if ($search = $request->input('search')) {
             $query->whereHas('student', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");
@@ -59,7 +64,12 @@ class FeeStatusController extends Controller
         $feeStatuses = $query->orderBy('month')->get();
 
         $tenantId = $request->user()->tenant_id;
-        $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
+        $students = Student::with('coachingClass')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->take(500)
+            ->get();
         $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $months = range(1, 12);
@@ -101,7 +111,7 @@ class FeeStatusController extends Controller
             'monthNames' => $monthNames,
             'year' => (int) $year,
             'yearOptions' => $yearOptions,
-            'filters' => $request->only(['search', 'year']),
+            'filters' => $request->only(['search', 'year', 'batch_id']),
         ]);
     }
 

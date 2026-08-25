@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
+import { EllipsisVertical, PenLine, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -316,8 +316,8 @@ return '-';
                                                   )
                                               }
                                           >
-                                              <Pencil className="mr-2 size-4" />
-                                              Edit
+                                               <PenLine className="mr-2 size-4" />
+                                               {t('actions.edit')}
                                           </DropdownMenuItem>
                                           <DropdownMenuItem
                                               className="text-destructive focus:text-destructive"
@@ -325,8 +325,8 @@ return '-';
                                                   handleDelete(record)
                                               }
                                           >
-                                              <Trash2 className="mr-2 size-4" />
-                                              Delete
+                                               <Trash2 className="mr-2 size-4" />
+                                               {t('actions.delete')}
                                           </DropdownMenuItem>
                                       </DropdownMenuContent>
                                   </DropdownMenu>

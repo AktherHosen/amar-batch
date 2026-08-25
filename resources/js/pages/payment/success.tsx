@@ -28,14 +28,14 @@ export default function PaymentSuccess({ payment }: Props) {
                             <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold">{t('payment.success_title')}</h1>
+                            <h1 className="text-xl font-bold sm:text-2xl">{t('payment.success_title')}</h1>
                             <p className="mt-2 text-muted-foreground">{t('payment.success_desc')}</p>
                         </div>
                         <div className="rounded-lg border bg-muted/30 p-4">
                             <div className="text-sm text-muted-foreground">{t('payment.plan')}</div>
                             <div className="font-semibold">{payment.plan}</div>
                             <div className="mt-2 text-sm text-muted-foreground">{t('payment.amount_paid')}</div>
-                            <div className="text-lg font-bold">{formatCurrency(payment.amount)}</div>
+                            <div className="text-base font-bold sm:text-lg">{formatCurrency(payment.amount)}</div>
                             <div className="mt-1 text-xs text-muted-foreground">
                                 {payment.billing_type === 'yearly' ? t('plan.yearly') : t('plan.monthly')}
                             </div>

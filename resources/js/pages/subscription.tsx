@@ -311,7 +311,7 @@ return;
                 {/* Available Plans */}
                 <div>
                     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <h2 className="text-lg font-semibold">{t('subscription.available_plans')}</h2>
+                        <h2 className="text-base font-semibold sm:text-lg">{t('subscription.available_plans')}</h2>
                         <div className="flex items-center gap-3 self-start rounded-full border bg-muted/40 p-1 sm:self-auto">
                             <button
                                 type="button"

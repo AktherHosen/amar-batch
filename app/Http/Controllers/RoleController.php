@@ -12,6 +12,21 @@ use Inertia\Response;
 
 class RoleController extends Controller
 {
+    private function getFilteredGroups(Request $request): array
+    {
+        $groups = config('role-routes.groups');
+        $featureMap = config('role-routes.feature_map');
+        $features = $request->user()->tenant?->subscription?->plan?->features ?? [];
+
+        return collect($groups)
+            ->filter(function ($routes, $group) use ($featureMap, $features) {
+                $requiredFeature = $featureMap[$group] ?? null;
+
+                return $requiredFeature === null || in_array($requiredFeature, $features);
+            })
+            ->all();
+    }
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', Role::class);
@@ -25,15 +40,16 @@ class RoleController extends Controller
         return Inertia::render('roles/index', [
             'roles' => $roles,
             'filters' => $request->only(['search']),
+            'groups' => $this->getFilteredGroups($request),
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->authorize('create', Role::class);
 
         return Inertia::render('roles/create', [
-            'groups' => config('role-routes.groups'),
+            'groups' => $this->getFilteredGroups($request),
         ]);
     }
 
@@ -53,13 +69,13 @@ class RoleController extends Controller
         return to_route('roles.index')->with('toast', ['type' => 'success', 'message' => 'Role created successfully.']);
     }
 
-    public function edit(Role $role): Response
+    public function edit(Request $request, Role $role): Response
     {
         $this->authorize('update', $role);
 
         return Inertia::render('roles/edit', [
             'role' => $role,
-            'groups' => config('role-routes.groups'),
+            'groups' => $this->getFilteredGroups($request),
         ]);
     }
 

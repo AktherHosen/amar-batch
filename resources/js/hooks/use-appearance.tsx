@@ -113,6 +113,9 @@ let currentTimeFormat: string = DEFAULT_TIME_FORMAT;
 let currentSidebarStyle: string = DEFAULT_SIDEBAR_STYLE;
 let currentDefaultPage: string = DEFAULT_DEFAULT_PAGE;
 
+const prefixes = { main: '', sa: 'sa_' };
+type Namespace = keyof typeof prefixes;
+
 const prefersDark = (): boolean => {
     if (typeof window === 'undefined') {
         return false;

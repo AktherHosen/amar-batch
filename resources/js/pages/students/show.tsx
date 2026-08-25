@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Download,
-    Pencil,
+    PenLine,
     Trash2,
     CheckCircle,
     XCircle,
@@ -518,7 +518,7 @@ export default function StudentsShow({
                         <div className="flex gap-2">
                             <Link href={students.edit(student.id)}>
                                 <Button variant="outline" className="h-9">
-                                    <Pencil className="size-4" />
+                                    <PenLine className="size-4" />
                                     <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
@@ -557,6 +557,14 @@ export default function StudentsShow({
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="grid w-full grid-cols-2 gap-3">
+                                    <div className="min-w-0">
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('students.student_id')}
+                                        </p>
+                                        <p className="truncate text-sm font-medium">
+                                            {student.code}
+                                        </p>
+                                    </div>
                                     <div className="min-w-0">
                                         <p className="text-xs text-muted-foreground">
                                             {t('students.name')}
@@ -660,7 +668,7 @@ export default function StudentsShow({
                                     return total > 0 ? (
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-2xl font-bold">
+                                                <span className="text-xl font-bold sm:text-2xl">
                                                     {percentage}%
                                                 </span>
                                                 <Badge
@@ -746,7 +754,7 @@ export default function StudentsShow({
                                     return feeCount > 0 ? (
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-2xl font-bold text-green-600">
+                                                <span className="text-xl font-bold text-green-600 sm:text-2xl">
                                                     {totalPaid.toFixed(0)}
                                                 </span>
                                                 <Badge variant="success">
@@ -783,7 +791,6 @@ export default function StudentsShow({
                             <DataTable
                                 columns={enrollmentColumns}
                                 data={student.enrollments ?? []}
-                                showPagination={false}
                                 searchable
                                 searchPlaceholder={
                                     t('batches.enrolled') + '...'
@@ -837,7 +844,6 @@ export default function StudentsShow({
                         <DataTable
                             columns={attendanceColumns}
                             data={attendanceRows}
-                            showPagination={false}
                             searchable
                             searchPlaceholder={t('attendance.title') + '...'}
                             emptyMessage={t('students.no_attendance')}
@@ -892,7 +898,6 @@ export default function StudentsShow({
                             <DataTable
                                 columns={examColumns}
                                 data={student.examResults}
-                                showPagination={false}
                                 searchable
                                 searchPlaceholder={t('exams.title') + '...'}
                                 emptyMessage={t('exams.no_results')}
@@ -953,7 +958,6 @@ export default function StudentsShow({
                                 <DataTable
                                     columns={batchHistoryColumns}
                                     data={student.batchHistories}
-                                    showPagination={false}
                                     searchable
                                     searchPlaceholder={
                                         t('batches.history') + '...'
@@ -1037,7 +1041,6 @@ export default function StudentsShow({
                                       )
                                     : []
                             }
-                            showPagination={false}
                             searchable
                             searchPlaceholder={
                                 t('fees.payment_history') + '...'

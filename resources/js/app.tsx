@@ -6,7 +6,6 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import '@/i18n';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
-import SuperAdminLayout from '@/layouts/super-admin-layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Amar Batch';
 
@@ -21,9 +20,8 @@ createInertiaApp({
             case name === 'privacy':
                 return null;
             case name.startsWith('auth/'):
+            case name.startsWith('onboarding/'):
                 return AuthLayout;
-            case name.startsWith('super-admin/'):
-                return SuperAdminLayout;
             default:
                 return AppLayout;
         }

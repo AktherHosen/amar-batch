@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, PenLine, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -100,7 +100,7 @@ export default function HolidaysShow() {
                         <div className="flex shrink-0 gap-2">
                             <Link href={holidays.edit(holiday.id)}>
                                 <Button variant="outline" className="h-9">
-                                    <Pencil className="size-4" />
+                                    <PenLine className="size-4" />
                                     <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>

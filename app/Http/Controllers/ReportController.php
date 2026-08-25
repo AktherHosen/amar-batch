@@ -219,4 +219,57 @@ class ReportController extends Controller
             'filters' => $request->only(['branch_id', 'batch_id', 'month', 'year']),
         ]);
     }
+
+    public function unpaidStudents(Request $request): Response
+    {
+        $this->authorize('viewAny', Student::class);
+
+        $tenantId = $request->user()->tenant_id;
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
+        $batchId = $request->input('batch_id');
+
+        $paidStudentBatchPairs = FeeStatus::where('tenant_id', $tenantId)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->where('amount_paid', '>', 0)
+            ->pluck('student_id')
+            ->unique()
+            ->toArray();
+
+        $query = Student::with(['coachingClass', 'batches'])
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->whereNotIn('id', $paidStudentBatchPairs);
+
+        if ($batchId) {
+            $query->whereHas('batches', fn ($q) => $q->where('batches.id', $batchId));
+        }
+
+        $students = $query->orderBy('name')
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn ($student) => [
+                'id' => $student->id,
+                'name' => $student->name,
+                'phone' => $student->phone,
+                'coaching_class' => $student->coachingClass?->name,
+                'default_fee' => $student->coachingClass?->default_fee ?? 0,
+                'batches' => $student->batches->map(fn ($b) => ['id' => $b->id, 'name' => $b->name]),
+            ]);
+
+        $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get(['id', 'name']);
+        $monthNames = [
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+        ];
+
+        return Inertia::render('reports/unpaid-students', [
+            'students' => $students,
+            'batches' => $batches,
+            'monthNames' => $monthNames,
+            'filters' => $request->only(['month', 'year', 'batch_id']),
+        ]);
+    }
 }

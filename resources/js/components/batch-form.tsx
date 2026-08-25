@@ -11,6 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { TimePicker } from '@/components/ui/time-picker';
 import batches from '@/routes/batches';
 
 type Batch = {
@@ -30,6 +31,8 @@ type BatchFormProps = {
     onSubmit: (data: any) => void;
     processing: boolean;
     errors: Record<string, string>;
+    submitLabel?: string;
+    hideActions?: boolean;
 };
 
 const DAY_OPTIONS = [
@@ -56,6 +59,8 @@ export default function BatchForm({
     onSubmit,
     processing,
     errors,
+    submitLabel,
+    hideActions,
 }: BatchFormProps) {
     const { data, setData } = useForm({
         name: batch?.name || '',
@@ -74,7 +79,7 @@ export default function BatchForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="batch-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="name">Name *</Label>
@@ -121,24 +126,22 @@ export default function BatchForm({
                 <div className="space-y-2">
                     <Label>Time</Label>
                     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-                        <Input
-                            type="time"
-                            id="time_start"
+                        <TimePicker
                             value={data.time?.split(' - ')[0] || data.time?.split('-')[0]?.trim() || ''}
-                            onChange={(e) => {
+                            onValueChange={(val) => {
                                 const end = data.time?.split(' - ')[1] || data.time?.split('-')[1]?.trim() || '';
-                                setData('time', end ? `${e.target.value} - ${end}` : e.target.value);
+                                setData('time', end ? `${val} - ${end}` : val);
                             }}
+                            placeholder="Start time"
                         />
                         <span className="text-muted-foreground text-sm">-</span>
-                        <Input
-                            type="time"
-                            id="time_end"
+                        <TimePicker
                             value={data.time?.split(' - ')[1] || data.time?.split('-')[1]?.trim() || ''}
-                            onChange={(e) => {
+                            onValueChange={(val) => {
                                 const start = data.time?.split(' - ')[0] || data.time?.split('-')[0]?.trim() || '';
-                                setData('time', start ? `${start} - ${e.target.value}` : e.target.value);
+                                setData('time', start ? `${start} - ${val}` : val);
                             }}
+                            placeholder="End time"
                         />
                     </div>
                     <InputError message={errors.time} />
@@ -203,10 +206,13 @@ export default function BatchForm({
                 </div>
             </div>
 
-            <FormActions
-                cancelHref={batches.index().url}
-                processing={processing}
-            />
+            {!hideActions && (
+                <FormActions
+                    cancelHref={batches.index().url}
+                    processing={processing}
+                    submitLabel={submitLabel}
+                />
+            )}
         </form>
     );
 }

@@ -1,19 +1,3 @@
-import { Link, usePage } from '@inertiajs/react';
-import {
-    LayoutGrid,
-    Menu,
-    Users,
-    Layers,
-    GraduationCap,
-Wallet,
-    CheckSquare,
-    School,
-    CreditCard,
-    FileText,
-    BarChart3,
-    Building2,
-    Shield,
-} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -58,6 +42,22 @@ import students from '@/routes/students';
 import subscription from '@/routes/subscription';
 import users from '@/routes/users';
 import type { BreadcrumbItem, NavItem } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    BarChart3,
+    Building2,
+    CheckSquare,
+    CreditCard,
+    FileText,
+    GraduationCap,
+    Layers,
+    LayoutGrid,
+    Menu,
+    School,
+    Shield,
+    Users,
+    Wallet,
+} from 'lucide-react';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -80,57 +80,100 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const allNavItems: NavItem[] = [
         { title: t('nav.dashboard'), href: dashboard(), icon: LayoutGrid },
         { title: t('nav.students'), href: students.index(), icon: Users },
-        { title: t('nav.coaching_classes'), href: coachingClasses.index(), icon: School },
-        { title: t('nav.users'), href: users.index(), icon: GraduationCap, ownerOnly: true },
+        {
+            title: t('nav.coaching_classes'),
+            href: coachingClasses.index(),
+            icon: School,
+        },
+        {
+            title: t('nav.users'),
+            href: users.index(),
+            icon: GraduationCap,
+            ownerOnly: true,
+        },
         { title: t('nav.batches'), href: batches.index(), icon: Layers },
-        { title: t('nav.fees'), href: fees.index(), icon: Wallet, ownerOnly: true },
-        { title: t('nav.attendance'), href: attendance.index(), icon: CheckSquare },
-        { title: t('nav.exams'), href: exams.index(), icon: FileText, featureRequired: 'exams' },
-        { title: t('nav.reports'), href: reports.index(), icon: BarChart3, featureRequired: 'reports' },
-        { title: t('nav.branches'), href: branches.index(), icon: Building2, featureRequired: 'multi_branch' },
-        { title: t('nav.subscription'), href: subscription.index(), icon: CreditCard, ownerOnly: true },
-        { title: t('nav.roles'), href: roles.index(), icon: Shield, ownerOnly: true },
+        {
+            title: t('nav.fees'),
+            href: fees.index(),
+            icon: Wallet,
+            ownerOnly: true,
+        },
+        {
+            title: t('nav.attendance'),
+            href: attendance.index(),
+            icon: CheckSquare,
+        },
+        {
+            title: t('nav.exams'),
+            href: exams.index(),
+            icon: FileText,
+            featureRequired: 'exams',
+        },
+        {
+            title: t('nav.reports'),
+            href: reports.index(),
+            icon: BarChart3,
+            featureRequired: 'reports',
+        },
+        {
+            title: t('nav.branches'),
+            href: branches.index(),
+            icon: Building2,
+            featureRequired: 'multi_branch',
+        },
+        {
+            title: t('nav.subscription'),
+            href: subscription.index(),
+            icon: CreditCard,
+            ownerOnly: true,
+        },
+        {
+            title: t('nav.roles'),
+            href: roles.index(),
+            icon: Shield,
+            ownerOnly: true,
+        },
     ];
 
     const mainNavItems = isUserOwner
         ? allNavItems.filter((item) => {
-            if (item.ownerOnly && !isUserOwner) {
-return false;
-}
+              if (item.ownerOnly && !isUserOwner) {
+                  return false;
+              }
 
-            if (item.featureRequired === 'exams' && !hasExams) {
-return false;
-}
+              if (item.featureRequired === 'exams' && !hasExams) {
+                  return false;
+              }
 
-            if (item.featureRequired === 'reports' && !hasReports) {
-return false;
-}
+              if (item.featureRequired === 'reports' && !hasReports) {
+                  return false;
+              }
 
-            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) {
-return false;
-}
+              if (item.featureRequired === 'multi_branch' && !hasMultiBranch) {
+                  return false;
+              }
 
-            return true;
-        })
+              return true;
+          })
         : allNavItems.filter((item) => {
-            if (item.ownerOnly) {
-return false;
-}
+              if (item.ownerOnly) {
+                  return false;
+              }
 
-            if (item.featureRequired === 'exams' && !hasExams) {
-return false;
-}
+              if (item.featureRequired === 'exams' && !hasExams) {
+                  return false;
+              }
 
-            if (item.featureRequired === 'reports' && !hasReports) {
-return false;
-}
+              if (item.featureRequired === 'reports' && !hasReports) {
+                  return false;
+              }
 
-            if (item.featureRequired === 'multi_branch' && !hasMultiBranch) {
-return false;
-}
+              if (item.featureRequired === 'multi_branch' && !hasMultiBranch) {
+                  return false;
+              }
 
-            return true;
-        });
+              return true;
+          });
 
     return (
         <>
@@ -167,7 +210,10 @@ return false;
                                                     href={item.href}
                                                     className={cn(
                                                         'flex items-center space-x-2 rounded-md px-3 py-2 font-medium transition-colors hover:bg-sidebar-accent',
-                                                        isCurrentUrl(item.href) && 'bg-sidebar-accent text-foreground',
+                                                        isCurrentUrl(
+                                                            item.href,
+                                                        ) &&
+                                                            'bg-sidebar-accent text-foreground',
                                                     )}
                                                 >
                                                     {item.icon && (
@@ -234,11 +280,8 @@ return false;
                                     className="size-10 rounded-full p-1"
                                 >
                                     <Avatar className="size-8 overflow-hidden rounded-full">
-                                        <AvatarImage
-                                            src={auth.user?.avatar}
-                                            alt={auth.user?.name}
-                                        />
-                                        <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                        <AvatarImage src={auth.user?.avatar} />
+                                        <AvatarFallback className="flex items-center justify-center rounded-full bg-neutral-200 text-[10px] leading-none font-medium text-black dark:bg-neutral-700 dark:text-white">
                                             {getInitials(auth.user?.name ?? '')}
                                         </AvatarFallback>
                                     </Avatar>

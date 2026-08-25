@@ -13,7 +13,7 @@ class NotificationController extends Controller
     {
         $notifications = InAppNotification::where('user_id', $request->user()->id)
             ->latest()
-            ->paginate(20)
+            ->paginate(10)
             ->withQueryString();
 
         return inertia('notifications/index', [

@@ -3,7 +3,7 @@ import {
     ArrowLeft,
     Download,
     EllipsisVertical,
-    Pencil,
+    PenLine,
     Trash2,
     Mail,
     Phone,
@@ -209,7 +209,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <div className="flex shrink-0 gap-2">
                             <Link href={teachers.edit(teacher.id)}>
                                 <Button variant="outline" className="h-9">
-                                    <Pencil className="size-4" />
+                                    <PenLine className="size-4" />
                                     <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
                                 </Button>
                             </Link>
@@ -326,7 +326,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Layers className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                                <p className="text-2xl leading-none font-bold">
+                                <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {teacher.assigned_batches_count}
                                 </p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -339,7 +339,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Calendar className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                                <p className="text-2xl leading-none font-bold">
+                                <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {stats.active_batches}
                                 </p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -352,7 +352,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Mail className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                                <p className="text-2xl leading-none font-bold">
+                                <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {stats.total_students}
                                 </p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -365,7 +365,7 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Phone className="size-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                                <p className="text-2xl leading-none font-bold">
+                                <p className="text-xl leading-none font-bold sm:text-2xl">
                                     {teacher.assigned_batches_count > 0
                                         ? 'Yes'
                                         : 'No'}
@@ -386,7 +386,6 @@ export default function TeachersShow({ teacher, stats }: TeachersShowProps) {
                         <DataTable
                             columns={columns}
                             data={teacher.assigned_batches ?? []}
-                            showPagination={false}
                             searchable
                             searchPlaceholder={t('batches.title') + '...'}
                             emptyMessage={t('batches.title')}

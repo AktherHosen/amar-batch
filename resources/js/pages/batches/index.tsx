@@ -2,12 +2,14 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Eye,
     EllipsisVertical,
-    Pencil,
+    PenLine,
+    Plus,
     Trash2,
     CheckCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import BatchForm from '@/components/batch-form';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
@@ -24,6 +26,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import batches from '@/routes/batches';
@@ -32,6 +42,8 @@ type BatchRow = {
     id: number;
     name: string;
     subject: string | null;
+    days: string | null;
+    time: string | null;
     capacity: number;
     status: string;
     enrollments_count: number;
@@ -72,6 +84,22 @@ export default function BatchesIndex({
         open: boolean;
         batch: { id: number; name: string } | null;
     }>({ open: false, batch: null });
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [editingBatch, setEditingBatch] = useState<BatchRow | null>(null);
+    const [processing, setProcessing] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const handleCreate = () => {
+        setEditingBatch(null);
+        setErrors({});
+        setSheetOpen(true);
+    };
+
+    const handleEdit = (batch: BatchRow) => {
+        setEditingBatch(batch);
+        setErrors({});
+        setSheetOpen(true);
+    };
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -255,11 +283,11 @@ export default function BatchesIndex({
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                     <>
-                                        <DropdownMenuItem asChild>
-                                            <Link href={batches.edit(batch.id)}>
-                                                <Pencil className="mr-2 size-4" />
-                                                {t('actions.edit')}
-                                            </Link>
+                                        <DropdownMenuItem
+                                            onClick={() => handleEdit(batch)}
+                                        >
+                                            <PenLine className="mr-2 size-4" />
+                                            {t('actions.edit')}
                                         </DropdownMenuItem>
                                         {batch.status !== 'completed' && (
                                             <DropdownMenuItem
@@ -312,7 +340,7 @@ export default function BatchesIndex({
                         <PageActions
                             isAdmin={isAdmin}
                             createLabel={t('batches.create')}
-                            onCreate={() => router.get(batches.create())}
+                            onCreate={handleCreate}
                             exportTitle={t('batches.title')}
                             exportFilename="batches"
                             exportHeaders={[
@@ -437,6 +465,80 @@ export default function BatchesIndex({
                 cancelText={t('actions.cancel')}
                 onConfirm={confirmComplete}
             />
+
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>
+                            {editingBatch ? t('actions.edit') + ' ' + t('batches.title') : t('actions.create') + ' ' + t('batches.title')}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {editingBatch
+                                ? t('actions.update') + ' batch details'
+                                : 'Add a new batch'}
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="px-4 pb-4">
+                        <BatchForm
+                            batch={editingBatch || undefined}
+                            onSubmit={(data) => {
+                                setProcessing(true);
+                                if (editingBatch) {
+                                    router.put(
+                                        `/batches/${editingBatch.id}`,
+                                        data,
+                                        {
+                                            onSuccess: () => {
+                                                toast.success(
+                                                    t('toast.updated_successfully'),
+                                                );
+                                                setSheetOpen(false);
+                                                setEditingBatch(null);
+                                            },
+                                            onFinish: () =>
+                                                setProcessing(false),
+                                            onError: (err) => {
+                                                setErrors(err);
+                                                setProcessing(false);
+                                            },
+                                        },
+                                    );
+                                } else {
+                                    router.post('/batches', data, {
+                                        onSuccess: () => {
+                                            toast.success(
+                                                t('toast.created_successfully'),
+                                            );
+                                            setSheetOpen(false);
+                                        },
+                                        onFinish: () =>
+                                            setProcessing(false),
+                                        onError: (err) => {
+                                            setErrors(err);
+                                            setProcessing(false);
+                                        },
+                                    });
+                                }
+                            }}
+                            processing={processing}
+                            errors={errors}
+                            hideActions
+                        />
+                    </div>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSheetOpen(false)}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button type="submit" form="batch-form" disabled={processing}>
+                            {editingBatch ? t('actions.update') : t('actions.create')}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

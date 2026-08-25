@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     EllipsisVertical,
     Eye,
-    Pencil,
+    PenLine,
     Plus,
     Shield,
     ShieldOff,
@@ -415,7 +415,7 @@ return;
                                             )}
                                         <DropdownMenuItem asChild>
                                             <Link href={users.edit(user.id)}>
-                                                <Pencil className="mr-2 size-4" />
+                                                <PenLine className="mr-2 size-4" />
                                                 {t('actions.edit')}
                                             </Link>
                                         </DropdownMenuItem>

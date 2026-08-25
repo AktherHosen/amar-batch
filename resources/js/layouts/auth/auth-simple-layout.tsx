@@ -75,7 +75,7 @@ export default function AuthSimpleLayout({
 
                     <div className="rounded-md border border-border p-6 lg:border-0 lg:p-0">
                         <div className="mb-8">
-                            <h2 className="text-2xl font-bold text-foreground">
+                            <h2 className="text-lg font-bold text-foreground sm:text-2xl">
                                 {title}
                             </h2>
                             <p className="mt-2 text-muted-foreground">
