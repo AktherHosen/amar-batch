@@ -205,6 +205,14 @@ class UserController extends Controller
             abort(403);
         }
 
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createStaff($request->user())) {
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the staff limit for your current plan. Please upgrade to reactivate this user.',
+            ]);
+        }
+
         $user->update(['role' => 'staff', 'is_approved' => false]);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Access restored successfully.']);

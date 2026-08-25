@@ -215,11 +215,25 @@ class BatchController extends Controller
     {
         $this->authorize('create', Batch::class);
 
+        $planLimits = new PlanLimitsPolicy;
+        if (! $planLimits->createBatch($request->user())) {
+            return to_route('subscription.index')->with('toast', [
+                'type' => 'warning',
+                'message' => 'You have reached the batch limit for your current plan. Please upgrade to import more batches.',
+            ]);
+        }
+
         $rows = $request->input('rows', []);
         $imported = 0;
         $skipped = 0;
 
         foreach ($rows as $row) {
+            // Re-check limit before each batch to respect exact cap
+            if (! $planLimits->createBatch($request->user())) {
+                $skipped += count($rows) - $imported - $skipped;
+                break;
+            }
+
             try {
                 Batch::create([
                     'name' => $row['name'] ?? '',
@@ -239,7 +253,7 @@ class BatchController extends Controller
 
         $message = $imported . ' batches imported successfully.';
         if ($skipped > 0) {
-            $message .= " {$skipped} skipped (duplicate or invalid).";
+            $message .= " {$skipped} skipped (plan limit reached or invalid).";
         }
 
         return to_route('batches.index')->with('toast', ['type' => 'success', 'message' => $message]);
