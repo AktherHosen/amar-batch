@@ -768,7 +768,13 @@ return;
                             {t('actions.cancel')}
                         </Button>
                         <Button type="submit" disabled={processing} onClick={handleSheetSubmit}>
-                            {editingTeacher ? t('actions.update') : t('actions.create')}
+                            {processing
+                                ? editingTeacher
+                                    ? t('actions.updating')
+                                    : t('actions.creating')
+                                : editingTeacher
+                                  ? t('actions.update')
+                                  : t('actions.create')}
                         </Button>
                     </SheetFooter>
                 </SheetContent>

@@ -363,7 +363,9 @@ export default function CoachingClassesIndex({
                         </Button>
                         <Button type="submit" disabled={processing} onClick={handleSubmit}>
                             {processing
-                                ? '...'
+                                ? editingClass
+                                    ? t('actions.updating')
+                                    : t('actions.creating')
                                 : editingClass
                                   ? t('actions.update')
                                   : t('actions.create')}
