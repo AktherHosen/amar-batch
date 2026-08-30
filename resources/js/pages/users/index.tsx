@@ -33,6 +33,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import UserForm from '@/components/user-form';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
 import { isOwner } from '@/lib/role';
@@ -67,12 +69,26 @@ type PageProps = {
         name: string;
         slug: string;
     }>;
+    branches: Array<{
+        id: number;
+        name: string;
+    }>;
+};
+
+type EditUser = {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    branch_id?: number | null;
+    avatar?: string | null;
 };
 
 export default function UsersIndex({
     users: pagination,
     filters,
     roles = [],
+    branches = [],
 }: PageProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
@@ -82,6 +98,11 @@ export default function UsersIndex({
     const [status, setStatus] = useState(filters.status || '');
     const [roleFilter, setRoleFilter] = useState(filters.role || '');
     const [refreshing, setRefreshing] = useState(false);
+    const [editSheet, setEditSheet] = useState<{ open: boolean; user: EditUser | null }>({
+        open: false,
+        user: null,
+    });
+    const [createSheet, setCreateSheet] = useState(false);
 
     const assignableRoles = roles.filter((r) => r.slug !== 'owner');
 
@@ -413,11 +434,13 @@ return;
                                                     {t('users.revoke_approval')}
                                                 </DropdownMenuItem>
                                             )}
-                                        <DropdownMenuItem asChild>
-                                            <Link href={users.edit(user.id)}>
-                                                <PenLine className="mr-2 size-4" />
-                                                {t('actions.edit')}
-                                            </Link>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                setEditSheet({ open: true, user: user })
+                                            }
+                                        >
+                                            <PenLine className="mr-2 size-4" />
+                                            {t('actions.edit')}
                                         </DropdownMenuItem>
                                         {user.role === 'inactive' ? (
                                             <DropdownMenuItem
@@ -484,11 +507,13 @@ return;
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <Link href={users.create()}>
-                                            <Plus className="mr-2 size-4" />
-                                            {t('users.create')}
-                                        </Link>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            setCreateSheet(true)
+                                        }
+                                    >
+                                        <Plus className="mr-2 size-4" />
+                                        {t('users.create')}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -610,6 +635,56 @@ return;
                 variant="destructive"
                 onConfirm={confirmReject}
             />
+
+            <Sheet open={editSheet.open} onOpenChange={(open) => setEditSheet({ open, user: editSheet.user })}>
+                <SheetContent className="w-full sm:max-w-xl">
+                    <SheetHeader>
+                        <SheetTitle>{t('actions.edit')} {editSheet.user?.name}</SheetTitle>
+                    </SheetHeader>
+                    {editSheet.user && (
+                        <UserForm
+                            user={editSheet.user}
+                            roles={roles}
+                            branches={branches}
+                            onSubmit={(data) => {
+                                data.append('_method', 'PUT');
+                                router.post(users.update(editSheet.user!.id), data, {
+                                    preserveScroll: true,
+                                    onSuccess: () => {
+                                        toast.success(t('users.updated'));
+                                        setEditSheet({ open: false, user: null });
+                                        router.reload({ only: ['users'] });
+                                    },
+                                });
+                            }}
+                            onCancel={() => setEditSheet({ open: false, user: null })}
+                        />
+                    )}
+                </SheetContent>
+            </Sheet>
+
+            <Sheet open={createSheet} onOpenChange={setCreateSheet}>
+                <SheetContent className="w-full sm:max-w-xl">
+                    <SheetHeader>
+                        <SheetTitle>{t('users.create')}</SheetTitle>
+                    </SheetHeader>
+                    <UserForm
+                        roles={roles}
+                        branches={branches}
+                        onSubmit={(data) => {
+                            router.post(users.store(), data, {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    toast.success(t('users.created'));
+                                    setCreateSheet(false);
+                                    router.reload({ only: ['users'] });
+                                },
+                            });
+                        }}
+                        onCancel={() => setCreateSheet(false)}
+                    />
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

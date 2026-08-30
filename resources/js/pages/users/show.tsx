@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
-import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +14,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import UserForm from '@/components/user-form';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import batches from '@/routes/batches';
@@ -49,16 +50,23 @@ type User = {
     assigned_batches_count?: number;
 };
 
+type Branch = {
+    id: number;
+    name: string;
+};
+
 type UsersShowProps = {
     user: User;
     roles?: Role[];
+    branches?: Branch[];
 };
 
-export default function UsersShow({ user, roles = [] }: UsersShowProps) {
+export default function UsersShow({ user, roles = [], branches = [] }: UsersShowProps) {
     const { t } = useLocale();
     const { auth } = usePage<PageProps>().props;
     const isAdmin = isOwner(auth.user);
     const [revokeDialog, setRevokeDialog] = useState(false);
+    const [editSheet, setEditSheet] = useState(false);
 
     const roleName = (slug: string) => {
         if (slug === 'inactive') {
@@ -179,12 +187,10 @@ return t('users.inactive');
                     </div>
                     {isAdmin && !user.is_owner && (
                         <div className="flex gap-2 shrink-0">
-                            <Link href={users.edit(user.id)}>
-                                <Button variant="outline" className="h-9">
-                                    <PenLine className="size-4" />
-                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
-                                </Button>
-                            </Link>
+                            <Button variant="outline" className="h-9" onClick={() => setEditSheet(true)}>
+                                <PenLine className="size-4" />
+                                <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
+                            </Button>
                             {user.role === 'inactive' ? (
                                 <Button onClick={() =>
                                     router.post(users.reactivate(user.id).url, {}, {
@@ -284,6 +290,31 @@ return t('users.inactive');
                 variant="destructive"
                 onConfirm={confirmRevoke}
             />
+
+            <Sheet open={editSheet} onOpenChange={setEditSheet}>
+                <SheetContent className="w-full sm:max-w-xl">
+                    <SheetHeader>
+                        <SheetTitle>{t('actions.edit')} {user.name}</SheetTitle>
+                    </SheetHeader>
+                    <UserForm
+                        user={user}
+                        roles={roles}
+                        branches={branches}
+                        onSubmit={(data) => {
+                            data.append('_method', 'PUT');
+                            router.post(users.update(user.id), data, {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    toast.success(t('users.updated'));
+                                    setEditSheet(false);
+                                    router.reload({ only: ['users'] });
+                                },
+                            });
+                        }}
+                        onCancel={() => setEditSheet(false)}
+                    />
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

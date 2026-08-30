@@ -56,6 +56,7 @@ class UserController extends Controller
             'users' => $users,
             'filters' => $request->only(['search', 'status', 'role']),
             'roles' => Role::query()->orderBy('name')->get(['id', 'name', 'slug']),
+            'branches' => Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -128,6 +129,7 @@ class UserController extends Controller
         return Inertia::render('users/show', [
             'user' => $user,
             'roles' => Role::query()->orderBy('name')->get(['id', 'name', 'slug']),
+            'branches' => Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
