@@ -4,30 +4,20 @@ import {
     Users,
     UsersRound,
     Layers,
-    Wallet,
     CheckSquare,
-    School,
-    GraduationCap,
-    CreditCard,
-    FileText,
     BarChart3,
-    Building2,
     Megaphone,
-    Calendar,
-    Shield,
     User,
-    ShieldCheck,
-    Palette,
-    KeyRound,
+    Settings,
     Crown,
-    CreditCard as PaymentIcon,
-    Mail,
+    Receipt,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import {
     Sidebar,
     SidebarContent,
+    SidebarFooter,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -57,7 +47,7 @@ import students from '@/routes/students';
 import subscription from '@/routes/subscription';
 import teachers from '@/routes/teachers';
 import users from '@/routes/users';
-import type { NavItem, NavItemGroup } from '@/types';
+import type { NavItem, NavItemGroup, NavItemSection } from '@/types';
 
 export function AppSidebar() {
     const { t } = useLocale();
@@ -137,192 +127,222 @@ return false;
             collapsible: false,
             items: [
                 {
-                    title: 'Overview',
-                    href: '/dashboard/overview',
+                    title: 'Admin',
                     icon: Crown,
-                    superAdminOnly: true,
-                },
-                {
-                    title: 'Owners',
-                    href: '/dashboard/owners',
-                    icon: Users,
-                    superAdminOnly: true,
-                },
-                {
-                    title: 'Plans',
-                    href: '/dashboard/plans',
-                    icon: CreditCard,
-                    superAdminOnly: true,
-                },
-                {
-                    title: 'Payments',
-                    href: '/dashboard/payments',
-                    icon: PaymentIcon,
-                    superAdminOnly: true,
-                },
-                {
-                    title: 'Messages',
-                    href: '/dashboard/contacts',
-                    icon: Mail,
-                    superAdminOnly: true,
-                },
+                    items: [
+                        {
+                            title: 'Overview',
+                            href: '/dashboard/overview',
+                            superAdminOnly: true,
+                        },
+                        {
+                            title: 'Owners',
+                            href: '/dashboard/owners',
+                            superAdminOnly: true,
+                        },
+                        {
+                            title: 'Plans',
+                            href: '/dashboard/plans',
+                            superAdminOnly: true,
+                        },
+                        {
+                            title: 'Payments',
+                            href: '/dashboard/payments',
+                            superAdminOnly: true,
+                        },
+                        {
+                            title: 'Messages',
+                            href: '/dashboard/contacts',
+                            superAdminOnly: true,
+                        },
+                    ],
+                } as NavItemSection,
             ],
         },
         {
             label: t('nav.group.administration'),
             items: [
                 {
-                    title: t('nav.users'),
-                    href: users.index(),
+                    title: 'Users & Roles',
                     icon: UsersRound,
-                    permission: 'users.index',
-                },
-                {
-                    title: t('nav.roles'),
-                    href: roles.index(),
-                    icon: Shield,
-                    ownerOnly: true,
-                },
+                    items: [
+                        {
+                            title: t('nav.users'),
+                            href: users.index(),
+                            permission: 'users.index',
+                        },
+                        {
+                            title: t('nav.roles'),
+                            href: roles.index(),
+                            ownerOnly: true,
+                        },
+                    ],
+                } as NavItemSection,
             ],
         },
         {
             label: t('nav.group.academic'),
             items: [
                 {
-                    title: t('nav.students'),
-                    href: students.index(),
+                    title: 'People',
                     icon: Users,
-                    permission: 'students.index',
-                },
+                    items: [
+                        {
+                            title: t('nav.students'),
+                            href: students.index(),
+                            permission: 'students.index',
+                        },
+                        {
+                            title: t('nav.teachers'),
+                            href: teachers.index(),
+                            permission: 'teachers.index',
+                        },
+                    ],
+                } as NavItemSection,
                 {
-                    title: t('nav.coaching_classes'),
-                    href: coachingClasses.index(),
-                    icon: School,
-                    permission: 'coaching-classes.index',
-                },
-                {
-                    title: t('nav.teachers'),
-                    href: teachers.index(),
-                    icon: GraduationCap,
-                    permission: 'teachers.index',
-                },
-                {
-                    title: t('nav.batches'),
-                    href: batches.index(),
+                    title: 'Structure',
                     icon: Layers,
-                    permission: 'batches.index',
-                },
+                    items: [
+                        {
+                            title: t('nav.coaching_classes'),
+                            href: coachingClasses.index(),
+                            permission: 'coaching-classes.index',
+                        },
+                        {
+                            title: t('nav.batches'),
+                            href: batches.index(),
+                            permission: 'batches.index',
+                        },
+                    ],
+                } as NavItemSection,
             ],
         },
         {
             label: t('nav.group.finance'),
             items: [
                 {
-                    title: t('nav.fees'),
-                    href: fees.index(),
-                    icon: Wallet,
-                    ownerOnly: true,
-                    permission: 'fees.index',
-                },
-                {
-                    title: t('nav.receipts'),
-                    href: '/fees/receipts',
-                    icon: FileText,
-                    ownerOnly: true,
-                },
-                {
-                    title: t('nav.subscription'),
-                    href: subscription.index(),
-                    icon: CreditCard,
-                    ownerOnly: true,
-                },
+                    title: 'Billing',
+                    icon: Receipt,
+                    items: [
+                        {
+                            title: t('nav.fees'),
+                            href: fees.index(),
+                            ownerOnly: true,
+                            permission: 'fees.index',
+                        },
+                        {
+                            title: t('nav.receipts'),
+                            href: '/fees/receipts',
+                            ownerOnly: true,
+                        },
+                    ],
+                } as NavItemSection,
             ],
         },
         {
             label: t('nav.group.tracking'),
             items: [
                 {
-                    title: t('nav.attendance'),
-                    href: attendance.index(),
+                    title: 'Daily',
                     icon: CheckSquare,
-                    permission: 'attendance.index',
-                },
-                {
-                    title: t('nav.exams'),
-                    href: exams.index(),
-                    icon: FileText,
-                    featureRequired: 'exams',
-                    permission: 'exams.index',
-                },
+                    items: [
+                        {
+                            title: t('nav.attendance'),
+                            href: attendance.index(),
+                            permission: 'attendance.index',
+                        },
+                        {
+                            title: t('nav.exams'),
+                            href: exams.index(),
+                            featureRequired: 'exams',
+                            permission: 'exams.index',
+                        },
+                    ],
+                } as NavItemSection,
             ],
         },
         {
             label: t('nav.group.communication'),
             items: [
                 {
-                    title: 'Notices',
-                    href: '/notices',
+                    title: 'Announcements',
                     icon: Megaphone,
-                    permission: 'notices.index',
-                },
-                {
-                    title: 'Holidays',
-                    href: '/holidays',
-                    icon: Calendar,
-                    permission: 'holidays.index',
-                },
+                    items: [
+                        {
+                            title: 'Notices',
+                            href: '/notices',
+                            permission: 'notices.index',
+                        },
+                        {
+                            title: 'Holidays',
+                            href: '/holidays',
+                            permission: 'holidays.index',
+                        },
+                    ],
+                } as NavItemSection,
             ],
         },
         {
             label: t('nav.group.insights'),
             items: [
                 {
-                    title: t('nav.reports'),
-                    href: reports.index(),
+                    title: 'Analytics',
                     icon: BarChart3,
-                    featureRequired: 'reports',
-                    permission: 'reports.index',
-                },
-                {
-                    title: t('nav.branches'),
-                    href: branches.index(),
-                    icon: Building2,
-                    featureRequired: 'multi_branch',
-                    permission: 'branches.index',
-                },
+                    items: [
+                        {
+                            title: t('nav.reports'),
+                            href: reports.index(),
+                            featureRequired: 'reports',
+                            permission: 'reports.index',
+                        },
+                        {
+                            title: t('nav.branches'),
+                            href: branches.index(),
+                            featureRequired: 'multi_branch',
+                            permission: 'branches.index',
+                        },
+                    ],
+                } as NavItemSection,
             ],
         },
         {
             label: t('nav.group.settings'),
             items: [
                 {
-                    title: t('nav.coaching_center'),
-                    href: tenant.edit(),
-                    icon: Building2,
-                    ownerOnly: true,
-                },
+                    title: 'General',
+                    icon: Settings,
+                    items: [
+                        {
+                            title: t('nav.coaching_center'),
+                            href: tenant.edit(),
+                            ownerOnly: true,
+                        },
+                        {
+                            title: t('nav.appearance'),
+                            href: appearanceEdit(),
+                        },
+                    ],
+                } as NavItemSection,
                 {
-                    title: t('nav.profile'),
-                    href: profileEdit(),
+                    title: 'Account',
                     icon: User,
-                },
-                {
-                    title: t('nav.security'),
-                    href: securityEdit(),
-                    icon: ShieldCheck,
-                },
-                {
-                    title: t('nav.appearance'),
-                    href: appearanceEdit(),
-                    icon: Palette,
-                },
-                {
-                    title: t('nav.api_access'),
-                    href: api.index(),
-                    icon: KeyRound,
-                    ownerOnly: true,
-                    featureRequired: 'api_access',
-                },
+                    items: [
+                        {
+                            title: t('nav.profile'),
+                            href: profileEdit(),
+                        },
+                        {
+                            title: t('nav.security'),
+                            href: securityEdit(),
+                        },
+                        {
+                            title: t('nav.api_access'),
+                            href: api.index(),
+                            ownerOnly: true,
+                            featureRequired: 'api_access',
+                        },
+                    ],
+                } as NavItemSection,
             ],
         },
     ];
@@ -351,6 +371,19 @@ return false;
             <SidebarContent>
                 <NavMain groups={filteredGroups} />
             </SidebarContent>
+
+            <SidebarFooter>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                            <Link href={subscription.index()} prefetch>
+                                <Crown className="size-4" />
+                                <span>{t('nav.upgrade') ?? 'Upgrade'}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarFooter>
 
             {isUserSuperAdmin && <SidebarRail />}
         </Sidebar>

@@ -75,19 +75,32 @@ class BatchController extends Controller
         ]);
     }
 
-    public function store(StoreBatchRequest $request): RedirectResponse
+    public function store(StoreBatchRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorize('create', Batch::class);
 
         $planLimits = new PlanLimitsPolicy;
         if (! $planLimits->createBatch($request->user())) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.',
+                ], 403);
+            }
+
             return to_route('subscription.index')->with('toast', [
                 'type' => 'warning',
                 'message' => 'You have reached the batch limit for your current plan. Please upgrade to add more batches.',
             ]);
         }
 
-        Batch::create($request->validated());
+        $batch = Batch::create($request->validated());
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Batch created successfully.',
+                'batch' => $batch,
+            ], 201);
+        }
 
         return to_route('batches.index')->with('toast', ['type' => 'success', 'message' => 'Batch created successfully.']);
     }

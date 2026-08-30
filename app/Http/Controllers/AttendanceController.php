@@ -156,7 +156,6 @@ class AttendanceController extends Controller
 
     public function students(Request $request): \Illuminate\Http\JsonResponse
     {
-        $tenantId = $request->user()->tenant_id;
         $batchId = $request->batch_id;
         $date = $request->date ?? now()->toDateString();
 
@@ -164,13 +163,14 @@ class AttendanceController extends Controller
             return response()->json([]);
         }
 
-        $students = Enrollment::where('tenant_id', $tenantId)->where('batch_id', $batchId)
+        $students = Enrollment::where('batch_id', $batchId)
             ->where('status', 'active')
-            ->whereHas('student', fn ($q) => $q->where('tenant_id', $tenantId)->where('status', 'active'))
+            ->whereHas('student', fn ($q) => $q->where('status', 'active'))
             ->with('student')
             ->get()
             ->map(function ($enrollment) use ($batchId, $date) {
-                $existing = Attendance::where('student_id', $enrollment->student_id)
+                $existing = Attendance::withoutGlobalScope('tenant')
+                    ->where('student_id', $enrollment->student_id)
                     ->where('batch_id', $batchId)
                     ->whereDate('date', $date)
                     ->first();

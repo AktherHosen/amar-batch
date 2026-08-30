@@ -1,11 +1,12 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, PenLine, Trash2, X } from 'lucide-react';
+import { EllipsisVertical, Loader2, PenLine, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
+import FormSheet from '@/components/form-sheet';
 import Heading from '@/components/heading';
 import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
@@ -14,6 +15,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -21,21 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-} from '@/components/ui/sheet';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     Tooltip,
     TooltipContent,
@@ -108,6 +104,11 @@ export default function AttendanceIndex({
     const [createDate, setCreateDate] = useState(new Date().toISOString().split('T')[0]);
     const [createStudents, setCreateStudents] = useState<{ id: number; name: string; status: 'present' | 'absent' | 'late' | null; notes: string }[]>([]);
     const [createLoading, setCreateLoading] = useState(false);
+    const [localBatches, setLocalBatches] = useState<Batch[]>(batches);
+    const [batchModalOpen, setBatchModalOpen] = useState(false);
+    const [newBatchName, setNewBatchName] = useState('');
+    const [batchCreating, setBatchCreating] = useState(false);
+    const [batchErrors, setBatchErrors] = useState<Record<string, string>>({});
 
     const handleFilter = (overrideDate?: string) => {
         router.get(
@@ -189,18 +190,22 @@ export default function AttendanceIndex({
                     'Accept': 'application/json',
                 },
             });
+
+            if (!response.ok) {
+                toast.error('Failed to load students.');
+                setCreateStudents([]);
+
+                return;
+            }
+
             const data = await response.json();
             setCreateStudents(data);
         } catch {
+            toast.error('Failed to load students.');
             setCreateStudents([]);
         } finally {
             setCreateLoading(false);
         }
-    };
-
-    const handleCreateBatchChange = (value: string) => {
-        setCreateBatchId(value);
-        fetchStudents(value, createDate);
     };
 
     const handleCreateDateChange = (value: string) => {
@@ -241,6 +246,66 @@ export default function AttendanceIndex({
                 router.reload({ only: ['attendances'] });
             },
         });
+    };
+
+    const handleCreateBatch = async (e?: React.SyntheticEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        setBatchCreating(true);
+        setBatchErrors({});
+
+        try {
+            const xsrfToken = decodeURIComponent(
+                document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '',
+            );
+
+            const response = await fetch('/batches', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-XSRF-TOKEN': xsrfToken,
+                },
+                body: JSON.stringify({
+                    name: newBatchName,
+                    capacity: 30,
+                    status: 'active',
+                }),
+            });
+
+            const resData = await response.json();
+
+            if (!response.ok) {
+                if (response.status === 422 && resData.errors) {
+                    const formattedErrors: Record<string, string> = {};
+                    Object.entries(resData.errors).forEach(([k, msgs]: [string, any]) => {
+                        formattedErrors[k] = Array.isArray(msgs) ? msgs[0] : String(msgs);
+                    });
+                    setBatchErrors(formattedErrors);
+                } else {
+                    toast.error(resData.message || 'Failed to create batch.');
+                }
+
+                return;
+            }
+
+            const createdBatch = resData.batch || resData;
+            setLocalBatches((prev) => [...prev, { id: createdBatch.id, name: createdBatch.name }]);
+            setCreateBatchId(String(createdBatch.id));
+            setNewBatchName('');
+            setBatchModalOpen(false);
+            toast.success(resData.message || 'Batch created successfully.');
+
+            fetchStudents(String(createdBatch.id), createDate);
+        } catch {
+            toast.error('An error occurred while creating batch.');
+        } finally {
+            setBatchCreating(false);
+        }
     };
 
     const handleStatusChange = (record: AttendanceRecord, value: string) => {
@@ -602,218 +667,259 @@ return '-';
                 onConfirm={confirmDelete}
             />
 
-            <Sheet open={createSheet} onOpenChange={setCreateSheet}>
-                <SheetContent className="sm:max-w-2xl overflow-y-auto">
-                    <SheetHeader>
-                        <SheetTitle>{t('attendance.mark')}</SheetTitle>
-                        <SheetDescription>
-                            {t('attendance.desc')}
-                        </SheetDescription>
-                    </SheetHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="flex flex-col gap-4 sm:flex-row">
-                            <div className="flex-1 space-y-2">
-                                <Label>{t('attendance.batch')}</Label>
-                                <Select
+            <FormSheet
+                open={createSheet}
+                onOpenChange={setCreateSheet}
+                title={t('attendance.mark')}
+                description={t('attendance.desc')}
+                onSubmit={handleCreateSubmit}
+                submitLabel={t('attendance.save')}
+                submitDisabled={createLoading || createStudents.length === 0}
+                wide
+            >
+                <div className="space-y-4">
+                    <div className="flex flex-col gap-4 sm:flex-row">
+                        <div className="flex-1 space-y-2">
+                            <Label>{t('attendance.batch')}</Label>
+                            <div className="flex gap-2">
+                                <SearchableSelect
+                                    options={localBatches.map((b) => ({ value: b.id.toString(), label: b.name }))}
                                     value={createBatchId}
-                                    onValueChange={handleCreateBatchChange}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select a batch" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {batches.map((batch) => (
-                                            <SelectItem
-                                                key={batch.id}
-                                                value={batch.id.toString()}
-                                            >
-                                                {batch.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="w-full space-y-2 sm:w-auto sm:max-w-[200px]">
-                                <Label>{t('attendance.date')}</Label>
-                                <DatePicker
-                                    value={createDate}
-                                    onValueChange={handleCreateDateChange}
-                                    placeholder={t('attendance.date')}
-                                    className="w-full"
+                                    onValueChange={(v) => {
+                                        setCreateBatchId(v);
+                                        fetchStudents(v, createDate);
+                                    }}
+                                    placeholder="Select a batch"
+                                    className="flex-1"
                                 />
-                            </div>
-                        </div>
-
-                        {createLoading ? (
-                            <p className="text-sm text-muted-foreground">Loading students...</p>
-                        ) : createBatchId && createStudents.length > 0 ? (
-                            <>
-                                <div className="flex flex-wrap gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="flex-1 sm:flex-none"
-                                        onClick={() => markAllCreate('present')}
-                                    >
-                                        {t('attendance.mark_all_present')}
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="flex-1 sm:flex-none"
-                                        onClick={() => markAllCreate('absent')}
-                                    >
-                                        {t('attendance.mark_all_absent')}
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="flex-1 sm:flex-none"
-                                        onClick={() => markAllCreate(null)}
-                                    >
-                                        {t('attendance.clear_all')}
-                                    </Button>
-                                </div>
-                                <div className="space-y-2">
-                                    {createStudents.map((student) => (
-                                        <div
-                                            key={student.id}
-                                            className="flex items-center gap-3 rounded-lg border p-3"
+                                <Dialog open={batchModalOpen} onOpenChange={setBatchModalOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="size-9 shrink-0"
                                         >
-                                            <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                                                {student.name}
-                                            </span>
-                                            <div className="flex shrink-0 gap-1">
-                                                <Button
-                                                    size="sm"
-                                                    variant={student.status === 'present' ? 'default' : 'outline'}
-                                                    className="px-2"
-                                                    onClick={() => updateCreateStatus(student.id, 'present')}
-                                                >
-                                                    P
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant={student.status === 'absent' ? 'destructive' : 'outline'}
-                                                    className="px-2"
-                                                    onClick={() => updateCreateStatus(student.id, 'absent')}
-                                                >
-                                                    A
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant={student.status === 'late' ? 'secondary' : 'outline'}
-                                                    className="px-2"
-                                                    onClick={() => updateCreateStatus(student.id, 'late')}
-                                                >
-                                                    L
-                                                </Button>
-                                                {student.status !== null && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="px-2"
-                                                        onClick={() => updateCreateStatus(student.id, null)}
-                                                    >
-                                                        ✕
-                                                    </Button>
+                                            <Plus className="size-4" />
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Add Batch</DialogTitle>
+                                            <DialogDescription>
+                                                Quickly add a new batch without leaving this form.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleCreateBatch(e);
+                                                }
+                                            }}
+                                            className="space-y-4"
+                                        >
+                                            <div className="space-y-2">
+                                                <Label htmlFor="new_batch_name">Batch Name *</Label>
+                                                <Input
+                                                    id="new_batch_name"
+                                                    value={newBatchName}
+                                                    onChange={(e) => setNewBatchName(e.target.value)}
+                                                    placeholder="e.g. Class 5 - Science"
+                                                />
+                                                {batchErrors.name && (
+                                                    <p className="text-sm text-destructive">{batchErrors.name}</p>
                                                 )}
                                             </div>
+                                            <DialogFooter>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => setBatchModalOpen(false)}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    onClick={handleCreateBatch}
+                                                    disabled={batchCreating || !newBatchName.trim()}
+                                                >
+                                                    {batchCreating && (
+                                                        <Loader2 className="mr-2 size-4 animate-spin" />
+                                                    )}
+                                                    Create Batch
+                                                </Button>
+                                            </DialogFooter>
                                         </div>
-                                    ))}
-                                </div>
-                            </>
-                        ) : createBatchId ? (
-                            <p className="text-sm text-muted-foreground">
-                                No enrolled students found for this batch.
-                            </p>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">
-                                Select a batch and date to mark attendance.
-                            </p>
-                        )}
-                    </div>
-                    <SheetFooter>
-                        <Button variant="outline" onClick={() => setCreateSheet(false)}>
-                            {t('actions.cancel')}
-                        </Button>
-                        <Button onClick={handleCreateSubmit} disabled={createLoading || createStudents.length === 0}>
-                            {t('attendance.save')}
-                        </Button>
-                    </SheetFooter>
-                </SheetContent>
-            </Sheet>
-
-            <Sheet open={editSheet.open} onOpenChange={(open) => setEditSheet({ open, item: editSheet.item })}>
-                <SheetContent className="sm:max-w-md">
-                    <SheetHeader>
-                        <SheetTitle>Edit Attendance</SheetTitle>
-                        <SheetDescription>
-                            {editSheet.item && `${editSheet.item.student.name} - ${editSheet.item.batch.name}`}
-                        </SheetDescription>
-                    </SheetHeader>
-                    {editSheet.item && (
-                        <div className="space-y-4 py-4">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <p className="text-muted-foreground">Student</p>
-                                    <p className="font-medium">{editSheet.item.student.name}</p>
-                                </div>
-                                <div>
-                                    <p className="text-muted-foreground">Batch</p>
-                                    <p className="font-medium">{editSheet.item.batch.name}</p>
-                                </div>
-                                <div>
-                                    <p className="text-muted-foreground">Date</p>
-                                    <p className="font-medium">{new Date(editSheet.item.date).toLocaleDateString()}</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Status</Label>
-                                <div className="flex gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant={editStatus === 'present' ? 'default' : 'outline'}
-                                        onClick={() => setEditStatus('present')}
-                                    >
-                                        Present
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant={editStatus === 'absent' ? 'destructive' : 'outline'}
-                                        onClick={() => setEditStatus('absent')}
-                                    >
-                                        Absent
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant={editStatus === 'late' ? 'secondary' : 'outline'}
-                                        onClick={() => setEditStatus('late')}
-                                    >
-                                        Late
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Notes</Label>
-                                <Input
-                                    placeholder="Optional notes..."
-                                    value={editNotes}
-                                    onChange={(e) => setEditNotes(e.target.value)}
-                                />
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </div>
+                        <div className="w-full space-y-2 sm:w-auto sm:max-w-[200px]">
+                            <Label>{t('attendance.date')}</Label>
+                            <DatePicker
+                                value={createDate}
+                                onValueChange={handleCreateDateChange}
+                                placeholder={t('attendance.date')}
+                                className="w-full"
+                            />
+                        </div>
+                    </div>
+
+                    {createLoading ? (
+                        <p className="text-sm text-muted-foreground">Loading students...</p>
+                    ) : createBatchId && createStudents.length > 0 ? (
+                        <>
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 sm:flex-none"
+                                    onClick={() => markAllCreate('present')}
+                                >
+                                    {t('attendance.mark_all_present')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 sm:flex-none"
+                                    onClick={() => markAllCreate('absent')}
+                                >
+                                    {t('attendance.mark_all_absent')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 sm:flex-none"
+                                    onClick={() => markAllCreate(null)}
+                                >
+                                    {t('attendance.clear_all')}
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
+                                {createStudents.map((student) => (
+                                    <div
+                                        key={student.id}
+                                        className="flex items-center gap-3 rounded-lg border p-3"
+                                    >
+                                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                                            {student.name}
+                                        </span>
+                                        <div className="flex shrink-0 gap-1">
+                                            <Button
+                                                size="sm"
+                                                variant={student.status === 'present' ? 'default' : 'outline'}
+                                                className="px-2"
+                                                onClick={() => updateCreateStatus(student.id, 'present')}
+                                            >
+                                                P
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={student.status === 'absent' ? 'destructive' : 'outline'}
+                                                className="px-2"
+                                                onClick={() => updateCreateStatus(student.id, 'absent')}
+                                            >
+                                                A
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={student.status === 'late' ? 'secondary' : 'outline'}
+                                                className="px-2"
+                                                onClick={() => updateCreateStatus(student.id, 'late')}
+                                            >
+                                                L
+                                            </Button>
+                                            {student.status !== null && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="px-2"
+                                                    onClick={() => updateCreateStatus(student.id, null)}
+                                                >
+                                                    ✕
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    ) : createBatchId ? (
+                        <p className="text-sm text-muted-foreground">
+                            No enrolled students found for this batch.
+                        </p>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            Select a batch and date to mark attendance.
+                        </p>
                     )}
-                    <SheetFooter>
-                        <Button variant="outline" onClick={() => setEditSheet({ open: false, item: null })}>
-                            {t('actions.cancel')}
-                        </Button>
-                        <Button onClick={handleEditSubmit}>{t('actions.update')}</Button>
-                    </SheetFooter>
-                </SheetContent>
-            </Sheet>
+                </div>
+            </FormSheet>
+
+            <FormSheet
+                open={editSheet.open}
+                onOpenChange={(open) => setEditSheet({ open, item: editSheet.item })}
+                title="Edit Attendance"
+                description={editSheet.item ? `${editSheet.item.student.name} - ${editSheet.item.batch.name}` : undefined}
+                onSubmit={handleEditSubmit}
+            >
+                {editSheet.item && (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p className="text-muted-foreground">Student</p>
+                                <p className="font-medium">{editSheet.item.student.name}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Batch</p>
+                                <p className="font-medium">{editSheet.item.batch.name}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Date</p>
+                                <p className="font-medium">{new Date(editSheet.item.date).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Status</Label>
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant={editStatus === 'present' ? 'default' : 'outline'}
+                                    onClick={() => setEditStatus('present')}
+                                >
+                                    Present
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant={editStatus === 'absent' ? 'destructive' : 'outline'}
+                                    onClick={() => setEditStatus('absent')}
+                                >
+                                    Absent
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant={editStatus === 'late' ? 'secondary' : 'outline'}
+                                    onClick={() => setEditStatus('late')}
+                                >
+                                    Late
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Notes</Label>
+                            <Input
+                                placeholder="Optional notes..."
+                                value={editNotes}
+                                onChange={(e) => setEditNotes(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                )}
+            </FormSheet>
         </>
     );
 }

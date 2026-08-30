@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     Collapsible,
     CollapsibleContent,
@@ -13,11 +13,14 @@ import {
     SidebarGroupLabel,
     SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { useLocale } from '@/contexts/locale-context';
 import { useCurrentUrl } from '@/hooks/use-current-url';
-import type { NavItem, NavItemGroup } from '@/types';
+import type { NavItem, NavItemGroup, NavItemSection } from '@/types';
 
-function GroupItems({ items }: { items: NavItem[] }) {
+function isSection(item: NavItem | NavItemSection): item is NavItemSection {
+    return 'items' in item;
+}
+
+function ItemList({ items }: { items: NavItem[] }) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
@@ -59,68 +62,75 @@ function GroupItems({ items }: { items: NavItem[] }) {
     );
 }
 
-function GroupLabel({ label }: { label: string }) {
-    return <SidebarGroupLabel>{label}</SidebarGroupLabel>;
-}
-
-export function NavMain({ groups }: { groups: NavItemGroup[] }) {
+function SectionList({ sections }: { sections: NavItemSection[] }) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
-    const { t } = useLocale();
 
-    const activeLabel =
-        groups.find((group) =>
-            group.items.some((item) => isCurrentOrParentUrl(item.href)),
-        )?.label ?? null;
+    const initialOpen = useMemo(() => {
+        const result: Record<string, boolean> = {};
 
-    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+        for (const s of sections) {
+            if (s.items.some((item) => isCurrentOrParentUrl(item.href))) {
+                result[s.title] = true;
+            }
+        }
 
-    useEffect(() => {
-        setOpenGroups(activeLabel ? { [activeLabel]: true } : {});
-    }, [activeLabel]);
+        return result;
+    }, [sections, isCurrentOrParentUrl]);
+
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>(initialOpen);
 
     return (
-        <>
-            {groups.map((group) => {
-                const collapsible = group.collapsible !== false && group.label !== t('nav.group.main') && group.items.length >= 1;
-                const anyActive = group.items.some((item) =>
+        <div className="flex flex-col gap-1">
+            {sections.map((section) => {
+                const anyActive = section.items.some((item) =>
                     isCurrentOrParentUrl(item.href),
                 );
 
-                if (!collapsible) {
-                    return (
-                        <SidebarGroup key={group.label} className="px-2 py-0">
-                            <GroupLabel label={group.label} />
-                            <SidebarGroupContent>
-                                <GroupItems items={group.items} />
-                            </SidebarGroupContent>
-                        </SidebarGroup>
-                    );
-                }
+                return (
+                    <Collapsible
+                        key={section.title}
+                        open={openSections[section.title] ?? anyActive}
+                        onOpenChange={(open) =>
+                            setOpenSections((prev) => ({
+                                ...prev,
+                                [section.title]: open,
+                            }))
+                        }
+                        className="group/section"
+                    >
+                        <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-2 rounded-md p-2 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
+                            {section.icon && <section.icon className="size-4 shrink-0" />}
+                            <span>{section.title}</span>
+                            <ChevronRight className="ml-auto size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]/section:rotate-90" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="ml-4 border-l mt-1">
+                            <ItemList items={section.items} />
+                        </CollapsibleContent>
+                    </Collapsible>
+                );
+            })}
+        </div>
+    );
+}
+
+export function NavMain({ groups }: { groups: NavItemGroup[] }) {
+    return (
+        <>
+            {groups.map((group) => {
+                const hasSections = group.items.some((item) => isSection(item));
+                const sections = group.items.filter((item): item is NavItemSection => isSection(item));
+                const plainItems = group.items.filter((item): item is NavItem => !isSection(item));
 
                 return (
                     <SidebarGroup key={group.label} className="px-2 py-0">
-                        <Collapsible
-                            open={openGroups[group.label] ?? anyActive}
-                            onOpenChange={(open) =>
-                                setOpenGroups((prev) => ({
-                                    ...prev,
-                                    [group.label]: open,
-                                }))
-                            }
-                            className="group/collapsible"
-                        >
-                            <SidebarGroupLabel asChild>
-                                <CollapsibleTrigger className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-semibold text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
-                                    <span>{group.label}</span>
-                                    <ChevronRight className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                </CollapsibleTrigger>
-                            </SidebarGroupLabel>
-                            <CollapsibleContent>
-                                <SidebarGroupContent>
-                                    <GroupItems items={group.items} />
-                                </SidebarGroupContent>
-                            </CollapsibleContent>
-                        </Collapsible>
+                        <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            {hasSections ? (
+                                <SectionList sections={sections} />
+                            ) : (
+                                <ItemList items={plainItems} />
+                            )}
+                        </SidebarGroupContent>
                     </SidebarGroup>
                 );
             })}

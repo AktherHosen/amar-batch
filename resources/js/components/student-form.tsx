@@ -218,8 +218,8 @@ export default function StudentForm({
             setNewClassFee('');
             setClassModalOpen(false);
             toast.success(resData.message || 'Class created successfully.');
-        } catch {
-            toast.error('An error occurred while creating class.');
+        } catch (err: any) {
+            toast.error(err?.message || 'An error occurred while creating class.');
         } finally {
             setClassCreating(false);
         }

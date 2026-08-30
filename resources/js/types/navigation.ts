@@ -17,8 +17,14 @@ export type NavItem = {
     permission?: string;
 };
 
+export type NavItemSection = {
+    title: string;
+    icon?: LucideIcon | null;
+    items: NavItem[];
+};
+
 export type NavItemGroup = {
     label: string;
-    items: NavItem[];
+    items: (NavItem | NavItemSection)[];
     collapsible?: boolean;
 };
