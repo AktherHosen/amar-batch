@@ -91,7 +91,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.profile': 'প্রোফাইল',
         'nav.security': 'নিরাপত্তা',
         'nav.appearance': 'চেহারা',
-        'nav.api_access': 'API অ্যাক্সেস',
+            'nav.api_access': 'API অ্যাক্সেস',
+            'nav.upgrade': 'আপগ্রেড',
 
         // Dashboard
         'dashboard.title': 'ড্যাশবোর্ড',
@@ -1121,7 +1122,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.profile': 'Profile',
         'nav.security': 'Security',
         'nav.appearance': 'Appearance',
-        'nav.api_access': 'API Access',
+            'nav.api_access': 'API Access',
+            'nav.upgrade': 'Upgrade',
 
         // Dashboard
         'dashboard.title': 'Dashboard',
