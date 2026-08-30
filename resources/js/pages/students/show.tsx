@@ -676,7 +676,7 @@ export default function StudentsShow({
                                                 <img
                                                     src={`/storage/${student.photo}`}
                                                     alt={student.name}
-                                                    className="size-full rounded-2xl object-cover"
+                                                    className="size-24 rounded-lg object-cover"
                                                 />
                                             ) : (
                                                 <span
@@ -1262,6 +1262,9 @@ export default function StudentsShow({
                         width: 100% !important;
                         margin: 0 !important;
                         page-break-inside: avoid;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                        color-adjust: exact !important;
                     }
                     #print-area .px-6 {
                         padding-left: 1rem !important;
