@@ -1,7 +1,9 @@
 ﻿import { Head, Link, usePage } from '@inertiajs/react';
 import {
+    ChevronRight,
     GraduationCap,
     Layers,
+    UserPlus,
     Users,
     Wallet,
 } from 'lucide-react';
@@ -79,6 +81,7 @@ type RecentStudent = {
     name: string;
     coaching_class: { id: number; name: string } | null;
     status: string;
+    created_at: string;
 };
 
 type ActiveNotice = {
@@ -152,6 +155,30 @@ function getMonthName(monthIndex: number, t: (key: string) => string) {
     ];
 
     return t(months[monthIndex]);
+}
+
+function timeAgo(dateStr: string): string {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) {
+        return 'just now';
+    }
+
+    if (seconds < 3600) {
+        return `${Math.floor(seconds / 60)}m ago`;
+    }
+
+    if (seconds < 86400) {
+        return `${Math.floor(seconds / 3600)}h ago`;
+    }
+
+    if (seconds < 604800) {
+        return `${Math.floor(seconds / 86400)}d ago`;
+    }
+
+    return date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
 }
 
 export default function Dashboard({
@@ -311,30 +338,30 @@ export default function Dashboard({
                             </CardHeader>
                             <CardContent>
                                 {recentStudents.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {recentStudents.map((student) => (
+                                    <div className="max-h-[400px] overflow-y-auto">
+                                        {recentStudents.map((student, idx) => (
                                             <Link
                                                 key={student.id}
                                                 href={students.show(student.id).url}
-                                                className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                                                className={`flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 sm:px-4 ${
+                                                    idx !== recentStudents.length - 1 ? 'border-b border-border/40' : ''
+                                                }`}
                                             >
+                                                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
+                                                    <UserPlus className="size-4 text-blue-600" />
+                                                </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium">
-                                                        {student.name}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
+                                                    <p className="truncate text-sm font-medium">{student.name}</p>
+                                                    <p className="truncate text-xs text-muted-foreground">
                                                         {student.coaching_class?.name || '-'}
                                                     </p>
                                                 </div>
-                                                <Badge
-                                                    variant={
-                                                        student.status === 'active' ? 'default' : 'secondary'
-                                                    }
-                                                >
-                                                    {student.status === 'active'
-                                                        ? t('students.active')
-                                                        : t('students.inactive')}
-                                                </Badge>
+                                                <div className="flex shrink-0 items-center gap-1">
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {timeAgo(student.created_at)}
+                                                    </span>
+                                                    <ChevronRight className="size-3 text-muted-foreground/50" />
+                                                </div>
                                             </Link>
                                         ))}
                                     </div>
@@ -343,8 +370,6 @@ export default function Dashboard({
                                         icon={Users}
                                         title={t('dashboard.no_students')}
                                         description={t('dashboard.no_students')}
-                                        actionLabel={t('dashboard.add_student')}
-                                        actionHref="/students/create"
                                     />
                                 )}
                             </CardContent>
@@ -404,29 +429,31 @@ export default function Dashboard({
                             </CardHeader>
                             <CardContent>
                                 {recentStudents.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {recentStudents.map((student) => (
+                                    <div className="max-h-[400px] overflow-y-auto">
+                                        {recentStudents.map((student, idx) => (
                                             <div
                                                 key={student.id}
-                                                className="flex items-center justify-between rounded-lg border p-3"
+                                                className={`flex items-center gap-3 px-3 py-2.5 sm:px-4 ${
+                                                    idx !== recentStudents.length - 1 ? 'border-b border-border/40' : ''
+                                                }`}
                                             >
+                                                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
+                                                    <UserPlus className="size-4 text-blue-600" />
+                                                </div>
                                                 <div className="min-w-0 flex-1">
                                                     <p className="truncate text-sm font-medium">
                                                         {student.name}
                                                     </p>
-                                                    <p className="text-xs text-muted-foreground">
+                                                    <p className="truncate text-xs text-muted-foreground">
                                                         {student.coaching_class?.name || '-'}
                                                     </p>
                                                 </div>
-                                                <Badge
-                                                    variant={
-                                                        student.status === 'active' ? 'default' : 'secondary'
-                                                    }
-                                                >
-                                                    {student.status === 'active'
-                                                        ? t('students.active')
-                                                        : t('students.inactive')}
-                                                </Badge>
+                                                <div className="flex shrink-0 items-center gap-1">
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {timeAgo(student.created_at)}
+                                                    </span>
+                                                    <ChevronRight className="size-3 text-muted-foreground/50" />
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -446,22 +473,26 @@ export default function Dashboard({
                                 <CardTitle>{t('dashboard.batch_history')}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex gap-4">
-                                    <div className="text-center">
-                                        <div className="text-xl font-bold text-green-600 sm:text-2xl">
+                                <div className="max-h-[400px] overflow-y-auto space-y-2">
+                                    <div className="flex items-center justify-between rounded-lg border p-3">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium text-green-600">
+                                                {t('dashboard.completed')}
+                                            </p>
+                                        </div>
+                                        <span className="shrink-0 text-sm font-bold text-green-600">
                                             {batchHistory.completed}
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {t('dashboard.completed')}
-                                        </div>
+                                        </span>
                                     </div>
-                                    <div className="text-center">
-                                        <div className="text-xl font-bold text-blue-600 sm:text-2xl">
+                                    <div className="flex items-center justify-between rounded-lg border p-3">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium text-blue-600">
+                                                {t('dashboard.ongoing')}
+                                            </p>
+                                        </div>
+                                        <span className="shrink-0 text-sm font-bold text-blue-600">
                                             {batchHistory.active}
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {t('dashboard.ongoing')}
-                                        </div>
+                                        </span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -480,7 +511,7 @@ export default function Dashboard({
                             </CardHeader>
                             <CardContent>
                                 {recentFeePayments.length > 0 ? (
-                                    <div className="space-y-2">
+                                    <div className="max-h-[400px] overflow-y-auto space-y-2">
                                         {recentFeePayments.map((payment) => (
                                             <div
                                                 key={payment.id}
@@ -490,7 +521,7 @@ export default function Dashboard({
                                                     <p className="truncate text-sm font-medium">
                                                         {payment.student.name}
                                                     </p>
-                                                    <p className="text-xs text-muted-foreground">
+                                                    <p className="truncate text-xs text-muted-foreground">
                                                         {getMonthNameFn(payment.month)} {payment.year}
                                                     </p>
                                                 </div>

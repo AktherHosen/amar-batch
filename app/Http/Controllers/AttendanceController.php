@@ -154,6 +154,39 @@ class AttendanceController extends Controller
         return back()->with('toast', ['type' => 'success', 'message' => 'Attendance record deleted.']);
     }
 
+    public function students(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $tenantId = $request->user()->tenant_id;
+        $batchId = $request->batch_id;
+        $date = $request->date ?? now()->toDateString();
+
+        if (! $batchId) {
+            return response()->json([]);
+        }
+
+        $students = Enrollment::where('tenant_id', $tenantId)->where('batch_id', $batchId)
+            ->where('status', 'active')
+            ->whereHas('student', fn ($q) => $q->where('tenant_id', $tenantId)->where('status', 'active'))
+            ->with('student')
+            ->get()
+            ->map(function ($enrollment) use ($batchId, $date) {
+                $existing = Attendance::where('student_id', $enrollment->student_id)
+                    ->where('batch_id', $batchId)
+                    ->whereDate('date', $date)
+                    ->first();
+
+                return [
+                    'id' => $enrollment->student->id,
+                    'name' => $enrollment->student->name,
+                    'status' => $existing->status ?? null,
+                    'attendance_id' => $existing->id ?? null,
+                    'notes' => $existing->notes ?? '',
+                ];
+            });
+
+        return response()->json($students);
+    }
+
     public function import(Request $request): RedirectResponse
     {
         $this->authorize('create', Attendance::class);

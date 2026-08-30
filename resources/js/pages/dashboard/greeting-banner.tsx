@@ -53,7 +53,7 @@ export default function GreetingBanner({ userName, subtitle, isTrial, trialEndsA
         >
             <div className="relative overflow-hidden rounded-xl bg-primary/5 px-4 py-3 sm:px-6 sm:py-4">
                 <div className="absolute -right-4 -top-4 text-primary/10 sm:-right-2 sm:-top-2">
-                    <GreetingIcon className="size-16 sm:size-20 md:size-24" strokeWidth={1} />
+                    <GreetingIcon className="size-4 sm:size-6 md:size-8 stroke-muted" strokeWidth={1} />
                 </div>
                 <div className="relative flex items-center gap-3">
                     <div className="min-w-0 flex-1">

@@ -113,7 +113,7 @@ class StudentController extends Controller
         return to_route('students.index')->with('toast', ['type' => 'success', 'message' => 'Student created successfully.']);
     }
 
-    public function show(Student $student): Response
+    public function show(Request $request, Student $student): Response
     {
         $this->authorize('view', $student);
 

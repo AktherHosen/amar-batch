@@ -58,54 +58,56 @@ export default function ActivityFeed({ items }: { items: ActivityItem[] }) {
                 </CardHeader>
                 <CardContent>
                     {items.length > 0 ? (
-                        <motion.div
-                            initial="hidden"
-                            animate="visible"
-                            variants={{
-                                hidden: {},
-                                visible: { transition: { staggerChildren: 0.05 } },
-                            }}
-                        >
-                            {items.map((item, idx) => {
-                                const config = typeConfig[item.type] ?? typeConfig.student;
-                                const Icon = config.icon;
+                        <div className="max-h-[400px] overflow-y-auto">
+                            <motion.div
+                                initial="hidden"
+                                animate="visible"
+                                variants={{
+                                    hidden: {},
+                                    visible: { transition: { staggerChildren: 0.05 } },
+                                }}
+                            >
+                                {items.map((item, idx) => {
+                                    const config = typeConfig[item.type] ?? typeConfig.student;
+                                    const Icon = config.icon;
 
-                                return (
-                                    <motion.div
-                                        key={`${item.type}-${item.title}-${idx}`}
-                                        variants={{
-                                            hidden: { opacity: 0, x: -8 },
-                                            visible: { opacity: 1, x: 0 },
-                                        }}
-                                    >
-                                        <Link
-                                            href={item.url}
-                                            className={`flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 sm:px-4 ${
-                                                idx !== items.length - 1 ? 'border-b border-border/40' : ''
-                                            }`}
+                                    return (
+                                        <motion.div
+                                            key={`${item.type}-${item.title}-${idx}`}
+                                            variants={{
+                                                hidden: { opacity: 0, x: -8 },
+                                                visible: { opacity: 1, x: 0 },
+                                            }}
                                         >
-                                            <div
-                                                className={`flex size-8 shrink-0 items-center justify-center rounded-full ${config.bg}`}
+                                            <Link
+                                                href={item.url}
+                                                className={`flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 sm:px-4 ${
+                                                    idx !== items.length - 1 ? 'border-b border-border/40' : ''
+                                                }`}
                                             >
-                                                <Icon className={`size-4 ${config.color}`} />
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium">{item.title}</p>
-                                                <p className="truncate text-xs text-muted-foreground">
-                                                    {item.subtitle}
-                                                </p>
-                                            </div>
-                                            <div className="flex shrink-0 items-center gap-1">
-                                                <span className="text-[10px] text-muted-foreground">
-                                                    {timeAgo(item.date)}
-                                                </span>
-                                                <ChevronRight className="size-3 text-muted-foreground/50" />
-                                            </div>
-                                        </Link>
-                                    </motion.div>
-                                );
-                            })}
-                        </motion.div>
+                                                <div
+                                                    className={`flex size-8 shrink-0 items-center justify-center rounded-full ${config.bg}`}
+                                                >
+                                                    <Icon className={`size-4 ${config.color}`} />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium">{item.title}</p>
+                                                    <p className="truncate text-xs text-muted-foreground">
+                                                        {item.subtitle}
+                                                    </p>
+                                                </div>
+                                                <div className="flex shrink-0 items-center gap-1">
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {timeAgo(item.date)}
+                                                    </span>
+                                                    <ChevronRight className="size-3 text-muted-foreground/50" />
+                                                </div>
+                                            </Link>
+                                        </motion.div>
+                                    );
+                                })}
+                            </motion.div>
+                        </div>
                     ) : (
                         <DashboardEmptyState
                             icon={Users}

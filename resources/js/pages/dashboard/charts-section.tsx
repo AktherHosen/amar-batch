@@ -17,7 +17,6 @@ import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLocale } from '@/contexts/locale-context';
-import DashboardEmptyState from './empty-state';
 
 ChartJS.register(
     CategoryScale,
@@ -102,7 +101,7 @@ export default function ChartsSection({
                             <CardHeader>
                                 <CardTitle className="text-sm">{t('dashboard.today_attendance')}</CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="flex items-center justify-center">
                                 {hasAttendance ? (
                                     <div className="h-[200px] w-full">
                                         <Doughnut
@@ -149,13 +148,13 @@ export default function ChartsSection({
                                         />
                                     </div>
                                 ) : (
-                                    <DashboardEmptyState
-                                        icon={BarChart3}
-                                        title={t('dashboard.no_attendance_today') ?? 'No attendance recorded today'}
-                                        description={t('dashboard.mark_attendance_desc') ?? 'Mark attendance to see analytics'}
-                                        actionLabel={t('dashboard.mark_attendance')}
-                                        actionHref="/attendance/create"
-                                    />
+                                    <div className="flex h-[200px] w-full flex-col items-center justify-center text-center">
+                                        <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+                                            <BarChart3 className="size-5 text-muted-foreground" />
+                                        </div>
+                                        <p className="mt-2 text-sm font-medium">{t('dashboard.no_attendance_today') ?? 'No attendance recorded today'}</p>
+                                        <p className="mt-1 text-xs text-muted-foreground">{t('dashboard.mark_attendance_desc') ?? 'Mark attendance to see analytics'}</p>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>
@@ -172,7 +171,7 @@ export default function ChartsSection({
                             <CardHeader>
                                 <CardTitle className="text-sm">{t('dashboard.enrollment_trend')}</CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="flex items-center justify-center">
                                 {hasEnrollment ? (
                                     <div className="h-[200px] w-full">
                                         <Bar
@@ -199,11 +198,13 @@ export default function ChartsSection({
                                         />
                                     </div>
                                 ) : (
-                                    <DashboardEmptyState
-                                        icon={BarChart3}
-                                        title={t('dashboard.no_enrollments') ?? 'No enrollment data'}
-                                        description={t('dashboard.no_enrollments_desc') ?? 'Enrollment trends will appear here'}
-                                    />
+                                    <div className="flex h-[200px] w-full flex-col items-center justify-center text-center">
+                                        <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+                                            <BarChart3 className="size-5 text-muted-foreground" />
+                                        </div>
+                                        <p className="mt-2 text-sm font-medium">{t('dashboard.no_enrollments') ?? 'No enrollment data'}</p>
+                                        <p className="mt-1 text-xs text-muted-foreground">{t('dashboard.no_enrollments_desc') ?? 'Enrollment trends will appear here'}</p>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>
@@ -215,13 +216,12 @@ export default function ChartsSection({
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: 0.3 }}
-                        className="sm:col-span-2 lg:col-span-1"
                     >
                         <Card className="h-full">
                             <CardHeader>
                                 <CardTitle className="text-sm">{t('dashboard.fee_collection')}</CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="flex items-center justify-center">
                                 {hasFee ? (
                                     <div className="h-[200px] w-full">
                                         <Line
@@ -258,11 +258,13 @@ export default function ChartsSection({
                                         />
                                     </div>
                                 ) : (
-                                    <DashboardEmptyState
-                                        icon={BarChart3}
-                                        title={t('dashboard.no_fees') ?? 'No fee data'}
-                                        description={t('dashboard.no_fees_desc') ?? 'Fee collection trends will appear here'}
-                                    />
+                                    <div className="flex h-[200px] w-full flex-col items-center justify-center text-center">
+                                        <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+                                            <BarChart3 className="size-5 text-muted-foreground" />
+                                        </div>
+                                        <p className="mt-2 text-sm font-medium">{t('dashboard.no_fees') ?? 'No fee data'}</p>
+                                        <p className="mt-1 text-xs text-muted-foreground">{t('dashboard.no_fees_desc') ?? 'Fee collection trends will appear here'}</p>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>

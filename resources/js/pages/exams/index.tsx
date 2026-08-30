@@ -1,5 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
+import { EllipsisVertical, Eye, PenLine, Plus, Trash2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import CellTitle from '@/components/cell-title';
@@ -15,6 +15,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -22,13 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     Sheet,
     SheetContent,
@@ -100,6 +103,11 @@ export default function ExamsIndex({
     }>({ open: false, item: null });
     const [sheetOpen, setSheetOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<Exam | null>(null);
+    const [batchModalOpen, setBatchModalOpen] = useState(false);
+    const [newBatchName, setNewBatchName] = useState('');
+    const [batchCreating, setBatchCreating] = useState(false);
+    const [batchErrors, setBatchErrors] = useState<Record<string, string>>({});
+    const [localBatches, setLocalBatches] = useState<Batch[]>(batches);
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
         title: '',
@@ -188,6 +196,64 @@ export default function ExamsIndex({
             router.delete(exams.destroy(deleteDialog.item.id));
             toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
+        }
+    };
+
+    const handleCreateBatch = async (e?: React.SyntheticEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        setBatchCreating(true);
+        setBatchErrors({});
+
+        try {
+            const xsrfToken = decodeURIComponent(
+                document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '',
+            );
+
+            const response = await fetch('/batches', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-XSRF-TOKEN': xsrfToken,
+                },
+                body: JSON.stringify({
+                    name: newBatchName,
+                    capacity: 30,
+                    status: 'active',
+                }),
+            });
+
+            const resData = await response.json();
+
+            if (!response.ok) {
+                if (response.status === 422 && resData.errors) {
+                    const formattedErrors: Record<string, string> = {};
+                    Object.entries(resData.errors).forEach(([k, msgs]: [string, any]) => {
+                        formattedErrors[k] = Array.isArray(msgs) ? msgs[0] : String(msgs);
+                    });
+                    setBatchErrors(formattedErrors);
+                } else {
+                    toast.error(resData.message || 'Failed to create batch.');
+                }
+
+                return;
+            }
+
+            const createdBatch = resData.batch || resData;
+            setLocalBatches((prev) => [...prev, { id: createdBatch.id, name: createdBatch.name }]);
+            setData('batch_id', String(createdBatch.id));
+            setNewBatchName('');
+            setBatchModalOpen(false);
+            toast.success(resData.message || 'Batch created successfully.');
+        } catch {
+            toast.error('An error occurred while creating batch.');
+        } finally {
+            setBatchCreating(false);
         }
     };
 
@@ -451,28 +517,83 @@ export default function ExamsIndex({
                         </div>
                         <div className="space-y-2">
                             <Label>{t('exams.batch')}</Label>
-                            <Select
-                                value={data.batch_id}
-                                onValueChange={(value) =>
-                                    setData('batch_id', value)
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue
-                                        placeholder={t('exams.select_batch')}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {batches.map((batch) => (
-                                        <SelectItem
-                                            key={batch.id}
-                                            value={String(batch.id)}
+                            <div className="flex gap-1.5 items-center">
+                                <SearchableSelect
+                                    options={localBatches.map((batch) => ({
+                                        value: String(batch.id),
+                                        label: batch.name,
+                                        searchText: batch.name,
+                                    }))}
+                                    value={data.batch_id}
+                                    onValueChange={(value) => setData('batch_id', value)}
+                                    placeholder={t('exams.select_batch')}
+                                    emptyText="No batches available"
+                                    noResultsText="No batches found"
+                                    className="w-full flex-1"
+                                />
+                                <Dialog open={batchModalOpen} onOpenChange={setBatchModalOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="size-9 shrink-0"
                                         >
-                                            {batch.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                            <Plus className="size-4" />
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Add Batch</DialogTitle>
+                                            <DialogDescription>
+                                                Quickly add a new batch without leaving this form.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleCreateBatch(e);
+                                                }
+                                            }}
+                                            className="space-y-4"
+                                        >
+                                            <div className="space-y-2">
+                                                <Label htmlFor="new_batch_name">
+                                                    Batch Name *
+                                                </Label>
+                                                <Input
+                                                    id="new_batch_name"
+                                                    value={newBatchName}
+                                                    onChange={(e) => setNewBatchName(e.target.value)}
+                                                    placeholder="e.g. Class 5 - Science"
+                                                />
+                                                <InputError message={batchErrors.name} />
+                                            </div>
+                                            <DialogFooter>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => setBatchModalOpen(false)}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    onClick={handleCreateBatch}
+                                                    disabled={batchCreating || !newBatchName.trim()}
+                                                >
+                                                    {batchCreating && (
+                                                        <Loader2 className="mr-2 size-4 animate-spin" />
+                                                    )}
+                                                    Create Batch
+                                                </Button>
+                                            </DialogFooter>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
                             <InputError message={errors.batch_id} />
                         </div>
                         <div className="space-y-2">

@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { EllipsisVertical, PenLine, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -20,6 +20,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -27,6 +28,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import {
     Tooltip,
     TooltipContent,
@@ -88,6 +97,17 @@ export default function AttendanceIndex({
         open: boolean;
         item: AttendanceRecord | null;
     }>({ open: false, item: null });
+    const [editSheet, setEditSheet] = useState<{
+        open: boolean;
+        item: AttendanceRecord | null;
+    }>({ open: false, item: null });
+    const [editStatus, setEditStatus] = useState<'present' | 'absent' | 'late'>('present');
+    const [editNotes, setEditNotes] = useState('');
+    const [createSheet, setCreateSheet] = useState(false);
+    const [createBatchId, setCreateBatchId] = useState('');
+    const [createDate, setCreateDate] = useState(new Date().toISOString().split('T')[0]);
+    const [createStudents, setCreateStudents] = useState<{ id: number; name: string; status: 'present' | 'absent' | 'late' | null; notes: string }[]>([]);
+    const [createLoading, setCreateLoading] = useState(false);
 
     const handleFilter = (overrideDate?: string) => {
         router.get(
@@ -128,10 +148,105 @@ export default function AttendanceIndex({
         setDeleteDialog({ open: true, item: record });
     };
 
+    const handleEdit = (record: AttendanceRecord) => {
+        setEditSheet({ open: true, item: record });
+        setEditStatus(record.status);
+        setEditNotes(record.notes || '');
+    };
+
+    const handleEditSubmit = () => {
+        if (!editSheet.item) {
+            return;
+        }
+
+        router.put(
+            attendance.update(editSheet.item.id),
+            { status: editStatus, notes: editNotes || null },
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(t('toast.updated_successfully'));
+                    setEditSheet({ open: false, item: null });
+                    router.reload({ only: ['attendances'] });
+                },
+            },
+        );
+    };
+
+    const fetchStudents = async (batchId: string, date: string) => {
+        if (!batchId) {
+            setCreateStudents([]);
+
+            return;
+        }
+
+        setCreateLoading(true);
+
+        try {
+            const response = await fetch(`/attendance/students?batch_id=${batchId}&date=${date}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+            });
+            const data = await response.json();
+            setCreateStudents(data);
+        } catch {
+            setCreateStudents([]);
+        } finally {
+            setCreateLoading(false);
+        }
+    };
+
+    const handleCreateBatchChange = (value: string) => {
+        setCreateBatchId(value);
+        fetchStudents(value, createDate);
+    };
+
+    const handleCreateDateChange = (value: string) => {
+        setCreateDate(value);
+        fetchStudents(createBatchId, value);
+    };
+
+    const updateCreateStatus = (studentId: number, status: 'present' | 'absent' | 'late' | null) => {
+        setCreateStudents((prev) =>
+            prev.map((s) => (s.id === studentId ? { ...s, status } : s)),
+        );
+    };
+
+    const markAllCreate = (status: 'present' | 'absent' | 'late' | null) => {
+        setCreateStudents((prev) => prev.map((s) => ({ ...s, status })));
+    };
+
+    const handleCreateSubmit = () => {
+        if (!createBatchId || !createDate || createStudents.length === 0) {
+            return;
+        }
+
+        router.post(attendance.store(), {
+            batch_id: parseInt(createBatchId),
+            date: createDate,
+            attendances: createStudents.map((s) => ({
+                student_id: s.id,
+                status: s.status,
+                notes: s.notes || null,
+            })),
+        }, {
+            preserveState: true,
+            onSuccess: () => {
+                toast.success(t('toast.created_successfully'));
+                setCreateSheet(false);
+                setCreateBatchId('');
+                setCreateStudents([]);
+                router.reload({ only: ['attendances'] });
+            },
+        });
+    };
+
     const handleStatusChange = (record: AttendanceRecord, value: string) => {
         if (value === record.status) {
-return;
-}
+            return;
+        }
 
         router.put(
             attendance.update(record.id),
@@ -309,11 +424,7 @@ return '-';
                                       <DropdownMenuContent align="end">
                                           <DropdownMenuItem
                                               onClick={() =>
-                                                  router.get(
-                                                      attendance.edit(
-                                                          record.id,
-                                                      ),
-                                                  )
+                                                  handleEdit(record)
                                               }
                                           >
                                                <PenLine className="mr-2 size-4" />
@@ -363,7 +474,7 @@ return '-';
                             <PageActions
                                 isAdmin={isAdmin || isTeacher}
                                 createLabel={t('attendance.create')}
-                                onCreate={() => router.get(attendance.create())}
+                                onCreate={() => setCreateSheet(true)}
                                 exportTitle={t('attendance.title')}
                                 exportFilename="attendance"
                                 exportHeaders={[
@@ -490,6 +601,219 @@ return '-';
                 variant="destructive"
                 onConfirm={confirmDelete}
             />
+
+            <Sheet open={createSheet} onOpenChange={setCreateSheet}>
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>{t('attendance.mark')}</SheetTitle>
+                        <SheetDescription>
+                            {t('attendance.desc')}
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="flex flex-col gap-4 sm:flex-row">
+                            <div className="flex-1 space-y-2">
+                                <Label>{t('attendance.batch')}</Label>
+                                <Select
+                                    value={createBatchId}
+                                    onValueChange={handleCreateBatchChange}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select a batch" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {batches.map((batch) => (
+                                            <SelectItem
+                                                key={batch.id}
+                                                value={batch.id.toString()}
+                                            >
+                                                {batch.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="w-full space-y-2 sm:w-auto sm:max-w-[200px]">
+                                <Label>{t('attendance.date')}</Label>
+                                <DatePicker
+                                    value={createDate}
+                                    onValueChange={handleCreateDateChange}
+                                    placeholder={t('attendance.date')}
+                                    className="w-full"
+                                />
+                            </div>
+                        </div>
+
+                        {createLoading ? (
+                            <p className="text-sm text-muted-foreground">Loading students...</p>
+                        ) : createBatchId && createStudents.length > 0 ? (
+                            <>
+                                <div className="flex flex-wrap gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none"
+                                        onClick={() => markAllCreate('present')}
+                                    >
+                                        {t('attendance.mark_all_present')}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none"
+                                        onClick={() => markAllCreate('absent')}
+                                    >
+                                        {t('attendance.mark_all_absent')}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none"
+                                        onClick={() => markAllCreate(null)}
+                                    >
+                                        {t('attendance.clear_all')}
+                                    </Button>
+                                </div>
+                                <div className="space-y-2">
+                                    {createStudents.map((student) => (
+                                        <div
+                                            key={student.id}
+                                            className="flex items-center gap-3 rounded-lg border p-3"
+                                        >
+                                            <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                                                {student.name}
+                                            </span>
+                                            <div className="flex shrink-0 gap-1">
+                                                <Button
+                                                    size="sm"
+                                                    variant={student.status === 'present' ? 'default' : 'outline'}
+                                                    className="px-2"
+                                                    onClick={() => updateCreateStatus(student.id, 'present')}
+                                                >
+                                                    P
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant={student.status === 'absent' ? 'destructive' : 'outline'}
+                                                    className="px-2"
+                                                    onClick={() => updateCreateStatus(student.id, 'absent')}
+                                                >
+                                                    A
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant={student.status === 'late' ? 'secondary' : 'outline'}
+                                                    className="px-2"
+                                                    onClick={() => updateCreateStatus(student.id, 'late')}
+                                                >
+                                                    L
+                                                </Button>
+                                                {student.status !== null && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="px-2"
+                                                        onClick={() => updateCreateStatus(student.id, null)}
+                                                    >
+                                                        ✕
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : createBatchId ? (
+                            <p className="text-sm text-muted-foreground">
+                                No enrolled students found for this batch.
+                            </p>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                Select a batch and date to mark attendance.
+                            </p>
+                        )}
+                    </div>
+                    <SheetFooter>
+                        <Button variant="outline" onClick={() => setCreateSheet(false)}>
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button onClick={handleCreateSubmit} disabled={createLoading || createStudents.length === 0}>
+                            {t('attendance.save')}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
+
+            <Sheet open={editSheet.open} onOpenChange={(open) => setEditSheet({ open, item: editSheet.item })}>
+                <SheetContent className="sm:max-w-md">
+                    <SheetHeader>
+                        <SheetTitle>Edit Attendance</SheetTitle>
+                        <SheetDescription>
+                            {editSheet.item && `${editSheet.item.student.name} - ${editSheet.item.batch.name}`}
+                        </SheetDescription>
+                    </SheetHeader>
+                    {editSheet.item && (
+                        <div className="space-y-4 py-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p className="text-muted-foreground">Student</p>
+                                    <p className="font-medium">{editSheet.item.student.name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground">Batch</p>
+                                    <p className="font-medium">{editSheet.item.batch.name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground">Date</p>
+                                    <p className="font-medium">{new Date(editSheet.item.date).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Status</Label>
+                                <div className="flex gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant={editStatus === 'present' ? 'default' : 'outline'}
+                                        onClick={() => setEditStatus('present')}
+                                    >
+                                        Present
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant={editStatus === 'absent' ? 'destructive' : 'outline'}
+                                        onClick={() => setEditStatus('absent')}
+                                    >
+                                        Absent
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant={editStatus === 'late' ? 'secondary' : 'outline'}
+                                        onClick={() => setEditStatus('late')}
+                                    >
+                                        Late
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Notes</Label>
+                                <Input
+                                    placeholder="Optional notes..."
+                                    value={editNotes}
+                                    onChange={(e) => setEditNotes(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    )}
+                    <SheetFooter>
+                        <Button variant="outline" onClick={() => setEditSheet({ open: false, item: null })}>
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button onClick={handleEditSubmit}>{t('actions.update')}</Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }
