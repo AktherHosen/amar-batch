@@ -60,13 +60,6 @@ type AttendanceStat = {
     late: number;
 };
 
-type Enrollment = {
-    id: number;
-    student: { name: string };
-    batch: { name: string };
-    enrolled_at: string;
-};
-
 type FeePayment = {
     id: number;
     student: { name: string };
@@ -133,7 +126,6 @@ type PageProps = {
     monthlyRevenue?: MonthlyRevenue;
     pendingApprovals?: number;
     lowCapacityBatches?: LowCapacityBatch[];
-    recentEnrollments: Enrollment[];
     recentFeePayments: FeePayment[];
     todayAttendance: AttendanceStat;
     recentStudents: RecentStudent[];
@@ -320,10 +312,8 @@ export default function Dashboard({
                     features={planFeatures}
                 />
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-3">
                     <ActivityFeed items={recentActivity} />
-
-
 
                     {isAdmin && (
                         <Card>
@@ -376,7 +366,66 @@ export default function Dashboard({
                         </Card>
                     )}
 
-                    {isTeacher && assignedBatches && (
+                    {isAdmin && hasFees && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('dashboard.recent_payments')}</CardTitle>
+                                <Link
+                                    href={fees.index().url}
+                                    className="text-xs text-muted-foreground hover:underline"
+                                >
+                                    {t('actions.view_all')}
+                                </Link>
+                            </CardHeader>
+                            <CardContent>
+                                {recentFeePayments.length > 0 ? (
+                                    <div className="max-h-[400px] overflow-y-auto">
+                                        {recentFeePayments.map((payment, idx) => (
+                                            <div
+                                                key={payment.id}
+                                                className={`flex items-center gap-3 px-3 py-2.5 sm:px-4 ${
+                                                    idx !== recentFeePayments.length - 1 ? 'border-b border-border/40' : ''
+                                                }`}
+                                            >
+                                                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-green-500/10">
+                                                    <Wallet className="size-4 text-green-600" />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium">
+                                                        {payment.student.name}
+                                                    </p>
+                                                    <p className="truncate text-xs text-muted-foreground">
+                                                        {getMonthNameFn(payment.month)} {payment.year}
+                                                    </p>
+                                                </div>
+                                                <span className="shrink-0 text-sm font-medium">
+                                                    {Number(payment.amount_paid).toFixed(0)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <DashboardEmptyState
+                                        icon={Wallet}
+                                        title={t('dashboard.no_payments')}
+                                        description={t('dashboard.no_payments')}
+                                    />
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {!hasFees && isAdmin && (
+                        <UpgradePrompt
+                            feature="fees"
+                            title="Fee Management"
+                            description="Track and manage student fee payments."
+                        />
+                    )}
+                </div>
+
+                {isTeacher && assignedBatches && (
+                    <div className="grid gap-4 md:grid-cols-2">
                         <Card>
                             <CardHeader>
                                 <CardTitle>{t('dashboard.my_assigned_batches')}</CardTitle>
@@ -419,137 +468,40 @@ export default function Dashboard({
                                 )}
                             </CardContent>
                         </Card>
-                    )}
 
-
-                    {isTeacher && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t('dashboard.recent_students')}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {recentStudents.length > 0 ? (
-                                    <div className="max-h-[400px] overflow-y-auto">
-                                        {recentStudents.map((student, idx) => (
-                                            <div
-                                                key={student.id}
-                                                className={`flex items-center gap-3 px-3 py-2.5 sm:px-4 ${
-                                                    idx !== recentStudents.length - 1 ? 'border-b border-border/40' : ''
-                                                }`}
-                                            >
-                                                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
-                                                    <UserPlus className="size-4 text-blue-600" />
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium">
-                                                        {student.name}
-                                                    </p>
-                                                    <p className="truncate text-xs text-muted-foreground">
-                                                        {student.coaching_class?.name || '-'}
-                                                    </p>
-                                                </div>
-                                                <div className="flex shrink-0 items-center gap-1">
-                                                    <span className="text-[10px] text-muted-foreground">
-                                                        {timeAgo(student.created_at)}
-                                                    </span>
-                                                    <ChevronRight className="size-3 text-muted-foreground/50" />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <DashboardEmptyState
-                                        icon={Users}
-                                        title={t('dashboard.no_students_in_batches')}
-                                        description={t('dashboard.no_students_in_batches')}
-                                    />
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
-                    {batchHistory && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t('dashboard.batch_history')}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="max-h-[400px] overflow-y-auto space-y-2">
-                                    <div className="flex items-center justify-between rounded-lg border p-3">
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium text-green-600">
-                                                {t('dashboard.completed')}
-                                            </p>
-                                        </div>
-                                        <span className="shrink-0 text-sm font-bold text-green-600">
-                                            {batchHistory.completed}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between rounded-lg border p-3">
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium text-blue-600">
-                                                {t('dashboard.ongoing')}
-                                            </p>
-                                        </div>
-                                        <span className="shrink-0 text-sm font-bold text-blue-600">
-                                            {batchHistory.active}
-                                        </span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                    {isAdmin && hasFees && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t('dashboard.recent_payments')}</CardTitle>
-                                <Link
-                                    href={fees.index().url}
-                                    className="text-xs text-muted-foreground hover:underline"
-                                >
-                                    {t('actions.view_all')}
-                                </Link>
-                            </CardHeader>
-                            <CardContent>
-                                {recentFeePayments.length > 0 ? (
+                        {batchHistory && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>{t('dashboard.batch_history')}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
                                     <div className="max-h-[400px] overflow-y-auto space-y-2">
-                                        {recentFeePayments.map((payment) => (
-                                            <div
-                                                key={payment.id}
-                                                className="flex items-center justify-between rounded-lg border p-3"
-                                            >
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium">
-                                                        {payment.student.name}
-                                                    </p>
-                                                    <p className="truncate text-xs text-muted-foreground">
-                                                        {getMonthNameFn(payment.month)} {payment.year}
-                                                    </p>
-                                                </div>
-                                                <span className="shrink-0 text-sm font-medium">
-                                                    {Number(payment.amount_paid).toFixed(0)}
-                                                </span>
+                                        <div className="flex items-center justify-between rounded-lg border p-3">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-medium text-green-600">
+                                                    {t('dashboard.completed')}
+                                                </p>
                                             </div>
-                                        ))}
+                                            <span className="shrink-0 text-sm font-bold text-green-600">
+                                                {batchHistory.completed}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between rounded-lg border p-3">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-medium text-blue-600">
+                                                    {t('dashboard.ongoing')}
+                                                </p>
+                                            </div>
+                                            <span className="shrink-0 text-sm font-bold text-blue-600">
+                                                {batchHistory.active}
+                                            </span>
+                                        </div>
                                     </div>
-                                ) : (
-                                    <DashboardEmptyState
-                                        icon={Wallet}
-                                        title={t('dashboard.no_payments')}
-                                        description={t('dashboard.no_payments')}
-                                    />
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {!hasFees && isAdmin && (
-                        <UpgradePrompt
-                            feature="fees"
-                            title="Fee Management"
-                            description="Track and manage student fee payments."
-                        />
-                    )}
-                </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                )}
             </div>
         </>
     );
