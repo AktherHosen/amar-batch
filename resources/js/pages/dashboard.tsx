@@ -302,7 +302,6 @@ export default function Dashboard({
                 {isAdmin && <CapacityAlert batches={lowCapacityBatches} />}
                 {hasNotifications && <NoticesWidget notices={activeNotices} />}
                 <HolidaysWidget holidays={upcomingHolidays} />
-                {isAdmin && <QuickActions features={planFeatures} />}
 
                 <ChartsSection
                     todayAttendance={todayAttendance}
@@ -468,40 +467,46 @@ export default function Dashboard({
                                 )}
                             </CardContent>
                         </Card>
-
-                        {batchHistory && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t('dashboard.batch_history')}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="max-h-[400px] overflow-y-auto space-y-2">
-                                        <div className="flex items-center justify-between rounded-lg border p-3">
-                                            <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-green-600">
-                                                    {t('dashboard.completed')}
-                                                </p>
-                                            </div>
-                                            <span className="shrink-0 text-sm font-bold text-green-600">
-                                                {batchHistory.completed}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between rounded-lg border p-3">
-                                            <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-blue-600">
-                                                    {t('dashboard.ongoing')}
-                                                </p>
-                                            </div>
-                                            <span className="shrink-0 text-sm font-bold text-blue-600">
-                                                {batchHistory.active}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
                     </div>
                 )}
+
+                {batchHistory && (
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('dashboard.batch_history')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex gap-3">
+                                    <div className="flex flex-1 items-center justify-between rounded-lg border p-3">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium text-green-600">
+                                                {t('dashboard.completed')}
+                                            </p>
+                                        </div>
+                                        <span className="shrink-0 text-sm font-bold text-green-600">
+                                            {batchHistory.completed}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-1 items-center justify-between rounded-lg border p-3">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium text-blue-600">
+                                                {t('dashboard.ongoing')}
+                                            </p>
+                                        </div>
+                                        <span className="shrink-0 text-sm font-bold text-blue-600">
+                                            {batchHistory.active}
+                                        </span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {isAdmin && <QuickActions features={planFeatures} />}
+                    </div>
+                )}
+
+                {!batchHistory && isAdmin && <QuickActions features={planFeatures} />}
             </div>
         </>
     );
