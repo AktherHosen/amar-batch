@@ -66,7 +66,7 @@ class StudentController extends Controller
         $remaining = $planLimits->remaining($request->user(), 'students');
         $limit = $planLimits->getLimit($request->user(), 'students');
 
-        $coachingClasses = CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get();
+        $coachingClasses = CoachingClass::where('tenant_id', app('tenant_id'))->orderBy('name')->get();
 
         return Inertia::render('students/create', [
             'coachingClasses' => $coachingClasses,
@@ -140,7 +140,7 @@ class StudentController extends Controller
         return Inertia::render('students/show', [
             'student' => $student,
             'attendanceSummary' => $attendanceSummary,
-            'coachingClasses' => CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get(),
+            'coachingClasses' => CoachingClass::where('tenant_id', app('tenant_id'))->orderBy('name')->get(),
         ]);
     }
 
@@ -148,7 +148,7 @@ class StudentController extends Controller
     {
         $this->authorize('update', $student);
 
-        $coachingClasses = CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get();
+        $coachingClasses = CoachingClass::where('tenant_id', app('tenant_id'))->orderBy('name')->get();
 
         return Inertia::render('students/edit', [
             'student' => $student,
@@ -261,7 +261,7 @@ class StudentController extends Controller
                 if (! $coachingClassId && ! empty($row['coaching_class'])) {
                     $className = trim($row['coaching_class']);
                     $coachingClass = CoachingClass::firstOrCreate(
-                        ['name' => $className, 'tenant_id' => $request->user()->tenant_id],
+                        ['name' => $className, 'tenant_id' => app('tenant_id')],
                         ['default_fee' => 0]
                     );
                     $coachingClassId = $coachingClass->id;

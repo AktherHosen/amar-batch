@@ -47,7 +47,7 @@ class TenantController extends Controller
         $tenant->load('subscription.plan');
 
         $stats = [
-            'total_users' => User::where('tenant_id', $tenant->id)->count(),
+            'total_users' => User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenant->id))->count(),
             'total_students' => Student::where('tenant_id', $tenant->id)->count(),
             'active_students' => Student::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
             'total_batches' => Batch::where('tenant_id', $tenant->id)->count(),

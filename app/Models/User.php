@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Concerns\BelongsToTenant;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,10 +17,10 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use BelongsToTenant, HasApiTokens, HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'tenant_id', 'branch_id', 'phone', 'avatar',
+        'name', 'email', 'password', 'role', 'branch_id', 'phone', 'avatar',
         'student_id', 'is_approved', 'onboarding_complete',
     ];
 
@@ -44,10 +43,30 @@ class User extends Authenticatable implements PasskeyUser
         ];
     }
 
-    /** @return BelongsTo<Tenant, $this> */
-    public function tenant(): BelongsTo
+    /** @return BelongsToMany<Tenant, $this> */
+    public function tenants(): BelongsToMany
     {
-        return $this->belongsTo(Tenant::class);
+        return $this->belongsToMany(Tenant::class, 'tenant_user', 'user_id', 'tenant_id')
+            ->withPivot('role', 'is_approved')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the current active tenant from the application container.
+     */
+    public function getCurrentTenantAttribute(): ?Tenant
+    {
+        $tenantId = app()->bound('tenant_id') ? app('tenant_id') : null;
+
+        return $tenantId ? $this->tenants()->find($tenantId) : $this->tenants()->first();
+    }
+
+    /**
+     * Check if the user belongs to a given tenant.
+     */
+    public function belongsToTenant(int $tenantId): bool
+    {
+        return $this->tenants()->where('tenant_id', $tenantId)->exists();
     }
 
     /** @return BelongsTo<Branch, $this> */
@@ -76,7 +95,7 @@ class User extends Authenticatable implements PasskeyUser
         return $this->belongsToMany(Batch::class, 'teacher_batch', 'teacher_id', 'batch_id')
             ->withoutGlobalScope('tenant')
             ->withoutGlobalScope('branch')
-            ->where('batches.tenant_id', app()->bound('tenant_id') ? app('tenant_id') : $this->tenant_id)
+            ->where('batches.tenant_id', app()->bound('tenant_id') ? app('tenant_id') : null)
             ->withPivot('assigned_at')
             ->withTimestamps();
     }

@@ -57,11 +57,12 @@ class OnboardingController extends Controller
             ]);
         }
 
-        // Link user to tenant
-        $user->update([
-            'tenant_id' => $tenant->id,
-            'onboarding_complete' => true,
-        ]);
+        // Link user to tenant via pivot
+        $user->tenants()->attach($tenant->id, ['role' => 'owner']);
+        $user->update(['onboarding_complete' => true]);
+
+        // Set active tenant in session
+        $request->session()->put('active_tenant_id', $tenant->id);
 
         \App\Support\DefaultRoles::createForTenant($tenant->id);
 

@@ -31,7 +31,7 @@ class SuperAdminController extends Controller
             ->get();
 
         $ownerActivity = User::where('role', 'owner')
-            ->with('tenant')
+            ->with('tenants')
             ->whereIn('id', function ($query) {
                 $query->select('user_id')
                     ->from('sessions')
@@ -48,11 +48,13 @@ class SuperAdminController extends Controller
                     ->orderByDesc('last_activity')
                     ->first();
 
+                $tenant = $user->tenants->first();
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'tenant' => $user->tenant ? ['id' => $user->tenant->id, 'name' => $user->tenant->name] : null,
+                    'tenant' => $tenant ? ['id' => $tenant->id, 'name' => $tenant->name] : null,
                     'last_login_at' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->diffForHumans() : null,
                     'last_activity' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->toISOString() : null,
                 ];
@@ -147,7 +149,7 @@ class SuperAdminController extends Controller
             'active_students_count' => \App\Models\Student::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
             'batches_count' => \App\Models\Batch::where('tenant_id', $tenant->id)->count(),
             'active_batches_count' => \App\Models\Batch::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
-            'users_count' => \App\Models\User::where('tenant_id', $tenant->id)->count(),
+            'users_count' => \App\Models\User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenant->id))->count(),
             'total_enrollments' => \App\Models\Enrollment::where('tenant_id', $tenant->id)->count(),
         ];
 

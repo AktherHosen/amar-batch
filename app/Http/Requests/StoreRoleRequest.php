@@ -19,7 +19,7 @@ class StoreRoleRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9-]+$/', Rule::unique('roles', 'slug')->where('tenant_id', $this->user()->tenant_id)],
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9-]+$/', Rule::unique('roles', 'slug')->where('tenant_id', app('tenant_id'))],
             'description' => ['nullable', 'string', 'max:255'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => [Rule::in($allowed)],

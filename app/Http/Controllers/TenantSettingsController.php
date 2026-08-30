@@ -13,7 +13,7 @@ class TenantSettingsController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user();
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
 
         if (! $tenant || ! $user->isOwner()) {
             return to_route('dashboard');
@@ -43,7 +43,7 @@ class TenantSettingsController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
 
         if (! $tenant || ! $user->isOwner()) {
             return to_route('dashboard');

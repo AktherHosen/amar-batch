@@ -22,15 +22,16 @@ class TeacherSeeder extends Seeder
         ];
 
         foreach ($teachers as $teacher) {
-            User::create([
+            $user = User::create([
                 'name' => $teacher['name'],
                 'email' => $teacher['email'],
                 'password' => Hash::make('password'),
                 'role' => 'teacher',
-                'tenant_id' => $tenant->id,
                 'is_approved' => true,
                 'email_verified_at' => now(),
             ]);
+
+            $user->tenants()->attach($tenant->id, ['role' => 'teacher', 'is_approved' => true]);
         }
 
         $this->command->info('Staff users created:');

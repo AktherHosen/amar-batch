@@ -32,16 +32,17 @@ class AdminSeeder extends Seeder
         }
 
         // Create owner for the demo tenant
-        User::create([
+        $user = User::create([
             'name' => 'Admin',
             'email' => 'admin@amarbatch.com',
             'password' => Hash::make('password'),
             'role' => 'owner',
-            'tenant_id' => $tenant->id,
             'is_approved' => true,
             'onboarding_complete' => true,
             'email_verified_at' => now(),
         ]);
+
+        $user->tenants()->attach($tenant->id, ['role' => 'owner']);
 
         \App\Support\DefaultRoles::createForTenant($tenant->id);
 

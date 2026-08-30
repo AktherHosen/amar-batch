@@ -1,10 +1,19 @@
+export type UserTenant = {
+    id: number;
+    name: string;
+    slug: string;
+    logo: string | null;
+    role: string | null;
+};
+
 export type User = {
     id: number;
     name: string;
     email: string;
     avatar?: string;
     role: 'super_admin' | 'owner' | 'staff' | 'student' | 'parent';
-    tenant_id: number | null;
+    tenants: UserTenant[];
+    activeTenantId: number | null;
     phone?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;

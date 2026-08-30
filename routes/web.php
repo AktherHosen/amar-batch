@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\UserSettingsController;
+use App\Http\Controllers\TenantSwitchController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\TenantController;
 use App\Http\Controllers\SuperAdmin\PlanController;
@@ -21,6 +23,12 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 Route::get('/terms', [PageController::class, 'terms'])->name('terms');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
+
+// Tenant switching (auth required, no tenant required)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('select-tenant', [TenantSwitchController::class, 'show'])->name('select-tenant');
+    Route::post('switch-tenant/{tenant}', [TenantSwitchController::class, 'switch'])->name('switch-tenant');
+});
 
 // Onboarding routes (auth required, no tenant required)
 Route::middleware(['auth', 'verified', 'onboarding'])->group(function () {
@@ -58,6 +66,7 @@ Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'block.superadmin
 Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('dashboard')->name('super-admin.')->group(function () {
     Route::get('overview', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('tenants/{tenant}/detail', [SuperAdminController::class, 'showTenant'])->name('tenants.detail');
+    Route::post('tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
     Route::resource('plans', PlanController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('payments', [SuperAdminController::class, 'payments'])->name('payments');
     Route::post('payments/{payment}/approve', [SuperAdminController::class, 'approvePayment'])->name('payments.approve');

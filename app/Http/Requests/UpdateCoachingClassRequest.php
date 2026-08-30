@@ -18,7 +18,7 @@ class UpdateCoachingClassRequest extends FormRequest
     {
         /** @var CoachingClass $coachingClass */
         $coachingClass = $this->route('coaching_class');
-        $tenantId = $this->user()->tenant_id;
+        $tenantId = app('tenant_id');
 
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('coaching_classes', 'name')->where('tenant_id', $tenantId)->ignore($coachingClass->id)],

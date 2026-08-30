@@ -25,7 +25,7 @@ class PaymentController extends Controller
     public function initiate(Request $request, Plan $plan): RedirectResponse
     {
         $user = $request->user();
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
 
         if (! $tenant) {
             return back()->withErrors(['error' => 'No coaching center found.']);
@@ -211,7 +211,7 @@ class PaymentController extends Controller
     public function history(Request $request): Response
     {
         $user = $request->user();
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
 
         if (! $tenant) {
             return to_route('dashboard');

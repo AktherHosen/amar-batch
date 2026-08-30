@@ -13,7 +13,7 @@ class OwnerController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = User::with('tenant')
+        $query = User::with('tenants')
             ->whereIn('role', ['owner', 'inactive'])
             ->when($request->search, function ($q, $search) {
                 $q->where(function ($q2) use ($search) {
@@ -41,9 +41,9 @@ class OwnerController extends Controller
 
     public function show(User $owner): Response
     {
-        $owner->load('tenant.subscription.plan');
+        $owner->load('tenants.subscription.plan');
 
-        $tenant = $owner->tenant;
+        $tenant = $owner->tenants->first();
         $stats = null;
 
         if ($tenant) {
@@ -83,8 +83,8 @@ class OwnerController extends Controller
             'role' => $isActive ? 'owner' : 'inactive',
         ]);
 
-        if ($owner->tenant) {
-            $owner->tenant->update(['is_active' => $isActive]);
+        if ($owner->tenants->first()) {
+            $owner->tenants->first()->update(['is_active' => $isActive]);
         }
 
         return redirect()->back()->with('toast', [
@@ -101,7 +101,7 @@ class OwnerController extends Controller
             'plan_id' => 'required|exists:plans,id',
         ]);
 
-        $tenant = $owner->tenant;
+        $tenant = $owner->tenants->first();
         if (! $tenant) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',

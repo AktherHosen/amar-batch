@@ -37,7 +37,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        $tenant = $user?->tenant;
+        $tenant = $user?->current_tenant;
 
         // Surface the legacy session `toast` flash through Inertia's flash
         // channel so controllers using `->with('toast', [...])` render toasts.
@@ -49,11 +49,28 @@ class HandleInertiaRequests extends Middleware
             Inertia::flash('token', $token);
         }
 
+        // Build the user's tenants list for the frontend
+        $userTenants = [];
+        if ($user) {
+            $userTenants = $user->tenants()->get(['tenants.id', 'tenants.name', 'tenants.slug', 'tenants.logo'])
+                ->map(fn ($t) => [
+                    'id' => $t->id,
+                    'name' => $t->name,
+                    'slug' => $t->slug,
+                    'logo' => $t->logo,
+                    'role' => $t->pivot->role,
+                ])
+                ->toArray();
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $user,
+                'user' => $user ? array_merge($user->toArray(), [
+                    'tenants' => $userTenants,
+                    'activeTenantId' => $request->session()->get('active_tenant_id'),
+                ]) : null,
             ],
             'tenant' => $tenant ? [
                 'id' => $tenant->id,

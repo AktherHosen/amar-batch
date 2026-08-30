@@ -63,7 +63,7 @@ class FeeStatusController extends Controller
 
         $feeStatuses = $query->orderBy('month')->get();
 
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $students = Student::with('coachingClass')
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
@@ -103,10 +103,22 @@ class FeeStatusController extends Controller
             $grid[$key]['months'][$fee->month] = $fee;
         }
 
+        $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
+        $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $enrollments = Enrollment::where('tenant_id', $tenantId)->where('status', 'active')
+            ->with('student', 'batch')
+            ->get()
+            ->map(fn ($e) => [
+                'student' => $e->student,
+                'batch' => $e->batch,
+                'enrolled_at' => $e->enrolled_at,
+            ]);
+
         return Inertia::render('fees/index', [
             'feeGrid' => array_values($grid),
             'students' => $students,
             'batches' => $batches,
+            'enrollments' => $enrollments,
             'months' => $months,
             'monthNames' => $monthNames,
             'year' => (int) $year,
@@ -117,7 +129,7 @@ class FeeStatusController extends Controller
 
     public function create(Request $request): Response
     {
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
         $enrollments = Enrollment::where('tenant_id', $tenantId)->where('status', 'active')
@@ -169,7 +181,7 @@ class FeeStatusController extends Controller
     public function edit(Request $request, FeeStatus $fee): Response
     {
         $fee->load(['student', 'batch']);
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
         $enrollments = Enrollment::where('tenant_id', $tenantId)->where('status', 'active')

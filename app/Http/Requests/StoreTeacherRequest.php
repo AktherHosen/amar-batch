@@ -17,7 +17,7 @@ class StoreTeacherRequest extends FormRequest
     public function rules(): array
     {
         $assignableRoles = Role::query()
-            ->where('tenant_id', $this->user()->tenant_id)
+            ->where('tenant_id', app('tenant_id'))
             ->where('slug', '!=', 'owner')
             ->pluck('slug')
             ->all();
@@ -29,7 +29,7 @@ class StoreTeacherRequest extends FormRequest
                 ? ['required', 'string', 'min:8', 'confirmed']
                 : ['nullable', 'string'],
             'role' => ['nullable', Rule::in($assignableRoles)],
-            'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('tenant_id', $this->user()->tenant_id)],
+            'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('tenant_id', app('tenant_id'))],
             'avatar' => ['nullable', 'image', 'max:2048'],
             'allow_login' => ['nullable', 'in:0,1'],
         ];

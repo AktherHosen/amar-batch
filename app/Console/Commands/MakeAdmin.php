@@ -72,16 +72,19 @@ class MakeAdmin extends Command
             'email' => $email,
             'password' => Hash::make($password),
             'role' => 'owner',
-            'tenant_id' => $tenantId ?: null,
             'email_verified_at' => now(),
         ]);
+
+        if ($tenantId) {
+            $user->tenants()->attach($tenantId, ['role' => 'owner']);
+        }
 
         $this->info('Owner user created successfully:');
         $this->table(['Field', 'Value'], [
             ['Name', $user->name],
             ['Email', $user->email],
             ['Role', $user->role],
-            ['Tenant ID', $user->tenant_id ?: 'None (Super Admin)'],
+            ['Tenant ID', $tenantId ?: 'None (Super Admin)'],
         ]);
 
         return Command::SUCCESS;

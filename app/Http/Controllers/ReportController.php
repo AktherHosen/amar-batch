@@ -18,7 +18,7 @@ class ReportController extends Controller
     {
         $this->authorize('viewAny', \App\Models\Student::class);
 
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $branchId = $request->input('branch_id');
         $batchId = $request->input('batch_id');
         $month = $request->input('month', now()->month);
@@ -224,7 +224,7 @@ class ReportController extends Controller
     {
         $this->authorize('viewAny', Student::class);
 
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
         $batchId = $request->input('batch_id');

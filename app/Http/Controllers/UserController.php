@@ -102,16 +102,20 @@ class UserController extends Controller
             ]);
         }
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'staff',
-            'tenant_id' => $request->user()->tenant_id,
             'branch_id' => $request->branch_id,
             'avatar' => $request->hasFile('avatar')
                 ? $request->file('avatar')->store('avatars', 'public')
                 : null,
+        ]);
+
+        $user->tenants()->attach(app('tenant_id'), [
+            'role' => $request->role ?? 'staff',
+            'is_approved' => true,
         ]);
 
         return to_route('users.index')->with('toast', ['type' => 'success', 'message' => 'User created successfully.']);

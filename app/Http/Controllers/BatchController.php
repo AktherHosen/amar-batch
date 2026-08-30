@@ -115,8 +115,8 @@ class BatchController extends Controller
             'history' => fn ($q) => $q->with('student', 'user')->latest()->take(200),
         ]);
 
-        $tenantId = $request->user()->tenant_id;
-        $teachers = User::where('role', 'teacher')->where('tenant_id', $tenantId)->get();
+        $tenantId = app('tenant_id');
+        $teachers = User::where('role', 'teacher')->whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))->get();
         $students = Student::with('coachingClass')
             ->where('status', 'active')
             ->where('tenant_id', $tenantId)
@@ -169,13 +169,17 @@ class BatchController extends Controller
     {
         $this->authorize('update', $batch);
 
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $request->validate([
-            'teacher_id' => ['required', Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
+            'teacher_id' => ['required', Rule::exists('users', 'id')],
         ]);
 
         /** @var User $teacher */
-        $teacher = User::where('tenant_id', $tenantId)->findOrFail($request->teacher_id);
+        $teacher = User::findOrFail($request->teacher_id);
+
+        if (! $teacher->belongsToTenant($tenantId)) {
+            abort(422, 'Teacher does not belong to this coaching center.');
+        }
 
         if ($teacher->role !== 'teacher') {
             abort(422, 'Selected user is not a teacher.');
@@ -192,10 +196,16 @@ class BatchController extends Controller
     {
         $this->authorize('update', $batch);
 
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $request->validate([
-            'teacher_id' => ['required', Rule::exists('users', 'id')->where('tenant_id', $tenantId)],
+            'teacher_id' => ['required', Rule::exists('users', 'id')],
         ]);
+
+        $teacher = User::findOrFail($request->teacher_id);
+
+        if (! $teacher->belongsToTenant($tenantId)) {
+            abort(422, 'Teacher does not belong to this coaching center.');
+        }
 
         $batch->teachers()->detach($request->teacher_id);
 
