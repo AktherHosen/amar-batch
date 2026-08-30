@@ -350,7 +350,17 @@ return false;
     const filteredGroups = groups
         .map((group) => ({
             ...group,
-            items: group.items.filter(filterItem),
+            items: group.items
+                .map((item) => {
+                    if ('items' in item) {
+                        const filteredItems = item.items.filter(filterItem);
+
+                        return filteredItems.length > 0 ? { ...item, items: filteredItems } : null;
+                    }
+
+                    return filterItem(item) ? item : null;
+                })
+                .filter(Boolean),
         }))
         .filter((group) => group.items.length > 0);
 

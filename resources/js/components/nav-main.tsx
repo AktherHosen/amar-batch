@@ -12,6 +12,7 @@ import {
     SidebarGroupContent,
     SidebarGroupLabel,
     SidebarMenuButton,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem, NavItemGroup, NavItemSection } from '@/types';
@@ -113,20 +114,118 @@ function SectionList({ sections }: { sections: NavItemSection[] }) {
     );
 }
 
+function CollapsedItemList({ items }: { items: NavItem[] }) {
+    const { isCurrentOrParentUrl } = useCurrentUrl();
+
+    return (
+        <motion.ul
+            data-slot="sidebar-menu"
+            data-sidebar="menu"
+            initial="hidden"
+            animate="visible"
+            variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.03 } },
+            }}
+            className="flex w-full min-w-0 flex-col gap-1"
+        >
+            {items.map((item) => (
+                <motion.li
+                    key={item.title}
+                    data-slot="sidebar-menu-item"
+                    data-sidebar="menu-item"
+                    className="group/menu-item relative"
+                    variants={{
+                        hidden: { opacity: 0, x: -12 },
+                        visible: { opacity: 1, x: 0 },
+                    }}
+                >
+                    <SidebarMenuButton
+                        asChild
+                        isActive={isCurrentOrParentUrl(item.href)}
+                        tooltip={{ children: item.title }}
+                    >
+                        <Link href={item.href} prefetch>
+                            {item.icon && <item.icon />}
+                            <span>{item.title}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </motion.li>
+            ))}
+        </motion.ul>
+    );
+}
+
+function CollapsedSectionIconList({ sections }: { sections: NavItemSection[] }) {
+    const allItems = useMemo(() => {
+        return sections.flatMap((s) =>
+            s.items.map((item) => ({
+                ...item,
+                icon: item.icon ?? s.icon,
+            })),
+        );
+    }, [sections]);
+
+    return (
+        <motion.ul
+            data-slot="sidebar-menu"
+            data-sidebar="menu"
+            initial="hidden"
+            animate="visible"
+            variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.03 } },
+            }}
+            className="flex w-full min-w-0 flex-col gap-1"
+        >
+            {allItems.map((item) => (
+                <motion.li
+                    key={item.title}
+                    data-slot="sidebar-menu-item"
+                    data-sidebar="menu-item"
+                    className="group/menu-item relative"
+                    variants={{
+                        hidden: { opacity: 0, x: -12 },
+                        visible: { opacity: 1, x: 0 },
+                    }}
+                >
+                    <SidebarMenuButton
+                        asChild
+                        tooltip={{ children: item.title }}
+                    >
+                        <Link href={item.href} prefetch>
+                            {item.icon && <item.icon />}
+                            <span>{item.title}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </motion.li>
+            ))}
+        </motion.ul>
+    );
+}
+
 export function NavMain({ groups }: { groups: NavItemGroup[] }) {
+    const { state } = useSidebar();
+    const isCollapsed = state === 'collapsed';
+
     return (
         <>
             {groups.map((group) => {
-                const hasSections = group.items.some((item) => isSection(item));
                 const sections = group.items.filter((item): item is NavItemSection => isSection(item));
                 const plainItems = group.items.filter((item): item is NavItem => !isSection(item));
 
                 return (
                     <SidebarGroup key={group.label} className="px-2 py-0">
-                        <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                        {!isCollapsed && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
                         <SidebarGroupContent>
-                            {hasSections ? (
-                                <SectionList sections={sections} />
+                            {sections.length > 0 ? (
+                                isCollapsed ? (
+                                    <CollapsedSectionIconList sections={sections} />
+                                ) : (
+                                    <SectionList sections={sections} />
+                                )
+                            ) : isCollapsed ? (
+                                <CollapsedItemList items={plainItems} />
                             ) : (
                                 <ItemList items={plainItems} />
                             )}

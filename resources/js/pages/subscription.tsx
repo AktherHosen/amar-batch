@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { Check, Crown, Users, GraduationCap, Layers, ArrowRight, CreditCard } from 'lucide-react';
+import { Check, Minus, Crown, Users, GraduationCap, Layers, CreditCard, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -7,7 +7,7 @@ import Heading from '@/components/heading';
 import PlanBadge from '@/components/plan-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useLocale } from '@/contexts/locale-context';
 import { index as subscriptionIndex } from '@/routes/subscription';
@@ -57,18 +57,16 @@ type PageProps = {
     recentPayments: PaymentRecord[];
 };
 
-const featureLabelKeys: Record<string, string> = {
-    students: 'plan.feature_students',
-    batches: 'plan.feature_batches',
-    attendance: 'plan.feature_attendance',
-    fees: 'plan.feature_fees',
-    exams: 'plan.feature_exams',
-    reports: 'plan.feature_reports',
-    notifications: 'plan.feature_notifications',
-    custom_branding: 'plan.feature_custom_branding',
-    multi_branch: 'plan.feature_multi_branch',
-    api_access: 'plan.feature_api_access',
-};
+const allFeatures = [
+    'attendance',
+    'fees',
+    'exams',
+    'reports',
+    'notifications',
+    'custom_branding',
+    'multi_branch',
+    'api_access',
+];
 
 export default function SubscriptionPage({ subscription, plans, currentUsage, recentPayments }: PageProps) {
     const { t, formatCurrency } = useLocale();
@@ -100,7 +98,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
         }
     };
 
-    const formatLimit = (value: number, type: 'students' | 'staff' | 'batches') => {
+    const formatLimit = (value: number) => {
         if (value === -1) {
             return <span className="text-lg leading-none">∞</span>;
         }
@@ -256,7 +254,7 @@ return;
                                                 {t('plan.students')}
                                             </span>
                                             <span className="font-semibold">
-                                                {currentUsage.students} / {formatLimit(currentPlan.max_students, 'students')}
+                                                {currentUsage.students} / {formatLimit(currentPlan.max_students)}
                                             </span>
                                         </div>
                                         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
@@ -274,7 +272,7 @@ return;
                                                 {t('plan.staff')}
                                             </span>
                                             <span className="font-semibold">
-                                                {currentUsage.staff} / {formatLimit(currentPlan.max_staff, 'staff')}
+                                                {currentUsage.staff} / {formatLimit(currentPlan.max_staff)}
                                             </span>
                                         </div>
                                         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
@@ -292,7 +290,7 @@ return;
                                                 {t('plan.batches')}
                                             </span>
                                             <span className="font-semibold">
-                                                {currentUsage.batches} / {formatLimit(currentPlan.max_batches, 'batches')}
+                                                {currentUsage.batches} / {formatLimit(currentPlan.max_batches)}
                                             </span>
                                         </div>
                                         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
@@ -367,33 +365,38 @@ return;
                                         <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">{t('plan.students')}</span>
-                                                <span className="font-medium">{formatLimit(plan.max_students, 'students')}</span>
+                                                <span className="font-medium">{formatLimit(plan.max_students)}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">{t('plan.staff')}</span>
-                                                <span className="font-medium">{formatLimit(plan.max_staff, 'staff')}</span>
+                                                <span className="font-medium">{formatLimit(plan.max_staff)}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">{t('plan.batches')}</span>
-                                                <span className="font-medium">{formatLimit(plan.max_batches, 'batches')}</span>
+                                                <span className="font-medium">{formatLimit(plan.max_batches)}</span>
                                             </div>
                                         </div>
 
-                                        {plan.features && plan.features.length > 0 && (
-                                            <div className="mt-4 space-y-2">
-                                                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                    {t('plan.includes')}
-                                                </p>
-                                                {plan.features.map((feature) => (
+                                        <div className="mt-4 space-y-1.5">
+                                            {allFeatures.map((feature) => {
+                                                const included = plan.features?.includes(feature) ?? false;
+
+                                                return (
                                                     <div key={feature} className="flex items-center gap-2 text-sm">
-                                                        <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-green-500/10">
-                                                            <Check className="size-3 text-green-600" />
+                                                        <span className={`flex size-4 shrink-0 items-center justify-center rounded-full ${included ? 'bg-green-500/10' : 'bg-muted'}`}>
+                                                            {included ? (
+                                                                <Check className="size-3 text-green-600" />
+                                                            ) : (
+                                                                <Minus className="size-3 text-muted-foreground" />
+                                                            )}
                                                         </span>
-                                                        <span>{t(featureLabelKeys[feature] || feature)}</span>
+                                                        <span className={included ? 'text-foreground' : 'text-muted-foreground'}>
+                                                            {t(`plan.feature_${feature}`)}
+                                                        </span>
                                                     </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                                );
+                                            })}
+                                        </div>
 
                                         <div className="mt-auto pt-5">
                                             {!isCurrent ? (
