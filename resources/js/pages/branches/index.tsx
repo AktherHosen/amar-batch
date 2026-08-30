@@ -1,12 +1,11 @@
-import CellTitle from '@/components/cell-title';
-import { useLocale } from '@/contexts/locale-context';
-import branches from '@/routes/branches';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Eye, PenLine, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import CellTitle from '@/components/cell-title';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable, type DataTableProps } from '@/components/data-table';
+import { DataTable  } from '@/components/data-table';
+import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -32,7 +31,9 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
+import branches from '@/routes/branches';
 
 type Branch = {
     id: number;
@@ -100,6 +101,7 @@ export default function BranchesIndex({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (editingItem) {
             put(branches.update(editingItem.id), {
                 preserveScroll: true,

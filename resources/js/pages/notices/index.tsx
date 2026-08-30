@@ -154,6 +154,7 @@ export default function NoticesIndex({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (editingItem) {
             put(`/notices/${editingItem.id}`, {
                 onSuccess: () => {

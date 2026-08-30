@@ -7,6 +7,7 @@ import { DataTable } from '@/components/data-table';
 import type { DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,7 +36,6 @@ import {
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
-import InputError from '@/components/input-error';
 
 type Receipt = {
     id: number;
@@ -119,10 +119,14 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
     };
 
     const filteredBatches = useMemo(() => {
-        if (!form.student_id) return batches;
+        if (!form.student_id) {
+return batches;
+}
+
         const enrolledBatchIds = enrollments
             .filter((e) => e.student_id === Number(form.student_id))
             .map((e) => e.batch_id);
+
         return batches.filter((b) => enrolledBatchIds.includes(b.id));
     }, [form.student_id, batches, enrollments]);
 
@@ -288,7 +292,9 @@ export default function FeeReceiptsIndex({ receipts: pagination, filters, studen
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => { resetForm(); setSheetOpen(true); }}>
+                                <DropdownMenuItem onClick={() => {
+ resetForm(); setSheetOpen(true); 
+}}>
                                     <Plus className="mr-2 size-4" />
                                     {t('receipts.new')}
                                 </DropdownMenuItem>

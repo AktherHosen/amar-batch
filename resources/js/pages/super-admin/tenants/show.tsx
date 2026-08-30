@@ -1,10 +1,3 @@
-import type { DataTableProps } from '@/components/data-table';
-import { DataTable } from '@/components/data-table';
-import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLocale } from '@/contexts/locale-context';
 import { router } from '@inertiajs/react';
 import {
     ArrowLeft,
@@ -18,6 +11,13 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import type { DataTableProps } from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLocale } from '@/contexts/locale-context';
 
 type Tenant = {
     id: number;

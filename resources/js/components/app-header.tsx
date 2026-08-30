@@ -1,3 +1,19 @@
+import { Link, usePage } from '@inertiajs/react';
+import {
+    BarChart3,
+    Building2,
+    CheckSquare,
+    CreditCard,
+    FileText,
+    GraduationCap,
+    Layers,
+    LayoutGrid,
+    Menu,
+    School,
+    Shield,
+    Users,
+    Wallet,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -42,22 +58,6 @@ import students from '@/routes/students';
 import subscription from '@/routes/subscription';
 import users from '@/routes/users';
 import type { BreadcrumbItem, NavItem } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import {
-    BarChart3,
-    Building2,
-    CheckSquare,
-    CreditCard,
-    FileText,
-    GraduationCap,
-    Layers,
-    LayoutGrid,
-    Menu,
-    School,
-    Shield,
-    Users,
-    Wallet,
-} from 'lucide-react';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];

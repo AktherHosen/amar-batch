@@ -1,8 +1,10 @@
 import { useForm } from '@inertiajs/react';
 import { Camera, Lock, Shield, User, X } from 'lucide-react';
 import { useRef, useState } from 'react';
-import InputError from '@/components/input-error';
+import { toast } from 'sonner';
 import { FormActions } from '@/components/form-actions';
+import InputError from '@/components/input-error';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
@@ -90,6 +92,7 @@ export default function TeacherForm({
                 : 'teacher',
         branch_id: teacher?.branch_id ? String(teacher.branch_id) : '',
     });
+    const [allowLogin, setAllowLogin] = useState(!teacher || (teacher as any).is_approved !== false);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(
         teacher?.avatar ? `/storage/${teacher.avatar}` : null,
@@ -100,6 +103,16 @@ export default function TeacherForm({
         const file = e.target.files?.[0];
 
         if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                toast.error('Avatar must be less than 2MB');
+
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+
+                return;
+            }
+
             setAvatarFile(file);
             const reader = new FileReader();
             reader.onloadend = () => setAvatarPreview(reader.result as string);
@@ -124,6 +137,14 @@ export default function TeacherForm({
                 formData.append(key, String(value));
             }
         });
+
+        if (!allowLogin) {
+            formData.delete('password');
+            formData.delete('password_confirmation');
+            formData.append('allow_login', '0');
+        } else {
+            formData.append('allow_login', '1');
+        }
 
         if (avatarFile) {
             formData.append('avatar', avatarFile);
@@ -269,35 +290,47 @@ export default function TeacherForm({
 
             <div className="space-y-4">
                 <SectionHeader icon={Lock} title={t('teachers.security')} />
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                        <Label htmlFor="password">
-                            {t('teachers.password')}{' '}
-                            {teacher ? `(${t('teachers.password_hint')})` : '*'}
-                        </Label>
-                        <PasswordInput
-                            id="password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            placeholder={t('teachers.password_placeholder')}
-                        />
-                        <InputError message={errors.password} />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="password_confirmation">
-                            {t('teachers.confirm_password')} {teacher ? '' : '*'}
-                        </Label>
-                        <PasswordInput
-                            id="password_confirmation"
-                            value={data.password_confirmation}
-                            onChange={(e) =>
-                                setData('password_confirmation', e.target.value)
-                            }
-                            placeholder={t('teachers.confirm_password_placeholder')}
-                        />
-                    </div>
+                <div className="flex items-center gap-2">
+                    <Checkbox
+                        id="allow_login"
+                        checked={allowLogin}
+                        onCheckedChange={(checked) => setAllowLogin(checked === true)}
+                    />
+                    <Label htmlFor="allow_login" className="cursor-pointer">
+                        Allow this staff member to log in
+                    </Label>
                 </div>
+                {allowLogin && (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="password">
+                                {t('teachers.password')}{' '}
+                                {teacher ? `(${t('teachers.password_hint')})` : '*'}
+                            </Label>
+                            <PasswordInput
+                                id="password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                placeholder={t('teachers.password_placeholder')}
+                            />
+                            <InputError message={errors.password} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="password_confirmation">
+                                {t('teachers.confirm_password')} {teacher ? '' : '*'}
+                            </Label>
+                            <PasswordInput
+                                id="password_confirmation"
+                                value={data.password_confirmation}
+                                onChange={(e) =>
+                                    setData('password_confirmation', e.target.value)
+                                }
+                                placeholder={t('teachers.confirm_password_placeholder')}
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {!hideActions && (

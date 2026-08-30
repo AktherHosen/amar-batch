@@ -138,6 +138,7 @@ export default function HolidaysIndex({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (editingItem) {
             put(`/holidays/${editingItem.id}`, {
                 onSuccess: () => {

@@ -169,6 +169,8 @@ class UserController extends Controller
                 \Storage::disk('public')->delete($user->avatar);
             }
             $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        } else {
+            unset($data['avatar']);
         }
 
         $user->update($data);

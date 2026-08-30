@@ -476,7 +476,10 @@ export default function FeesIndex({
     const activeFilterCount = (selectedYear !== currentYear ? 1 : 0) + (unpaidFilterMonth ? 1 : 0);
 
     const handleGenerateReceipt = () => {
-        if (!receiptStudent || !receiptBatch) return;
+        if (!receiptStudent || !receiptBatch) {
+return;
+}
+
         setReceiptProcessing(true);
 
         router.post('/fees/receipts', {
@@ -505,6 +508,7 @@ export default function FeesIndex({
         ? feeGrid.filter((item) => {
             const m = Number(unpaidFilterMonth);
             const fee = item.months[m];
+
             return !fee || Number(fee.amount_paid) <= 0;
         })
         : feeGrid;
@@ -668,6 +672,7 @@ export default function FeesIndex({
                     const item: FeeGridItem = row.original;
                     const totalPaid = months.reduce((sum, m) => {
                         const fee = item.months[m];
+
                         return sum + (fee ? Number(fee.amount_paid) : 0);
                     }, 0);
 

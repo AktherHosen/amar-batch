@@ -225,7 +225,11 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
             enableSorting: false,
             cell: ({ row }: any) => {
                 const features = row.original.features;
-                if (!features || features.length === 0) return '—';
+
+                if (!features || features.length === 0) {
+return '—';
+}
+
                 return (
                     <div className="flex flex-wrap gap-1">
                         {features.slice(0, 3).map((f: string) => (

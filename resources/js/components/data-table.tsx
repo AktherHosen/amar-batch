@@ -506,7 +506,10 @@ export function ColumnToggle<TData>({
         column: (typeof hideableColumns)[number],
         value: boolean,
     ) => {
-        if (!value && visibleCount <= 1) return;
+        if (!value && visibleCount <= 1) {
+return;
+}
+
         setVisibility((prev) => ({ ...prev, [column.id]: value }));
         column.toggleVisibility(!!value);
     };

@@ -549,6 +549,12 @@ return;
                                                 },
                                                 {
                                                     label: t(
+                                                        'teachers.pending',
+                                                    ),
+                                                    value: 'pending',
+                                                },
+                                                {
+                                                    label: t(
                                                         'teachers.inactive',
                                                     ),
                                                     value: 'inactive',

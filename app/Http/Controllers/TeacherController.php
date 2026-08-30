@@ -11,6 +11,7 @@ use App\Policies\PlanLimitsPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -28,7 +29,9 @@ public function index(Request $request): Response
 
         if ($status = $request->input('status')) {
             if ($status === 'active') {
-                $query->where('role', 'teacher');
+                $query->where('role', 'teacher')->where('is_approved', true);
+            } elseif ($status === 'pending') {
+                $query->where('role', 'teacher')->where('is_approved', false);
             } elseif ($status === 'inactive') {
                 $query->where('role', 'inactive');
             }
@@ -99,14 +102,19 @@ public function store(StoreTeacherRequest $request): RedirectResponse
             $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
+        $allowLogin = $request->input('allow_login', '1') === '1';
+
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => $allowLogin && ! empty($request->password)
+                ? Hash::make($request->password)
+                : Hash::make(Str::random(16)),
             'role' => $request->role ?? 'teacher',
             'tenant_id' => $request->user()->tenant_id,
             'branch_id' => $request->branch_id,
             'avatar' => $data['avatar'] ?? null,
+            'is_approved' => $allowLogin,
         ]);
 
         return to_route('teachers.index')->with('toast', ['type' => 'success', 'message' => 'Staff member created successfully.']);
@@ -172,6 +180,8 @@ $data = $request->validated();
                 \Storage::disk('public')->delete($teacher->avatar);
             }
             $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        } else {
+            unset($data['avatar']);
         }
 
         $teacher->update($data);

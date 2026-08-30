@@ -177,7 +177,7 @@ export default function CoachingClassesIndex({
             {
                 id: 'students_count',
                 accessorKey: 'students_count',
-                header: t('batches.enrolled'),
+                header: t('students.title'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
                     <span>{row.original.students_count}</span>

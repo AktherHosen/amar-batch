@@ -2,7 +2,6 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     BookOpen,
-    CheckCircle,
     Download,
     EllipsisVertical,
     Layers,
@@ -44,6 +43,7 @@ import teachers from '@/routes/teachers';
 type PageProps = {
     auth: { user: { role: string } };
     tenant: { primary_color: string; name: string } | null;
+    errors: Record<string, string>;
 };
 
 type Batch = {
@@ -96,7 +96,7 @@ function formatDate(dateStr: string | null): string {
 
 export default function TeachersShow({ teacher, stats, roles, branches }: TeachersShowProps) {
     const { t } = useLocale();
-    const { auth, tenant } = usePage<PageProps>().props;
+    const { auth, tenant, errors: pageErrors } = usePage<PageProps>().props;
     const primaryColor = tenant?.primary_color || '#6366f1';
     const isAdmin = isOwner(auth.user);
     const [deleteDialog, setDeleteDialog] = useState(false);
@@ -260,7 +260,7 @@ export default function TeachersShow({ teacher, stats, roles, branches }: Teache
                                             branches={branches}
                                             onSubmit={handleEditSubmit}
                                             processing={processing}
-                                            errors={(usePage().props.errors as Record<string, string>) ?? {}}
+                                            errors={pageErrors}
                                             hideActions
                                         />
                                     </div>
@@ -328,17 +328,19 @@ export default function TeachersShow({ teacher, stats, roles, branches }: Teache
                                             ? t('teachers.inactive')
                                             : t('teachers.active')}
                                     </Badge>
-                                    <Badge
-                                        variant={
-                                            teacher.is_approved
-                                                ? 'success'
-                                                : 'secondary'
-                                        }
-                                    >
-                                        {teacher.is_approved
-                                            ? t('teachers.approved')
-                                            : t('teachers.pending')}
-                                    </Badge>
+                                    {teacher.role !== 'inactive' && (
+                                        <Badge
+                                            variant={
+                                                teacher.is_approved
+                                                    ? 'success'
+                                                    : 'secondary'
+                                            }
+                                        >
+                                            {teacher.is_approved
+                                                ? t('teachers.approved')
+                                                : t('teachers.pending')}
+                                        </Badge>
+                                    )}
                                 </div>
                                 <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div className="min-w-0">
@@ -387,7 +389,7 @@ export default function TeachersShow({ teacher, stats, roles, branches }: Teache
                     </CardContent>
                 </Card>
 
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                     <Card>
                         <CardContent className="flex items-center gap-3 p-4">
                             <Layers className="size-5 shrink-0 text-muted-foreground" />
@@ -423,21 +425,6 @@ export default function TeachersShow({ teacher, stats, roles, branches }: Teache
                                 </p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
                                     {t('students.title')}
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="flex items-center gap-3 p-4">
-                            <CheckCircle className="size-5 shrink-0 text-muted-foreground" />
-                            <div className="min-w-0">
-                                <p className="text-xl leading-none font-bold sm:text-2xl">
-                                    {teacher.assigned_batches_count > 0
-                                        ? 'Yes'
-                                        : 'No'}
-                                </p>
-                                <p className="mt-1 truncate text-xs text-muted-foreground">
-                                    {t('batches.assigned')}
                                 </p>
                             </div>
                         </CardContent>

@@ -90,7 +90,9 @@ export default function OwnerShow({ owner, plans }: PageProps) {
     const currentPlan = subscription?.plan;
 
     const handleAssignPlan = () => {
-        if (!selectedPlanId) return;
+        if (!selectedPlanId) {
+return;
+}
 
         router.post(`/dashboard/owners/${owner.id}/assign-plan`, {
             plan_id: Number(selectedPlanId),
@@ -243,7 +245,11 @@ export default function OwnerShow({ owner, plans }: PageProps) {
 
                         {selectedPlanId && (() => {
                             const plan = plans.find((p) => p.id === Number(selectedPlanId));
-                            if (!plan) return null;
+
+                            if (!plan) {
+return null;
+}
+
                             return (
                                 <div className="rounded-lg border p-3 text-sm space-y-2">
                                     <div className="font-medium">{plan.name}</div>

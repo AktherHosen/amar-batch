@@ -142,6 +142,7 @@ export default function ExamsIndex({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (editingItem) {
             put(exams.update(editingItem.id), {
                 preserveScroll: true,

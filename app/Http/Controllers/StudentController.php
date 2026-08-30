@@ -140,6 +140,7 @@ class StudentController extends Controller
         return Inertia::render('students/show', [
             'student' => $student,
             'attendanceSummary' => $attendanceSummary,
+            'coachingClasses' => CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get(),
         ]);
     }
 
@@ -166,6 +167,8 @@ class StudentController extends Controller
                 \Storage::disk('public')->delete($student->photo);
             }
             $validated['photo'] = $request->file('photo')->store('students', 'public');
+        } else {
+            unset($validated['photo']);
         }
 
         $student->update($validated);

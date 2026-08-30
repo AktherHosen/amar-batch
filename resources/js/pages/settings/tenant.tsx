@@ -1,4 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
+import { Save } from 'lucide-react';
 import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -16,7 +17,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Save } from 'lucide-react';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
 import settings from '@/routes/settings';

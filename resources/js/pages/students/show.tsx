@@ -13,11 +13,20 @@ import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
-import Heading from '@/components/heading';
+import StudentForm from '@/components/student-form';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
 import { generateTablePDF } from '@/lib/pdf-table';
 import { isOwner } from '@/lib/role';
@@ -27,11 +36,13 @@ import type { Student } from '@/types';
 type PageProps = {
     auth: { user: { role: string } };
     tenant: { primary_color: string; name: string } | null;
+    errors: Record<string, string>;
 };
 
 type StudentsShowProps = {
     student: Student;
     attendanceSummary: Record<number, Record<number, Record<string, number>>>;
+    coachingClasses: { id: number; name: string }[];
 };
 
 type StudentEnrollment = {
@@ -118,15 +129,18 @@ function formatDate(dateStr: string | null): string {
 export default function StudentsShow({
     student,
     attendanceSummary,
+    coachingClasses,
 }: StudentsShowProps) {
     const { t } = useLocale();
-    const { auth, tenant } = usePage<PageProps>().props;
+    const { auth, tenant, errors: pageErrors } = usePage<PageProps>().props;
     const isAdmin = isOwner(auth.user);
     const primaryColor = tenant?.primary_color || '#6366f1';
     const [deleteDialog, setDeleteDialog] = useState<{
         open: boolean;
         item: any | null;
     }>({ open: false, item: null });
+    const [editOpen, setEditOpen] = useState(false);
+    const [processing, setProcessing] = useState(false);
 
     const handleDelete = () => {
         setDeleteDialog({ open: true, item: student });
@@ -138,6 +152,22 @@ export default function StudentsShow({
             toast.success(t('toast.deleted_successfully'));
             setDeleteDialog({ open: false, item: null });
         }
+    };
+
+    const handleEditSubmit = (data: FormData) => {
+        data.append('_method', 'PUT');
+        setProcessing(true);
+        router.post(students.update(student.id), data, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditOpen(false);
+                setProcessing(false);
+                toast.success(t('toast.updated_successfully'));
+            },
+            onError: () => {
+                setProcessing(false);
+            },
+        });
     };
 
     const attendanceRows: AttendanceRow[] = Object.entries(attendanceSummary)
@@ -516,12 +546,44 @@ export default function StudentsShow({
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
-                            <Link href={students.edit(student.id)}>
-                                <Button variant="outline" className="h-9">
-                                    <PenLine className="size-4" />
-                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
-                                </Button>
-                            </Link>
+                            <Sheet open={editOpen} onOpenChange={setEditOpen}>
+                                <SheetTrigger asChild>
+                                    <Button variant="outline" className="h-9">
+                                        <PenLine className="size-4" />
+                                        <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                                    <SheetHeader>
+                                        <SheetTitle>{t('actions.edit')} {student.name}</SheetTitle>
+                                        <SheetDescription>
+                                            {t('students.update_details')}
+                                        </SheetDescription>
+                                    </SheetHeader>
+                                    <div className="px-4 pb-4">
+                                        <StudentForm
+                                            student={student}
+                                            coachingClasses={coachingClasses}
+                                            onSubmit={handleEditSubmit}
+                                            processing={processing}
+                                            errors={pageErrors}
+                                            hideActions
+                                        />
+                                    </div>
+                                    <SheetFooter>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => setEditOpen(false)}
+                                        >
+                                            {t('actions.cancel')}
+                                        </Button>
+                                        <Button type="submit" form="student-form" disabled={processing}>
+                                            {processing ? t('actions.updating') : t('actions.update')}
+                                        </Button>
+                                    </SheetFooter>
+                                </SheetContent>
+                            </Sheet>
                             <Button
                                 variant="destructive"
                                 className="h-9"

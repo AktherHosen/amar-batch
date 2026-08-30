@@ -13,8 +13,8 @@ import {
     SidebarGroupLabel,
     SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useLocale } from '@/contexts/locale-context';
+import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem, NavItemGroup } from '@/types';
 
 function GroupItems({ items }: { items: NavItem[] }) {

@@ -232,8 +232,8 @@ export default function Dashboard({
                         isTeacher
                             ? t('dashboard.assigned_batches_desc')
                             : tenant?.subscription?.plan
-                              ? `${tenant.subscription.plan.name}${isTrial ? ' (Trial)' : ''}`
-                              : t('app.tagline')
+                                ? `${tenant.subscription.plan.name}${isTrial ? ' (Trial)' : ''}`
+                                : t('app.tagline')
                     }
                     isTrial={isTrial}
                     trialEndsAt={tenant?.subscription?.trial_ends_at}
@@ -251,13 +251,13 @@ export default function Dashboard({
                         },
                         ...(isAdmin
                             ? [{
-                                  title: t('nav.teachers'),
-                                  value: stats.total_teachers ?? 0,
-                                  icon: GraduationCap,
-                                  href: users.index().url,
-                                  linkLabel: t('actions.view_all'),
-                                  trend: statsTrend.total_teachers,
-                              }]
+                                title: t('nav.teachers'),
+                                value: stats.total_teachers ?? 0,
+                                icon: GraduationCap,
+                                href: users.index().url,
+                                linkLabel: t('actions.view_all'),
+                                trend: statsTrend.total_teachers,
+                            }]
                             : []),
                         {
                             title: t('dashboard.active_batches'),
@@ -296,33 +296,7 @@ export default function Dashboard({
                 <div className="grid gap-4 md:grid-cols-2">
                     <ActivityFeed items={recentActivity} />
 
-                    {batchHistory && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t('dashboard.batch_history')}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex gap-4">
-                                    <div className="text-center">
-                                        <div className="text-xl font-bold text-green-600 sm:text-2xl">
-                                            {batchHistory.completed}
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {t('dashboard.completed')}
-                                        </div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-xl font-bold text-blue-600 sm:text-2xl">
-                                            {batchHistory.active}
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {t('dashboard.ongoing')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+
 
                     {isAdmin && (
                         <Card>
@@ -422,49 +396,6 @@ export default function Dashboard({
                         </Card>
                     )}
 
-                    {isAdmin && hasFees && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t('dashboard.recent_payments')}</CardTitle>
-                                <Link
-                                    href={fees.index().url}
-                                    className="text-xs text-muted-foreground hover:underline"
-                                >
-                                    {t('actions.view_all')}
-                                </Link>
-                            </CardHeader>
-                            <CardContent>
-                                {recentFeePayments.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {recentFeePayments.map((payment) => (
-                                            <div
-                                                key={payment.id}
-                                                className="flex items-center justify-between rounded-lg border p-3"
-                                            >
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium">
-                                                        {payment.student.name}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {getMonthNameFn(payment.month)} {payment.year}
-                                                    </p>
-                                                </div>
-                                                <span className="shrink-0 text-sm font-medium">
-                                                    {Number(payment.amount_paid).toFixed(0)}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <DashboardEmptyState
-                                        icon={Wallet}
-                                        title={t('dashboard.no_payments')}
-                                        description={t('dashboard.no_payments')}
-                                    />
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
 
                     {isTeacher && (
                         <Card>
@@ -504,6 +435,76 @@ export default function Dashboard({
                                         icon={Users}
                                         title={t('dashboard.no_students_in_batches')}
                                         description={t('dashboard.no_students_in_batches')}
+                                    />
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                    {batchHistory && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('dashboard.batch_history')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex gap-4">
+                                    <div className="text-center">
+                                        <div className="text-xl font-bold text-green-600 sm:text-2xl">
+                                            {batchHistory.completed}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {t('dashboard.completed')}
+                                        </div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-xl font-bold text-blue-600 sm:text-2xl">
+                                            {batchHistory.active}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {t('dashboard.ongoing')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                    {isAdmin && hasFees && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('dashboard.recent_payments')}</CardTitle>
+                                <Link
+                                    href={fees.index().url}
+                                    className="text-xs text-muted-foreground hover:underline"
+                                >
+                                    {t('actions.view_all')}
+                                </Link>
+                            </CardHeader>
+                            <CardContent>
+                                {recentFeePayments.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {recentFeePayments.map((payment) => (
+                                            <div
+                                                key={payment.id}
+                                                className="flex items-center justify-between rounded-lg border p-3"
+                                            >
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium">
+                                                        {payment.student.name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {getMonthNameFn(payment.month)} {payment.year}
+                                                    </p>
+                                                </div>
+                                                <span className="shrink-0 text-sm font-medium">
+                                                    {Number(payment.amount_paid).toFixed(0)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <DashboardEmptyState
+                                        icon={Wallet}
+                                        title={t('dashboard.no_payments')}
+                                        description={t('dashboard.no_payments')}
                                     />
                                 )}
                             </CardContent>

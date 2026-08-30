@@ -83,9 +83,17 @@ export default function UnpaidStudentsReport({
         const y = overrides?.year ?? selectedYear;
         const b = overrides?.batch_id ?? selectedBatchId;
 
-        if (m) params.month = m;
-        if (y) params.year = y;
-        if (b) params.batch_id = b;
+        if (m) {
+params.month = m;
+}
+
+        if (y) {
+params.year = y;
+}
+
+        if (b) {
+params.batch_id = b;
+}
 
         router.get(reports.unpaidStudents.url(), params, { preserveState: true });
     };

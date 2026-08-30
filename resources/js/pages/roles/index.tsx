@@ -97,6 +97,7 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
+
         if (editingItem) {
             router.put(
                 roles.update(editingItem.id),
@@ -344,6 +345,7 @@ export default function RolesIndex({ roles: pagination, groups = {} }: PageProps
                                 value={name}
                                 onChange={(e) => {
                                     setName(e.target.value);
+
                                     if (!editingItem) {
                                         setSlug(
                                             e.target.value

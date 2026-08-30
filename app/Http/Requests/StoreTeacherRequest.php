@@ -25,10 +25,13 @@ class StoreTeacherRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => $this->input('allow_login', '1') === '1'
+                ? ['required', 'string', 'min:8', 'confirmed']
+                : ['nullable', 'string'],
             'role' => ['nullable', Rule::in($assignableRoles)],
             'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('tenant_id', $this->user()->tenant_id)],
             'avatar' => ['nullable', 'image', 'max:2048'],
+            'allow_login' => ['nullable', 'in:0,1'],
         ];
     }
 }

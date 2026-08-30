@@ -483,6 +483,7 @@ export default function BatchesIndex({
                             batch={editingBatch || undefined}
                             onSubmit={(data) => {
                                 setProcessing(true);
+
                                 if (editingBatch) {
                                     router.put(
                                         `/batches/${editingBatch.id}`,

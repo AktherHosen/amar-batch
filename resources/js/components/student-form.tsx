@@ -119,6 +119,16 @@ export default function StudentForm({
         const file = e.target.files?.[0];
 
         if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                toast.error('Photo must be less than 2MB');
+
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+
+                return;
+            }
+
             setPhotoFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -160,6 +170,7 @@ export default function StudentForm({
             e.preventDefault();
             e.stopPropagation();
         }
+
         setClassCreating(true);
         setClassErrors({});
 
@@ -196,6 +207,7 @@ export default function StudentForm({
                 } else {
                     toast.error(resData.message || 'Failed to create class.');
                 }
+
                 return;
             }
 
@@ -279,6 +291,7 @@ export default function StudentForm({
                         <Label htmlFor="phone">{t('students.phone')}</Label>
                         <Input
                             id="phone"
+                            type="tel"
                             value={data.phone}
                             onChange={(e) => setData('phone', e.target.value)}
                             placeholder="Enter phone number"
@@ -570,6 +583,7 @@ export default function StudentForm({
                         </Label>
                         <Input
                             id="guardian_phone"
+                            type="tel"
                             value={data.guardian_phone}
                             onChange={(e) =>
                                 setData('guardian_phone', e.target.value)

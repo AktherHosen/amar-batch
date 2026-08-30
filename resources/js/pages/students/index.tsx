@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable } from '@/components/data-table';
@@ -176,7 +176,7 @@ export default function StudentsIndex({
 
     const activeFilterCount = status ? 1 : 0;
 
-    const columns = (() => {
+    const columns = useMemo(() => {
         type Col = NonNullable<
             DataTableProps<Student, unknown>['columns']
         >[number];
@@ -357,7 +357,7 @@ export default function StudentsIndex({
                 },
             } as Col,
         ];
-    })();
+    }, [t, isAdmin]);
 
     return (
         <>
@@ -489,6 +489,7 @@ export default function StudentsIndex({
                             student={editingStudent ?? undefined}
                             onSubmit={(formData) => {
                                 setProcessing(true);
+
                                 if (editingStudent) {
                                     router.post(
                                         `/students/${editingStudent.id}`,

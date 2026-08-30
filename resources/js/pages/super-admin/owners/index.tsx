@@ -63,7 +63,10 @@ export default function OwnersIndex({ owners: pagination, filters }: PageProps) 
     const activeFilterCount = status ? 1 : 0;
 
     const handleToggle = () => {
-        if (!toggleDialog.owner) return;
+        if (!toggleDialog.owner) {
+return;
+}
+
         router.post(`/dashboard/owners/${toggleDialog.owner.id}/toggle-active`, {}, {
             onSuccess: () => {
                 toast.success(t('toast.updated_successfully'));
@@ -109,6 +112,7 @@ export default function OwnersIndex({ owners: pagination, filters }: PageProps) 
             enableSorting: false,
             cell: ({ row }: any) => {
                 const isActive = row.original.role === 'owner';
+
                 return (
                     <Badge variant={isActive ? 'default' : 'destructive'}>
                         {isActive ? t('super_admin.active') : t('super_admin.inactive')}

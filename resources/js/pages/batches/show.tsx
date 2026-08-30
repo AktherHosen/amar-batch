@@ -11,10 +11,10 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import BatchForm from '@/components/batch-form';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
-import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,15 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
 import { generateTablePDF } from '@/lib/pdf-table';
 import { isOwner, isStaff } from '@/lib/role';
@@ -35,6 +44,7 @@ import studentsRoutes from '@/routes/students';
 type PageProps = {
     auth: { user: { role: string } };
     tenant: { primary_color: string; name: string } | null;
+    errors: Record<string, string>;
 };
 
 type Teacher = {
@@ -96,19 +106,23 @@ export default function BatchesShow({
     enrolledStudentIds,
 }: BatchesShowProps) {
     const { t } = useLocale();
-    const { auth, tenant } = usePage<PageProps>().props;
+    const { auth, tenant, errors: pageErrors } = usePage<PageProps>().props;
     const primaryColor = tenant?.primary_color || '#6366f1';
     const isAdmin = isOwner(auth.user);
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [selectedStudent, setSelectedStudent] = useState('');
     const [enrollmentDate, setEnrollmentDate] = useState(() => {
         const today = new Date().toISOString().split('T')[0];
+
         if (batch.start_date && batch.start_date > today) {
             return batch.start_date;
         }
+
         return today;
     });
     const [deleteDialog, setDeleteDialog] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [processing, setProcessing] = useState(false);
     const [removeTeacherDialog, setRemoveTeacherDialog] = useState<{
         open: boolean;
         teacherId: number | null;
@@ -127,6 +141,21 @@ export default function BatchesShow({
             onSuccess: () => toast.success(t('toast.deleted_successfully')),
         });
         setDeleteDialog(false);
+    };
+
+    const handleEditSubmit = (data: any) => {
+        setProcessing(true);
+        router.put(batches.update(batch.id), data, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditOpen(false);
+                setProcessing(false);
+                toast.success(t('toast.updated_successfully'));
+            },
+            onError: () => {
+                setProcessing(false);
+            },
+        });
     };
 
     const handleAssignTeacher = () => {
@@ -536,12 +565,43 @@ export default function BatchesShow({
                     </div>
                     {isAdmin && batch.status !== 'completed' && (
                         <div className="flex shrink-0 gap-2">
-                            <Link href={batches.edit(batch.id)}>
-                                <Button variant="outline" className="h-9">
-                                    <PenLine className="size-4" />
-                                    <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
-                                </Button>
-                            </Link>
+                            <Sheet open={editOpen} onOpenChange={setEditOpen}>
+                                <SheetTrigger asChild>
+                                    <Button variant="outline" className="h-9">
+                                        <PenLine className="size-4" />
+                                        <span className="ml-2 hidden sm:inline">{t('actions.edit')}</span>
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                                    <SheetHeader>
+                                        <SheetTitle>{t('actions.edit')} {batch.name}</SheetTitle>
+                                        <SheetDescription>
+                                            {t('batches.update_details')}
+                                        </SheetDescription>
+                                    </SheetHeader>
+                                    <div className="px-4 pb-4">
+                                        <BatchForm
+                                            batch={batch}
+                                            onSubmit={handleEditSubmit}
+                                            processing={processing}
+                                            errors={pageErrors}
+                                            hideActions
+                                        />
+                                    </div>
+                                    <SheetFooter>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => setEditOpen(false)}
+                                        >
+                                            {t('actions.cancel')}
+                                        </Button>
+                                        <Button type="submit" form="batch-form" disabled={processing}>
+                                            {processing ? t('actions.updating') : t('actions.update')}
+                                        </Button>
+                                    </SheetFooter>
+                                </SheetContent>
+                            </Sheet>
                             <Button
                                 variant="destructive"
                                 className="h-9"

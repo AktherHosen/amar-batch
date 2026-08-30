@@ -46,10 +46,14 @@ export default function FeeReceiptCreate() {
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const filteredBatches = useMemo(() => {
-        if (!data.student_id) return batches;
+        if (!data.student_id) {
+return batches;
+}
+
         const enrolledBatchIds = enrollments
             .filter((e) => e.student_id === Number(data.student_id))
             .map((e) => e.batch_id);
+
         return batches.filter((b) => enrolledBatchIds.includes(b.id));
     }, [data.student_id, batches, enrollments]);
 
