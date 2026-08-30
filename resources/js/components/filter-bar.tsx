@@ -34,9 +34,9 @@ type FilterOption = {
 };
 
 type FilterBarProps = {
-    searchPlaceholder: string;
-    searchValue: string;
-    onSearchChange: (value: string) => void;
+    searchPlaceholder?: string;
+    searchValue?: string;
+    onSearchChange?: (value: string) => void;
     filters?: Array<{
         id: string;
         placeholder: string;
@@ -86,39 +86,39 @@ export function FilterBar({
     return (
         <div className={`w-full ${className ?? ''}`}>
             <div className="flex items-center gap-2">
-                <div className="relative min-w-0 flex-1">
-                    <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        placeholder={searchPlaceholder}
-                        value={localSearch}
-                        onChange={(e) => {
-                            setLocalSearch(e.target.value);
-                            debouncedSearch(e.target.value);
-                        }}
-                        className="h-9 pr-9 pl-9"
-                    />
-                    {localSearch && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setLocalSearch('');
-                                onSearchChange('');
+                {searchPlaceholder && (
+                    <div className="relative min-w-0 flex-1">
+                        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            placeholder={searchPlaceholder}
+                            value={localSearch}
+                            onChange={(e) => {
+                                setLocalSearch(e.target.value);
+                                debouncedSearch(e.target.value);
                             }}
-                            className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                            <X className="size-4" />
-                        </button>
-                    )}
-                </div>
+                            className="h-9 pr-9 pl-9"
+                        />
+                        {localSearch && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setLocalSearch('');
+                                    onSearchChange('');
+                                }}
+                                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                                <X className="size-4" />
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 <div className="flex shrink-0 items-center gap-2">
                     {hasFilters && (
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
-                                    variant={
-                                        hasActiveFilters ? 'default' : 'outline'
-                                    }
+                                    variant="default"
                                     size="sm"
                                     className="h-9 shrink-0 gap-1 px-2.5 sm:gap-2 sm:px-3"
                                 >
