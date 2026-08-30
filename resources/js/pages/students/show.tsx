@@ -7,12 +7,13 @@ import {
     CheckCircle,
     XCircle,
     Clock,
+    GraduationCap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
 import StudentForm from '@/components/student-form';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -240,8 +241,8 @@ export default function StudentsShow({
                                 enrollment.status === 'active'
                                     ? 'default'
                                     : enrollment.status === 'completed'
-                                      ? 'secondary'
-                                      : 'destructive'
+                                        ? 'secondary'
+                                        : 'destructive'
                             }
                         >
                             {enrollment.status}
@@ -395,11 +396,11 @@ export default function StudentsShow({
                         <span className="font-medium">
                             {item.action_date
                                 ? new Date(
-                                      item.action_date,
-                                  ).toLocaleDateString()
+                                    item.action_date,
+                                ).toLocaleDateString()
                                 : new Date(
-                                      item.created_at,
-                                  ).toLocaleDateString()}
+                                    item.created_at,
+                                ).toLocaleDateString()}
                         </span>
                     );
                 },
@@ -425,8 +426,8 @@ export default function StudentsShow({
                                 item.action === 'enrolled'
                                     ? 'default'
                                     : item.action === 'completed'
-                                      ? 'success'
-                                      : 'danger'
+                                        ? 'success'
+                                        : 'danger'
                             }
                         >
                             {item.action}
@@ -597,100 +598,169 @@ export default function StudentsShow({
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex flex-col items-center gap-4">
-                                <Avatar className="size-16 sm:size-20">
-                                    <AvatarImage
-                                        src={
-                                            student.photo
-                                                ? `/storage/${student.photo}`
-                                                : undefined
-                                        }
-                                        alt={student.name}
-                                    />
-                                    <AvatarFallback className="text-xl">
-                                        {student.name
-                                            .split(' ')
-                                            .map((n) => n[0])
-                                            .join('')
-                                            .toUpperCase()
-                                            .slice(0, 2)}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="grid w-full grid-cols-2 gap-3">
-                                    <div className="min-w-0">
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('students.student_id')}
-                                        </p>
-                                        <p className="truncate text-sm font-medium">
-                                            {student.code}
-                                        </p>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('students.name')}
-                                        </p>
-                                        <p className="truncate text-sm font-medium">
-                                            {student.name}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('students.phone')}
-                                        </p>
-                                        <p className="text-sm font-medium">
-                                            {student.phone || '-'}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('students.class')}
-                                        </p>
-                                        <p className="text-sm font-medium">
-                                            {student.coaching_class
-                                                ? `${student.coaching_class.name}${student.section ? ` - ${student.section}` : ''}`
-                                                : student.section || '-'}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('students.joined_at')}
-                                        </p>
-                                        <p className="text-sm font-medium">
-                                            {formatDate(student.joined_at)}
-                                        </p>
-                                    </div>
-                                    {student.left_at && (
+                    {/* Premium Student ID Card */}
+                    {(() => {
+                        const hex = primaryColor;
+                        const r = parseInt(hex.slice(1, 3), 16);
+                        const g = parseInt(hex.slice(3, 5), 16);
+                        const b = parseInt(hex.slice(5, 7), 16);
+
+                        return (
+                            <div
+                                id="print-area"
+                                className="print-id-card relative overflow-hidden rounded-2xl border shadow-lg"
+                                style={{
+                                    borderColor: `rgba(${r},${g},${b},0.15)`,
+                                    boxShadow: `0 8px 32px rgba(${r},${g},${b},0.10), 0 2px 8px rgba(0,0,0,0.04)`,
+                                }}
+                            >
+                                {/* Top accent bar */}
+                                <div
+                                    className="h-1.5"
+                                    style={{ background: `linear-gradient(90deg, ${hex}, ${hex}cc, ${hex})` }}
+                                />
+
+                                {/* Header */}
+                                <div
+                                    className="flex items-center justify-between px-6 py-4"
+                                    style={{ background: `linear-gradient(135deg, rgba(${r},${g},${b},0.06), rgba(${r},${g},${b},0.02))` }}
+                                >
+                                    <div className="flex items-center gap-2.5">
+                                        <div
+                                            className="flex size-9 items-center justify-center rounded-xl"
+                                            style={{ background: `rgba(${r},${g},${b},0.1)` }}
+                                        >
+                                            <GraduationCap className="size-5" style={{ color: hex }} />
+                                        </div>
                                         <div>
-                                            <p className="text-xs text-muted-foreground">
-                                                {t('students.left_at')}
+                                            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: hex }}>
+                                                Student ID
                                             </p>
-                                            <p className="text-sm font-medium">
-                                                {formatDate(student.left_at)}
+                                            <p className="text-[10px] font-medium text-muted-foreground">
+                                                {tenant?.name || 'Amar Batch'}
                                             </p>
                                         </div>
-                                    )}
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('students.date_of_birth')}
-                                        </p>
-                                        <p className="text-sm font-medium">
-                                            {formatDate(student.date_of_birth)}
-                                        </p>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('students.gender')}
-                                        </p>
-                                        <p className="text-sm font-medium capitalize">
-                                            {student.gender || '-'}
-                                        </p>
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className="rounded-lg px-3 py-1.5 text-xs font-bold"
+                                            style={{
+                                                background: `rgba(${r},${g},${b},0.08)`,
+                                                color: hex,
+                                            }}
+                                        >
+                                            {student.code}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => window.print()}
+                                            className="print-hidden inline-flex size-8 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                                            title="Download ID Card"
+                                        >
+                                            <Download className="size-4 text-muted-foreground" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="px-6 pt-5 pb-6">
+                                    {/* Avatar + Name */}
+                                    <div className="mb-5 flex items-center gap-4">
+                                        <div
+                                            className="relative flex size-20 shrink-0 items-center justify-center rounded-2xl border-2 sm:size-24"
+                                            style={{
+                                                borderColor: `rgba(${r},${g},${b},0.2)`,
+                                                background: `linear-gradient(135deg, rgba(${r},${g},${b},0.08), rgba(${r},${g},${b},0.03))`,
+                                            }}
+                                        >
+                                            {student.photo ? (
+                                                <img
+                                                    src={`/storage/${student.photo}`}
+                                                    alt={student.name}
+                                                    className="size-full rounded-2xl object-cover"
+                                                />
+                                            ) : (
+                                                <span
+                                                    className="text-2xl font-bold sm:text-3xl"
+                                                    style={{ color: hex }}
+                                                >
+                                                    {student.name
+                                                        .split(' ')
+                                                        .map((n) => n[0])
+                                                        .join('')
+                                                        .toUpperCase()
+                                                        .slice(0, 2)}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <h2 className="truncate text-xl font-bold tracking-tight sm:text-2xl">
+                                                {student.name}
+                                            </h2>
+                                            <p className="mt-0.5 text-sm font-medium text-muted-foreground">
+                                                {student.coaching_class
+                                                    ? `${student.coaching_class.name}${student.section ? ` - ${student.section}` : ''}`
+                                                    : student.section || '-'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Divider */}
+                                    <div
+                                        className="mb-5 h-px"
+                                        style={{
+                                            background: `linear-gradient(90deg, transparent, rgba(${r},${g},${b},0.2), transparent)`,
+                                        }}
+                                    />
+
+                                    {/* Info grid */}
+                                    <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                                        <div>
+                                            <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                                                {t('students.phone')}
+                                            </p>
+                                            <p className="text-sm font-semibold">
+                                                {student.phone || '-'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                                                {t('students.joined_at')}
+                                            </p>
+                                            <p className="text-sm font-semibold">
+                                                {formatDate(student.joined_at)}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                                                {t('students.date_of_birth')}
+                                            </p>
+                                            <p className="text-sm font-semibold">
+                                                {formatDate(student.date_of_birth)}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                                                {t('students.gender')}
+                                            </p>
+                                            <p className="text-sm font-semibold capitalize">
+                                                {student.gender || '-'}
+                                            </p>
+                                        </div>
+                                        {student.left_at && (
+                                            <div className="col-span-2">
+                                                <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                                                    {t('students.left_at')}
+                                                </p>
+                                                <p className="text-sm font-semibold">
+                                                    {formatDate(student.left_at)}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
+                        );
+                    })()}
 
                     <div className="grid gap-4">
                         <Card>
@@ -723,8 +793,8 @@ export default function StudentsShow({
                                     const percentage =
                                         total > 0
                                             ? Math.round(
-                                                  (totalPresent / total) * 100,
-                                              )
+                                                (totalPresent / total) * 100,
+                                            )
                                             : 0;
 
                                     return total > 0 ? (
@@ -738,17 +808,17 @@ export default function StudentsShow({
                                                         percentage >= 75
                                                             ? 'success'
                                                             : percentage >= 50
-                                                              ? 'secondary'
-                                                              : 'destructive'
+                                                                ? 'secondary'
+                                                                : 'destructive'
                                                     }
                                                 >
                                                     {percentage >= 75
                                                         ? t('attendance.good')
                                                         : percentage >= 50
-                                                          ? t(
+                                                            ? t(
                                                                 'attendance.average',
                                                             )
-                                                          : t('attendance.low')}
+                                                            : t('attendance.low')}
                                                 </Badge>
                                             </div>
                                             <div className="flex gap-4 text-sm">
@@ -1046,11 +1116,11 @@ export default function StudentsShow({
                                                     ).map((h) => [
                                                         h.action_date
                                                             ? new Date(
-                                                                  h.action_date,
-                                                              ).toLocaleDateString()
+                                                                h.action_date,
+                                                            ).toLocaleDateString()
                                                             : new Date(
-                                                                  h.created_at,
-                                                              ).toLocaleDateString(),
+                                                                h.created_at,
+                                                            ).toLocaleDateString(),
                                                         h.batch?.name || '-',
                                                         h.action,
                                                         h.user?.name || '-',
@@ -1097,10 +1167,10 @@ export default function StudentsShow({
                             data={
                                 student.fee_statuses
                                     ? [...student.fee_statuses].sort(
-                                          (a, b) =>
-                                              b.year - a.year ||
-                                              b.month - a.month,
-                                      )
+                                        (a, b) =>
+                                            b.year - a.year ||
+                                            b.month - a.month,
+                                    )
                                     : []
                             }
                             searchable
@@ -1126,12 +1196,12 @@ export default function StudentsShow({
                                             ],
                                             rows: (student.fee_statuses
                                                 ? [
-                                                      ...student.fee_statuses,
-                                                  ].sort(
-                                                      (a, b) =>
-                                                          b.year - a.year ||
-                                                          b.month - a.month,
-                                                  )
+                                                    ...student.fee_statuses,
+                                                ].sort(
+                                                    (a, b) =>
+                                                        b.year - a.year ||
+                                                        b.month - a.month,
+                                                )
                                                 : []
                                             ).map((f) => [
                                                 MONTH_NAMES[f.month],
@@ -1171,6 +1241,60 @@ export default function StudentsShow({
                 variant="destructive"
                 onConfirm={confirmDelete}
             />
+
+            <style>{`
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    #print-area,
+                    #print-area * {
+                        visibility: visible;
+                    }
+                    #print-area {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        border: 1px solid #e5e7eb !important;
+                        box-shadow: none !important;
+                        border-radius: 10px !important;
+                        max-width: 520px !important;
+                        width: 100% !important;
+                        margin: 0 !important;
+                        page-break-inside: avoid;
+                    }
+                    #print-area .px-6 {
+                        padding-left: 1rem !important;
+                        padding-right: 1rem !important;
+                    }
+                    #print-area .pt-5 {
+                        padding-top: 0.75rem !important;
+                    }
+                    #print-area .pb-6 {
+                        padding-bottom: 0.75rem !important;
+                    }
+                    #print-area .gap-x-6 {
+                        column-gap: 1rem !important;
+                    }
+                    #print-area .gap-y-4 {
+                        row-gap: 0.5rem !important;
+                    }
+                    #print-area .mb-5 {
+                        margin-bottom: 0.5rem !important;
+                    }
+                    #print-area .py-4 {
+                        padding-top: 0.5rem !important;
+                        padding-bottom: 0.5rem !important;
+                    }
+                    #print-area .print-hidden {
+                        display: none !important;
+                    }
+                    @page {
+                        margin: 1.5cm;
+                        size: A4 portrait;
+                    }
+                }
+            `}</style>
         </>
     );
 }

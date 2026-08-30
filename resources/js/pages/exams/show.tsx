@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ArrowLeft, Download, PenLine, Save, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import type { DataTableProps } from '@/components/data-table';
@@ -296,7 +296,7 @@ export default function ExamsShow({
 
     const saveResults = () => {
         const payload = Object.entries(results)
-            .filter(([_, v]) => v.marks !== '')
+            .filter(([, v]) => v.marks !== '')
             .map(([studentId, v]) => ({
                 student_id: Number(studentId),
                 marks_obtained: Number(v.marks),
@@ -324,7 +324,7 @@ export default function ExamsShow({
         );
     };
 
-    const columns = (() => {
+    const columns = useMemo(() => {
         type Col = NonNullable<
             DataTableProps<Student, unknown>['columns']
         >[number];
@@ -350,7 +350,9 @@ export default function ExamsShow({
 
                     return (
                         <Input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             min="0"
                             max={exam.total_marks}
                             className="w-24"
@@ -411,7 +413,7 @@ export default function ExamsShow({
                 },
             } as Col,
         ];
-    })();
+    }, [exam, results, t]);
 
     return (
         <>
