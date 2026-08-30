@@ -1,6 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Loader2, PenLine, Plus, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
@@ -114,6 +114,14 @@ export default function AttendanceIndex({
     const [localBatches, setLocalBatches] = useState<Batch[]>(batches);
     const [batchModalOpen, setBatchModalOpen] = useState(false);
     const [newBatchName, setNewBatchName] = useState('');
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('create') === 'true') {
+            setCreateSheet(true);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
     const [batchCreating, setBatchCreating] = useState(false);
     const [batchErrors, setBatchErrors] = useState<Record<string, string>>({});
 

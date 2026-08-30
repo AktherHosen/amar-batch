@@ -54,6 +54,7 @@ type FeeFormProps = {
     batches: Batch[];
     enrollments: Enrollment[];
     isEdit?: boolean;
+    onCancel?: () => void;
 };
 
 const MONTH_NAMES = [
@@ -78,6 +79,7 @@ export default function FeeForm({
     batches,
     enrollments,
     isEdit = false,
+    onCancel,
 }: FeeFormProps) {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
@@ -256,6 +258,7 @@ export default function FeeForm({
             <div className="flex justify-end gap-2">
                 <FormActions
                     cancelHref={fees.index().url}
+                    onCancel={onCancel}
                     processing={processing}
                 />
             </div>

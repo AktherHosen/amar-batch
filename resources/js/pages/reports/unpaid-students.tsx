@@ -105,7 +105,7 @@ params.batch_id = b;
         router.get(reports.unpaidStudents.url(), {}, { preserveState: true });
     };
 
-    const totalDue = students.data.reduce((sum, s) => sum + s.default_fee, 0);
+    const totalDue = students.data.reduce((sum, s) => sum + parseFloat(String(s.default_fee || 0)), 0);
 
     return (
         <>
@@ -185,16 +185,12 @@ params.batch_id = b;
                         />
 
                         <div className="mb-4 flex flex-wrap gap-3">
-                            <div className="flex items-center gap-2">
-                                <Badge variant="outline">
-                                    {students.total} {t('reports.unpaid_students_count')}
-                                </Badge>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Badge variant="destructive">
-                                    ৳{totalDue.toLocaleString()} {t('reports.unpaid_total_due')}
-                                </Badge>
-                            </div>
+                            <Badge variant="outline">
+                                {students.total} {t('reports.unpaid_students_count')}
+                            </Badge>
+                            <Badge variant="destructive">
+                                {t('reports.unpaid_total_due')}: ৳{totalDue.toLocaleString()}
+                            </Badge>
                         </div>
 
                         <div className="rounded-md border">
@@ -219,7 +215,7 @@ params.batch_id = b;
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {students.length === 0 ? (
+                                    {students.data.length === 0 ? (
                                         <TableRow>
                                             <TableCell
                                                 colSpan={5}
@@ -229,7 +225,7 @@ params.batch_id = b;
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        students.map((student) => (
+                                        students.data.map((student) => (
                                             <TableRow key={student.id}>
                                                 <TableCell className="whitespace-nowrap font-medium sticky left-0 bg-background z-10">
                                                     <div className="flex items-center gap-3">

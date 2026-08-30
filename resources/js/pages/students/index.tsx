@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable } from '@/components/data-table';
@@ -91,6 +91,15 @@ export default function StudentsIndex({
     const [sheetOpen, setSheetOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [processing, setProcessing] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('create') === 'true') {
+            setEditingStudent(null);
+            setSheetOpen(true);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
 
     const handleSearch = (value: string) => {
         setSearch(value);

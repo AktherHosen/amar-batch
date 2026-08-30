@@ -1,10 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Trash2, EllipsisVertical, ChevronDown, Receipt, Search, X } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
+import FeeForm from '@/components/fee-form';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -68,11 +69,18 @@ type FeeGridItem = {
     months: Record<number, FeeRecord>;
 };
 
+type Enrollment = {
+    student: Student;
+    batch: Batch;
+    enrolled_at: string | null;
+};
+
 type PageProps = {
     auth: { user: { role: string } };
     feeGrid: FeeGridItem[];
     students: Student[];
     batches: Batch[];
+    enrollments: Enrollment[];
     months: number[];
     monthNames: Record<number, string>;
     year: number;
@@ -373,6 +381,9 @@ function MobileFeeList({
 
 export default function FeesIndex({
     feeGrid,
+    students,
+    batches,
+    enrollments,
     months,
     monthNames,
     year,
@@ -389,6 +400,16 @@ export default function FeesIndex({
         open: boolean;
         item: { studentId: number; batchId: number } | null;
     }>({ open: false, item: null });
+
+    const [createSheetOpen, setCreateSheetOpen] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('create') === 'true') {
+            setCreateSheetOpen(true);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
 
     const [receiptSheetOpen, setReceiptSheetOpen] = useState(false);
     const [receiptStudent, setReceiptStudent] = useState<{ id: number; name: string } | null>(null);
@@ -745,7 +766,7 @@ return;
                         <PageActions
                             isAdmin={isAdmin}
                             createLabel={t('fees.create')}
-                            onCreate={() => router.get(fees.create.url())}
+                            onCreate={() => setCreateSheetOpen(true)}
                             extraItems={
                                 <DropdownMenuItem onClick={() => router.get('/reports/unpaid-students', { month: String(new Date().getMonth() + 1), year: String(selectedYear) })}>
                                     <Receipt className="mr-2 size-4" />
@@ -905,6 +926,20 @@ return;
                     </CardContent>
                 </Card>
             </div>
+
+            <Sheet open={createSheetOpen} onOpenChange={setCreateSheetOpen}>
+                <SheetContent className="sm:max-w-md">
+                    <SheetHeader>
+                        <SheetTitle>{t('fees.create')}</SheetTitle>
+                    </SheetHeader>
+                    <FeeForm
+                        students={students}
+                        batches={batches}
+                        enrollments={enrollments}
+                        onCancel={() => setCreateSheetOpen(false)}
+                    />
+                </SheetContent>
+            </Sheet>
 
             <Sheet open={receiptSheetOpen} onOpenChange={setReceiptSheetOpen}>
                 <SheetContent className="sm:max-w-2xl overflow-y-auto" side="right">
