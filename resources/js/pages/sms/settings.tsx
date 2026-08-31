@@ -1,9 +1,7 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Bell, MessageSquare, Save, Settings } from 'lucide-react';
-import { useState } from 'react';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { Bell, MessageSquare, Save, Settings, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -54,9 +52,7 @@ export default function SmsSettings({ setting, schedules, balance }: PageProps) 
         schedules: {
             fee_reminder: {
                 is_enabled: feeSchedule?.is_enabled ?? true,
-                config: {
-                    days_before: (feeSchedule?.config as any)?.days_before ?? 7,
-                },
+                config: { days_before: (feeSchedule?.config as any)?.days_before ?? 7 },
             },
             absence_alert: {
                 is_enabled: absenceSchedule?.is_enabled ?? true,
@@ -64,9 +60,7 @@ export default function SmsSettings({ setting, schedules, balance }: PageProps) 
             },
             exam_reminder: {
                 is_enabled: examSchedule?.is_enabled ?? true,
-                config: {
-                    days_before: (examSchedule?.config as any)?.days_before ?? 3,
-                },
+                config: { days_before: (examSchedule?.config as any)?.days_before ?? 3 },
             },
         },
     });
@@ -74,15 +68,26 @@ export default function SmsSettings({ setting, schedules, balance }: PageProps) 
     if (flash?.success) toast.success(flash.success);
     if (flash?.error) toast.error(flash.error);
 
-    const handleSaveSettings = () => {
-        post('/dashboard/sms/settings', {
-            onSuccess: () => toast.success(t('toast.updated_successfully')),
+    const updateSchedule = (type: 'fee_reminder' | 'absence_alert' | 'exam_reminder', field: string, value: any) => {
+        setScheduleData('schedules', {
+            ...scheduleData.schedules,
+            [type]: {
+                ...scheduleData.schedules[type],
+                [field]: value,
+            },
         });
     };
 
-    const handleSaveSchedules = () => {
-        postSchedule('/dashboard/sms/schedules', {
-            onSuccess: () => toast.success(t('toast.updated_successfully')),
+    const updateScheduleConfig = (type: 'fee_reminder' | 'exam_reminder', key: string, value: any) => {
+        setScheduleData('schedules', {
+            ...scheduleData.schedules,
+            [type]: {
+                ...scheduleData.schedules[type],
+                config: {
+                    ...scheduleData.schedules[type].config,
+                    [key]: value,
+                },
+            },
         });
     };
 
@@ -91,20 +96,20 @@ export default function SmsSettings({ setting, schedules, balance }: PageProps) 
             <Head title="SMS Settings" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title="SMS Settings" description="Configure SMS provider and notification schedules" />
+                <Heading title="SMS Settings" description="Configure SMS provider and automated notification schedules" />
 
                 <div className="grid gap-4 md:grid-cols-2">
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Settings className="size-4 text-muted-foreground" />
-                                Provider Configuration
+                                Provider
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between rounded-lg border p-3">
                                 <div>
-                                    <Label>Enable SMS</Label>
+                                    <Label className="text-sm font-medium">Enable SMS</Label>
                                     <p className="text-xs text-muted-foreground">Turn on/off SMS notifications</p>
                                 </div>
                                 <Switch
@@ -113,10 +118,8 @@ export default function SmsSettings({ setting, schedules, balance }: PageProps) 
                                 />
                             </div>
 
-                            <Separator />
-
                             <div className="space-y-2">
-                                <Label>Provider</Label>
+                                <Label className="text-sm">Provider</Label>
                                 <select
                                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                     value={data.provider}
@@ -128,7 +131,7 @@ export default function SmsSettings({ setting, schedules, balance }: PageProps) 
                             </div>
 
                             <div className="space-y-2">
-                                <Label>API Key</Label>
+                                <Label className="text-sm">API Key</Label>
                                 <Input
                                     type="password"
                                     value={data.api_key}
@@ -138,7 +141,7 @@ export default function SmsSettings({ setting, schedules, balance }: PageProps) 
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Sender ID (optional)</Label>
+                                <Label className="text-sm">Sender ID <span className="text-muted-foreground">(optional)</span></Label>
                                 <Input
                                     value={data.sender_id}
                                     onChange={(e) => setData('sender_id', e.target.value)}
@@ -148,152 +151,125 @@ export default function SmsSettings({ setting, schedules, balance }: PageProps) 
                                 <p className="text-xs text-muted-foreground">Max 11 characters. Leave empty for default.</p>
                             </div>
 
-                            <Button onClick={handleSaveSettings} disabled={processing} className="w-full">
+                            <Button onClick={() => post('/sms/settings')} disabled={processing} className="w-full">
                                 <Save className="mr-2 size-4" />
                                 {processing ? 'Saving...' : 'Save Settings'}
                             </Button>
-
-                            {balance !== null && (
-                                <div className="rounded-lg border p-3 text-center">
-                                    <p className="text-xs text-muted-foreground">SMS Balance</p>
-                                    <p className="text-lg font-bold">{balance.toLocaleString()}</p>
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <Bell className="size-4 text-muted-foreground" />
-                                Notification Schedules
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between rounded-lg border p-3">
-                                    <div className="flex items-center gap-3">
-                                        <MessageSquare className="size-4 text-blue-600" />
-                                        <div>
-                                            <p className="text-sm font-medium">Fee Reminders</p>
-                                            <p className="text-xs text-muted-foreground">Remind parents about unpaid fees</p>
-                                        </div>
+                    <div className="space-y-4">
+                        {balance !== null && (
+                            <Card>
+                                <CardContent className="flex items-center gap-4 p-4">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                        <Wallet className="size-5 text-primary" />
                                     </div>
-                                    <Switch
-                                        checked={scheduleData.schedules.fee_reminder.is_enabled}
-                                        onCheckedChange={(checked) =>
-                                            setScheduleData('schedules', {
-                                                ...scheduleData.schedules,
-                                                fee_reminder: {
-                                                    ...scheduleData.schedules.fee_reminder,
-                                                    is_enabled: checked,
-                                                },
-                                            })
-                                        }
-                                    />
-                                </div>
-                                {scheduleData.schedules.fee_reminder.is_enabled && (
-                                    <div className="ml-7 flex items-center gap-2">
-                                        <Label className="text-xs">Send</Label>
-                                        <Input
-                                            type="number"
-                                            className="h-8 w-16 text-center"
-                                            value={scheduleData.schedules.fee_reminder.config.days_before}
-                                            onChange={(e) =>
-                                                setScheduleData('schedules', {
-                                                    ...scheduleData.schedules,
-                                                    fee_reminder: {
-                                                        ...scheduleData.schedules.fee_reminder,
-                                                        config: {
-                                                            ...scheduleData.schedules.fee_reminder.config,
-                                                            days_before: Number(e.target.value),
-                                                        },
-                                                    },
-                                                })
-                                            }
-                                            min={1}
-                                            max={30}
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">SMS Balance</p>
+                                        <p className="text-2xl font-bold">{balance.toLocaleString()}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base">
+                                    <Bell className="size-4 text-muted-foreground" />
+                                    Automated Notifications
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <div className="rounded-lg border p-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-amber-500/10">
+                                                <MessageSquare className="size-4 text-amber-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium">Fee Reminders</p>
+                                                <p className="text-xs text-muted-foreground">Remind parents about unpaid fees</p>
+                                            </div>
+                                        </div>
+                                        <Switch
+                                            checked={scheduleData.schedules.fee_reminder.is_enabled}
+                                            onCheckedChange={(checked) => updateSchedule('fee_reminder', 'is_enabled', checked)}
                                         />
-                                        <Label className="text-xs">days before due</Label>
                                     </div>
-                                )}
-
-                                <div className="flex items-center justify-between rounded-lg border p-3">
-                                    <div className="flex items-center gap-3">
-                                        <MessageSquare className="size-4 text-red-600" />
-                                        <div>
-                                            <p className="text-sm font-medium">Absence Alerts</p>
-                                            <p className="text-xs text-muted-foreground">Notify when student is absent</p>
+                                    {scheduleData.schedules.fee_reminder.is_enabled && (
+                                        <div className="mt-3 ml-11 flex items-center gap-2 text-sm">
+                                            <span className="text-muted-foreground">Send</span>
+                                            <Input
+                                                type="number"
+                                                className="h-8 w-16 text-center"
+                                                value={scheduleData.schedules.fee_reminder.config.days_before}
+                                                onChange={(e) => updateScheduleConfig('fee_reminder', 'days_before', Number(e.target.value))}
+                                                min={1}
+                                                max={30}
+                                            />
+                                            <span className="text-muted-foreground">days before due</span>
                                         </div>
-                                    </div>
-                                    <Switch
-                                        checked={scheduleData.schedules.absence_alert.is_enabled}
-                                        onCheckedChange={(checked) =>
-                                            setScheduleData('schedules', {
-                                                ...scheduleData.schedules,
-                                                absence_alert: {
-                                                    ...scheduleData.schedules.absence_alert,
-                                                    is_enabled: checked,
-                                                },
-                                            })
-                                        }
-                                    />
+                                    )}
                                 </div>
 
-                                <div className="flex items-center justify-between rounded-lg border p-3">
-                                    <div className="flex items-center gap-3">
-                                        <MessageSquare className="size-4 text-green-600" />
-                                        <div>
-                                            <p className="text-sm font-medium">Exam Reminders</p>
-                                            <p className="text-xs text-muted-foreground">Remind about upcoming exams</p>
+                                <div className="rounded-lg border p-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-red-500/10">
+                                                <MessageSquare className="size-4 text-red-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium">Absence Alerts</p>
+                                                <p className="text-xs text-muted-foreground">Notify when student is absent</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <Switch
-                                        checked={scheduleData.schedules.exam_reminder.is_enabled}
-                                        onCheckedChange={(checked) =>
-                                            setScheduleData('schedules', {
-                                                ...scheduleData.schedules,
-                                                exam_reminder: {
-                                                    ...scheduleData.schedules.exam_reminder,
-                                                    is_enabled: checked,
-                                                },
-                                            })
-                                        }
-                                    />
-                                </div>
-                                {scheduleData.schedules.exam_reminder.is_enabled && (
-                                    <div className="ml-7 flex items-center gap-2">
-                                        <Label className="text-xs">Send</Label>
-                                        <Input
-                                            type="number"
-                                            className="h-8 w-16 text-center"
-                                            value={scheduleData.schedules.exam_reminder.config.days_before}
-                                            onChange={(e) =>
-                                                setScheduleData('schedules', {
-                                                    ...scheduleData.schedules,
-                                                    exam_reminder: {
-                                                        ...scheduleData.schedules.exam_reminder,
-                                                        config: {
-                                                            ...scheduleData.schedules.exam_reminder.config,
-                                                            days_before: Number(e.target.value),
-                                                        },
-                                                    },
-                                                })
-                                            }
-                                            min={1}
-                                            max={14}
+                                        <Switch
+                                            checked={scheduleData.schedules.absence_alert.is_enabled}
+                                            onCheckedChange={(checked) => updateSchedule('absence_alert', 'is_enabled', checked)}
                                         />
-                                        <Label className="text-xs">days before exam</Label>
                                     </div>
-                                )}
-                            </div>
+                                </div>
 
-                            <Button onClick={handleSaveSchedules} disabled={scheduleProcessing} className="w-full">
-                                <Save className="mr-2 size-4" />
-                                {scheduleProcessing ? 'Saving...' : 'Save Schedules'}
-                            </Button>
-                        </CardContent>
-                    </Card>
+                                <div className="rounded-lg border p-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-green-500/10">
+                                                <MessageSquare className="size-4 text-green-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium">Exam Reminders</p>
+                                                <p className="text-xs text-muted-foreground">Remind about upcoming exams</p>
+                                            </div>
+                                        </div>
+                                        <Switch
+                                            checked={scheduleData.schedules.exam_reminder.is_enabled}
+                                            onCheckedChange={(checked) => updateSchedule('exam_reminder', 'is_enabled', checked)}
+                                        />
+                                    </div>
+                                    {scheduleData.schedules.exam_reminder.is_enabled && (
+                                        <div className="mt-3 ml-11 flex items-center gap-2 text-sm">
+                                            <span className="text-muted-foreground">Send</span>
+                                            <Input
+                                                type="number"
+                                                className="h-8 w-16 text-center"
+                                                value={scheduleData.schedules.exam_reminder.config.days_before}
+                                                onChange={(e) => updateScheduleConfig('exam_reminder', 'days_before', Number(e.target.value))}
+                                                min={1}
+                                                max={14}
+                                            />
+                                            <span className="text-muted-foreground">days before exam</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <Button onClick={() => postSchedule('/sms/schedules')} disabled={scheduleProcessing} className="w-full">
+                                    <Save className="mr-2 size-4" />
+                                    {scheduleProcessing ? 'Saving...' : 'Save Schedules'}
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </>

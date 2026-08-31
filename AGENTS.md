@@ -212,7 +212,7 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 - **Feature-gated:** `sms_notifications` plan feature (Basic, Pro, Enterprise plans)
 - **Frontend Pages:** SMS Settings (`/dashboard/sms/settings`), Send SMS (`/dashboard/sms/send`), SMS Logs (`/dashboard/sms/logs`)
 - **Providers:** `app/Services/SmsProviders/AlphaSmsProvider.php`, `EsmsProvider.php`
-- **Routes:** `/dashboard/sms/settings`, `/dashboard/sms/send`, `/dashboard/sms/logs`
+- **Routes:** `/sms/settings`, `/sms/send`, `/sms/logs`
 - **Sidebar:** Communication section → SMS group (Send SMS, SMS Logs, SMS Settings)
 
 ## Reports & Analytics

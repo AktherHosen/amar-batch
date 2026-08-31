@@ -54,14 +54,14 @@ export default function SmsLogs({ logs, stats, filters }: PageProps) {
     if (flash?.error) toast.error(flash.error);
 
     const applyFilter = (key: string, value: string) => {
-        const params = new URLSearchParams(router.page.url);
+        const params = new URLSearchParams(window.location.search);
         if (value) {
             params.set(key, value);
         } else {
             params.delete(key);
         }
         params.delete('page');
-        router.get(`/dashboard/sms/logs?${params.toString()}`);
+        router.get(`/sms/logs?${params.toString()}`);
     };
 
     const handleSearch = () => {
@@ -70,7 +70,7 @@ export default function SmsLogs({ logs, stats, filters }: PageProps) {
 
     const resetFilters = () => {
         setSearch('');
-        router.get('/dashboard/sms/logs');
+        router.get('/sms/logs');
     };
 
     const getTypeBadge = (type: string) => {
@@ -101,35 +101,47 @@ export default function SmsLogs({ logs, stats, filters }: PageProps) {
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-xs text-muted-foreground">Total Sent</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold">{stats.total.toLocaleString()}</p>
+                        <CardContent className="flex items-center gap-4 p-4">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                <MessageSquare className="size-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Total Sent</p>
+                                <p className="text-2xl font-bold">{stats.total.toLocaleString()}</p>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-xs text-muted-foreground">Delivered</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-green-600">{stats.sent.toLocaleString()}</p>
+                        <CardContent className="flex items-center gap-4 p-4">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10">
+                                <MessageSquare className="size-5 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Delivered</p>
+                                <p className="text-2xl font-bold text-green-600">{stats.sent.toLocaleString()}</p>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-xs text-muted-foreground">Failed</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-red-600">{stats.failed.toLocaleString()}</p>
+                        <CardContent className="flex items-center gap-4 p-4">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10">
+                                <MessageSquare className="size-5 text-red-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Failed</p>
+                                <p className="text-2xl font-bold text-red-600">{stats.failed.toLocaleString()}</p>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-xs text-muted-foreground">Today</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold">{stats.today.toLocaleString()}</p>
+                        <CardContent className="flex items-center gap-4 p-4">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                                <MessageSquare className="size-5 text-amber-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Today</p>
+                                <p className="text-2xl font-bold">{stats.today.toLocaleString()}</p>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -216,7 +228,16 @@ export default function SmsLogs({ logs, stats, filters }: PageProps) {
                                 </TableBody>
                             </Table>
                         </div>
-                        {logs.last_page > 1 && <Pagination pagination={logs} />}
+                        {logs.last_page > 1 && (
+                            <Pagination
+                                currentPage={logs.current_page}
+                                lastPage={logs.last_page}
+                                total={logs.total}
+                                perPage={logs.per_page}
+                                itemName="SMS logs"
+                                baseUrl="/sms/logs"
+                            />
+                        )}
                     </CardContent>
                 </Card>
             </div>

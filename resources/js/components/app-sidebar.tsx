@@ -344,21 +344,21 @@ return false;
                     items: [
                         {
                             title: 'Send SMS',
-                            href: '/dashboard/sms/send',
+                            href: '/sms/send',
                             permission: 'notices.index',
                             featureRequired: 'sms_notifications',
                             icon: Send,
                         },
                         {
                             title: 'SMS Logs',
-                            href: '/dashboard/sms/logs',
+                            href: '/sms/logs',
                             permission: 'notices.index',
                             featureRequired: 'sms_notifications',
                             icon: MessageSquare,
                         },
                         {
                             title: 'SMS Settings',
-                            href: '/dashboard/sms/settings',
+                            href: '/sms/settings',
                             ownerOnly: true,
                             featureRequired: 'sms_notifications',
                             icon: Settings,

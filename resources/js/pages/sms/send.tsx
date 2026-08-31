@@ -83,7 +83,7 @@ export default function SmsSend({ students }: PageProps) {
             return;
         }
 
-        post('/dashboard/sms/send', {
+        post('/sms/send', {
             onSuccess: (page) => {
                 const props = page.props as any;
                 if (props.sent !== undefined) {
@@ -100,14 +100,14 @@ export default function SmsSend({ students }: PageProps) {
             <Head title="Send SMS" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title="Send SMS" description="Send SMS to students or custom numbers" />
+                <Heading title="Send SMS" description="Send SMS to students or custom phone numbers" />
 
                 <div className="grid gap-4 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <UserPlus className="size-4 text-muted-foreground" />
-                                Select Recipients
+                                Recipients
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
@@ -163,7 +163,7 @@ export default function SmsSend({ students }: PageProps) {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Send className="size-4 text-muted-foreground" />
-                                Compose Message
+                                Compose
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
