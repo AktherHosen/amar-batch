@@ -1,14 +1,13 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { Check, Minus, Crown, Users, GraduationCap, Layers, CreditCard, ArrowRight } from 'lucide-react';
+import { Crown, Users, GraduationCap, Layers, CreditCard, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
-import PlanBadge from '@/components/plan-badge';
+import PlanCard from '@/components/plan-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { useLocale } from '@/contexts/locale-context';
 import { index as subscriptionIndex } from '@/routes/subscription';
 
@@ -56,17 +55,6 @@ type PageProps = {
     currentUsage: CurrentUsage;
     recentPayments: PaymentRecord[];
 };
-
-const allFeatures = [
-    'attendance',
-    'fees',
-    'exams',
-    'reports',
-    'notifications',
-    'custom_branding',
-    'multi_branch',
-    'api_access',
-];
 
 export default function SubscriptionPage({ subscription, plans, currentUsage, recentPayments }: PageProps) {
     const { t, formatCurrency } = useLocale();
@@ -330,91 +318,33 @@ return;
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {plans.map((plan) => {
                             const isCurrent = currentPlan?.id === plan.id;
-                            const price = annual ? plan.price_yearly : plan.price_monthly;
-                            const period = annual ? t('plan.year') : t('plan.month');
                             const isPopular = !isCurrent && plan.slug === 'pro';
 
                             return (
-                                <Card
+                                <PlanCard
                                     key={plan.id}
-                                    className={`relative flex flex-col transition-shadow hover:shadow-md ${isCurrent ? 'border-primary ring-1 ring-primary' : ''}`}
-                                >
-                                    <PlanBadge isCurrent={isCurrent} label={t('subscription.current_plan')} />
-                                    <PlanBadge isPopular={isPopular} label={t('plan.popular')} />
-                                    <CardContent className="flex flex-1 flex-col px-4 pt-8 sm:px-6">
-                                        <h3 className="text-lg font-bold sm:text-xl">{plan.name}</h3>
-                                        {plan.description && (
-                                            <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{plan.description}</p>
-                                        )}
-
-                                        <div className="mt-4">
-                                            <div className="flex items-baseline gap-1.5">
-                                                <span className="text-3xl font-bold tracking-tight sm:text-4xl">
-                                                    {price === 0 ? t('plan.free') : formatCurrency(price)}
-                                                </span>
-                                                {price > 0 && (
-                                                    <span className="text-sm text-muted-foreground whitespace-nowrap">
-                                                        /{period}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <Separator className="my-4" />
-
-                                        <div className="space-y-2 text-sm">
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">{t('plan.students')}</span>
-                                                <span className="font-medium">{formatLimit(plan.max_students)}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">{t('plan.staff')}</span>
-                                                <span className="font-medium">{formatLimit(plan.max_staff)}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">{t('plan.batches')}</span>
-                                                <span className="font-medium">{formatLimit(plan.max_batches)}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-4 space-y-1.5">
-                                            {allFeatures.map((feature) => {
-                                                const included = plan.features?.includes(feature) ?? false;
-
-                                                return (
-                                                    <div key={feature} className="flex items-center gap-2 text-sm">
-                                                        <span className={`flex size-4 shrink-0 items-center justify-center rounded-full ${included ? 'bg-green-500/10' : 'bg-muted'}`}>
-                                                            {included ? (
-                                                                <Check className="size-3 text-green-600" />
-                                                            ) : (
-                                                                <Minus className="size-3 text-muted-foreground" />
-                                                            )}
-                                                        </span>
-                                                        <span className={included ? 'text-foreground' : 'text-muted-foreground'}>
-                                                            {t(`plan.feature_${feature}`)}
-                                                        </span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-
-                                        <div className="mt-auto pt-5">
-                                            {!isCurrent ? (
-                                                <Button
-                                                    className="w-full"
-                                                    onClick={() => handleUpgrade(plan)}
-                                                >
-                                                    {currentPlan ? t('subscription.switch_plan') : t('subscription.get_started')}
-                                                    <ArrowRight className="ml-2 size-4" />
-                                                </Button>
-                                            ) : (
-                                                <Button className="w-full" variant="outline" disabled>
-                                                    {t('subscription.current_plan')}
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                    plan={plan}
+                                    annual={annual}
+                                    isCurrent={isCurrent}
+                                    isPopular={isPopular}
+                                    currentLabel={t('subscription.current_plan')}
+                                    popularLabel={t('plan.popular')}
+                                    cta={
+                                        !isCurrent ? (
+                                            <Button
+                                                className="w-full"
+                                                onClick={() => handleUpgrade(plan)}
+                                            >
+                                                {currentPlan ? t('subscription.switch_plan') : t('subscription.get_started')}
+                                                <ArrowRight className="ml-2 size-4" />
+                                            </Button>
+                                        ) : (
+                                            <Button className="w-full" variant="outline" disabled>
+                                                {t('subscription.current_plan')}
+                                            </Button>
+                                        )
+                                    }
+                                />
                             );
                         })}
                     </div>

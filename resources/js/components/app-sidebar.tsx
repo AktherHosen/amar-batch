@@ -78,7 +78,7 @@ return true;
 
     const filterItem = (item: NavItem): boolean => {
         if (isUserSuperAdmin) {
-            return !!item.superAdminOnly;
+            return !!item.superAdminOnly || (!item.ownerOnly && !item.featureRequired && !item.permission);
         }
 
         if (item.superAdminOnly) {

@@ -1,13 +1,14 @@
 import { router } from '@inertiajs/react';
-import { EllipsisVertical, PenLine, Plus, Trash2 } from 'lucide-react';
+import { EllipsisVertical, PenLine, Plus, Trash2, Eye } from 'lucide-react';
 import type { FormEvent } from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable } from '@/components/data-table';
 import type { DataTableProps } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import PlanCard from '@/components/plan-card';
 import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -49,8 +50,6 @@ type PageProps = {
 };
 
 const AVAILABLE_FEATURES = [
-    'students',
-    'batches',
     'attendance',
     'fees',
     'exams',
@@ -60,6 +59,17 @@ const AVAILABLE_FEATURES = [
     'multi_branch',
     'api_access',
 ];
+
+const featureLabels: Record<string, string> = {
+    attendance: 'plan.feature_attendance',
+    fees: 'plan.feature_fees',
+    exams: 'plan.feature_exams',
+    reports: 'plan.feature_reports',
+    notifications: 'plan.feature_notifications',
+    custom_branding: 'plan.feature_custom_branding',
+    multi_branch: 'plan.feature_multi_branch',
+    api_access: 'plan.feature_api_access',
+};
 
 const defaultForm = {
     name: '',
@@ -87,6 +97,16 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
     const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
     const [form, setForm] = useState(defaultForm);
     const [processing, setProcessing] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('create') === 'true') {
+            setEditingPlan(null);
+            setForm(defaultForm);
+            setSheetOpen(true);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
 
     const openCreate = () => {
         setEditingPlan(null);
@@ -233,7 +253,7 @@ return '—';
                 return (
                     <div className="flex flex-wrap gap-1">
                         {features.slice(0, 3).map((f: string) => (
-                            <Badge key={f} variant="outline" className="text-xs">{f}</Badge>
+                            <Badge key={f} variant="outline" className="text-xs">{t(featureLabels[f] || f)}</Badge>
                         ))}
                         {features.length > 3 && (
                             <Badge variant="outline" className="text-xs">+{features.length - 3}</Badge>
@@ -486,6 +506,32 @@ return '—';
                                     }
                                 />
                                 <Label htmlFor="is_default">{t('super_admin.default_plan')}</Label>
+                            </div>
+                        </div>
+
+                        <div className="rounded-lg border bg-muted/30 p-4">
+                            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                <Eye className="size-4" />
+                                {t('super_admin.preview')}
+                            </div>
+                            <div className="mx-auto max-w-[320px]">
+                                <PlanCard
+                                    plan={{
+                                        id: 0,
+                                        name: form.name || 'Plan Name',
+                                        slug: form.slug || 'plan',
+                                        description: form.description || null,
+                                        price_monthly: form.price_monthly,
+                                        price_yearly: form.price_yearly,
+                                        max_students: form.max_students,
+                                        max_staff: form.max_staff,
+                                        max_batches: form.max_batches,
+                                        features: form.features,
+                                        is_default: form.is_default,
+                                    }}
+                                    annual={false}
+                                    isDefault={form.is_default}
+                                />
                             </div>
                         </div>
                     </form>

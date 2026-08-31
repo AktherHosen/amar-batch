@@ -23,6 +23,8 @@ class SuperAdminController extends Controller
             'total_revenue' => (float) Payment::where('status', 'success')->sum('amount'),
             'active_subscriptions' => Subscription::where('status', 'active')->count(),
             'trial_subscriptions' => Subscription::where('status', 'trial')->count(),
+            'pending_payments' => Payment::where('status', 'pending')->count(),
+            'total_students' => \App\Models\Student::count(),
         ];
 
         $recentPayments = Payment::with(['tenant', 'plan'])
@@ -39,7 +41,7 @@ class SuperAdminController extends Controller
                     ->groupBy('user_id');
             })
             ->latest('updated_at')
-            ->take(10)
+            ->take(5)
             ->get()
             ->map(function ($user) {
                 $lastSession = DB::table('sessions')
@@ -60,10 +62,46 @@ class SuperAdminController extends Controller
                 ];
             });
 
+        $recentTenants = Tenant::with('subscription.plan')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn ($tenant) => [
+                'id' => $tenant->id,
+                'name' => $tenant->name,
+                'slug' => $tenant->slug,
+                'is_active' => $tenant->is_active,
+                'created_at' => $tenant->created_at->diffForHumans(),
+                'plan' => $tenant->subscription?->plan?->name ?? 'No plan',
+                'status' => $tenant->subscription?->status ?? 'none',
+            ]);
+
+        $revenueTrend = collect(range(11, 0))->map(function ($i) {
+            $date = now()->subMonths($i);
+            return [
+                'month' => $date->format('M Y'),
+                'revenue' => (float) Payment::where('status', 'success')
+                    ->whereMonth('paid_at', $date->month)
+                    ->whereYear('paid_at', $date->year)
+                    ->sum('amount'),
+            ];
+        });
+
+        $planDistribution = Subscription::where('status', 'active')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->select('plans.name', DB::raw('count(*) as count'))
+            ->groupBy('plans.name')
+            ->get()
+            ->pluck('count', 'name')
+            ->toArray();
+
         return Inertia::render('super-admin/dashboard', [
             'stats' => $stats,
             'recentPayments' => $recentPayments,
             'ownerActivity' => $ownerActivity,
+            'recentTenants' => $recentTenants,
+            'revenueTrend' => $revenueTrend,
+            'planDistribution' => $planDistribution,
         ]);
     }
 
