@@ -59,9 +59,11 @@ type PageProps = {
     recentPayments: PaymentRecord[];
     manualPaymentEnabled: boolean;
     manualPaymentInstructions: string | null;
+    availableFeatures: string[];
+    featureMap: Record<string, string>;
 };
 
-export default function SubscriptionPage({ subscription, plans, currentUsage, recentPayments, manualPaymentEnabled, manualPaymentInstructions }: PageProps) {
+export default function SubscriptionPage({ subscription, plans, currentUsage, recentPayments, manualPaymentEnabled, manualPaymentInstructions, availableFeatures, featureMap }: PageProps) {
     const { t, formatCurrency } = useLocale();
     const { flash } = usePage<{ flash: { error?: string; success?: string } }>().props;
     const [annual, setAnnual] = useState(true);
@@ -370,6 +372,8 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                     isPopular={isPopular}
                                     currentLabel={t('subscription.current_plan')}
                                     popularLabel={t('plan.popular')}
+                                    availableFeatures={availableFeatures}
+                                    featureMap={featureMap}
                                     cta={
                                         !isCurrent ? (
                                             <Button

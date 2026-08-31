@@ -51,9 +51,11 @@ type Stats = {
 type Props = {
     stats?: Stats;
     plans?: Plan[];
+    availableFeatures?: string[];
+    featureMap?: Record<string, string>;
 };
 
-export default function Welcome({ stats, plans }: Props) {
+export default function Welcome({ stats, plans, availableFeatures = [], featureMap = {} }: Props) {
     const { auth } = usePage().props;
     const { t, formatNumber, formatCurrency } = useLocale();
     const [annual, setAnnual] = useState(true);
@@ -398,6 +400,8 @@ export default function Welcome({ stats, plans }: Props) {
                                             isDefault={plan.is_default && !isPopular}
                                             popularLabel={t('plan.popular')}
                                             defaultLabel={t('plan.free_trial')}
+                                            availableFeatures={availableFeatures}
+                                            featureMap={featureMap}
                                             cta={
                                                 <Button
                                                     className="w-full"

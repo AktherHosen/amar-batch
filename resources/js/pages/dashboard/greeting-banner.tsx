@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Clock from '@/components/clock';
 import { Badge } from '@/components/ui/badge';
 import { useLocale } from '@/contexts/locale-context';
+import { useAppearance, ACCENTS } from '@/hooks/use-appearance';
 
 type Props = {
     userName: string;
@@ -30,6 +31,7 @@ function getGreeting(t: (key: string) => string, hour: number) {
 
 export default function GreetingBanner({ userName, subtitle, isTrial, trialEndsAt }: Props) {
     const { t } = useLocale();
+    const { accent, resolvedAppearance } = useAppearance();
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -41,6 +43,25 @@ export default function GreetingBanner({ userName, subtitle, isTrial, trialEndsA
     const greeting = getGreeting(t, currentTime.getHours());
     const GreetingIcon = greeting.icon;
 
+    const getAccentBackground = () => {
+        const isPreset = accent in ACCENTS;
+        if (!isPreset) {
+            return resolvedAppearance === 'dark'
+                ? `color-mix(in srgb, ${accent} 12%, transparent)`
+                : `color-mix(in srgb, ${accent} 8%, transparent)`;
+        }
+        const oklch = resolvedAppearance === 'dark' ? ACCENTS[accent].dark : ACCENTS[accent].light;
+        return resolvedAppearance === 'dark'
+            ? `color-mix(in oklch, ${oklch} 10%, oklch(0.205 0 0))`
+            : `color-mix(in oklch, ${oklch} 8%, oklch(0.985 0 0))`;
+    };
+
+    const getAccentText = () => {
+        const isPreset = accent in ACCENTS;
+        if (!isPreset) return accent;
+        return resolvedAppearance === 'dark' ? ACCENTS[accent].dark : ACCENTS[accent].light;
+    };
+
     const trialDaysLeft = trialEndsAt
         ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - currentTime.getTime()) / 86400000))
         : null;
@@ -51,9 +72,12 @@ export default function GreetingBanner({ userName, subtitle, isTrial, trialEndsA
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
         >
-            <div className="relative overflow-hidden rounded-xl bg-primary/5 px-4 py-3 sm:px-6 sm:py-4">
-                <div className="absolute -right-4 -top-4 text-primary/10 sm:-right-2 sm:-top-2">
-                    <GreetingIcon className="size-4 sm:size-6 md:size-8 stroke-muted" strokeWidth={1} />
+            <div
+                className="relative overflow-hidden rounded-xl px-4 py-3 sm:px-6 sm:py-4"
+                style={{ backgroundColor: getAccentBackground() }}
+            >
+                <div className="absolute -right-4 -top-4 sm:-right-2 sm:-top-2" style={{ color: getAccentText(), opacity: 0.12 }}>
+                    <GreetingIcon className="size-4 sm:size-6 md:size-8" strokeWidth={1} />
                 </div>
                 <div className="relative flex items-center gap-3">
                     <div className="min-w-0 flex-1">

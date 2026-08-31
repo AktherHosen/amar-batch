@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\PaymentSetting;
 use App\Models\Plan;
+use App\Models\PlanFeature;
 use App\Models\Subscription;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,10 @@ class SubscriptionController extends Controller
 
         $subscription = $tenant->subscription;
         $plans = Plan::where('is_active', true)->orderBy('price_monthly')->get();
+
+        $planFeatures = PlanFeature::orderBy('name')->get();
+        $availableFeatures = $planFeatures->pluck('slug')->toArray();
+        $featureMap = $planFeatures->pluck('name', 'slug')->toArray();
 
         $currentUsage = [
             'students' => $tenant->students()->where('status', 'active')->count(),
@@ -80,6 +85,8 @@ class SubscriptionController extends Controller
             'recentPayments' => $recentPayments,
             'manualPaymentEnabled' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_enabled,
             'manualPaymentInstructions' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_instructions,
+            'availableFeatures' => $availableFeatures,
+            'featureMap' => $featureMap,
         ]);
     }
 
