@@ -3,12 +3,31 @@
 namespace Database\Seeders;
 
 use App\Models\Plan;
+use App\Models\PlanFeature;
 use Illuminate\Database\Seeder;
 
 class PlanSeeder extends Seeder
 {
     public function run(): void
     {
+        $features = [
+            ['name' => 'Attendance Tracking', 'slug' => 'attendance', 'is_system' => true],
+            ['name' => 'Fee Collection', 'slug' => 'fees', 'is_system' => true],
+            ['name' => 'Exam Management', 'slug' => 'exams', 'is_system' => true],
+            ['name' => 'Reports & Analytics', 'slug' => 'reports', 'is_system' => true],
+            ['name' => 'Notifications', 'slug' => 'notifications', 'is_system' => true],
+            ['name' => 'Custom Branding', 'slug' => 'custom_branding', 'is_system' => true],
+            ['name' => 'Multi-branch Support', 'slug' => 'multi_branch', 'is_system' => true],
+            ['name' => 'API Access', 'slug' => 'api_access', 'is_system' => true],
+        ];
+
+        foreach ($features as $feature) {
+            PlanFeature::updateOrCreate(
+                ['slug' => $feature['slug']],
+                $feature
+            );
+        }
+
         $plans = [
             [
                 'name' => 'Free Trial',

@@ -18,18 +18,7 @@ type Plan = {
     is_default: boolean;
 };
 
-const allFeatures = [
-    'attendance',
-    'fees',
-    'exams',
-    'reports',
-    'notifications',
-    'custom_branding',
-    'multi_branch',
-    'api_access',
-];
-
-const featureLabels: Record<string, string> = {
+const builtInFeatureLabels: Record<string, string> = {
     attendance: 'plan.feature_attendance',
     fees: 'plan.feature_fees',
     exams: 'plan.feature_exams',
@@ -50,6 +39,8 @@ type PlanCardProps = {
     popularLabel?: string;
     defaultLabel?: string;
     cta?: React.ReactNode;
+    featureMap?: Record<string, string>;
+    availableFeatures?: string[];
 };
 
 export default function PlanCard({
@@ -62,6 +53,8 @@ export default function PlanCard({
     popularLabel,
     defaultLabel,
     cta,
+    featureMap,
+    availableFeatures,
 }: PlanCardProps) {
     const { t, formatCurrency } = useLocale();
     const price = annual ? plan.price_yearly : plan.price_monthly;
@@ -128,7 +121,7 @@ export default function PlanCard({
                     {t('plan.includes')}
                 </div>
                 <ul className="mb-6 flex-1 space-y-2 text-sm">
-                    {allFeatures.map((feature) => {
+                    {(availableFeatures || []).map((feature) => {
                         const included = plan.features?.includes(feature) ?? false;
                         return (
                             <li key={feature} className="flex items-center gap-2">
@@ -144,7 +137,7 @@ export default function PlanCard({
                                     )}
                                 </span>
                                 <span className={included ? 'text-foreground' : 'text-muted-foreground'}>
-                                    {t(featureLabels[feature])}
+                                    {featureMap?.[feature] ? t(featureMap[feature]) : (builtInFeatureLabels[feature] ? t(builtInFeatureLabels[feature]) : feature)}
                                 </span>
                             </li>
                         );

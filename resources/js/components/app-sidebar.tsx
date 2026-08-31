@@ -2,7 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutGrid,
     Users,
-    UsersRound,
+    Shield,
     Layers,
     CheckSquare,
     BarChart3,
@@ -11,6 +11,9 @@ import {
     Settings,
     Crown,
     Receipt,
+    Building2,
+    CreditCard,
+    MessageSquare,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -128,8 +131,8 @@ return false;
             collapsible: false,
             items: [
                 {
-                    title: 'Admin',
-                    icon: Crown,
+                    title: 'Tenants',
+                    icon: Building2,
                     items: [
                         {
                             title: 'Overview',
@@ -141,6 +144,12 @@ return false;
                             href: '/dashboard/owners',
                             superAdminOnly: true,
                         },
+                    ],
+                } as NavItemSection,
+                {
+                    title: 'Billing',
+                    icon: CreditCard,
+                    items: [
                         {
                             title: 'Plans',
                             href: '/dashboard/plans',
@@ -151,6 +160,12 @@ return false;
                             href: '/dashboard/payments',
                             superAdminOnly: true,
                         },
+                    ],
+                } as NavItemSection,
+                {
+                    title: 'Messages',
+                    icon: MessageSquare,
+                    items: [
                         {
                             title: 'Messages',
                             href: '/dashboard/contacts',
@@ -165,7 +180,7 @@ return false;
             items: [
                 {
                     title: 'Users & Roles',
-                    icon: UsersRound,
+                    icon: Shield,
                     items: [
                         {
                             title: t('nav.users'),
@@ -387,16 +402,18 @@ return false;
             </SidebarContent>
 
             <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton asChild>
-                            <Link href={subscription.index()} prefetch>
-                                <Crown className="size-4" />
-                                <span>{t('nav.upgrade') ?? 'Upgrade'}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                {!isUserSuperAdmin && (
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                                <Link href={subscription.index()} prefetch>
+                                    <Crown className="size-4" />
+                                    <span>{t('nav.upgrade') ?? 'Upgrade'}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                )}
             </SidebarFooter>
 
             {isUserSuperAdmin && <SidebarRail />}

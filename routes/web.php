@@ -12,6 +12,7 @@ use App\Http\Controllers\SuperAdmin\TenantController;
 use App\Http\Controllers\SuperAdmin\PlanController;
 use App\Http\Controllers\SuperAdmin\OwnerController;
 use App\Http\Controllers\SuperAdmin\ContactMessageController;
+use App\Http\Controllers\SuperAdmin\PlanFeatureController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
@@ -68,6 +69,10 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('d
     Route::get('tenants/{tenant}/detail', [SuperAdminController::class, 'showTenant'])->name('tenants.detail');
     Route::post('tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
     Route::resource('plans', PlanController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::get('plan-features', [PlanFeatureController::class, 'index'])->name('plan-features.index');
+    Route::post('plan-features', [PlanFeatureController::class, 'store'])->name('plan-features.store');
+    Route::put('plan-features/{planFeature}', [PlanFeatureController::class, 'update'])->name('plan-features.update');
+    Route::delete('plan-features/{planFeature}', [PlanFeatureController::class, 'destroy'])->name('plan-features.destroy');
     Route::get('payments', [SuperAdminController::class, 'payments'])->name('payments');
     Route::post('payments/{payment}/approve', [SuperAdminController::class, 'approvePayment'])->name('payments.approve');
     Route::post('payments/{payment}/cancel', [SuperAdminController::class, 'cancelPayment'])->name('payments.cancel');

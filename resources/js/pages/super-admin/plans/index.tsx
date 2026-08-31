@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
-import { EllipsisVertical, PenLine, Plus, Trash2, Eye } from 'lucide-react';
+import { EllipsisVertical, PenLine, Plus, Trash2, Eye, Settings } from 'lucide-react';
 import type { FormEvent } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable } from '@/components/data-table';
@@ -13,6 +13,7 @@ import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,13 @@ type Plan = {
     is_default: boolean;
 };
 
+type PlanFeature = {
+    id: number;
+    name: string;
+    slug: string;
+    is_system: boolean;
+};
+
 type PageProps = {
     plans: {
         data: Plan[];
@@ -47,28 +55,6 @@ type PageProps = {
     filters: {
         search?: string;
     };
-};
-
-const AVAILABLE_FEATURES = [
-    'attendance',
-    'fees',
-    'exams',
-    'reports',
-    'notifications',
-    'custom_branding',
-    'multi_branch',
-    'api_access',
-];
-
-const featureLabels: Record<string, string> = {
-    attendance: 'plan.feature_attendance',
-    fees: 'plan.feature_fees',
-    exams: 'plan.feature_exams',
-    reports: 'plan.feature_reports',
-    notifications: 'plan.feature_notifications',
-    custom_branding: 'plan.feature_custom_branding',
-    multi_branch: 'plan.feature_multi_branch',
-    api_access: 'plan.feature_api_access',
 };
 
 const defaultForm = {
@@ -97,6 +83,32 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
     const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
     const [form, setForm] = useState(defaultForm);
     const [processing, setProcessing] = useState(false);
+
+    const [planFeatures, setPlanFeatures] = useState<PlanFeature[]>([]);
+    const [featureDialog, setFeatureDialog] = useState<{ open: boolean; editing: PlanFeature | null }>({
+        open: false,
+        editing: null,
+    });
+    const [featureName, setFeatureName] = useState('');
+    const [featureProcessing, setFeatureProcessing] = useState(false);
+    const [deleteFeatureDialog, setDeleteFeatureDialog] = useState<{ open: boolean; item: PlanFeature | null }>({
+        open: false,
+        item: null,
+    });
+
+    const fetchFeatures = useCallback(async () => {
+        try {
+            const res = await fetch('/dashboard/plan-features');
+            const data = await res.json();
+            setPlanFeatures(data);
+        } catch {
+            toast.error('Failed to load features');
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchFeatures();
+    }, [fetchFeatures]);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -188,6 +200,66 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
         }
     };
 
+    const openFeatureDialog = (editing: PlanFeature | null = null) => {
+        setFeatureName(editing?.name || '');
+        setFeatureDialog({ open: true, editing });
+    };
+
+    const handleFeatureSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setFeatureProcessing(true);
+
+        const url = featureDialog.editing
+            ? `/dashboard/plan-features/${featureDialog.editing.id}`
+            : '/dashboard/plan-features';
+        const method = featureDialog.editing ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-XSRF-TOKEN': decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '') },
+                body: JSON.stringify({ name: featureName }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to save feature');
+                return;
+            }
+
+            toast.success(featureDialog.editing ? t('toast.updated_successfully') : t('toast.created_successfully'));
+            setFeatureDialog({ open: false, editing: null });
+            fetchFeatures();
+        } catch {
+            toast.error('Failed to save feature');
+        } finally {
+            setFeatureProcessing(false);
+        }
+    };
+
+    const handleDeleteFeature = async () => {
+        if (!deleteFeatureDialog.item) return;
+
+        try {
+            const res = await fetch(`/dashboard/plan-features/${deleteFeatureDialog.item.id}`, {
+                method: 'DELETE',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-XSRF-TOKEN': decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '') },
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to delete feature');
+                return;
+            }
+
+            toast.success(t('toast.deleted_successfully'));
+            setDeleteFeatureDialog({ open: false, item: null });
+            fetchFeatures();
+        } catch {
+            toast.error('Failed to delete feature');
+        }
+    };
+
     const formatLimit = (value: number) => (value === -1 ? t('super_admin.unlimited') : value.toString());
 
     const columns: NonNullable<DataTableProps<Plan, unknown>['columns']> = [
@@ -253,7 +325,9 @@ return '—';
                 return (
                     <div className="flex flex-wrap gap-1">
                         {features.slice(0, 3).map((f: string) => (
-                            <Badge key={f} variant="outline" className="text-xs">{t(featureLabels[f] || f)}</Badge>
+                            <Badge key={f} variant="outline" className="text-xs">
+                                {planFeatures.find((pf) => pf.slug === f)?.name || f}
+                            </Badge>
                         ))}
                         {features.length > 3 && (
                             <Badge variant="outline" className="text-xs">+{features.length - 3}</Badge>
@@ -470,18 +544,43 @@ return '—';
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>{t('super_admin.features')}</Label>
+                            <div className="flex items-center justify-between">
+                                <Label>{t('super_admin.features')}</Label>
+                                <Button type="button" variant="ghost" size="sm" className="h-7 gap-1" onClick={() => openFeatureDialog()}>
+                                    <Plus className="size-3" />
+                                    {t('super_admin.create_feature')}
+                                </Button>
+                            </div>
                             <div className="flex flex-wrap gap-2">
-                                {AVAILABLE_FEATURES.map((feature) => (
-                                    <Button
-                                        key={feature}
-                                        type="button"
-                                        variant={form.features.includes(feature) ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => toggleFeature(feature)}
-                                    >
-                                        {feature}
-                                    </Button>
+                                {planFeatures.map((feature) => (
+                                    <div key={feature.slug} className="group relative">
+                                        <Button
+                                            type="button"
+                                            variant={form.features.includes(feature.slug) ? 'default' : 'outline'}
+                                            size="sm"
+                                            onClick={() => toggleFeature(feature.slug)}
+                                        >
+                                            {feature.name}
+                                        </Button>
+                                        {!feature.is_system && (
+                                            <div className="absolute -top-1.5 -right-1.5 hidden group-hover:flex gap-0.5">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); openFeatureDialog(feature); }}
+                                                    className="flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/80"
+                                                >
+                                                    <PenLine className="size-2" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); setDeleteFeatureDialog({ open: true, item: feature }); }}
+                                                    className="flex size-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/80"
+                                                >
+                                                    <Trash2 className="size-2" />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -531,6 +630,8 @@ return '—';
                                     }}
                                     annual={false}
                                     isDefault={form.is_default}
+                                    availableFeatures={planFeatures.map((f) => f.slug)}
+                                    featureMap={Object.fromEntries(planFeatures.map((f) => [f.slug, f.name]))}
                                 />
                             </div>
                         </div>
@@ -546,6 +647,38 @@ return '—';
                 </SheetContent>
             </Sheet>
 
+            <Dialog open={featureDialog.open} onOpenChange={(open) => setFeatureDialog({ open, editing: featureDialog.editing })}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{featureDialog.editing ? t('super_admin.edit_feature') : t('super_admin.create_feature')}</DialogTitle>
+                        <DialogDescription>
+                            {featureDialog.editing ? t('super_admin.edit_feature_desc') : t('super_admin.create_feature_desc')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleFeatureSubmit} className="space-y-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="feature_name">{t('super_admin.feature_name')}</Label>
+                            <Input
+                                id="feature_name"
+                                value={featureName}
+                                onChange={(e) => setFeatureName(e.target.value)}
+                                placeholder={t('super_admin.feature_name_placeholder')}
+                                required
+                                autoFocus
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setFeatureDialog({ open: false, editing: null })}>
+                                {t('actions.cancel')}
+                            </Button>
+                            <Button type="submit" disabled={featureProcessing || !featureName.trim()}>
+                                {featureProcessing ? t('actions.processing') : featureDialog.editing ? t('actions.update') : t('actions.create')}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
             <ConfirmDialog
                 open={deleteDialog.open}
                 onOpenChange={(open) => setDeleteDialog({ open, item: deleteDialog.item })}
@@ -554,6 +687,16 @@ return '—';
                 confirmText={t('actions.delete')}
                 variant="destructive"
                 onConfirm={confirmDelete}
+            />
+
+            <ConfirmDialog
+                open={deleteFeatureDialog.open}
+                onOpenChange={(open) => setDeleteFeatureDialog({ open, item: deleteFeatureDialog.item })}
+                title={t('super_admin.delete_feature')}
+                description={`${t('super_admin.delete_feature_confirm')} "${deleteFeatureDialog.item?.name ?? ''}"`}
+                confirmText={t('actions.delete')}
+                variant="destructive"
+                onConfirm={handleDeleteFeature}
             />
         </>
     );
