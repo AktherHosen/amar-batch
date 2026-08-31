@@ -166,8 +166,8 @@ export default function OwnerShow({ owner, plans, history }: PageProps) {
                         </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                        <Badge variant={owner.role === 'owner' ? 'default' : 'destructive'}>
-                            {owner.role === 'owner' ? t('super_admin.active') : t('super_admin.inactive')}
+                        <Badge variant="outline" className="capitalize">
+                            {owner.role}
                         </Badge>
                         {tenant && (
                             <Badge variant={tenant.is_active ? 'default' : 'secondary'}>

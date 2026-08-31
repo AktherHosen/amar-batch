@@ -4,7 +4,9 @@ import {
     CheckCircle2,
     Download,
     EllipsisVertical,
+    Pause,
     PenLine,
+    Play,
     Trash2,
     UserMinus,
     UserX,
@@ -65,6 +67,8 @@ type Enrollment = {
     student: Student;
     status: string;
     enrolled_at: string;
+    paused_at: string | null;
+    resumed_at: string | null;
 };
 
 type BatchHistory = {
@@ -252,6 +256,7 @@ export default function BatchesShow({
             active: 'default',
             completed: 'success',
             dropped: 'danger',
+            paused: 'secondary',
         };
 
         return variants[status] || 'secondary';
@@ -434,6 +439,17 @@ export default function BatchesShow({
                                             onClick={() =>
                                                 handleUpdateEnrollmentStatus(
                                                     enrollment.id,
+                                                    'paused',
+                                                )
+                                            }
+                                        >
+                                            <Pause className="mr-2 size-4" />
+                                            {t('actions.pause') ?? 'Pause'}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                handleUpdateEnrollmentStatus(
+                                                    enrollment.id,
                                                     'completed',
                                                 )
                                             }
@@ -453,6 +469,19 @@ export default function BatchesShow({
                                             {t('batches.drop')}
                                         </DropdownMenuItem>
                                     </>
+                                )}
+                                {enrollment.status === 'paused' && (
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleUpdateEnrollmentStatus(
+                                                enrollment.id,
+                                                'active',
+                                            )
+                                        }
+                                    >
+                                        <Play className="mr-2 size-4" />
+                                        {t('actions.resume') ?? 'Resume'}
+                                    </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem
                                     onClick={() =>

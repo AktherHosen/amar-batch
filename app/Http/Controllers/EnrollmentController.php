@@ -55,15 +55,27 @@ class EnrollmentController extends Controller
         $this->authorize('update', $enrollment);
 
         $request->validate([
-            'status' => 'required|in:active,completed,dropped',
+            'status' => 'required|in:active,completed,dropped,paused,resumed',
         ]);
 
-        $enrollment->update(['status' => $request->status]);
+        $newStatus = $request->status;
+        $updateData = ['status' => $newStatus];
+
+        if ($newStatus === 'paused' && $enrollment->status === 'active') {
+            $updateData['paused_at'] = now();
+            $updateData['resumed_at'] = null;
+        } elseif ($newStatus === 'resumed' && $enrollment->status === 'paused') {
+            $updateData['resumed_at'] = now();
+        } elseif ($newStatus === 'active' && $enrollment->status === 'paused') {
+            $updateData['resumed_at'] = now();
+        }
+
+        $enrollment->update($updateData);
 
         BatchHistory::create([
             'batch_id' => $enrollment->batch_id,
             'student_id' => $enrollment->student_id,
-            'action' => $request->status,
+            'action' => $newStatus,
             'action_date' => now()->toDateString(),
             'user_id' => $request->user()->id,
         ]);
