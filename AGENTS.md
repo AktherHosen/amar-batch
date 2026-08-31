@@ -198,6 +198,23 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 - Notification index page with read/unread status
 - Routes: `/notifications`, `/notifications/{notification}/read`
 
+## SMS Notifications
+
+- **Provider:** Pluggable SMS providers (Alpha SMS, eSMS) via `SmsService` abstraction
+- **Settings:** Per-tenant `sms_settings` table with provider, api_key, sender_id, is_enabled
+- **Logs:** Every SMS logged in `sms_logs` with recipient, message, type, status, provider_response
+- **Automation:** `notification_schedules` table with configurable rules per tenant
+- **Scheduled Commands:**
+  - `sms:fee-reminders` — daily at 9am, checks unpaid fees, sends SMS to student phones
+  - `sms:absence-alerts` — daily at 6pm, sends SMS for students marked absent today
+  - `sms:exam-reminders` — daily at 8am, sends SMS for exams in next 1-3 days
+- **Manual SMS:** Admin sends SMS to selected students or custom phone numbers
+- **Feature-gated:** `sms_notifications` plan feature (Basic, Pro, Enterprise plans)
+- **Frontend Pages:** SMS Settings (`/dashboard/sms/settings`), Send SMS (`/dashboard/sms/send`), SMS Logs (`/dashboard/sms/logs`)
+- **Providers:** `app/Services/SmsProviders/AlphaSmsProvider.php`, `EsmsProvider.php`
+- **Routes:** `/dashboard/sms/settings`, `/dashboard/sms/send`, `/dashboard/sms/logs`
+- **Sidebar:** Communication section → SMS group (Send SMS, SMS Logs, SMS Settings)
+
 ## Reports & Analytics
 
 - `ReportController` with stats and trends endpoints

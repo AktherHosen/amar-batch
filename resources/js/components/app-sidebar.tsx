@@ -31,6 +31,7 @@ import {
     Key,
     UserCog,
     ClipboardList,
+    Send,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -333,6 +334,34 @@ return false;
                             href: '/holidays',
                             permission: 'holidays.index',
                             icon: CalendarOff,
+                        },
+                    ],
+                } as NavItemSection,
+                {
+                    title: 'SMS',
+                    icon: MessageSquare,
+                    featureRequired: 'sms_notifications',
+                    items: [
+                        {
+                            title: 'Send SMS',
+                            href: '/dashboard/sms/send',
+                            permission: 'notices.index',
+                            featureRequired: 'sms_notifications',
+                            icon: Send,
+                        },
+                        {
+                            title: 'SMS Logs',
+                            href: '/dashboard/sms/logs',
+                            permission: 'notices.index',
+                            featureRequired: 'sms_notifications',
+                            icon: MessageSquare,
+                        },
+                        {
+                            title: 'SMS Settings',
+                            href: '/dashboard/sms/settings',
+                            ownerOnly: true,
+                            featureRequired: 'sms_notifications',
+                            icon: Settings,
                         },
                     ],
                 } as NavItemSection,

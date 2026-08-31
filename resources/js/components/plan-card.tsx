@@ -27,6 +27,7 @@ const builtInFeatureLabels: Record<string, string> = {
     custom_branding: 'plan.feature_custom_branding',
     multi_branch: 'plan.feature_multi_branch',
     api_access: 'plan.feature_api_access',
+    sms_notifications: 'plan.feature_sms_notifications',
 };
 
 type PlanCardProps = {
@@ -67,9 +68,8 @@ export default function PlanCard({
 
     return (
         <Card
-            className={`relative flex flex-col transition-shadow hover:shadow-md ${
-                isPopular ? 'scale-[1.02] border-primary shadow-lg shadow-primary/10' : ''
-            } ${isCurrent ? 'border-primary ring-1 ring-primary' : ''}`}
+            className={`relative flex flex-col transition-shadow hover:shadow-md ${isPopular ? 'scale-[1.02] border-primary shadow-lg shadow-primary/10' : ''
+                } ${isCurrent ? 'border-primary ring-1 ring-primary' : ''}`}
         >
             <PlanBadge
                 isPopular={isPopular}
@@ -126,9 +126,8 @@ export default function PlanCard({
                         return (
                             <li key={feature} className="flex items-center gap-2">
                                 <span
-                                    className={`flex size-4 shrink-0 items-center justify-center rounded-full ${
-                                        included ? 'bg-green-500/10' : 'bg-muted'
-                                    }`}
+                                    className={`flex size-4 shrink-0 items-center justify-center rounded-full ${included ? 'bg-green-500/10' : 'bg-muted'
+                                        }`}
                                 >
                                     {included ? (
                                         <Check className="size-3 text-green-600" />

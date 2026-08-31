@@ -19,6 +19,7 @@ class PlanSeeder extends Seeder
             ['name' => 'Custom Branding', 'slug' => 'custom_branding', 'is_system' => true],
             ['name' => 'Multi-branch Support', 'slug' => 'multi_branch', 'is_system' => true],
             ['name' => 'API Access', 'slug' => 'api_access', 'is_system' => true],
+            ['name' => 'SMS Notifications', 'slug' => 'sms_notifications', 'is_system' => true],
         ];
 
         foreach ($features as $feature) {
@@ -51,7 +52,7 @@ class PlanSeeder extends Seeder
                 'max_students' => 100,
                 'max_staff' => 5,
                 'max_batches' => 15,
-                'features' => ['attendance', 'fees', 'exams', 'reports'],
+                'features' => ['attendance', 'fees', 'exams', 'reports', 'sms_notifications'],
                 'is_active' => true,
                 'is_default' => false,
             ],
@@ -64,7 +65,7 @@ class PlanSeeder extends Seeder
                 'max_students' => 500,
                 'max_staff' => 20,
                 'max_batches' => 50,
-                'features' => ['attendance', 'fees', 'exams', 'reports', 'notifications', 'custom_branding'],
+                'features' => ['attendance', 'fees', 'exams', 'reports', 'notifications', 'custom_branding', 'sms_notifications'],
                 'is_active' => true,
                 'is_default' => false,
             ],
@@ -77,7 +78,7 @@ class PlanSeeder extends Seeder
                 'max_students' => -1,
                 'max_staff' => -1,
                 'max_batches' => -1,
-                'features' => ['attendance', 'fees', 'exams', 'reports', 'notifications', 'custom_branding', 'multi_branch', 'api_access'],
+                'features' => ['attendance', 'fees', 'exams', 'reports', 'notifications', 'custom_branding', 'multi_branch', 'api_access', 'sms_notifications'],
                 'is_active' => true,
                 'is_default' => false,
             ],

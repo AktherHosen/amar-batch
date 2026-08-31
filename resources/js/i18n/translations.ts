@@ -75,6 +75,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.exams': 'পরীক্ষা',
         'nav.reports': 'রিপোর্ট',
         'nav.branches': 'ব্রাঞ্চ',
+        'nav.sms': 'এসএমএস',
         'nav.roles': 'রোল ও অনুমতি',
         'nav.coaching_center': 'কোচিং সেন্টার',
         'nav.api_settings': 'API সেটিংস',
@@ -1092,6 +1093,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'plan.feature_custom_branding': 'কাস্টম ব্র্যান্ডিং',
         'plan.feature_multi_branch': 'মাল্টি-ব্রাঞ্চ সাপোর্ট',
         'plan.feature_api_access': 'API অ্যাক্সেস',
+        'plan.feature_sms_notifications': 'এসএমএস বিজ্ঞপ্তি',
 
         // FAQ
         'welcome.faq_title': 'ঘন ঘন জিজ্ঞাসিত প্রশ্নাবলী',
@@ -1158,6 +1160,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.exams': 'Exams',
         'nav.reports': 'Reports',
         'nav.branches': 'Branches',
+        'nav.sms': 'SMS',
         'nav.roles': 'Roles & Permissions',
         'nav.coaching_center': 'Coaching Center',
         'nav.api_settings': 'API Settings',
@@ -2113,6 +2116,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'plan.feature_custom_branding': 'Custom Branding',
         'plan.feature_multi_branch': 'Multi-branch Support',
         'plan.feature_api_access': 'API Access',
+        'plan.feature_sms_notifications': 'SMS Notifications',
 
         // Payment
         'payment.success_title': 'Payment Successful',
