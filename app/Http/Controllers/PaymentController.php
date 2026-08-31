@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\PaymentSetting;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Models\SubscriptionHistory;
 use App\Services\SslcommerzService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -268,6 +269,7 @@ class PaymentController extends Controller
             : now()->addMonth();
 
         $subscription = $tenant->subscription;
+        $oldPlan = $subscription?->plan;
 
         if ($subscription) {
             // Extend from the current term so mid-term renewals keep paid time.
@@ -284,7 +286,7 @@ class PaymentController extends Controller
                 'ends_at' => $endsAt,
             ]);
         } else {
-            Subscription::create([
+            $subscription = Subscription::create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $plan->id,
                 'status' => 'active',
@@ -294,6 +296,25 @@ class PaymentController extends Controller
         }
 
         $payment->update(['subscription_id' => $tenant->subscription->id]);
+
+        $action = 'renewed';
+        if (! $oldPlan) {
+            $action = 'activated';
+        } elseif ($plan->id !== $oldPlan->id) {
+            $action = $plan->price_monthly > $oldPlan->price_monthly ? 'upgraded' : 'downgraded';
+        }
+
+        SubscriptionHistory::create([
+            'tenant_id' => $tenant->id,
+            'subscription_id' => $tenant->subscription->id,
+            'plan_id' => $plan->id,
+            'action' => $action,
+            'status' => 'active',
+            'billing_type' => $payment->billing_type,
+            'amount' => $payment->amount,
+            'old_plan_name' => $oldPlan?->name,
+            'new_plan_name' => $plan->name,
+        ]);
     }
 
     public function submitManual(Request $request, Plan $plan): RedirectResponse

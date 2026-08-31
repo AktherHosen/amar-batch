@@ -4,6 +4,11 @@ import {
     Building2,
     CreditCard,
     Check,
+    History,
+    ArrowUpCircle,
+    ArrowDownCircle,
+    RotateCcw,
+    PlayCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -73,12 +78,25 @@ type Plan = {
     features: string[];
 };
 
+type HistoryRecord = {
+    id: number;
+    action: string;
+    status: string;
+    billing_type: string | null;
+    amount: number | null;
+    old_plan_name: string | null;
+    new_plan_name: string | null;
+    plan_name: string | null;
+    created_at: string;
+};
+
 type PageProps = {
     owner: Owner;
     plans: Plan[];
+    history: HistoryRecord[];
 };
 
-export default function OwnerShow({ owner, plans }: PageProps) {
+export default function OwnerShow({ owner, plans, history }: PageProps) {
     const { formatCurrency, t } = useLocale();
     const [planDialog, setPlanDialog] = useState(false);
     const [selectedPlanId, setSelectedPlanId] = useState(
@@ -214,6 +232,75 @@ return;
                     </CardContent>
                 </Card>
             </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <History className="size-4" />
+                        {t('super_admin.plan_history')}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {history.length > 0 ? (
+                        <div className="space-y-3">
+                            {history.map((record) => {
+                                const getActionIcon = (action: string) => {
+                                    switch (action) {
+                                        case 'upgraded': return <ArrowUpCircle className="size-4 text-green-600" />;
+                                        case 'downgraded': return <ArrowDownCircle className="size-4 text-orange-600" />;
+                                        case 'renewed': return <RotateCcw className="size-4 text-blue-600" />;
+                                        case 'activated': return <PlayCircle className="size-4 text-green-600" />;
+                                        default: return <Check className="size-4 text-muted-foreground" />;
+                                    }
+                                };
+
+                                const getActionLabel = (action: string) => {
+                                    switch (action) {
+                                        case 'upgraded': return t('super_admin.upgraded') ?? 'Upgraded';
+                                        case 'downgraded': return t('super_admin.downgraded') ?? 'Downgraded';
+                                        case 'renewed': return t('super_admin.renewed') ?? 'Renewed';
+                                        case 'activated': return t('super_admin.activated') ?? 'Activated';
+                                        case 'trial_started': return t('super_admin.trial_started') ?? 'Trial Started';
+                                        default: return action;
+                                    }
+                                };
+
+                                return (
+                                    <div key={record.id} className="flex items-start gap-3 rounded-lg border p-3">
+                                        <div className="mt-0.5 shrink-0">
+                                            {getActionIcon(record.action)}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium">{getActionLabel(record.action)}</span>
+                                                <Badge variant={record.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                                                    {record.status}
+                                                </Badge>
+                                            </div>
+                                            <p className="mt-0.5 text-xs text-muted-foreground">
+                                                {record.old_plan_name && record.new_plan_name
+                                                    ? `${record.old_plan_name} → ${record.new_plan_name}`
+                                                    : record.new_plan_name || record.old_plan_name || '—'}
+                                            </p>
+                                            <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                                                <span>{new Date(record.created_at).toLocaleDateString()}</span>
+                                                {record.billing_type && (
+                                                    <span className="capitalize">{record.billing_type}</span>
+                                                )}
+                                                {record.amount != null && record.amount > 0 && (
+                                                    <span>{formatCurrency(record.amount)}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">{t('super_admin.no_history') ?? 'No plan history yet.'}</p>
+                    )}
+                </CardContent>
+            </Card>
 
             <Dialog open={planDialog} onOpenChange={setPlanDialog}>
                 <DialogContent>

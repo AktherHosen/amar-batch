@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use App\Models\SubscriptionHistory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -74,6 +75,22 @@ class OwnerController extends Controller
 
         $plans = Plan::where('is_active', true)->orderBy('name')->get();
 
+        $history = SubscriptionHistory::where('tenant_id', $tenant?->id)
+            ->with('plan')
+            ->latest()
+            ->get()
+            ->map(fn ($h) => [
+                'id' => $h->id,
+                'action' => $h->action,
+                'status' => $h->status,
+                'billing_type' => $h->billing_type,
+                'amount' => $h->amount,
+                'old_plan_name' => $h->old_plan_name,
+                'new_plan_name' => $h->new_plan_name,
+                'plan_name' => $h->plan?->name,
+                'created_at' => $h->created_at,
+            ]);
+
         return Inertia::render('super-admin/owners/show', [
             'owner' => [
                 'id' => $owner->id,
@@ -109,6 +126,7 @@ class OwnerController extends Controller
                 ] : null,
             ],
             'stats' => $stats,
+            'history' => $history,
             'plans' => $plans->map(fn ($p) => [
                 'id' => $p->id,
                 'name' => $p->name,
@@ -157,6 +175,7 @@ class OwnerController extends Controller
         }
 
         $plan = Plan::findOrFail($validated['plan_id']);
+        $oldPlan = $tenant->subscription?->plan;
 
         $subscription = $tenant->subscription;
         if ($subscription) {
@@ -167,12 +186,27 @@ class OwnerController extends Controller
                 'trial_ends_at' => null,
             ]);
         } else {
-            $tenant->subscription()->create([
+            $subscription = $tenant->subscription()->create([
                 'plan_id' => $plan->id,
                 'status' => 'active',
                 'ends_at' => now()->addMonth(),
             ]);
         }
+
+        $action = $oldPlan ? 'upgraded' : 'activated';
+        if ($oldPlan && $plan->price_monthly < $oldPlan->price_monthly) {
+            $action = 'downgraded';
+        }
+
+        SubscriptionHistory::create([
+            'tenant_id' => $tenant->id,
+            'subscription_id' => $subscription->id,
+            'plan_id' => $plan->id,
+            'action' => $action,
+            'status' => 'active',
+            'old_plan_name' => $oldPlan?->name,
+            'new_plan_name' => $plan->name,
+        ]);
 
         return redirect()->back()->with('toast', [
             'type' => 'success',
