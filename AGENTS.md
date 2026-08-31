@@ -143,6 +143,7 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 - Upcoming holidays widget
 - Quick actions: Add Student, Mark Attendance, Record Payment, Post Notice (admin only)
 - Clickable student/batch links in stat cards
+- **Greeting banner:** Uses accent color from appearance theme settings as background via `color-mix()`, works with all 9 preset accents + custom hex colors, proper dark/light mode handling
 
 ## Batch Detail Pages
 
@@ -280,6 +281,15 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - Enforcement in controllers: `createStudent()`, `createStaff()`, `createBatch()`
 - Exceeded limit redirects to `subscription.index` with warning toast
 
+## Plan Features
+
+- `PlanFeature` model with `name`, `slug`, `is_system` flag
+- System features cannot be renamed or deleted (seeded via `PlanSeeder`)
+- `Plan::hasFeature($feature)` checks feature availability
+- Super admin CRUD: `PlanFeatureController` with JSON responses
+- Frontend: `useFeatures()` and `useHasFeature()` from `resources/js/lib/features.ts`
+- `PlanCard` component shows check/minus comparison for ALL features on both landing and subscription pages
+
 ## Subscription & Payment
 
 - **Gateway:** SSLCommerz (sandbox: `sandbox.sslcommerz.com`, prod: `securepay.sslcommerz.com`)
@@ -291,6 +301,8 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - **Scheduled:** `subscriptions:check-expiry` runs daily
 - **Controller:** `SubscriptionController` (upgrade), `PaymentController` (initiate + callbacks)
 - **Service:** `SslcommerzService` handles gateway API calls
+- **Payment Settings:** `PaymentSetting` model stores gateway config in DB; `SslcommerzService` reads DB first, falls back to env
+- **Manual payments:** Create `Payment` records with `payment_method='manual'` and status `pending`; super admin approves/rejects via Payments page
 
 ## Super Admin Panel
 
@@ -300,7 +312,10 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - **Plans:** Full CRUD. Validates prices, limits (-1 = unlimited), features array
 - **Payments:** List with status/search, approve/cancel pending payments
 - **Contacts:** List with search/unread, reply via email (Mailable), mark as read
-- **Controllers:** `SuperAdminController`, `TenantController`, `PlanController`, `ContactMessageController`
+- **Owners:** List with tenant/plan info, detail page with owner info + subscription + plan history
+- **Payment Settings:** Gateway config (SSLCommerz credentials, manual payment toggle, instructions)
+- **Plan Features:** Dynamic CRUD for plan features (name, slug, is_system flag)
+- **Controllers:** `SuperAdminController`, `TenantController`, `PlanController`, `ContactMessageController`, `OwnerController`, `PaymentSettingController`, `PlanFeatureController`
 
 ## Onboarding Flow
 
@@ -313,13 +328,29 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 7. Seeds default roles via `DefaultRoles::createForTenant()`
 8. Redirects to dashboard with success toast
 
+## Owner Plan History
+
+- `SubscriptionHistory` model tracks all plan changes per tenant
+- Actions: `trial_started`, `activated`, `upgraded`, `downgraded`, `renewed`
+- Records: `tenant_id`, `subscription_id`, `plan_id`, `action`, `status`, `old_plan_name`, `new_plan_name`, `amount`, `billing_type`
+- Created in: `OnboardingController` (trial_started), `OwnerController::assignPlan` (activated/upgraded/downgraded), `PaymentController::activateSubscription` (activated/renewed/upgraded/downgraded)
+- Displayed on super admin owner detail page as a timeline with colored action icons
+- Existing subscriptions backfilled via `SubscriptionHistorySeeder`
+
 ## Enrollment Management
 
-- `Enrollment` model: `student_id`, `batch_id`, `enrolled_at`, `status` (active/completed/dropped)
+- `Enrollment` model: `student_id`, `batch_id`, `enrolled_at`, `status`, `paused_at`, `resumed_at`
+- Statuses: `active`, `completed`, `dropped`, `paused`
 - Traits: `BelongsToBranch` (scoped via batch), `BelongsToTenant`
 - Creates `BatchHistory` record on enroll/update/remove
 - Routes nested under batches: `POST batches/{batch}/enroll`, `PUT/DELETE enrollments/{enrollment}`
 - Duplicate enrollment validation, enrollment date >= batch start date check
+- **Pause/Resume workflow:**
+  - Pausing sets `paused_at`, clears `resumed_at`, records `BatchHistory`
+  - Resuming sets `resumed_at`, records `BatchHistory`
+  - Paused students are excluded from: attendance sheets, fee grid, batch capacity count
+  - `Batch::enrolledCount()` only counts `status = 'active'`
+  - Dropdown actions: Pause (for active), Resume (for paused), Complete, Drop, Unenroll
 
 ## Fee Status Management
 
