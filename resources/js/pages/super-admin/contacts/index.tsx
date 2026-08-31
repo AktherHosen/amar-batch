@@ -86,7 +86,7 @@ return;
     };
 
     const openReply = (message: ContactMessage) => {
-        setReplyDialog({ open: true, message, reply: message.reply || '' });
+        setReplyDialog({ open: true, message, reply: '' });
     };
 
     const sendReply = () => {
@@ -259,8 +259,7 @@ return;
                                 >
                                     <Button
                                         variant="outline"
-                                        size="sm"
-                                        className={filters.status === 'unread' ? 'bg-muted' : ''}
+                                        className={filters.status === 'unread' ? 'h-9 bg-muted' : 'h-9'}
                                         onClick={() =>
                                             router.get('/dashboard/contacts', { status: filters.status === 'unread' ? undefined : 'unread', search }, { preserveState: true })
                                         }

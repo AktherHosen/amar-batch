@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { Crown, Users, GraduationCap, Layers, CreditCard, ArrowRight } from 'lucide-react';
+import { Crown, Users, GraduationCap, Layers, CreditCard, ArrowRight, Banknote } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -8,6 +8,10 @@ import PlanCard from '@/components/plan-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
 import { index as subscriptionIndex } from '@/routes/subscription';
 
@@ -54,9 +58,11 @@ type PageProps = {
     plans: Plan[];
     currentUsage: CurrentUsage;
     recentPayments: PaymentRecord[];
+    manualPaymentEnabled: boolean;
+    manualPaymentInstructions: string | null;
 };
 
-export default function SubscriptionPage({ subscription, plans, currentUsage, recentPayments }: PageProps) {
+export default function SubscriptionPage({ subscription, plans, currentUsage, recentPayments, manualPaymentEnabled, manualPaymentInstructions }: PageProps) {
     const { t, formatCurrency } = useLocale();
     const { flash } = usePage<{ flash: { error?: string; success?: string } }>().props;
     const [annual, setAnnual] = useState(true);
@@ -65,6 +71,13 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
         plan: null,
         billing: 'yearly',
     });
+    const [manualDialog, setManualDialog] = useState<{ open: boolean; plan: Plan | null; billing: string }>({
+        open: false,
+        plan: null,
+        billing: 'monthly',
+    });
+    const [manualForm, setManualForm] = useState({ transaction_id: '', sender_number: '', notes: '' });
+    const [manualProcessing, setManualProcessing] = useState(false);
 
     if (flash?.error) {
         toast.error(flash.error);
@@ -103,30 +116,21 @@ return 0;
     };
 
     const handleUpgrade = (plan: Plan) => {
+        const billing = annual ? 'yearly' : 'monthly';
         if (plan.price_monthly > 0) {
-            const billing = annual ? 'yearly' : 'monthly';
-            submitPayment(plan.id, billing);
+            if (manualPaymentEnabled) {
+                setUpgradeDialog({ open: true, plan, billing });
+            } else {
+                submitPayment(plan.id, billing);
+            }
         } else {
-            const billing = annual ? 'yearly' : 'monthly';
             setUpgradeDialog({ open: true, plan, billing });
         }
     };
 
     const confirmUpgrade = () => {
-        if (!upgradeDialog.plan) {
-return;
-}
-
-        if (upgradeDialog.plan.price_monthly > 0) {
-            submitPayment(upgradeDialog.plan.id, upgradeDialog.billing);
-        } else {
-            router.post(`/subscription/upgrade/${upgradeDialog.plan.id}`, {}, {
-                onSuccess: () => {
-                    toast.success(t('toast.upgraded'));
-                    setUpgradeDialog({ open: false, plan: null, billing: 'yearly' });
-                },
-            });
-        }
+        if (!upgradeDialog.plan) return;
+        submitPayment(upgradeDialog.plan.id, upgradeDialog.billing);
     };
 
     const submitPayment = (planId: number, billing: string) => {
@@ -142,6 +146,49 @@ return;
             input.name = '_token';
             input.value = csrfToken;
             form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    };
+
+    const submitManualPayment = () => {
+        if (!manualDialog.plan || !manualForm.transaction_id.trim()) return;
+        setManualProcessing(true);
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/payment/manual/${manualDialog.plan.id}?billing=${manualDialog.billing}`;
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = '_token';
+            input.value = csrfToken;
+            form.appendChild(input);
+        }
+
+        const txInput = document.createElement('input');
+        txInput.type = 'hidden';
+        txInput.name = 'transaction_id';
+        txInput.value = manualForm.transaction_id;
+        form.appendChild(txInput);
+
+        if (manualForm.sender_number) {
+            const senderInput = document.createElement('input');
+            senderInput.type = 'hidden';
+            senderInput.name = 'sender_number';
+            senderInput.value = manualForm.sender_number;
+            form.appendChild(senderInput);
+        }
+
+        if (manualForm.notes) {
+            const notesInput = document.createElement('input');
+            notesInput.type = 'hidden';
+            notesInput.name = 'notes';
+            notesInput.value = manualForm.notes;
+            form.appendChild(notesInput);
         }
 
         document.body.appendChild(form);
@@ -401,6 +448,96 @@ return;
                 confirmText={upgradeDialog.plan?.price_monthly ? t('subscription.proceed_to_payment') : t('subscription.switch_plan')}
                 onConfirm={confirmUpgrade}
             />
+
+            <Dialog open={upgradeDialog.open} onOpenChange={(open) => setUpgradeDialog({ ...upgradeDialog, open })}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{t('subscription.upgrade_title')}</DialogTitle>
+                        <DialogDescription>
+                            {t('subscription.upgrade_desc').replace('{plan}', upgradeDialog.plan?.name || '')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <Button
+                            className="w-full justify-start gap-3"
+                            variant="outline"
+                            onClick={() => {
+                                setUpgradeDialog({ ...upgradeDialog, open: false });
+                                submitPayment(upgradeDialog.plan!.id, upgradeDialog.billing);
+                            }}
+                        >
+                            <CreditCard className="size-4" />
+                            {t('subscription.pay_with_gateway')}
+                        </Button>
+                        <Button
+                            className="w-full justify-start gap-3"
+                            variant="outline"
+                            onClick={() => {
+                                setUpgradeDialog({ ...upgradeDialog, open: false });
+                                setManualDialog({ open: true, plan: upgradeDialog.plan, billing: upgradeDialog.billing });
+                            }}
+                        >
+                            <Banknote className="size-4" />
+                            {t('subscription.pay_manually')}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={manualDialog.open} onOpenChange={(open) => setManualDialog({ ...manualDialog, open })}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{t('subscription.manual_payment_title')}</DialogTitle>
+                        <DialogDescription>
+                            {t('subscription.manual_payment_desc')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    {manualPaymentInstructions && (
+                        <div className="rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground whitespace-pre-wrap">
+                            {manualPaymentInstructions}
+                        </div>
+                    )}
+                    <div className="space-y-3">
+                        <div className="grid gap-2">
+                            <Label htmlFor="manual_tx_id">{t('subscription.transaction_id')}</Label>
+                            <Input
+                                id="manual_tx_id"
+                                value={manualForm.transaction_id}
+                                onChange={(e) => setManualForm({ ...manualForm, transaction_id: e.target.value })}
+                                placeholder={t('subscription.transaction_id_placeholder')}
+                                required
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="manual_sender">{t('subscription.sender_number')}</Label>
+                            <Input
+                                id="manual_sender"
+                                value={manualForm.sender_number}
+                                onChange={(e) => setManualForm({ ...manualForm, sender_number: e.target.value })}
+                                placeholder={t('subscription.sender_number_placeholder')}
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="manual_notes">{t('subscription.notes')}</Label>
+                            <Textarea
+                                id="manual_notes"
+                                value={manualForm.notes}
+                                onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })}
+                                placeholder={t('subscription.notes_placeholder')}
+                                rows={2}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setManualDialog({ ...manualDialog, open: false })}>
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button onClick={submitManualPayment} disabled={manualProcessing || !manualForm.transaction_id.trim()}>
+                            {manualProcessing ? t('actions.processing') : t('subscription.submit_manual_payment')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

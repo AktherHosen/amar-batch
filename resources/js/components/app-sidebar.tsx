@@ -135,11 +135,6 @@ return false;
                     icon: Building2,
                     items: [
                         {
-                            title: 'Overview',
-                            href: '/dashboard/overview',
-                            superAdminOnly: true,
-                        },
-                        {
                             title: 'Owners',
                             href: '/dashboard/owners',
                             superAdminOnly: true,
@@ -158,6 +153,16 @@ return false;
                         {
                             title: 'Payments',
                             href: '/dashboard/payments',
+                            superAdminOnly: true,
+                        },
+                        {
+                            title: 'Manual Payments',
+                            href: '/dashboard/manual-payments',
+                            superAdminOnly: true,
+                        },
+                        {
+                            title: 'Payment Settings',
+                            href: '/dashboard/payment-settings',
                             superAdminOnly: true,
                         },
                     ],

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\PaymentSetting;
 use Illuminate\Support\Facades\Http;
 
 class SslcommerzService
@@ -14,10 +15,20 @@ class SslcommerzService
 
     public function __construct()
     {
-        $this->storeId = config('sslcommerz.store.id');
-        $this->storePassword = config('sslcommerz.store.password');
-        $this->currency = config('sslcommerz.store.currency', 'BDT');
-        $this->sandbox = config('sslcommerz.sandbox', true);
+        $setting = PaymentSetting::forGateway('sslcommerz');
+
+        if ($setting) {
+            $this->storeId = $setting->store_id ?? config('sslcommerz.store.id', '');
+            $this->storePassword = $setting->store_password ?? config('sslcommerz.store.password', '');
+            $this->currency = $setting->currency ?? config('sslcommerz.store.currency', 'BDT');
+            $this->sandbox = $setting->sandbox ?? config('sslcommerz.sandbox', true);
+        } else {
+            $this->storeId = config('sslcommerz.store.id', '');
+            $this->storePassword = config('sslcommerz.store.password', '');
+            $this->currency = config('sslcommerz.store.currency', 'BDT');
+            $this->sandbox = config('sslcommerz.sandbox', true);
+        }
+
         $this->baseUrl = $this->sandbox
             ? 'https://sandbox.sslcommerz.com'
             : 'https://securepay.sslcommerz.com';

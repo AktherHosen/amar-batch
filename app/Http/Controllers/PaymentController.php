@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use App\Models\PaymentSetting;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Services\SslcommerzService;
@@ -293,5 +294,52 @@ class PaymentController extends Controller
         }
 
         $payment->update(['subscription_id' => $tenant->subscription->id]);
+    }
+
+    public function submitManual(Request $request, Plan $plan): RedirectResponse
+    {
+        $tenant = $request->user()->current_tenant;
+
+        if (! $tenant) {
+            return back()->withErrors(['error' => 'No coaching center found.']);
+        }
+
+        $setting = PaymentSetting::getForGateway('sslcommerz');
+
+        if (! $setting->manual_payment_enabled) {
+            return back()->withErrors(['error' => 'Manual payments are currently disabled.']);
+        }
+
+        $billingType = $request->query('billing', 'monthly');
+        $amount = $billingType === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
+
+        if ($amount <= 0) {
+            return back()->withErrors(['error' => 'This plan does not require payment.']);
+        }
+
+        $validated = $request->validate([
+            'transaction_id' => ['required', 'string', 'max:255'],
+            'sender_number' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $payment = Payment::create([
+            'tenant_id' => $tenant->id,
+            'plan_id' => $plan->id,
+            'amount' => $amount,
+            'billing_type' => $billingType,
+            'status' => 'pending',
+            'payment_method' => 'manual',
+            'txid' => 'MANUAL-'.Str::upper(Str::random(8)).'-'.time(),
+            'gateway_response' => [
+                'transaction_id' => $validated['transaction_id'],
+                'sender_number' => $validated['sender_number'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'submitted_at' => now()->toISOString(),
+            ],
+        ]);
+
+        return redirect()->route('subscription.index')
+            ->with('success', 'Manual payment submitted. It will be reviewed by our team shortly.');
     }
 }

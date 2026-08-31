@@ -13,6 +13,7 @@ use App\Http\Controllers\SuperAdmin\PlanController;
 use App\Http\Controllers\SuperAdmin\OwnerController;
 use App\Http\Controllers\SuperAdmin\ContactMessageController;
 use App\Http\Controllers\SuperAdmin\PlanFeatureController;
+use App\Http\Controllers\SuperAdmin\PaymentSettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
@@ -83,6 +84,11 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('d
     Route::get('owners/{owner}', [OwnerController::class, 'show'])->name('owners.show');
     Route::post('owners/{owner}/toggle-active', [OwnerController::class, 'toggleActive'])->name('owners.toggle-active');
     Route::post('owners/{owner}/assign-plan', [OwnerController::class, 'assignPlan'])->name('owners.assign-plan');
+    Route::get('payment-settings', [PaymentSettingController::class, 'index'])->name('payment-settings.index');
+    Route::put('payment-settings', [PaymentSettingController::class, 'update'])->name('payment-settings.update');
+    Route::get('manual-payments', [PaymentSettingController::class, 'manualPayments'])->name('manual-payments');
+    Route::post('manual-payments/{payment}/approve', [PaymentSettingController::class, 'approveManualPayment'])->name('manual-payments.approve');
+    Route::post('manual-payments/{payment}/reject', [PaymentSettingController::class, 'rejectManualPayment'])->name('manual-payments.reject');
 });
 
 require __DIR__.'/settings.php';
@@ -93,6 +99,7 @@ require __DIR__.'/settings.php';
 Route::middleware(['auth', 'verified', 'onboarding'])->group(function () {
     Route::get('payment/history', [PaymentController::class, 'history'])->name('payment.history');
     Route::match(['get', 'post'], 'payment/initiate/{plan}', [PaymentController::class, 'initiate'])->name('payment.initiate');
+    Route::post('payment/manual/{plan}', [PaymentController::class, 'submitManual'])->name('payment.manual');
 });
 
 Route::match(['get', 'post'], 'payment/success', [PaymentController::class, 'success'])->name('sslc.success');

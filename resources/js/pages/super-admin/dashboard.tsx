@@ -239,28 +239,6 @@ export default function SuperAdminDashboard({
             <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.coaching_centers')}</CardTitle>
-                        <Building2 className="size-3.5 text-muted-foreground sm:size-4" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-xl font-bold sm:text-2xl">{stats.total_tenants}</div>
-                        <p className="mt-1 text-xs text-muted-foreground">{stats.active_tenants} {t('super_admin.active')}</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.total_revenue')}</CardTitle>
-                        <CreditCard className="size-3.5 text-muted-foreground sm:size-4" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-xl font-bold sm:text-2xl">{formatCurrency(stats.total_revenue)}</div>
-                        <p className="mt-1 text-xs text-muted-foreground">{stats.pending_payments} pending</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
                         <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.total_users')}</CardTitle>
                         <Users className="size-3.5 text-muted-foreground sm:size-4" />
                     </CardHeader>
@@ -278,6 +256,28 @@ export default function SuperAdminDashboard({
                     <CardContent>
                         <div className="text-xl font-bold sm:text-2xl">{stats.active_subscriptions}</div>
                         <p className="mt-1 text-xs text-muted-foreground">{stats.trial_subscriptions} {t('super_admin.on_trial')}</p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.coaching_centers')}</CardTitle>
+                        <Building2 className="size-3.5 text-muted-foreground sm:size-4" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-xl font-bold sm:text-2xl">{stats.total_tenants}</div>
+                        <p className="mt-1 text-xs text-muted-foreground">{stats.active_tenants} {t('super_admin.active')}</p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">{t('super_admin.total_revenue')}</CardTitle>
+                        <CreditCard className="size-3.5 text-muted-foreground sm:size-4" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-xl font-bold sm:text-2xl">{formatCurrency(stats.total_revenue)}</div>
+                        <p className="mt-1 text-xs text-muted-foreground">{stats.pending_payments} pending</p>
                     </CardContent>
                 </Card>
             </div>

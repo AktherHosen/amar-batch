@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use App\Models\PaymentSetting;
 use App\Models\Plan;
 use App\Models\Subscription;
 use Illuminate\Http\RedirectResponse;
@@ -77,6 +78,8 @@ class SubscriptionController extends Controller
             ]),
             'currentUsage' => $currentUsage,
             'recentPayments' => $recentPayments,
+            'manualPaymentEnabled' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_enabled,
+            'manualPaymentInstructions' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_instructions,
         ]);
     }
 
