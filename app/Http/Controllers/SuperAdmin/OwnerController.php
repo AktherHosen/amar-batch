@@ -33,6 +33,21 @@ class OwnerController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $owners->getCollection()->transform(fn (User $owner) => [
+            'id' => $owner->id,
+            'name' => $owner->name,
+            'email' => $owner->email,
+            'role' => $owner->role,
+            'created_at' => $owner->created_at,
+            'tenant' => $owner->tenants->first()
+                ? [
+                    'id' => $owner->tenants->first()->id,
+                    'name' => $owner->tenants->first()->name,
+                    'slug' => $owner->tenants->first()->slug,
+                ]
+                : null,
+        ]);
+
         return Inertia::render('super-admin/owners/index', [
             'owners' => $owners,
             'filters' => $request->only(['search', 'status']),
@@ -60,7 +75,39 @@ class OwnerController extends Controller
         $plans = Plan::where('is_active', true)->orderBy('name')->get();
 
         return Inertia::render('super-admin/owners/show', [
-            'owner' => $owner,
+            'owner' => [
+                'id' => $owner->id,
+                'name' => $owner->name,
+                'email' => $owner->email,
+                'phone' => $owner->phone,
+                'role' => $owner->role,
+                'created_at' => $owner->created_at,
+                'tenant' => $tenant ? [
+                    'id' => $tenant->id,
+                    'name' => $tenant->name,
+                    'slug' => $tenant->slug,
+                    'email' => $tenant->email,
+                    'phone' => $tenant->phone,
+                    'is_active' => $tenant->is_active,
+                    'subscription' => $tenant->subscription ? [
+                        'id' => $tenant->subscription->id,
+                        'status' => $tenant->subscription->status,
+                        'billing_type' => $tenant->subscription->billing_type,
+                        'trial_ends_at' => $tenant->subscription->trial_ends_at,
+                        'ends_at' => $tenant->subscription->ends_at,
+                        'plan' => $tenant->subscription->plan ? [
+                            'id' => $tenant->subscription->plan->id,
+                            'name' => $tenant->subscription->plan->name,
+                            'price_monthly' => $tenant->subscription->plan->price_monthly,
+                            'price_yearly' => $tenant->subscription->plan->price_yearly,
+                            'max_students' => $tenant->subscription->plan->max_students,
+                            'max_staff' => $tenant->subscription->plan->max_staff,
+                            'max_batches' => $tenant->subscription->plan->max_batches,
+                            'features' => $tenant->subscription->plan->features,
+                        ] : null,
+                    ] : null,
+                ] : null,
+            ],
             'stats' => $stats,
             'plans' => $plans->map(fn ($p) => [
                 'id' => $p->id,

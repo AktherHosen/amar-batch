@@ -275,8 +275,8 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                     {t('plan.limits')}
                                 </p>
-                                <div className="flex flex-wrap gap-2 sm:gap-2.5">
-                                    <div className="min-w-0 flex-1 basis-[calc(50%-0.25rem)] rounded-lg border bg-card px-2 py-1.5 sm:basis-auto sm:flex-none sm:px-3 sm:py-2">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-2.5">
+                                    <div className="rounded-lg border bg-card px-3 py-2 sm:flex-1 sm:min-w-[200px]">
                                         <div className="flex items-center justify-between text-xs sm:text-sm">
                                             <span className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
                                                 <GraduationCap className="size-3.5 sm:size-4" />
@@ -294,7 +294,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                         </div>
                                     </div>
 
-                                    <div className="rounded-lg border bg-card px-2 py-1.5 sm:px-3 sm:py-2">
+                                    <div className="rounded-lg border bg-card px-3 py-2 sm:flex-1 sm:min-w-[200px]">
                                         <div className="flex items-center justify-between text-xs sm:text-sm">
                                             <span className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
                                                 <Users className="size-3.5 sm:size-4" />
@@ -312,7 +312,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                         </div>
                                     </div>
 
-                                    <div className="rounded-lg border bg-card px-2 py-1.5 sm:px-3 sm:py-2">
+                                    <div className="rounded-lg border bg-card px-3 py-2 sm:flex-1 sm:min-w-[200px]">
                                         <div className="flex items-center justify-between text-xs sm:text-sm">
                                             <span className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
                                                 <Layers className="size-3.5 sm:size-4" />
