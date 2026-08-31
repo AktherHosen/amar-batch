@@ -80,7 +80,7 @@ export default function PlanCard({
                 label={currentLabel}
             />
             <CardHeader className="flex flex-col items-start gap-1.5 pt-8">
-                <CardTitle className="text-xl font-bold tracking-tight">{plan.name}</CardTitle>
+                <CardTitle className="text-lg font-bold tracking-tight sm:text-xl">{plan.name}</CardTitle>
                 {plan.description && (
                     <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">{plan.description}</p>
                 )}
@@ -88,11 +88,11 @@ export default function PlanCard({
             <CardContent className="flex flex-1 flex-col">
                 <div className="mb-6">
                     {price === 0 ? (
-                        <div className="text-3xl font-bold sm:text-4xl">{t('plan.free')}</div>
+                        <div className="text-2xl font-bold sm:text-3xl">{t('plan.free')}</div>
                     ) : (
-                        <div className="text-3xl font-bold tracking-tight sm:text-4xl">
+                        <div className="text-2xl font-bold tracking-tight sm:text-3xl">
                             {formatCurrency(price)}
-                            <span className="text-sm font-normal text-muted-foreground">/{period}</span>
+                            <span className="text-xs font-normal text-muted-foreground sm:text-sm">/{period}</span>
                         </div>
                     )}
                 </div>

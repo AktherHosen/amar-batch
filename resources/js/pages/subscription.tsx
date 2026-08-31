@@ -2,12 +2,11 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { Crown, Users, GraduationCap, Layers, CreditCard, ArrowRight, Banknote } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ConfirmDialog } from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import PlanCard from '@/components/plan-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -109,8 +108,8 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
 
     const getUsagePercent = (current: number, max: number) => {
         if (max === -1) {
-return 0;
-}
+            return 0;
+        }
 
         return Math.min(100, (current / max) * 100);
     };
@@ -126,11 +125,6 @@ return 0;
         } else {
             setUpgradeDialog({ open: true, plan, billing });
         }
-    };
-
-    const confirmUpgrade = () => {
-        if (!upgradeDialog.plan) return;
-        submitPayment(upgradeDialog.plan.id, upgradeDialog.billing);
     };
 
     const submitPayment = (planId: number, billing: string) => {
@@ -209,7 +203,7 @@ return 0;
         <>
             <Head title={t('subscription.title')} />
 
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-3 sm:gap-6 sm:p-4">
                 <Heading
                     title={t('subscription.title')}
                     description={t('subscription.desc')}
@@ -218,15 +212,15 @@ return 0;
                 {/* Current Plan Status */}
                 {subscription && (
                     <Card className="overflow-hidden border-primary/20">
-                        <div className="relative bg-gradient-to-br from-primary/10 via-background to-background px-4 py-3.5 sm:px-6 sm:py-5">
+                        <div className="relative bg-gradient-to-br from-primary/10 via-background to-background px-3 py-3 sm:px-6 sm:py-5">
                             <div className="relative flex flex-col gap-3 sm:gap-6 lg:flex-row lg:items-center lg:justify-between">
-                                <div className="flex items-center gap-3 sm:gap-4">
-                                    <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 sm:size-14">
-                                        <Crown className="size-6 sm:size-7" />
+                                <div className="flex items-center gap-2.5 sm:gap-4">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 sm:size-14">
+                                        <Crown className="size-5 sm:size-7" />
                                     </div>
                                     <div>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <h3 className="text-xl font-bold tracking-tight sm:text-2xl">
+                                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                            <h3 className="text-lg font-bold tracking-tight sm:text-2xl">
                                                 {currentPlan?.name || t('subscription.no_plan')}
                                             </h3>
                                             {isTrial ? (
@@ -260,15 +254,15 @@ return 0;
                                         <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground lg:mb-1">
                                             {t('payment.amount_paid')}
                                         </span>
-                                        <span className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">
+                                        <span className="text-xl font-bold tracking-tight text-primary sm:text-3xl">
                                             {currentPlan.price_monthly === 0
                                                 ? t('plan.free')
                                                 : formatCurrency(subscription.billing_type === 'yearly'
                                                     ? currentPlan.price_yearly
                                                     : currentPlan.price_monthly) + '/'
-                                                      + (subscription.billing_type === 'yearly'
-                                                        ? t('plan.year')
-                                                        : t('plan.month'))}
+                                                + (subscription.billing_type === 'yearly'
+                                                    ? t('plan.year')
+                                                    : t('plan.month'))}
                                         </span>
                                     </div>
                                 )}
@@ -277,15 +271,15 @@ return 0;
 
                         {/* Current Usage */}
                         {currentPlan && (
-                            <div className="border-t px-4 py-3.5 sm:px-6 sm:py-4">
-                                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            <div className="border-t px-3 py-3 sm:px-6 sm:py-4">
+                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                     {t('plan.limits')}
                                 </p>
-                                <div className="grid gap-2.5 sm:grid-cols-3">
-                                    <div className="rounded-lg border bg-card px-3 py-2">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="flex items-center gap-1.5 text-muted-foreground">
-                                                <GraduationCap className="size-4" />
+                                <div className="flex flex-wrap gap-2 sm:gap-2.5">
+                                    <div className="min-w-0 flex-1 basis-[calc(50%-0.25rem)] rounded-lg border bg-card px-2 py-1.5 sm:basis-auto sm:flex-none sm:px-3 sm:py-2">
+                                        <div className="flex items-center justify-between text-xs sm:text-sm">
+                                            <span className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
+                                                <GraduationCap className="size-3.5 sm:size-4" />
                                                 {t('plan.students')}
                                             </span>
                                             <span className="font-semibold">
@@ -300,10 +294,10 @@ return 0;
                                         </div>
                                     </div>
 
-                                    <div className="rounded-lg border bg-card px-3 py-2.5">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="flex items-center gap-1.5 text-muted-foreground">
-                                                <Users className="size-4" />
+                                    <div className="rounded-lg border bg-card px-2 py-1.5 sm:px-3 sm:py-2">
+                                        <div className="flex items-center justify-between text-xs sm:text-sm">
+                                            <span className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
+                                                <Users className="size-3.5 sm:size-4" />
                                                 {t('plan.staff')}
                                             </span>
                                             <span className="font-semibold">
@@ -318,10 +312,10 @@ return 0;
                                         </div>
                                     </div>
 
-                                    <div className="rounded-lg border bg-card px-3 py-2.5">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="flex items-center gap-1.5 text-muted-foreground">
-                                                <Layers className="size-4" />
+                                    <div className="rounded-lg border bg-card px-2 py-1.5 sm:px-3 sm:py-2">
+                                        <div className="flex items-center justify-between text-xs sm:text-sm">
+                                            <span className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
+                                                <Layers className="size-3.5 sm:size-4" />
                                                 {t('plan.batches')}
                                             </span>
                                             <span className="font-semibold">
@@ -344,25 +338,25 @@ return 0;
                 {/* Available Plans */}
                 <div>
                     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <h2 className="text-base font-semibold sm:text-lg">{t('subscription.available_plans')}</h2>
+                        <h2 className="text-sm font-semibold sm:text-lg">{t('subscription.available_plans')}</h2>
                         <div className="flex items-center gap-3 self-start rounded-full border bg-muted/40 p-1 sm:self-auto">
                             <button
                                 type="button"
                                 onClick={() => setAnnual(false)}
-                                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${!annual ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors sm:px-4 sm:py-1.5 sm:text-sm ${!annual ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
                             >
                                 {t('plan.monthly')}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setAnnual(true)}
-                                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${annual ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors sm:px-4 sm:py-1.5 sm:text-sm ${annual ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
                             >
                                 {t('plan.yearly')}
                             </button>
                         </div>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                         {plans.map((plan) => {
                             const isCurrent = currentPlan?.id === plan.id;
                             const isPopular = !isCurrent && plan.slug === 'pro';
@@ -400,25 +394,25 @@ return 0;
                 {/* Recent Payments */}
                 {recentPayments.length > 0 && (
                     <Card>
-                        <CardHeader className="flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                        <CardHeader className="flex-col items-start gap-1 p-4 sm:p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                             <CardTitle className="flex items-center gap-2">
                                 <CreditCard className="size-5" />
                                 {t('payment.history')}
                             </CardTitle>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs text-muted-foreground sm:text-sm">
                                 {t('payment.history_desc')}
                             </p>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 sm:p-6">
                             <div className="space-y-2">
                                 {recentPayments.map((payment) => (
                                     <div
                                         key={payment.id}
-                                        className="flex flex-col gap-2 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
+                                        className="flex flex-col gap-2 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4"
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                                                <CreditCard className="size-5 text-muted-foreground" />
+                                        <div className="flex items-center gap-2.5 sm:gap-3">
+                                            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted sm:size-10">
+                                                <CreditCard className="size-4 text-muted-foreground sm:size-5" />
                                             </div>
                                             <div>
                                                 <div className="font-medium">{payment.plan}</div>
@@ -429,7 +423,7 @@ return 0;
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between gap-3 sm:justify-end">
-                                            <span className="text-base font-semibold">{formatCurrency(payment.amount)}</span>
+                                            <span className="text-sm font-semibold sm:text-base">{formatCurrency(payment.amount)}</span>
                                             {getStatusBadge(payment.status)}
                                         </div>
                                     </div>
@@ -440,21 +434,14 @@ return 0;
                 )}
             </div>
 
-            <ConfirmDialog
-                open={upgradeDialog.open}
-                onOpenChange={(open) => setUpgradeDialog({ ...upgradeDialog, open })}
-                title={t('subscription.upgrade_title')}
-                description={t('subscription.upgrade_desc').replace('{plan}', upgradeDialog.plan?.name || '')}
-                confirmText={upgradeDialog.plan?.price_monthly ? t('subscription.proceed_to_payment') : t('subscription.switch_plan')}
-                onConfirm={confirmUpgrade}
-            />
-
             <Dialog open={upgradeDialog.open} onOpenChange={(open) => setUpgradeDialog({ ...upgradeDialog, open })}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>{t('subscription.upgrade_title')}</DialogTitle>
                         <DialogDescription>
-                            {t('subscription.upgrade_desc').replace('{plan}', upgradeDialog.plan?.name || '')}
+                            {upgradeDialog.plan
+                                ? t('subscription.upgrade_desc').replace('{plan}', upgradeDialog.plan.name)
+                                : ''}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-3">

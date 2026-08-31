@@ -103,7 +103,7 @@ class PlanLimitsPolicy
 
         return match ($type) {
             'students' => $tenant->students()->where('status', 'active')->count(),
-            'staff' => $tenant->users()->whereIn('role', ['staff', 'teacher'])->count(),
+            'staff' => $tenant->users()->whereIn('users.role', ['staff', 'teacher'])->count(),
             'batches' => $tenant->batches()->count(),
             default => 0,
         };
