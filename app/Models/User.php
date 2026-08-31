@@ -106,6 +106,15 @@ class User extends Authenticatable implements PasskeyUser
         return $this->hasOne(UserSetting::class);
     }
 
+    /** @return BelongsToMany<Student, $this> */
+    public function children(): BelongsToMany
+    {
+        return $this->belongsToMany(Student::class, 'parent_student', 'user_id', 'student_id')
+            ->withoutGlobalScope('tenant')
+            ->withoutGlobalScope('branch')
+            ->withTimestamps();
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role === 'super_admin';

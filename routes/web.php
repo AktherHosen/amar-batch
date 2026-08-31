@@ -14,6 +14,7 @@ use App\Http\Controllers\SuperAdmin\OwnerController;
 use App\Http\Controllers\SuperAdmin\ContactMessageController;
 use App\Http\Controllers\SuperAdmin\PlanFeatureController;
 use App\Http\Controllers\SuperAdmin\PaymentSettingController;
+use App\Http\Controllers\ParentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
@@ -90,6 +91,12 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('d
     Route::get('manual-payments', [PaymentSettingController::class, 'manualPayments'])->name('manual-payments');
     Route::post('manual-payments/{payment}/approve', [PaymentSettingController::class, 'approveManualPayment'])->name('manual-payments.approve');
     Route::post('manual-payments/{payment}/reject', [PaymentSettingController::class, 'rejectManualPayment'])->name('manual-payments.reject');
+});
+
+// Parent portal routes (auth required, parent role only)
+Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'role:parent'])->prefix('portal')->name('portal.')->group(function () {
+    Route::get('/', [ParentController::class, 'index'])->name('index');
+    Route::get('child/{studentId}', [ParentController::class, 'show'])->name('child.show');
 });
 
 require __DIR__.'/settings.php';

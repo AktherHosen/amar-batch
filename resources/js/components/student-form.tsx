@@ -10,6 +10,7 @@ import {
     MapPin,
     Plus,
     Loader2,
+    LogIn,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -36,6 +37,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
 import students from '@/routes/students';
@@ -101,6 +103,9 @@ export default function StudentForm({
         status: student?.status || 'active',
         joined_at: student?.joined_at ? student.joined_at.split('T')[0] : '',
         left_at: student?.left_at ? student.left_at.split('T')[0] : '',
+        create_parent_login: false,
+        parent_email: '',
+        parent_password: '',
     });
 
     const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -154,7 +159,7 @@ export default function StudentForm({
         const formData = new FormData();
         Object.entries(data).forEach(([key, value]) => {
             if (value !== null && value !== undefined && value !== '') {
-                formData.append(key, String(value));
+                formData.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : String(value));
             }
         });
 
@@ -593,6 +598,55 @@ export default function StudentForm({
                         <InputError message={errors.guardian_phone} />
                     </div>
                 </div>
+
+                {!student?.parents_count && (
+                    <div className="rounded-lg border p-3">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                                    <LogIn className="size-4 text-primary" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium">Create Parent Login</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Let guardian log in to view their child's progress
+                                    </p>
+                                </div>
+                            </div>
+                            <Switch
+                                checked={data.create_parent_login}
+                                onCheckedChange={(checked) => setData('create_parent_login', checked)}
+                            />
+                        </div>
+
+                        {data.create_parent_login && (
+                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="parent_email">Parent Email *</Label>
+                                    <Input
+                                        id="parent_email"
+                                        type="email"
+                                        value={data.parent_email}
+                                        onChange={(e) => setData('parent_email', e.target.value)}
+                                        placeholder="parent@example.com"
+                                    />
+                                    <InputError message={errors.parent_email} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="parent_password">Password *</Label>
+                                    <Input
+                                        id="parent_password"
+                                        type="password"
+                                        value={data.parent_password}
+                                        onChange={(e) => setData('parent_password', e.target.value)}
+                                        placeholder="Min 6 characters"
+                                    />
+                                    <InputError message={errors.parent_password} />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {!hideActions && (

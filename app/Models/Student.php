@@ -101,4 +101,13 @@ class Student extends Model
     {
         return $this->hasMany(BatchHistory::class);
     }
+
+    /** @return BelongsToMany<User, $this> */
+    public function parents(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'parent_student', 'student_id', 'user_id')
+            ->withoutGlobalScope('tenant')
+            ->withoutGlobalScope('branch')
+            ->withTimestamps();
+    }
 }

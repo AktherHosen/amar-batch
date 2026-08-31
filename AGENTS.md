@@ -256,9 +256,9 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 | Super Admin | `super_admin` | Global — tenants, plans, cross-tenant stats |
 | Owner | `owner` | Tenant admin — full CRUD on all tenant resources |
 | Staff | `staff` | Tenant teacher — view assigned batches, mark attendance (requires approval) |
+| Parent | `parent` | Parent portal — view linked children's attendance, fees, exams |
 | Inactive | `inactive` | Deactivated user — no access |
 | Student | `student` | Referenced in code but no dedicated controllers |
-| Parent | `parent` | Referenced in code but no dedicated controllers |
 
 ## RBAC (Role-Based Access Control)
 
@@ -514,6 +514,19 @@ After adding new routes, regenerate Wayfinder typed routes:
 ```bash
 php artisan wayfinder:generate
 ```
+
+## Parent Portal
+
+- **Pivot table:** `parent_student` links parent users to students (many-to-many)
+- **Relationships:** `User::children()` returns BelongsToMany Student, `Student::parents()` returns BelongsToMany User
+- **Controller:** `ParentController` with `index` (children list) and `show` (child detail)
+- **Routes:** `/portal` (index), `/portal/child/{studentId}` (child detail) — `role:parent` middleware
+- **Parent sidebar:** Simplified navigation — just dashboard link + account (profile/security)
+- **Admin linking:** `POST students/{student}/link-parent`, `DELETE students/{student}/unlink-parent`
+- **Child detail page:** Attendance summary with monthly breakdown, fee status table, exam results with pass/fail badges
+- **Frontend helper:** `isParent()` in `resources/js/lib/role.ts`
+- **Data scoping:** `ParentController` uses `$user->children()` to ensure parents only see their linked students
+- **Middleware chain:** `auth → verified → onboarding → tenant → role:parent` (no `role.permission` or `teacher.approved`)
 
 ## Common Imports
 

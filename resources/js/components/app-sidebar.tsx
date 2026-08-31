@@ -32,6 +32,7 @@ import {
     UserCog,
     ClipboardList,
     Send,
+    Baby,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -51,6 +52,7 @@ import { useHasFeature } from '@/lib/features';
 import { usePermissions } from '@/lib/permissions';
 import { isOwner } from '@/lib/role';
 import { isSuperAdmin } from '@/lib/role';
+import { isParent } from '@/lib/role';
 import { dashboard } from '@/routes';
 import { edit as appearanceEdit } from '@/routes/appearance';
 import attendance from '@/routes/attendance';
@@ -76,6 +78,7 @@ export function AppSidebar() {
     const { auth } = usePage().props;
     const isUserOwner = isOwner(auth.user);
     const isUserSuperAdmin = isSuperAdmin(auth.user);
+    const isUserParent = isParent(auth.user);
     const hasExams = useHasFeature('exams');
     const hasReports = useHasFeature('reports');
     const hasMultiBranch = useHasFeature('multi_branch');
@@ -133,7 +136,35 @@ return false;
         return true;
     };
 
-    const groups: NavItemGroup[] = [
+    const groups: NavItemGroup[] = isUserParent
+        ? [
+            {
+                label: 'Parent Portal',
+                items: [
+                    {
+                        title: t('nav.dashboard'),
+                        href: '/portal',
+                        icon: LayoutGrid,
+                    },
+                ],
+            },
+            {
+                label: 'Account',
+                items: [
+                    {
+                        title: t('nav.profile'),
+                        href: profileEdit(),
+                        icon: User,
+                    },
+                    {
+                        title: t('nav.security'),
+                        href: securityEdit(),
+                        icon: Lock,
+                    },
+                ],
+            },
+        ]
+        : [
         {
             label: t('nav.group.main'),
             items: [
@@ -478,7 +509,7 @@ return false;
             </SidebarContent>
 
             <SidebarFooter>
-                {!isUserSuperAdmin && (
+                {!isUserSuperAdmin && !isUserParent && (
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild>

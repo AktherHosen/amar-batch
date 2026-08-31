@@ -31,6 +31,9 @@ class StoreStudentRequest extends FormRequest
             'joined_at' => ['nullable', 'date'],
             'left_at' => ['nullable', 'date'],
             'photo' => ['nullable', 'image', 'max:2048'],
+            'create_parent_login' => ['sometimes', 'boolean'],
+            'parent_email' => ['required_with:create_parent_login', 'nullable', 'email', 'unique:users,email'],
+            'parent_password' => ['required_with:create_parent_login', 'nullable', 'string', 'min:6'],
         ];
     }
 }

@@ -245,5 +245,12 @@ return [
             ],
             'is_system' => true,
         ],
+        [
+            'name' => 'Parent',
+            'slug' => 'parent',
+            'description' => 'View linked children progress via parent portal',
+            'permissions' => [],
+            'is_system' => true,
+        ],
     ],
 ];

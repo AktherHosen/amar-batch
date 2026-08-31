@@ -20,7 +20,7 @@ class StudentController extends Controller
     {
         $this->authorize('viewAny', Student::class);
 
-        $query = Student::with('coachingClass');
+        $query = Student::with('coachingClass')->withCount('parents');
 
         if ($request->user()->isTeacher()) {
             $studentIds = $request->user()->assignedBatches()
@@ -100,7 +100,30 @@ class StudentController extends Controller
             $validated['photo'] = $request->file('photo')->store('students', 'public');
         }
 
+        $createParent = $validated['create_parent_login'] ?? false;
+        $parentEmail = $validated['parent_email'] ?? null;
+        $parentPassword = $validated['parent_password'] ?? null;
+
+        unset($validated['create_parent_login'], $validated['parent_email'], $validated['parent_password']);
+
         $student = Student::create($validated);
+
+        if ($createParent && $parentEmail && $parentPassword) {
+            $tenantId = app('tenant_id');
+
+            $parentUser = \App\Models\User::create([
+                'name' => $validated['guardian_name'] ?? $student->name . "'s Parent",
+                'email' => $parentEmail,
+                'phone' => $validated['guardian_phone'] ?? null,
+                'password' => bcrypt($parentPassword),
+                'role' => 'parent',
+                'is_approved' => true,
+                'onboarding_complete' => true,
+            ]);
+
+            $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+            $student->parents()->attach($parentUser->id);
+        }
 
         InAppNotification::create([
             'user_id' => $request->user()->id,
@@ -124,6 +147,8 @@ class StudentController extends Controller
             'examResults' => fn ($q) => $q->with('exam.batch')->latest()->take(100),
             'batchHistories' => fn ($q) => $q->with('batch', 'user')->latest()->take(100),
         ]);
+
+        $student->loadCount('parents');
 
         $attendanceSummary = Attendance::where('student_id', $student->id)
             ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')
@@ -171,7 +196,40 @@ class StudentController extends Controller
             unset($validated['photo']);
         }
 
+        $createParent = $validated['create_parent_login'] ?? false;
+        $parentEmail = $validated['parent_email'] ?? null;
+        $parentPassword = $validated['parent_password'] ?? null;
+
+        unset($validated['create_parent_login'], $validated['parent_email'], $validated['parent_password']);
+
         $student->update($validated);
+
+        if (isset($validated['guardian_name']) || isset($validated['guardian_phone'])) {
+            $linkedParent = $student->parents()->first();
+            if ($linkedParent) {
+                $linkedParent->update([
+                    'name' => $validated['guardian_name'] ?? $linkedParent->name,
+                    'phone' => $validated['guardian_phone'] ?? $linkedParent->phone,
+                ]);
+            }
+        }
+
+        if ($createParent && $parentEmail && $parentPassword && ! $student->parents()->exists()) {
+            $tenantId = app('tenant_id');
+
+            $parentUser = \App\Models\User::create([
+                'name' => $validated['guardian_name'] ?? $student->name . "'s Parent",
+                'email' => $parentEmail,
+                'phone' => $validated['guardian_phone'] ?? null,
+                'password' => bcrypt($parentPassword),
+                'role' => 'parent',
+                'is_approved' => true,
+                'onboarding_complete' => true,
+            ]);
+
+            $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+            $student->parents()->attach($parentUser->id);
+        }
 
         return to_route('students.show', $student)->with('toast', ['type' => 'success', 'message' => 'Student updated successfully.']);
     }
