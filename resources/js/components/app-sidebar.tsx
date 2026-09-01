@@ -144,28 +144,51 @@ return false;
     const groups: NavItemGroup[] = isUserParent
         ? [
             {
-                label: 'Parent Portal',
+                label: t('nav.group.main'),
                 items: [
                     {
-                        title: t('nav.dashboard'),
-                        href: '/portal',
+                        title: 'Navigation',
                         icon: LayoutGrid,
-                    },
+                        items: [
+                            {
+                                title: t('nav.dashboard'),
+                                href: '/portal',
+                                icon: LayoutGrid,
+                            },
+                        ],
+                    } as NavItemSection,
                 ],
             },
             {
-                label: 'Account',
+                label: t('nav.group.settings'),
                 items: [
                     {
-                        title: t('nav.profile'),
-                        href: profileEdit(),
-                        icon: User,
-                    },
+                        title: 'Appearance',
+                        icon: Palette,
+                        items: [
+                            {
+                                title: t('nav.appearance'),
+                                href: appearanceEdit(),
+                                icon: Palette,
+                            },
+                        ],
+                    } as NavItemSection,
                     {
-                        title: t('nav.security'),
-                        href: securityEdit(),
-                        icon: Lock,
-                    },
+                        title: 'Account',
+                        icon: User,
+                        items: [
+                            {
+                                title: t('nav.profile'),
+                                href: profileEdit(),
+                                icon: User,
+                            },
+                            {
+                                title: t('nav.security'),
+                                href: securityEdit(),
+                                icon: Lock,
+                            },
+                        ],
+                    } as NavItemSection,
                 ],
             },
         ]
