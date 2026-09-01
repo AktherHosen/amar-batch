@@ -44,6 +44,7 @@ type StudentsShowProps = {
     student: Student;
     attendanceSummary: Record<number, Record<number, Record<string, number>>>;
     coachingClasses: { id: number; name: string }[];
+    existingParents?: Array<{ id: number; name: string; email: string }>;
 };
 
 type StudentEnrollment = {
@@ -131,6 +132,7 @@ export default function StudentsShow({
     student,
     attendanceSummary,
     coachingClasses,
+    existingParents = [],
 }: StudentsShowProps) {
     const { t } = useLocale();
     const { auth, tenant, errors: pageErrors } = usePage<PageProps>().props;
@@ -565,6 +567,7 @@ export default function StudentsShow({
                                         <StudentForm
                                             student={student}
                                             coachingClasses={coachingClasses}
+                                            existingParents={existingParents}
                                             onSubmit={handleEditSubmit}
                                             processing={processing}
                                             errors={pageErrors}

@@ -51,6 +51,11 @@ class StudentController extends Controller
         return Inertia::render('students/index', [
             'students' => $students,
             'coachingClasses' => CoachingClass::orderBy('name')->get(['id', 'name']),
+            'existingParents' => \App\Models\User::where('role', 'parent')
+                ->whereHas('tenants', fn ($q) => $q->where('tenants.id', app('tenant_id')))
+                ->select('id', 'name', 'email')
+                ->orderBy('name')
+                ->get(),
             'filters' => $request->only(['search', 'status']),
         ]);
     }
@@ -72,8 +77,16 @@ class StudentController extends Controller
 
         $coachingClasses = CoachingClass::where('tenant_id', app('tenant_id'))->orderBy('name')->get();
 
+        $tenantId = app('tenant_id');
+        $existingParents = \App\Models\User::where('role', 'parent')
+            ->whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
         return Inertia::render('students/create', [
             'coachingClasses' => $coachingClasses,
+            'existingParents' => $existingParents,
             'planLimits' => [
                 'can_create' => true,
                 'remaining' => $remaining,
@@ -107,26 +120,43 @@ class StudentController extends Controller
         $createParent = $validated['create_parent_login'] ?? false;
         $parentEmail = $validated['parent_email'] ?? null;
         $parentPassword = $validated['parent_password'] ?? null;
+        $linkParentId = $validated['link_parent_id'] ?? null;
 
-        unset($validated['create_parent_login'], $validated['parent_email'], $validated['parent_password']);
+        unset($validated['create_parent_login'], $validated['parent_email'], $validated['parent_password'], $validated['link_parent_id']);
 
         $student = Student::create($validated);
 
-        if ($createParent && $parentEmail && $parentPassword) {
-            $tenantId = app('tenant_id');
+        $tenantId = app('tenant_id');
 
-            $parentUser = \App\Models\User::create([
-                'name' => $validated['guardian_name'] ?? $student->name . "'s Parent",
-                'email' => $parentEmail,
-                'phone' => $validated['guardian_phone'] ?? null,
-                'password' => bcrypt($parentPassword),
-                'role' => 'parent',
-                'is_approved' => true,
-                'onboarding_complete' => true,
-            ]);
+        if ($linkParentId) {
+            $parentUser = \App\Models\User::where('id', $linkParentId)->where('role', 'parent')->first();
+            if ($parentUser) {
+                if (! $parentUser->tenants()->where('tenants.id', $tenantId)->exists()) {
+                    $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+                }
+                $student->parents()->attach($parentUser->id);
+            }
+        } elseif ($createParent && $parentEmail && $parentPassword) {
+            $parentUser = \App\Models\User::where('email', $parentEmail)->first();
 
-            $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
-            $student->parents()->attach($parentUser->id);
+            if (! $parentUser) {
+                $parentUser = \App\Models\User::create([
+                    'name' => $validated['guardian_name'] ?? $student->name . "'s Parent",
+                    'email' => $parentEmail,
+                    'phone' => $validated['guardian_phone'] ?? null,
+                    'password' => bcrypt($parentPassword),
+                    'role' => 'parent',
+                    'is_approved' => true,
+                    'onboarding_complete' => true,
+                ]);
+            }
+
+            if (! $parentUser->tenants()->where('tenants.id', $tenantId)->exists()) {
+                $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+            }
+            if (! $student->parents()->where('users.id', $parentUser->id)->exists()) {
+                $student->parents()->attach($parentUser->id);
+            }
         }
 
         InAppNotification::create([
@@ -153,6 +183,7 @@ class StudentController extends Controller
         ]);
 
         $student->loadCount('parents');
+        $student->load('parents:id,name,email');
 
         $attendanceSummary = Attendance::where('student_id', $student->id)
             ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')
@@ -166,10 +197,18 @@ class StudentController extends Controller
                     });
             });
 
+        $tenantId = app('tenant_id');
+        $existingParents = \App\Models\User::where('role', 'parent')
+            ->whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
         return Inertia::render('students/show', [
             'student' => $student,
             'attendanceSummary' => $attendanceSummary,
-            'coachingClasses' => CoachingClass::where('tenant_id', app('tenant_id'))->orderBy('name')->get(),
+            'coachingClasses' => CoachingClass::where('tenant_id', $tenantId)->orderBy('name')->get(),
+            'existingParents' => $existingParents,
         ]);
     }
 
@@ -178,11 +217,20 @@ class StudentController extends Controller
         $this->authorize('update', $student);
 
         $student->loadCount('parents');
+        $student->load('parents:id,name,email');
         $coachingClasses = CoachingClass::where('tenant_id', app('tenant_id'))->orderBy('name')->get();
+
+        $tenantId = app('tenant_id');
+        $existingParents = \App\Models\User::where('role', 'parent')
+            ->whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('students/edit', [
             'student' => $student,
             'coachingClasses' => $coachingClasses,
+            'existingParents' => $existingParents,
         ]);
     }
 
@@ -204,8 +252,9 @@ class StudentController extends Controller
         $createParent = $validated['create_parent_login'] ?? false;
         $parentEmail = $validated['parent_email'] ?? null;
         $parentPassword = $validated['parent_password'] ?? null;
+        $linkParentId = $validated['link_parent_id'] ?? null;
 
-        unset($validated['create_parent_login'], $validated['parent_email'], $validated['parent_password']);
+        unset($validated['create_parent_login'], $validated['parent_email'], $validated['parent_password'], $validated['link_parent_id']);
 
         $student->update($validated);
 
@@ -219,21 +268,37 @@ class StudentController extends Controller
             }
         }
 
-        if ($createParent && $parentEmail && $parentPassword && ! $student->parents()->exists()) {
-            $tenantId = app('tenant_id');
+        $tenantId = app('tenant_id');
 
-            $parentUser = \App\Models\User::create([
-                'name' => $validated['guardian_name'] ?? $student->name . "'s Parent",
-                'email' => $parentEmail,
-                'phone' => $validated['guardian_phone'] ?? null,
-                'password' => bcrypt($parentPassword),
-                'role' => 'parent',
-                'is_approved' => true,
-                'onboarding_complete' => true,
-            ]);
+        if ($linkParentId && ! $student->parents()->where('users.id', $linkParentId)->exists()) {
+            $parentUser = \App\Models\User::where('id', $linkParentId)->where('role', 'parent')->first();
+            if ($parentUser) {
+                if (! $parentUser->tenants()->where('tenants.id', $tenantId)->exists()) {
+                    $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+                }
+                $student->parents()->attach($parentUser->id);
+            }
+        } elseif ($createParent && $parentEmail && $parentPassword && ! $student->parents()->exists()) {
+            $parentUser = \App\Models\User::where('email', $parentEmail)->first();
 
-            $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
-            $student->parents()->attach($parentUser->id);
+            if (! $parentUser) {
+                $parentUser = \App\Models\User::create([
+                    'name' => $validated['guardian_name'] ?? $student->name . "'s Parent",
+                    'email' => $parentEmail,
+                    'phone' => $validated['guardian_phone'] ?? null,
+                    'password' => bcrypt($parentPassword),
+                    'role' => 'parent',
+                    'is_approved' => true,
+                    'onboarding_complete' => true,
+                ]);
+            }
+
+            if (! $parentUser->tenants()->where('tenants.id', $tenantId)->exists()) {
+                $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+            }
+            if (! $student->parents()->where('users.id', $parentUser->id)->exists()) {
+                $student->parents()->attach($parentUser->id);
+            }
         }
 
         return to_route('students.show', $student)->with('toast', ['type' => 'success', 'message' => 'Student updated successfully.']);

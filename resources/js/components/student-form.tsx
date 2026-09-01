@@ -52,6 +52,7 @@ type CoachingClass = {
 type StudentFormProps = {
     student?: Student;
     coachingClasses: CoachingClass[];
+    existingParents?: Array<{ id: number; name: string; email: string }>;
     onSubmit: (data: FormData) => void;
     processing: boolean;
     errors: Record<string, string>;
@@ -79,6 +80,7 @@ function SectionHeader({
 export default function StudentForm({
     student,
     coachingClasses,
+    existingParents = [],
     onSubmit,
     processing,
     errors,
@@ -106,6 +108,7 @@ export default function StudentForm({
         create_parent_login: false,
         parent_email: '',
         parent_password: '',
+        link_parent_id: '',
     });
 
     const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -607,28 +610,66 @@ export default function StudentForm({
                     </div>
                 </div>
 
-                {!student?.parents_count && student?.parents_count !== 0 && (
-                    <div className="rounded-lg border p-3">
+                {(student?.parents_count ?? 0) === 0 ? (
+                    <div className="rounded-lg border p-3 space-y-3">
+                        <div className="flex items-center gap-3">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                                <LogIn className="size-4 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium">Parent Account</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Link an existing parent or create a new login
+                                </p>
+                            </div>
+                        </div>
+
+                        {existingParents.length > 0 && (
+                            <div className="space-y-2">
+                                <Label htmlFor="link_parent_id">Link Existing Parent</Label>
+                                <Select
+                                    value={data.link_parent_id}
+                                    onValueChange={(v) => {
+                                        setData('link_parent_id', v);
+                                        if (v) {
+                                            setData('create_parent_login', false);
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select an existing parent" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {existingParents.map((p) => (
+                                            <SelectItem key={p.id} value={String(p.id)}>
+                                                {p.name} ({p.email})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                    Or create a new parent login below
+                                </p>
+                            </div>
+                        )}
+
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
-                                    <LogIn className="size-4 text-primary" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium">Create Parent Login</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        Let guardian log in to view their child's progress
-                                    </p>
-                                </div>
+                                <Switch
+                                    checked={data.create_parent_login}
+                                    onCheckedChange={(checked) => {
+                                        setData('create_parent_login', checked);
+                                        if (checked) {
+                                            setData('link_parent_id', '');
+                                        }
+                                    }}
+                                />
+                                <span className="text-sm">Create New Parent Login</span>
                             </div>
-                            <Switch
-                                checked={data.create_parent_login}
-                                onCheckedChange={(checked) => setData('create_parent_login', checked)}
-                            />
                         </div>
 
                         {data.create_parent_login && (
-                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                            <div className="grid gap-3 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="parent_email">Parent Email *</Label>
                                     <Input
@@ -653,6 +694,20 @@ export default function StudentForm({
                                 </div>
                             </div>
                         )}
+                    </div>
+                ) : (
+                    <div className="rounded-lg border p-3 space-y-2">
+                        <div className="flex items-center gap-3">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-green-500/10">
+                                <LogIn className="size-4 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium">Parent Account Linked</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {student?.parents?.map((p) => p.email).join(', ') || 'Parent login is active'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

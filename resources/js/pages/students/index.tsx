@@ -67,6 +67,7 @@ type PageProps = {
         total: number;
     };
     coachingClasses: CoachingClass[];
+    existingParents?: Array<{ id: number; name: string; email: string }>;
     filters: {
         search?: string;
         status?: string;
@@ -76,6 +77,7 @@ type PageProps = {
 export default function StudentsIndex({
     students: pagination,
     coachingClasses,
+    existingParents = [],
     filters,
 }: PageProps) {
     const { t } = useLocale();
@@ -505,6 +507,7 @@ export default function StudentsIndex({
                     <div className="px-4 pb-4">
                         <StudentForm
                             coachingClasses={coachingClasses}
+                            existingParents={existingParents}
                             student={editingStudent ?? undefined}
                             onSubmit={(formData) => {
                                 setProcessing(true);

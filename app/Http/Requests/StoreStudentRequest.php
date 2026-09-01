@@ -32,8 +32,9 @@ class StoreStudentRequest extends FormRequest
             'left_at' => ['nullable', 'date'],
             'photo' => ['nullable', 'image', 'max:2048'],
             'create_parent_login' => ['sometimes', 'boolean'],
-            'parent_email' => ['required_if:create_parent_login,true', 'nullable', 'email', 'unique:users,email'],
+            'parent_email' => ['required_if:create_parent_login,true', 'nullable', 'email'],
             'parent_password' => ['required_if:create_parent_login,true', 'nullable', 'string', 'min:6'],
+            'link_parent_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('role', 'parent')],
         ];
     }
 }

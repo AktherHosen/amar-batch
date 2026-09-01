@@ -21,6 +21,10 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
+        if (method_exists($user, 'isParent') && $user->isParent()) {
+            return redirect('/portal');
+        }
+
         if ($user->isSuperAdmin()) {
             return to_route('super-admin.dashboard');
         }
