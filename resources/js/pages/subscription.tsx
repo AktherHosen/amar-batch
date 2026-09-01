@@ -1,18 +1,33 @@
-import { Head, router, usePage } from '@inertiajs/react';
-import { Crown, Users, GraduationCap, Layers, CreditCard, ArrowRight, Banknote } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import PlanCard from '@/components/plan-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
 import { index as subscriptionIndex } from '@/routes/subscription';
+import { Head, usePage } from '@inertiajs/react';
+import {
+    ArrowRight,
+    Banknote,
+    CreditCard,
+    Crown,
+    GraduationCap,
+    Layers,
+    Users,
+} from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 type Plan = {
     id: number;
@@ -63,21 +78,43 @@ type PageProps = {
     featureMap: Record<string, string>;
 };
 
-export default function SubscriptionPage({ subscription, plans, currentUsage, recentPayments, manualPaymentEnabled, manualPaymentInstructions, availableFeatures, featureMap }: PageProps) {
+export default function SubscriptionPage({
+    subscription,
+    plans,
+    currentUsage,
+    recentPayments,
+    manualPaymentEnabled,
+    manualPaymentInstructions,
+    availableFeatures,
+    featureMap,
+}: PageProps) {
     const { t, formatCurrency } = useLocale();
-    const { flash } = usePage<{ flash: { error?: string; success?: string } }>().props;
+    const { flash } = usePage<{ flash: { error?: string; success?: string } }>()
+        .props;
     const [annual, setAnnual] = useState(true);
-    const [upgradeDialog, setUpgradeDialog] = useState<{ open: boolean; plan: Plan | null; billing: string }>({
+    const [upgradeDialog, setUpgradeDialog] = useState<{
+        open: boolean;
+        plan: Plan | null;
+        billing: string;
+    }>({
         open: false,
         plan: null,
         billing: 'yearly',
     });
-    const [manualDialog, setManualDialog] = useState<{ open: boolean; plan: Plan | null; billing: string }>({
+    const [manualDialog, setManualDialog] = useState<{
+        open: boolean;
+        plan: Plan | null;
+        billing: string;
+    }>({
         open: false,
         plan: null,
         billing: 'monthly',
     });
-    const [manualForm, setManualForm] = useState({ transaction_id: '', sender_number: '', notes: '' });
+    const [manualForm, setManualForm] = useState({
+        transaction_id: '',
+        sender_number: '',
+        notes: '',
+    });
     const [manualProcessing, setManualProcessing] = useState(false);
 
     if (flash?.error) {
@@ -87,16 +124,27 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
     const currentPlan = subscription?.plan;
     const isTrial = subscription?.status === 'trial';
     const isActive = subscription?.status === 'active';
-    const trialEndsAt = subscription?.trial_ends_at ? new Date(subscription.trial_ends_at) : null;
-    const daysLeft = trialEndsAt ? Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+    const trialEndsAt = subscription?.trial_ends_at
+        ? new Date(subscription.trial_ends_at)
+        : null;
+    const daysLeft = trialEndsAt
+        ? Math.ceil(
+              (trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+          )
+        : 0;
 
     const getStatusLabel = (status: string) => {
         switch (status) {
-            case 'active': return t('students.active');
-            case 'trial': return t('subscription.trial');
-            case 'expired': return t('students.inactive');
-            case 'cancelled': return t('payment.status_cancelled');
-            default: return status;
+            case 'active':
+                return t('students.active');
+            case 'trial':
+                return t('subscription.trial');
+            case 'expired':
+                return t('students.inactive');
+            case 'cancelled':
+                return t('payment.status_cancelled');
+            default:
+                return status;
         }
     };
 
@@ -118,6 +166,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
 
     const handleUpgrade = (plan: Plan) => {
         const billing = annual ? 'yearly' : 'monthly';
+
         if (plan.price_monthly > 0) {
             if (manualPaymentEnabled) {
                 setUpgradeDialog({ open: true, plan, billing });
@@ -134,7 +183,9 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
         form.method = 'POST';
         form.action = `/payment/initiate/${planId}?billing=${billing}`;
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
 
         if (csrfToken) {
             const input = document.createElement('input');
@@ -149,14 +200,20 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
     };
 
     const submitManualPayment = () => {
-        if (!manualDialog.plan || !manualForm.transaction_id.trim()) return;
+        if (!manualDialog.plan || !manualForm.transaction_id.trim()) {
+            return;
+        }
+
         setManualProcessing(true);
 
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/payment/manual/${manualDialog.plan.id}?billing=${manualDialog.billing}`;
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
+
         if (csrfToken) {
             const input = document.createElement('input');
             input.type = 'hidden';
@@ -193,11 +250,32 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'success': return <Badge className="bg-green-600 text-white">{t('payment.status_success')}</Badge>;
-            case 'failed': return <Badge className="bg-red-600 text-white">{t('payment.status_failed')}</Badge>;
-            case 'pending': return <Badge variant="secondary">{t('payment.status_pending')}</Badge>;
-            case 'cancelled': return <Badge variant="outline">{t('payment.status_cancelled')}</Badge>;
-            default: return <Badge variant="secondary">{status}</Badge>;
+            case 'success':
+                return (
+                    <Badge className="bg-green-600 text-white">
+                        {t('payment.status_success')}
+                    </Badge>
+                );
+            case 'failed':
+                return (
+                    <Badge className="bg-red-600 text-white">
+                        {t('payment.status_failed')}
+                    </Badge>
+                );
+            case 'pending':
+                return (
+                    <Badge variant="secondary">
+                        {t('payment.status_pending')}
+                    </Badge>
+                );
+            case 'cancelled':
+                return (
+                    <Badge variant="outline">
+                        {t('payment.status_cancelled')}
+                    </Badge>
+                );
+            default:
+                return <Badge variant="secondary">{status}</Badge>;
         }
     };
 
@@ -223,29 +301,57 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                     <div>
                                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                                             <h3 className="text-lg font-bold tracking-tight sm:text-2xl">
-                                                {currentPlan?.name || t('subscription.no_plan')}
+                                                {currentPlan?.name ||
+                                                    t('subscription.no_plan')}
                                             </h3>
                                             {isTrial ? (
-                                                <Badge variant="secondary">{t('subscription.trial')}</Badge>
+                                                <Badge variant="secondary">
+                                                    {t('subscription.trial')}
+                                                </Badge>
                                             ) : (
-                                                <Badge variant={isActive ? 'default' : 'destructive'}>
-                                                    {getStatusLabel(subscription.status)}
+                                                <Badge
+                                                    variant={
+                                                        isActive
+                                                            ? 'default'
+                                                            : 'destructive'
+                                                    }
+                                                >
+                                                    {getStatusLabel(
+                                                        subscription.status,
+                                                    )}
                                                 </Badge>
                                             )}
                                             {subscription.billing_type && (
-                                                <Badge variant="outline" className="uppercase">
-                                                    {t(`plan.${subscription.billing_type}`)}
+                                                <Badge
+                                                    variant="outline"
+                                                    className="uppercase"
+                                                >
+                                                    {t(
+                                                        `plan.${subscription.billing_type}`,
+                                                    )}
                                                 </Badge>
                                             )}
                                         </div>
                                         {isTrial && daysLeft > 0 && (
                                             <p className="mt-1.5 text-sm text-muted-foreground">
-                                                {t('subscription.trial_ends_in').replace('{days}', daysLeft.toString()).replace('{date}', trialEndsAt?.toLocaleDateString() || '')}
+                                                {t('subscription.trial_ends_in')
+                                                    .replace(
+                                                        '{days}',
+                                                        daysLeft.toString(),
+                                                    )
+                                                    .replace(
+                                                        '{date}',
+                                                        trialEndsAt?.toLocaleDateString() ||
+                                                            '',
+                                                    )}
                                             </p>
                                         )}
                                         {subscription.ends_at && !isTrial && (
                                             <p className="mt-1.5 text-sm text-muted-foreground">
-                                                {t('subscription.active_until')} {new Date(subscription.ends_at).toLocaleDateString()}
+                                                {t('subscription.active_until')}{' '}
+                                                {new Date(
+                                                    subscription.ends_at,
+                                                ).toLocaleDateString()}
                                             </p>
                                         )}
                                     </div>
@@ -253,18 +359,23 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
 
                                 {currentPlan && (
                                     <div className="flex items-center justify-between gap-2 lg:flex-col lg:items-end">
-                                        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground lg:mb-1">
+                                        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase lg:mb-1">
                                             {t('payment.amount_paid')}
                                         </span>
                                         <span className="text-xl font-bold tracking-tight text-primary sm:text-3xl">
                                             {currentPlan.price_monthly === 0
                                                 ? t('plan.free')
-                                                : formatCurrency(subscription.billing_type === 'yearly'
-                                                    ? currentPlan.price_yearly
-                                                    : currentPlan.price_monthly) + '/'
-                                                + (subscription.billing_type === 'yearly'
-                                                    ? t('plan.year')
-                                                    : t('plan.month'))}
+                                                : formatCurrency(
+                                                      subscription.billing_type ===
+                                                          'yearly'
+                                                          ? currentPlan.price_yearly
+                                                          : currentPlan.price_monthly,
+                                                  ) +
+                                                  '/' +
+                                                  (subscription.billing_type ===
+                                                  'yearly'
+                                                      ? t('plan.year')
+                                                      : t('plan.month'))}
                                         </span>
                                     </div>
                                 )}
@@ -274,60 +385,75 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                         {/* Current Usage */}
                         {currentPlan && (
                             <div className="border-t px-3 py-3 sm:px-6 sm:py-4">
-                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                     {t('plan.limits')}
                                 </p>
                                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-2.5">
-                                    <div className="rounded-lg border bg-card px-3 py-2 sm:flex-1 sm:min-w-[200px]">
+                                    <div className="rounded-lg border bg-card px-3 py-2 sm:min-w-[200px] sm:flex-1">
                                         <div className="flex items-center justify-between text-xs sm:text-sm">
                                             <span className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
                                                 <GraduationCap className="size-3.5 sm:size-4" />
                                                 {t('plan.students')}
                                             </span>
                                             <span className="font-semibold">
-                                                {currentUsage.students} / {formatLimit(currentPlan.max_students)}
+                                                {currentUsage.students} /{' '}
+                                                {formatLimit(
+                                                    currentPlan.max_students,
+                                                )}
                                             </span>
                                         </div>
                                         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
                                             <div
                                                 className={`h-full rounded-full transition-all ${getUsagePercent(currentUsage.students, currentPlan.max_students) >= 90 ? 'bg-destructive' : 'bg-primary'}`}
-                                                style={{ width: `${getUsagePercent(currentUsage.students, currentPlan.max_students)}%` }}
+                                                style={{
+                                                    width: `${getUsagePercent(currentUsage.students, currentPlan.max_students)}%`,
+                                                }}
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="rounded-lg border bg-card px-3 py-2 sm:flex-1 sm:min-w-[200px]">
+                                    <div className="rounded-lg border bg-card px-3 py-2 sm:min-w-[200px] sm:flex-1">
                                         <div className="flex items-center justify-between text-xs sm:text-sm">
                                             <span className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
                                                 <Users className="size-3.5 sm:size-4" />
                                                 {t('plan.staff')}
                                             </span>
                                             <span className="font-semibold">
-                                                {currentUsage.staff} / {formatLimit(currentPlan.max_staff)}
+                                                {currentUsage.staff} /{' '}
+                                                {formatLimit(
+                                                    currentPlan.max_staff,
+                                                )}
                                             </span>
                                         </div>
                                         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
                                             <div
                                                 className={`h-full rounded-full transition-all ${getUsagePercent(currentUsage.staff, currentPlan.max_staff) >= 90 ? 'bg-destructive' : 'bg-primary'}`}
-                                                style={{ width: `${getUsagePercent(currentUsage.staff, currentPlan.max_staff)}%` }}
+                                                style={{
+                                                    width: `${getUsagePercent(currentUsage.staff, currentPlan.max_staff)}%`,
+                                                }}
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="rounded-lg border bg-card px-3 py-2 sm:flex-1 sm:min-w-[200px]">
+                                    <div className="rounded-lg border bg-card px-3 py-2 sm:min-w-[200px] sm:flex-1">
                                         <div className="flex items-center justify-between text-xs sm:text-sm">
                                             <span className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
                                                 <Layers className="size-3.5 sm:size-4" />
                                                 {t('plan.batches')}
                                             </span>
                                             <span className="font-semibold">
-                                                {currentUsage.batches} / {formatLimit(currentPlan.max_batches)}
+                                                {currentUsage.batches} /{' '}
+                                                {formatLimit(
+                                                    currentPlan.max_batches,
+                                                )}
                                             </span>
                                         </div>
                                         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
                                             <div
                                                 className={`h-full rounded-full transition-all ${getUsagePercent(currentUsage.batches, currentPlan.max_batches) >= 90 ? 'bg-destructive' : 'bg-primary'}`}
-                                                style={{ width: `${getUsagePercent(currentUsage.batches, currentPlan.max_batches)}%` }}
+                                                style={{
+                                                    width: `${getUsagePercent(currentUsage.batches, currentPlan.max_batches)}%`,
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -340,7 +466,9 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                 {/* Available Plans */}
                 <div>
                     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <h2 className="text-sm font-semibold sm:text-lg">{t('subscription.available_plans')}</h2>
+                        <h2 className="text-sm font-semibold sm:text-lg">
+                            {t('subscription.available_plans')}
+                        </h2>
                         <div className="flex items-center gap-3 self-start rounded-full border bg-muted/40 p-1 sm:self-auto">
                             <button
                                 type="button"
@@ -370,7 +498,9 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                     annual={annual}
                                     isCurrent={isCurrent}
                                     isPopular={isPopular}
-                                    currentLabel={t('subscription.current_plan')}
+                                    currentLabel={t(
+                                        'subscription.current_plan',
+                                    )}
                                     popularLabel={t('plan.popular')}
                                     availableFeatures={availableFeatures}
                                     featureMap={featureMap}
@@ -378,13 +508,25 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                         !isCurrent ? (
                                             <Button
                                                 className="w-full"
-                                                onClick={() => handleUpgrade(plan)}
+                                                onClick={() =>
+                                                    handleUpgrade(plan)
+                                                }
                                             >
-                                                {currentPlan ? t('subscription.switch_plan') : t('subscription.get_started')}
+                                                {currentPlan
+                                                    ? t(
+                                                          'subscription.switch_plan',
+                                                      )
+                                                    : t(
+                                                          'subscription.get_started',
+                                                      )}
                                                 <ArrowRight className="ml-2 size-4" />
                                             </Button>
                                         ) : (
-                                            <Button className="w-full" variant="outline" disabled>
+                                            <Button
+                                                className="w-full"
+                                                variant="outline"
+                                                disabled
+                                            >
                                                 {t('subscription.current_plan')}
                                             </Button>
                                         )
@@ -398,7 +540,7 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                 {/* Recent Payments */}
                 {recentPayments.length > 0 && (
                     <Card>
-                        <CardHeader className="flex-col items-start gap-1 p-4 sm:p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                        <CardHeader className="flex-col items-start gap-1 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:p-6">
                             <CardTitle className="flex items-center gap-2">
                                 <CreditCard className="size-5" />
                                 {t('payment.history')}
@@ -419,15 +561,24 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                                                 <CreditCard className="size-4 text-muted-foreground sm:size-5" />
                                             </div>
                                             <div>
-                                                <div className="font-medium">{payment.plan}</div>
+                                                <div className="font-medium">
+                                                    {payment.plan}
+                                                </div>
                                                 <div className="text-sm text-muted-foreground">
-                                                    {payment.paid_at ? new Date(payment.paid_at).toLocaleDateString() : '-'}
-                                                    {payment.billing_type && ` · ${t(`plan.${payment.billing_type}`)}`}
+                                                    {payment.paid_at
+                                                        ? new Date(
+                                                              payment.paid_at,
+                                                          ).toLocaleDateString()
+                                                        : '-'}
+                                                    {payment.billing_type &&
+                                                        ` · ${t(`plan.${payment.billing_type}`)}`}
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between gap-3 sm:justify-end">
-                                            <span className="text-sm font-semibold sm:text-base">{formatCurrency(payment.amount)}</span>
+                                            <span className="text-sm font-semibold sm:text-base">
+                                                {formatCurrency(payment.amount)}
+                                            </span>
                                             {getStatusBadge(payment.status)}
                                         </div>
                                     </div>
@@ -438,13 +589,23 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                 )}
             </div>
 
-            <Dialog open={upgradeDialog.open} onOpenChange={(open) => setUpgradeDialog({ ...upgradeDialog, open })}>
+            <Dialog
+                open={upgradeDialog.open}
+                onOpenChange={(open) =>
+                    setUpgradeDialog({ ...upgradeDialog, open })
+                }
+            >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>{t('subscription.upgrade_title')}</DialogTitle>
+                        <DialogTitle>
+                            {t('subscription.upgrade_title')}
+                        </DialogTitle>
                         <DialogDescription>
                             {upgradeDialog.plan
-                                ? t('subscription.upgrade_desc').replace('{plan}', upgradeDialog.plan.name)
+                                ? t('subscription.upgrade_desc').replace(
+                                      '{plan}',
+                                      upgradeDialog.plan.name,
+                                  )
                                 : ''}
                         </DialogDescription>
                     </DialogHeader>
@@ -453,8 +614,14 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                             className="w-full justify-start gap-3"
                             variant="outline"
                             onClick={() => {
-                                setUpgradeDialog({ ...upgradeDialog, open: false });
-                                submitPayment(upgradeDialog.plan!.id, upgradeDialog.billing);
+                                setUpgradeDialog({
+                                    ...upgradeDialog,
+                                    open: false,
+                                });
+                                submitPayment(
+                                    upgradeDialog.plan!.id,
+                                    upgradeDialog.billing,
+                                );
                             }}
                         >
                             <CreditCard className="size-4" />
@@ -464,8 +631,15 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                             className="w-full justify-start gap-3"
                             variant="outline"
                             onClick={() => {
-                                setUpgradeDialog({ ...upgradeDialog, open: false });
-                                setManualDialog({ open: true, plan: upgradeDialog.plan, billing: upgradeDialog.billing });
+                                setUpgradeDialog({
+                                    ...upgradeDialog,
+                                    open: false,
+                                });
+                                setManualDialog({
+                                    open: true,
+                                    plan: upgradeDialog.plan,
+                                    billing: upgradeDialog.billing,
+                                });
                             }}
                         >
                             <Banknote className="size-4" />
@@ -475,56 +649,106 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={manualDialog.open} onOpenChange={(open) => setManualDialog({ ...manualDialog, open })}>
+            <Dialog
+                open={manualDialog.open}
+                onOpenChange={(open) =>
+                    setManualDialog({ ...manualDialog, open })
+                }
+            >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>{t('subscription.manual_payment_title')}</DialogTitle>
+                        <DialogTitle>
+                            {t('subscription.manual_payment_title')}
+                        </DialogTitle>
                         <DialogDescription>
                             {t('subscription.manual_payment_desc')}
                         </DialogDescription>
                     </DialogHeader>
                     {manualPaymentInstructions && (
-                        <div className="rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground whitespace-pre-wrap">
+                        <div className="rounded-lg border bg-muted/50 p-3 text-sm whitespace-pre-wrap text-muted-foreground">
                             {manualPaymentInstructions}
                         </div>
                     )}
                     <div className="space-y-3">
                         <div className="grid gap-2">
-                            <Label htmlFor="manual_tx_id">{t('subscription.transaction_id')}</Label>
+                            <Label htmlFor="manual_tx_id">
+                                {t('subscription.transaction_id')}
+                            </Label>
                             <Input
                                 id="manual_tx_id"
                                 value={manualForm.transaction_id}
-                                onChange={(e) => setManualForm({ ...manualForm, transaction_id: e.target.value })}
-                                placeholder={t('subscription.transaction_id_placeholder')}
+                                onChange={(e) =>
+                                    setManualForm({
+                                        ...manualForm,
+                                        transaction_id: e.target.value,
+                                    })
+                                }
+                                placeholder={t(
+                                    'subscription.transaction_id_placeholder',
+                                )}
                                 required
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="manual_sender">{t('subscription.sender_number')}</Label>
+                            <Label htmlFor="manual_sender">
+                                {t('subscription.sender_number')}
+                            </Label>
                             <Input
                                 id="manual_sender"
                                 value={manualForm.sender_number}
-                                onChange={(e) => setManualForm({ ...manualForm, sender_number: e.target.value })}
-                                placeholder={t('subscription.sender_number_placeholder')}
+                                onChange={(e) =>
+                                    setManualForm({
+                                        ...manualForm,
+                                        sender_number: e.target.value,
+                                    })
+                                }
+                                placeholder={t(
+                                    'subscription.sender_number_placeholder',
+                                )}
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="manual_notes">{t('subscription.notes')}</Label>
+                            <Label htmlFor="manual_notes">
+                                {t('subscription.notes')}
+                            </Label>
                             <Textarea
                                 id="manual_notes"
                                 value={manualForm.notes}
-                                onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })}
-                                placeholder={t('subscription.notes_placeholder')}
+                                onChange={(e) =>
+                                    setManualForm({
+                                        ...manualForm,
+                                        notes: e.target.value,
+                                    })
+                                }
+                                placeholder={t(
+                                    'subscription.notes_placeholder',
+                                )}
                                 rows={2}
                             />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setManualDialog({ ...manualDialog, open: false })}>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                setManualDialog({
+                                    ...manualDialog,
+                                    open: false,
+                                })
+                            }
+                        >
                             {t('actions.cancel')}
                         </Button>
-                        <Button onClick={submitManualPayment} disabled={manualProcessing || !manualForm.transaction_id.trim()}>
-                            {manualProcessing ? t('actions.processing') : t('subscription.submit_manual_payment')}
+                        <Button
+                            onClick={submitManualPayment}
+                            disabled={
+                                manualProcessing ||
+                                !manualForm.transaction_id.trim()
+                            }
+                        >
+                            {manualProcessing
+                                ? t('actions.saving')
+                                : t('subscription.submit_manual_payment')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -534,7 +758,5 @@ export default function SubscriptionPage({ subscription, plans, currentUsage, re
 }
 
 SubscriptionPage.layout = {
-    breadcrumbs: [
-        { title: 'Subscription', href: subscriptionIndex() },
-    ],
+    breadcrumbs: [{ title: 'Subscription', href: subscriptionIndex() }],
 };

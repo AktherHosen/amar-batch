@@ -42,7 +42,11 @@ class StudentController extends Controller
             $query->where('status', $status);
         }
 
-        $students = $query->latest()->paginate(10)->withQueryString();
+        $students = $query->latest()->paginate(10)->withQueryString()
+            ->through(fn ($s) => [
+                ...$s->toArray(),
+                'has_parent' => $s->parents()->exists(),
+            ]);
 
         return Inertia::render('students/index', [
             'students' => $students,
@@ -149,6 +153,7 @@ class StudentController extends Controller
         ]);
 
         $student->loadCount('parents');
+        $student->has_parent = $student->parents()->exists();
 
         $attendanceSummary = Attendance::where('student_id', $student->id)
             ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')

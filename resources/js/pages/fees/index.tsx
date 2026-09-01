@@ -1,14 +1,9 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Trash2, EllipsisVertical, ChevronDown, Receipt, Search, X } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
 import FeeForm from '@/components/fee-form';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
 import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
 import { Button } from '@/components/ui/button';
@@ -39,6 +34,10 @@ import {
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner } from '@/lib/role';
 import fees from '@/routes/fees';
+import { Head, router, usePage } from '@inertiajs/react';
+import { ChevronDown, EllipsisVertical, Receipt, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 type Student = {
     id: number;
@@ -405,6 +404,7 @@ export default function FeesIndex({
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
+
         if (params.get('create') === 'true') {
             setCreateSheetOpen(true);
             window.history.replaceState({}, '', window.location.pathname);
@@ -412,9 +412,17 @@ export default function FeesIndex({
     }, []);
 
     const [receiptSheetOpen, setReceiptSheetOpen] = useState(false);
-    const [receiptStudent, setReceiptStudent] = useState<{ id: number; name: string } | null>(null);
-    const [receiptBatch, setReceiptBatch] = useState<{ id: number; name: string } | null>(null);
-    const [receiptMonth, setReceiptMonth] = useState(String(new Date().getMonth() + 1));
+    const [receiptStudent, setReceiptStudent] = useState<{
+        id: number;
+        name: string;
+    } | null>(null);
+    const [receiptBatch, setReceiptBatch] = useState<{
+        id: number;
+        name: string;
+    } | null>(null);
+    const [receiptMonth, setReceiptMonth] = useState(
+        String(new Date().getMonth() + 1),
+    );
     const [receiptPaidAmount, setReceiptPaidAmount] = useState(0);
     const [receiptProcessing, setReceiptProcessing] = useState(false);
 
@@ -494,44 +502,49 @@ export default function FeesIndex({
         router.get(fees.index.url(), {}, { preserveState: true });
     };
 
-    const activeFilterCount = (selectedYear !== currentYear ? 1 : 0) + (unpaidFilterMonth ? 1 : 0);
+    const activeFilterCount =
+        (selectedYear !== currentYear ? 1 : 0) + (unpaidFilterMonth ? 1 : 0);
 
     const handleGenerateReceipt = () => {
         if (!receiptStudent || !receiptBatch) {
-return;
-}
+            return;
+        }
 
         setReceiptProcessing(true);
 
-        router.post('/fees/receipts', {
-            student_id: receiptStudent.id,
-            batch_id: receiptBatch.id,
-            month: Number(receiptMonth),
-            year: selectedYear,
-            amount_paid: receiptPaidAmount,
-        }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success(t('toast.receipt_generated'));
-                setReceiptSheetOpen(false);
-                setReceiptStudent(null);
-                setReceiptBatch(null);
+        router.post(
+            '/fees/receipts',
+            {
+                student_id: receiptStudent.id,
+                batch_id: receiptBatch.id,
+                month: Number(receiptMonth),
+                year: selectedYear,
+                amount_paid: receiptPaidAmount,
             },
-            onError: (err) => {
-                const msg = err?.message || t('toast.error_occurred');
-                toast.error(msg);
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success(t('toast.receipt_generated'));
+                    setReceiptSheetOpen(false);
+                    setReceiptStudent(null);
+                    setReceiptBatch(null);
+                },
+                onError: (err) => {
+                    const msg = err?.message || t('toast.error_occurred');
+                    toast.error(msg);
+                },
+                onFinish: () => setReceiptProcessing(false),
             },
-            onFinish: () => setReceiptProcessing(false),
-        });
+        );
     };
 
     const filteredFeeGrid = unpaidFilterMonth
         ? feeGrid.filter((item) => {
-            const m = Number(unpaidFilterMonth);
-            const fee = item.months[m];
+              const m = Number(unpaidFilterMonth);
+              const fee = item.months[m];
 
-            return !fee || Number(fee.amount_paid) <= 0;
-        })
+              return !fee || Number(fee.amount_paid) <= 0;
+          })
         : feeGrid;
 
     const columns = (() => {
@@ -701,7 +714,11 @@ return;
                         <div className="flex justify-center">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                    >
                                         <EllipsisVertical className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -709,9 +726,19 @@ return;
                                     <DropdownMenuItem
                                         disabled={totalPaid <= 0}
                                         onClick={() => {
-                                            setReceiptStudent({ id: item.student.id, name: item.student.name });
-                                            setReceiptBatch({ id: item.batch.id, name: item.batch.name });
-                                            setReceiptMonth(String(new Date().getMonth() + 1));
+                                            setReceiptStudent({
+                                                id: item.student.id,
+                                                name: item.student.name,
+                                            });
+                                            setReceiptBatch({
+                                                id: item.batch.id,
+                                                name: item.batch.name,
+                                            });
+                                            setReceiptMonth(
+                                                String(
+                                                    new Date().getMonth() + 1,
+                                                ),
+                                            );
                                             setReceiptPaidAmount(totalPaid);
                                             setReceiptSheetOpen(true);
                                         }}
@@ -768,7 +795,16 @@ return;
                             createLabel={t('fees.create')}
                             onCreate={() => setCreateSheetOpen(true)}
                             extraItems={
-                                <DropdownMenuItem onClick={() => router.get('/reports/unpaid-students', { month: String(new Date().getMonth() + 1), year: String(selectedYear) })}>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        router.get('/reports/unpaid-students', {
+                                            month: String(
+                                                new Date().getMonth() + 1,
+                                            ),
+                                            year: String(selectedYear),
+                                        })
+                                    }
+                                >
                                     <Receipt className="mr-2 size-4" />
                                     {t('reports.unpaid_title')}
                                 </DropdownMenuItem>
@@ -830,7 +866,10 @@ return;
                             searchValue={search}
                             onSearchChange={handleSearch}
                             activeFilterCount={activeFilterCount}
-                            active={selectedYear !== currentYear || !!unpaidFilterMonth}
+                            active={
+                                selectedYear !== currentYear ||
+                                !!unpaidFilterMonth
+                            }
                             onClearAll={clearAll}
                             filters={[
                                 {
@@ -880,7 +919,10 @@ return;
                                         searchValue={search}
                                         onSearchChange={handleSearch}
                                         activeFilterCount={activeFilterCount}
-                                        active={selectedYear !== currentYear || !!unpaidFilterMonth}
+                                        active={
+                                            selectedYear !== currentYear ||
+                                            !!unpaidFilterMonth
+                                        }
                                         onClearAll={clearAll}
                                         filters={[
                                             {
@@ -897,13 +939,15 @@ return;
                                             },
                                             {
                                                 id: 'unpaidMonth',
-                                                placeholder: t('fees.unpaid_filter'),
+                                                placeholder:
+                                                    t('fees.unpaid_filter'),
                                                 value: unpaidFilterMonth,
                                                 options: months.map((m) => ({
                                                     label: monthNames[m],
                                                     value: String(m),
                                                 })),
-                                                onValueChange: setUnpaidFilterMonth,
+                                                onValueChange:
+                                                    setUnpaidFilterMonth,
                                             },
                                         ]}
                                     />
@@ -942,13 +986,18 @@ return;
             </Sheet>
 
             <Sheet open={receiptSheetOpen} onOpenChange={setReceiptSheetOpen}>
-                <SheetContent className="sm:max-w-2xl overflow-y-auto" side="right">
+                <SheetContent
+                    className="overflow-y-auto sm:max-w-2xl"
+                    side="right"
+                >
                     <SheetHeader>
                         <SheetTitle>{t('fees.generate_receipt')}</SheetTitle>
-                        <SheetDescription>{t('fees.receipt_desc')}</SheetDescription>
+                        <SheetDescription>
+                            {t('fees.receipt_desc')}
+                        </SheetDescription>
                     </SheetHeader>
 
-                    <div className="grid gap-4 py-4 px-4">
+                    <div className="grid gap-4 px-4 py-4">
                         <div className="grid gap-2">
                             <Label>{t('fees.student')}</Label>
                             <Input
@@ -958,10 +1007,7 @@ return;
                         </div>
                         <div className="grid gap-2">
                             <Label>{t('fees.batch')}</Label>
-                            <Input
-                                value={receiptBatch?.name || ''}
-                                disabled
-                            />
+                            <Input value={receiptBatch?.name || ''} disabled />
                         </div>
                         <div className="grid gap-2">
                             <Label>{t('fees.month')}</Label>
@@ -996,7 +1042,9 @@ return;
                             onClick={handleGenerateReceipt}
                             disabled={receiptProcessing}
                         >
-                            {receiptProcessing ? t('actions.processing') : t('actions.create')}
+                            {receiptProcessing
+                                ? t('actions.saving')
+                                : t('actions.create')}
                         </Button>
                     </SheetFooter>
                 </SheetContent>

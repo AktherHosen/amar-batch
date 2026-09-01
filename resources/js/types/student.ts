@@ -18,6 +18,7 @@ export type Student = {
     created_at: string;
     updated_at: string;
     parents_count?: number;
+    has_parent?: boolean;
     enrollments?: Array<{
         id: number;
         batch: { id: number; name: string; subject: string | null };
