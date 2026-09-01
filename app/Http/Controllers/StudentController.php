@@ -153,7 +153,6 @@ class StudentController extends Controller
         ]);
 
         $student->loadCount('parents');
-        $student->has_parent = $student->parents()->exists();
 
         $attendanceSummary = Attendance::where('student_id', $student->id)
             ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')
@@ -178,6 +177,7 @@ class StudentController extends Controller
     {
         $this->authorize('update', $student);
 
+        $student->loadCount('parents');
         $coachingClasses = CoachingClass::where('tenant_id', app('tenant_id'))->orderBy('name')->get();
 
         return Inertia::render('students/edit', [
@@ -254,12 +254,12 @@ class StudentController extends Controller
 
         $status = $request->input('status');
 
-        if (! in_array($status, ['active', 'inactive'])) {
+        if (! in_array($status, ['active', 'inactive', 'paused'])) {
             abort(422);
         }
 
         // Check plan limit when reactivating a student
-        if ($status === 'active') {
+        if ($status === 'active' && $student->status !== 'active') {
             $planLimits = new PlanLimitsPolicy;
             if (! $planLimits->createStudent($request->user())) {
                 return to_route('subscription.index')->with('toast', [
@@ -269,16 +269,30 @@ class StudentController extends Controller
             }
         }
 
-        $student->update([
-            'status' => $status,
-            'left_at' => $status === 'inactive' ? now() : null,
-        ]);
+        $updateData = ['status' => $status];
+
+        if ($status === 'paused') {
+            $updateData['paused_at'] = now();
+            $updateData['left_at'] = null;
+        } elseif ($status === 'active') {
+            $updateData['paused_at'] = null;
+            $updateData['left_at'] = null;
+        } elseif ($status === 'inactive') {
+            $updateData['paused_at'] = null;
+            $updateData['left_at'] = now();
+        }
+
+        $student->update($updateData);
+
+        $message = match ($status) {
+            'paused' => 'Student paused successfully.',
+            'active' => 'Student resumed successfully.',
+            default => 'Student deactivated successfully.',
+        };
 
         return back()->with('toast', [
             'type' => 'success',
-            'message' => $status === 'active'
-                ? 'Student activated successfully.'
-                : 'Student deactivated successfully.',
+            'message' => $message,
         ]);
     }
 

@@ -902,6 +902,7 @@ export default function FeesIndex({
                                 loading={refreshing}
                                 currentPage={1}
                                 lastPage={1}
+                                storageKey="fees-grid"
                                 total={filteredFeeGrid.length}
                                 itemName={t('fees.title').toLowerCase()}
                                 baseUrl={fees.index.url()}
@@ -972,16 +973,32 @@ export default function FeesIndex({
             </div>
 
             <Sheet open={createSheetOpen} onOpenChange={setCreateSheetOpen}>
-                <SheetContent className="sm:max-w-md">
+                <SheetContent className="sm:max-w-2xl overflow-y-auto">
                     <SheetHeader>
                         <SheetTitle>{t('fees.create')}</SheetTitle>
                     </SheetHeader>
-                    <FeeForm
-                        students={students}
-                        batches={batches}
-                        enrollments={enrollments}
-                        onCancel={() => setCreateSheetOpen(false)}
-                    />
+                    <div className="px-4 pb-4">
+                        <FeeForm
+                            students={students}
+                            batches={batches}
+                            enrollments={enrollments}
+                            onCancel={() => setCreateSheetOpen(false)}
+                            onSuccess={() => setCreateSheetOpen(false)}
+                            hideActions
+                        />
+                    </div>
+                    <SheetFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setCreateSheetOpen(false)}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button type="submit" form="fee-form">
+                            {t('actions.create')}
+                        </Button>
+                    </SheetFooter>
                 </SheetContent>
             </Sheet>
 
@@ -997,19 +1014,19 @@ export default function FeesIndex({
                         </SheetDescription>
                     </SheetHeader>
 
-                    <div className="grid gap-4 px-4 py-4">
-                        <div className="grid gap-2">
+                    <div className="space-y-4 px-4 pb-4">
+                        <div className="space-y-2">
                             <Label>{t('fees.student')}</Label>
                             <Input
                                 value={receiptStudent?.name || ''}
                                 disabled
                             />
                         </div>
-                        <div className="grid gap-2">
+                        <div className="space-y-2">
                             <Label>{t('fees.batch')}</Label>
                             <Input value={receiptBatch?.name || ''} disabled />
                         </div>
-                        <div className="grid gap-2">
+                        <div className="space-y-2">
                             <Label>{t('fees.month')}</Label>
                             <Select
                                 value={receiptMonth}

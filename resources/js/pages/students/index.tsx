@@ -283,7 +283,7 @@ export default function StudentsIndex({
                         return (
                             <Badge
                                 variant={
-                                    s.status === 'active' ? 'default' : 'danger'
+                                    s.status === 'active' ? 'default' : s.status === 'paused' ? 'warning' : 'danger'
                                 }
                             >
                                 {s.status}
@@ -306,6 +306,12 @@ export default function StudentsIndex({
                                     <span className="flex items-center gap-2">
                                         <span className="size-2 rounded-full bg-green-600" />
                                         {t('students.active')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="paused">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-yellow-500" />
+                                        {t('students.paused')}
                                     </span>
                                 </SelectItem>
                                 <SelectItem value="inactive">
@@ -464,6 +470,10 @@ export default function StudentsIndex({
                                                     value: 'active',
                                                 },
                                                 {
+                                                    label: t('students.paused'),
+                                                    value: 'paused',
+                                                },
+                                                {
                                                     label: t(
                                                         'students.inactive',
                                                     ),
@@ -512,6 +522,7 @@ export default function StudentsIndex({
                                             onSuccess: () => {
                                                 setSheetOpen(false);
                                                 toast.success(t('toast.updated_successfully'));
+                                                router.reload({ only: ['students', 'coachingClasses'] });
                                             },
                                         },
                                     );
@@ -522,6 +533,7 @@ export default function StudentsIndex({
                                         onSuccess: () => {
                                             setSheetOpen(false);
                                             toast.success(t('toast.created_successfully'));
+                                            router.reload({ only: ['students', 'coachingClasses'] });
                                         },
                                     });
                                 }

@@ -68,9 +68,7 @@ class FeeStatusController extends Controller
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->orderBy('name')
-            ->take(500)
             ->get();
-        $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $months = range(1, 12);
         $monthNames = [
@@ -79,19 +77,37 @@ class FeeStatusController extends Controller
             9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
         ];
 
+        $activeEnrollments = Enrollment::where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->with('student.coachingClass', 'batch')
+            ->get();
+
         /** @var array<string, array{student: Student, batch: Batch, enrolled_at: string|null, months: array<int, FeeStatus>}> $grid */
         $grid = [];
+        foreach ($activeEnrollments as $enrollment) {
+            $student = $enrollment->student;
+            if (! $student || $student->status !== 'active') {
+                continue;
+            }
+            $key = "{$enrollment->student_id}_{$enrollment->batch_id}";
+            $enrolledAt = $student->joined_at
+                ? Carbon::parse($student->joined_at)->format('Y-m-d')
+                : $enrollment->enrolled_at?->format('Y-m-d');
+
+            $grid[$key] = [
+                'student' => $student,
+                'batch' => $enrollment->batch,
+                'enrolled_at' => $enrolledAt,
+                'months' => [],
+            ];
+        }
+
         foreach ($feeStatuses as $fee) {
             $key = "{$fee->student_id}_{$fee->batch_id}";
             if (! isset($grid[$key])) {
-                $enrollment = Enrollment::where('student_id', $fee->student_id)
-                    ->where('batch_id', $fee->batch_id)
-                    ->where('status', 'active')
-                    ->first();
-
                 $enrolledAt = $fee->student->joined_at
                     ? Carbon::parse($fee->student->joined_at)->format('Y-m-d')
-                    : ($enrollment?->created_at?->format('Y-m-d') ?? null);
+                    : null;
 
                 $grid[$key] = [
                     'student' => $fee->student,
@@ -103,16 +119,15 @@ class FeeStatusController extends Controller
             $grid[$key]['months'][$fee->month] = $fee;
         }
 
-        $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
-        $enrollments = Enrollment::where('tenant_id', $tenantId)->where('status', 'active')
-            ->with('student', 'batch')
-            ->get()
-            ->map(fn ($e) => [
-                'student' => $e->student,
-                'batch' => $e->batch,
-                'enrolled_at' => $e->enrolled_at,
-            ]);
+
+        $enrollments = $activeEnrollments->map(fn (Enrollment $e): array => [
+            'student' => $e->student,
+            'batch' => $e->batch,
+            'enrolled_at' => $e->student->joined_at
+                ? Carbon::parse($e->student->joined_at)->format('Y-m-d')
+                : $e->enrolled_at?->format('Y-m-d'),
+        ]);
 
         return Inertia::render('fees/index', [
             'feeGrid' => array_values($grid),

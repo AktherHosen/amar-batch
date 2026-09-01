@@ -55,6 +55,8 @@ type FeeFormProps = {
     enrollments: Enrollment[];
     isEdit?: boolean;
     onCancel?: () => void;
+    onSuccess?: () => void;
+    hideActions?: boolean;
 };
 
 const MONTH_NAMES = [
@@ -80,6 +82,8 @@ export default function FeeForm({
     enrollments,
     isEdit = false,
     onCancel,
+    onSuccess,
+    hideActions = false,
 }: FeeFormProps) {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
@@ -134,15 +138,21 @@ export default function FeeForm({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        const options = {
+            onSuccess: () => {
+                onSuccess?.();
+            },
+        };
+
         if (isEdit && fee?.id) {
-            put(`/fees/${fee.id}`);
+            put(`/fees/${fee.id}`, options);
         } else {
-            post('/fees');
+            post('/fees', options);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="fee-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="student_id">Student *</Label>
@@ -255,13 +265,15 @@ export default function FeeForm({
                 <InputError message={errors.notes} />
             </div>
 
-            <div className="flex justify-end gap-2">
-                <FormActions
-                    cancelHref={fees.index().url}
-                    onCancel={onCancel}
-                    processing={processing}
-                />
-            </div>
+            {!hideActions && (
+                <div className="flex justify-end gap-2">
+                    <FormActions
+                        cancelHref={fees.index().url}
+                        onCancel={onCancel}
+                        processing={processing}
+                    />
+                </div>
+            )}
         </form>
     );
 }

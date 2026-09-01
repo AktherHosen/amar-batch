@@ -39,11 +39,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { useLocale } from '@/contexts/locale-context';
 import { isOwner, isStaff } from '@/lib/role';
 import attendance from '@/routes/attendance';
@@ -59,7 +54,6 @@ type AttendanceRecord = {
     batch: { id: number; name: string };
     date: string;
     status: 'present' | 'absent' | 'late';
-    notes: string | null;
 };
 
 type Batch = {
@@ -105,11 +99,10 @@ export default function AttendanceIndex({
         item: AttendanceRecord | null;
     }>({ open: false, item: null });
     const [editStatus, setEditStatus] = useState<'present' | 'absent' | 'late'>('present');
-    const [editNotes, setEditNotes] = useState('');
     const [createSheet, setCreateSheet] = useState(false);
     const [createBatchId, setCreateBatchId] = useState('');
     const [createDate, setCreateDate] = useState(new Date().toISOString().split('T')[0]);
-    const [createStudents, setCreateStudents] = useState<{ id: number; name: string; status: 'present' | 'absent' | 'late' | null; notes: string }[]>([]);
+    const [createStudents, setCreateStudents] = useState<{ id: number; name: string; status: 'present' | 'absent' | 'late' | null }[]>([]);
     const [createLoading, setCreateLoading] = useState(false);
     const [localBatches, setLocalBatches] = useState<Batch[]>(batches);
     const [batchModalOpen, setBatchModalOpen] = useState(false);
@@ -167,7 +160,6 @@ export default function AttendanceIndex({
     const handleEdit = (record: AttendanceRecord) => {
         setEditSheet({ open: true, item: record });
         setEditStatus(record.status);
-        setEditNotes(record.notes || '');
     };
 
     const handleEditSubmit = () => {
@@ -177,7 +169,7 @@ export default function AttendanceIndex({
 
         router.put(
             attendance.update(editSheet.item.id),
-            { status: editStatus, notes: editNotes || null },
+            { status: editStatus },
             {
                 preserveState: true,
                 onSuccess: () => {
@@ -249,7 +241,6 @@ export default function AttendanceIndex({
             attendances: createStudents.map((s) => ({
                 student_id: s.id,
                 status: s.status,
-                notes: s.notes || null,
             })),
         }, {
             preserveState: true,
@@ -330,7 +321,7 @@ export default function AttendanceIndex({
 
         router.put(
             attendance.update(record.id),
-            { status: value, notes: record.notes },
+            { status: value },
             {
                 preserveState: true,
                 onSuccess: () => {
@@ -429,7 +420,7 @@ export default function AttendanceIndex({
                                 handleStatusChange(record, value)
                             }
                         >
-                            <SelectTrigger className="h-8 w-auto min-w-[7rem] capitalize">
+                            <SelectTrigger className="h-8 w-auto min-w-[5.5rem] capitalize">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -453,30 +444,6 @@ export default function AttendanceIndex({
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                    );
-                },
-            } as Col,
-            {
-                id: 'notes',
-                accessorKey: 'notes',
-                header: t('attendance.notes'),
-                enableSorting: false,
-                cell: ({ row }: any) => {
-                    const notes = row.original.notes;
-
-                    if (!notes) {
-return '-';
-}
-
-                    return (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="block max-w-[200px] cursor-default truncate">
-                                    {notes}
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent>{notes}</TooltipContent>
-                        </Tooltip>
                     );
                 },
             } as Col,
@@ -562,14 +529,12 @@ return '-';
                                     t('batches.name'),
                                     t('attendance.date'),
                                     t('attendance.status'),
-                                    t('attendance.notes'),
                                 ]}
                                 exportRows={pagination.data.map((a) => [
                                     a.student.name,
                                     a.batch.name,
                                     a.date ? formatDate(a.date) : '',
                                     a.status,
-                                    a.notes || '',
                                 ])}
                                 importUrl="/attendance/import"
                                 importFields={[
@@ -577,7 +542,6 @@ return '-';
                                     'batch_id',
                                     'date',
                                     'status',
-                                    'notes',
                                 ]}
                                 onImportSuccess={() =>
                                     router.reload({ only: ['attendances'] })
@@ -924,14 +888,7 @@ return '-';
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label>Notes</Label>
-                            <Input
-                                placeholder="Optional notes..."
-                                value={editNotes}
-                                onChange={(e) => setEditNotes(e.target.value)}
-                            />
-                        </div>
+
                     </div>
                 )}
             </FormSheet>

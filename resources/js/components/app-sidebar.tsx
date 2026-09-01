@@ -83,6 +83,7 @@ export function AppSidebar() {
     const hasReports = useHasFeature('reports');
     const hasMultiBranch = useHasFeature('multi_branch');
     const hasApiAccess = useHasFeature('api_access');
+    const hasSmsNotifications = useHasFeature('sms_notifications');
     const permissions = usePermissions();
 
     const hasPermission = (route: string): boolean => {
@@ -126,8 +127,12 @@ return false;
 }
 
         if (item.featureRequired === 'api_access' && !hasApiAccess) {
-return false;
-}
+            return false;
+        }
+
+        if (item.featureRequired === 'sms_notifications' && !hasSmsNotifications) {
+            return false;
+        }
 
         if (item.permission && !hasPermission(item.permission)) {
 return false;
@@ -376,21 +381,21 @@ return false;
                         {
                             title: 'Send SMS',
                             href: '/sms/send',
-                            permission: 'notices.index',
+                            permission: 'sms.send',
                             featureRequired: 'sms_notifications',
                             icon: Send,
                         },
                         {
                             title: 'SMS Logs',
                             href: '/sms/logs',
-                            permission: 'notices.index',
+                            permission: 'sms.logs',
                             featureRequired: 'sms_notifications',
                             icon: MessageSquare,
                         },
                         {
                             title: 'SMS Settings',
                             href: '/sms/settings',
-                            ownerOnly: true,
+                            permission: 'sms.settings',
                             featureRequired: 'sms_notifications',
                             icon: Settings,
                         },

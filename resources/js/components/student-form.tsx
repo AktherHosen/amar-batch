@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import {
     Camera,
     X,
@@ -12,7 +12,7 @@ import {
     Loader2,
     LogIn,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { FormActions } from '@/components/form-actions';
 import InputError from '@/components/input-error';
@@ -120,6 +120,10 @@ export default function StudentForm({
     const [classErrors, setClassErrors] = useState<Record<string, string>>({});
     const [classes, setClasses] = useState(coachingClasses);
 
+    useEffect(() => {
+        setClasses(coachingClasses);
+    }, [coachingClasses]);
+
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
 
@@ -223,6 +227,7 @@ export default function StudentForm({
             setNewClassFee('');
             setClassModalOpen(false);
             toast.success(resData.message || 'Class created successfully.');
+            router.reload({ only: ['coachingClasses'] });
         } catch (err: any) {
             toast.error(err?.message || 'An error occurred while creating class.');
         } finally {
@@ -510,7 +515,7 @@ export default function StudentForm({
                             onValueChange={(value) =>
                                 setData(
                                     'status',
-                                    value as 'active' | 'inactive',
+                                    value as 'active' | 'inactive' | 'paused',
                                 )
                             }
                         >
@@ -520,6 +525,9 @@ export default function StudentForm({
                             <SelectContent>
                                 <SelectItem value="active">
                                     {t('students.active')}
+                                </SelectItem>
+                                <SelectItem value="paused">
+                                    {t('students.paused')}
                                 </SelectItem>
                                 <SelectItem value="inactive">
                                     {t('students.inactive')}
@@ -599,7 +607,7 @@ export default function StudentForm({
                     </div>
                 </div>
 
-                {!student?.parents_count && (
+                {!student?.parents_count && student?.parents_count !== 0 && (
                     <div className="rounded-lg border p-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">

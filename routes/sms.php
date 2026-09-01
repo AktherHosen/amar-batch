@@ -3,7 +3,7 @@
 use App\Http\Controllers\SmsController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('sms')->name('sms.')->group(function () {
+Route::prefix('sms')->name('sms.')->middleware(['plan.feature:sms_notifications'])->group(function () {
     Route::get('settings', [SmsController::class, 'settings'])->name('settings');
     Route::post('settings', [SmsController::class, 'updateSettings'])->name('settings.update');
     Route::post('schedules', [SmsController::class, 'updateSchedules'])->name('schedules.update');

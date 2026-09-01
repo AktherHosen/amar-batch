@@ -44,6 +44,7 @@ $middleware->alias([
             'teacher.approved' => CheckTeacherApproval::class,
             'onboarding' => OnboardingMiddleware::class,
             'block.superadmin' => BlockSuperAdmin::class,
+            'plan.feature' => \App\Http\Middleware\CheckPlanFeature::class,
         ]);
     })
     ->withSchedule(function ($schedule) {

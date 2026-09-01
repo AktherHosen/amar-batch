@@ -15,7 +15,7 @@ class Enrollment extends Model
     /** @use HasFactory<EnrollmentFactory> */
     use BelongsToBranch, BelongsToTenant, HasFactory;
 
-    protected $fillable = ['tenant_id', 'student_id', 'batch_id', 'enrolled_at', 'status', 'paused_at', 'resumed_at'];
+    protected $fillable = ['tenant_id', 'student_id', 'batch_id', 'enrolled_at', 'status', 'paused_at', 'resumed_at', 'notes'];
 
     protected function casts(): array
     {
