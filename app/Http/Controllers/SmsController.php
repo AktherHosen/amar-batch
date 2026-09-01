@@ -7,7 +7,7 @@ use App\Models\SmsLog;
 use App\Models\SmsSetting;
 use App\Models\Student;
 use App\Services\SmsService;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
@@ -35,7 +35,7 @@ class SmsController extends Controller
         ]);
     }
 
-    public function updateSettings(Request $request): JsonResponse
+    public function updateSettings(Request $request): RedirectResponse
     {
         if (! $request->user()->isAdmin()) {
             abort(403);
@@ -55,10 +55,10 @@ class SmsController extends Controller
             $validated,
         );
 
-        return response()->json(['success' => true]);
+        return back()->with('toast', ['type' => 'success', 'message' => 'SMS settings saved successfully.']);
     }
 
-    public function updateSchedules(Request $request): JsonResponse
+    public function updateSchedules(Request $request): RedirectResponse
     {
         if (! $request->user()->isAdmin()) {
             abort(403);
@@ -81,7 +81,7 @@ class SmsController extends Controller
             );
         }
 
-        return response()->json(['success' => true]);
+        return back()->with('toast', ['type' => 'success', 'message' => 'Notification schedules saved successfully.']);
     }
 
     public function sendPage(): Response
@@ -105,7 +105,7 @@ class SmsController extends Controller
         ]);
     }
 
-    public function send(Request $request): JsonResponse
+    public function send(Request $request): RedirectResponse
     {
         if (! $request->user()->isAdmin()) {
             abort(403);
@@ -121,7 +121,7 @@ class SmsController extends Controller
         $sms = new SmsService($tenantId);
 
         if (! $sms->isAvailable()) {
-            return response()->json(['error' => 'SMS service is not configured or disabled. Please configure it in SMS Settings.'], 422);
+            return back()->with('toast', ['type' => 'error', 'message' => 'SMS service is not configured or disabled. Please configure it in SMS Settings.']);
         }
 
         $logs = $sms->sendBulk(
@@ -134,11 +134,9 @@ class SmsController extends Controller
         $sent = collect($logs)->where('status', 'sent')->count();
         $failed = collect($logs)->where('status', 'failed')->count();
 
-        return response()->json([
-            'success' => true,
-            'sent' => $sent,
-            'failed' => $failed,
-            'total' => count($logs),
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => "SMS sent: {$sent} delivered, {$failed} failed.",
         ]);
     }
 

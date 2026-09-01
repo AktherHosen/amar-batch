@@ -84,13 +84,9 @@ export default function SmsSend({ students }: PageProps) {
         }
 
         post('/sms/send', {
-            onSuccess: (page) => {
-                const props = page.props as any;
-                if (props.sent !== undefined) {
-                    toast.success(`SMS sent: ${props.sent} delivered, ${props.failed} failed`);
-                    reset();
-                    setSelectedStudents([]);
-                }
+            onSuccess: () => {
+                reset();
+                setSelectedStudents([]);
             },
         });
     };
