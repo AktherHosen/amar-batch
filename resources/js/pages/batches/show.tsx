@@ -4,7 +4,9 @@ import {
     CheckCircle2,
     Download,
     EllipsisVertical,
+    Pause,
     PenLine,
+    Play,
     Trash2,
     UserMinus,
     UserX,
@@ -25,6 +27,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     Sheet,
@@ -65,6 +75,8 @@ type Enrollment = {
     student: Student;
     status: string;
     enrolled_at: string;
+    paused_at: string | null;
+    resumed_at: string | null;
 };
 
 type BatchHistory = {
@@ -131,6 +143,22 @@ export default function BatchesShow({
         open: boolean;
         enrollmentId: number | null;
     }>({ open: false, enrollmentId: null });
+    const [statusDialog, setStatusDialog] = useState<{
+        open: boolean;
+        enrollmentId: number | null;
+        action: 'paused' | 'resumed' | 'active' | null;
+        date: string;
+        notes: string;
+    }>({
+        open: false,
+        enrollmentId: null,
+        action: null,
+        date: new Date().toISOString().split('T')[0],
+        notes: '',
+    });
+
+    const activeEnrollments = batch.enrollments.filter((e) => e.status === 'active');
+    const activeCount = activeEnrollments.length;
 
     const handleDelete = () => {
         setDeleteDialog(true);
@@ -218,14 +246,54 @@ export default function BatchesShow({
     const handleUpdateEnrollmentStatus = (
         enrollmentId: number,
         status: string,
+        date?: string,
+        notes?: string,
     ) => {
-        router.put(
-            `/enrollments/${enrollmentId}`,
-            { status },
-            {
-                preserveScroll: true,
-            },
-        );
+        const payload: Record<string, string> = { status };
+        if (date) {
+            if (status === 'paused') {
+                payload.paused_at = date;
+            } else if (status === 'resumed' || status === 'active') {
+                payload.resumed_at = date;
+            }
+        }
+        if (notes) {
+            payload.notes = notes;
+        }
+        router.put(`/enrollments/${enrollmentId}`, payload, {
+            preserveScroll: true,
+        });
+    };
+
+    const openStatusDialog = (
+        enrollmentId: number,
+        action: 'paused' | 'resumed' | 'active',
+    ) => {
+        setStatusDialog({
+            open: true,
+            enrollmentId,
+            action,
+            date: new Date().toISOString().split('T')[0],
+            notes: '',
+        });
+    };
+
+    const confirmStatusChange = () => {
+        if (statusDialog.enrollmentId && statusDialog.action) {
+            handleUpdateEnrollmentStatus(
+                statusDialog.enrollmentId,
+                statusDialog.action,
+                statusDialog.date,
+                statusDialog.notes,
+            );
+            setStatusDialog({
+                open: false,
+                enrollmentId: null,
+                action: null,
+                date: new Date().toISOString().split('T')[0],
+                notes: '',
+            });
+        }
     };
 
     const handleUnenroll = (enrollmentId: number) => {
@@ -252,6 +320,7 @@ export default function BatchesShow({
             active: 'default',
             completed: 'success',
             dropped: 'danger',
+            paused: 'secondary',
         };
 
         return variants[status] || 'secondary';
@@ -432,6 +501,17 @@ export default function BatchesShow({
                                     <>
                                         <DropdownMenuItem
                                             onClick={() =>
+                                                openStatusDialog(
+                                                    enrollment.id,
+                                                    'paused',
+                                                )
+                                            }
+                                        >
+                                            <Pause className="mr-2 size-4" />
+                                            {t('actions.pause') ?? 'Pause'}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() =>
                                                 handleUpdateEnrollmentStatus(
                                                     enrollment.id,
                                                     'completed',
@@ -453,6 +533,19 @@ export default function BatchesShow({
                                             {t('batches.drop')}
                                         </DropdownMenuItem>
                                     </>
+                                )}
+                                {enrollment.status === 'paused' && (
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            openStatusDialog(
+                                                enrollment.id,
+                                                'active',
+                                            )
+                                        }
+                                    >
+                                        <Play className="mr-2 size-4" />
+                                        {t('actions.resume') ?? 'Resume'}
+                                    </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem
                                     onClick={() =>
@@ -645,7 +738,7 @@ export default function BatchesShow({
                                         <p className="text-sm font-medium">
                                             {batch.capacity}
                                         </p>
-                                        {batch.enrollments.length >
+                                        {activeCount >
                                             batch.capacity && (
                                             <Badge
                                                 variant="destructive"
@@ -662,23 +755,22 @@ export default function BatchesShow({
                                     </p>
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm font-medium">
-                                            {batch.enrollments.length}/
+                                            {activeCount}/
                                             {batch.capacity}
                                         </p>
                                         <div className="h-2 w-16 overflow-hidden rounded-full bg-muted">
                                             <div
                                                 className={`h-full rounded-full ${
-                                                    batch.enrollments.length >=
+                                                    activeCount >=
                                                     batch.capacity
                                                         ? 'bg-red-500'
-                                                        : batch.enrollments
-                                                                .length >=
+                                                        : activeCount >=
                                                             batch.capacity * 0.8
                                                           ? 'bg-yellow-500'
                                                           : 'bg-green-500'
                                                 }`}
                                                 style={{
-                                                    width: `${Math.min((batch.enrollments.length / batch.capacity) * 100, 100)}%`,
+                                                    width: `${Math.min((activeCount / batch.capacity) * 100, 100)}%`,
                                                 }}
                                             />
                                         </div>
@@ -955,7 +1047,7 @@ export default function BatchesShow({
                 <Card>
                     <CardHeader>
                         <CardTitle>
-                            {t('batches.enrolled')} ({batch.enrollments.length})
+                            {t('batches.enrolled')} ({activeCount} active / {batch.enrollments.length} total)
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -1107,6 +1199,76 @@ export default function BatchesShow({
                 variant="destructive"
                 onConfirm={confirmUnenroll}
             />
+
+            <Dialog
+                open={statusDialog.open}
+                onOpenChange={(open) =>
+                    setStatusDialog((prev) => ({ ...prev, open }))
+                }
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {statusDialog.action === 'paused'
+                                ? (t('actions.pause') ?? 'Pause Enrollment')
+                                : (t('actions.resume') ?? 'Resume Enrollment')}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {statusDialog.action === 'paused'
+                                ? 'Set the date when this student paused their enrollment.'
+                                : 'Set the date when this student resumed their enrollment.'}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">
+                                {statusDialog.action === 'paused'
+                                    ? 'Pause Date'
+                                    : 'Resume Date'}
+                            </label>
+                            <input
+                                type="date"
+                                value={statusDialog.date}
+                                onChange={(e) =>
+                                    setStatusDialog((prev) => ({
+                                        ...prev,
+                                        date: e.target.value,
+                                    }))
+                                }
+                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Notes (optional)</label>
+                            <textarea
+                                value={statusDialog.notes}
+                                onChange={(e) =>
+                                    setStatusDialog((prev) => ({
+                                        ...prev,
+                                        notes: e.target.value,
+                                    }))
+                                }
+                                placeholder="Reason for pause/resume..."
+                                rows={3}
+                                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                setStatusDialog((prev) => ({ ...prev, open: false }))
+                            }
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button onClick={confirmStatusChange}>
+                            {t('actions.save')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

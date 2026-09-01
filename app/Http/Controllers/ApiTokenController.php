@@ -44,7 +44,7 @@ class ApiTokenController extends Controller
 
         $token = $request->user()->createToken(
             $validated['name'],
-            ['tenant:' . $request->user()->tenant_id]
+            ['tenant:' . app('tenant_id')]
         );
 
         return response()->json([

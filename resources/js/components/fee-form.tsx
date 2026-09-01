@@ -54,6 +54,9 @@ type FeeFormProps = {
     batches: Batch[];
     enrollments: Enrollment[];
     isEdit?: boolean;
+    onCancel?: () => void;
+    onSuccess?: () => void;
+    hideActions?: boolean;
 };
 
 const MONTH_NAMES = [
@@ -78,6 +81,9 @@ export default function FeeForm({
     batches,
     enrollments,
     isEdit = false,
+    onCancel,
+    onSuccess,
+    hideActions = false,
 }: FeeFormProps) {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
@@ -112,6 +118,30 @@ export default function FeeForm({
         return enrollments.find((e) => e.student.id.toString() === studentId);
     };
 
+    const calculateExpectedFee = (): number | null => {
+        if (!data.student_id || !data.month || !data.year) {
+            return null;
+        }
+
+        const enrollment = getEnrollmentForStudent(data.student_id);
+        if (!enrollment?.student?.coaching_class) {
+            return null;
+        }
+
+        const defaultFee = enrollment.student.coaching_class.default_fee ?? 0;
+        const enrolledAt = enrollment.enrolled_at ? new Date(enrollment.enrolled_at) : null;
+        const selectedMonth = parseInt(data.month);
+        const selectedYear = parseInt(data.year);
+
+        if (enrolledAt && enrolledAt.getDate() > 15 && enrolledAt.getMonth() + 1 === selectedMonth && enrolledAt.getFullYear() === selectedYear) {
+            return Math.round((defaultFee / 2) * 100) / 100;
+        }
+
+        return defaultFee;
+    };
+
+    const expectedFee = calculateExpectedFee();
+
     const handleStudentChange = (v: string) => {
         setData('student_id', v);
         const enrollment = getEnrollmentForStudent(v);
@@ -132,15 +162,21 @@ export default function FeeForm({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        const options = {
+            onSuccess: () => {
+                onSuccess?.();
+            },
+        };
+
         if (isEdit && fee?.id) {
-            put(`/fees/${fee.id}`);
+            put(`/fees/${fee.id}`, options);
         } else {
-            post('/fees');
+            post('/fees', options);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="fee-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="student_id">Student *</Label>
@@ -238,6 +274,14 @@ export default function FeeForm({
                         onChange={(e) => setData('amount_paid', e.target.value)}
                         placeholder="Enter amount"
                     />
+                    {expectedFee !== null && (
+                        <p className="text-xs text-muted-foreground">
+                            Expected: ৳{expectedFee.toFixed(2)}
+                            {expectedFee < (getEnrollmentForStudent(data.student_id)?.student?.coaching_class?.default_fee ?? 0) && (
+                                <span className="ml-1 text-amber-600">(Half-month rate)</span>
+                            )}
+                        </p>
+                    )}
                     <InputError message={errors.amount_paid} />
                 </div>
             </div>
@@ -253,12 +297,15 @@ export default function FeeForm({
                 <InputError message={errors.notes} />
             </div>
 
-            <div className="flex justify-end gap-2">
-                <FormActions
-                    cancelHref={fees.index().url}
-                    processing={processing}
-                />
-            </div>
+            {!hideActions && (
+                <div className="flex justify-end gap-2">
+                    <FormActions
+                        cancelHref={fees.index().url}
+                        onCancel={onCancel}
+                        processing={processing}
+                    />
+                </div>
+            )}
         </form>
     );
 }

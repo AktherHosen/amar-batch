@@ -75,6 +75,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.exams': 'পরীক্ষা',
         'nav.reports': 'রিপোর্ট',
         'nav.branches': 'ব্রাঞ্চ',
+        'nav.sms': 'এসএমএস',
         'nav.roles': 'রোল ও অনুমতি',
         'nav.coaching_center': 'কোচিং সেন্টার',
         'nav.api_settings': 'API সেটিংস',
@@ -91,8 +92,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.profile': 'প্রোফাইল',
         'nav.security': 'নিরাপত্তা',
         'nav.appearance': 'চেহারা',
-            'nav.api_access': 'API অ্যাক্সেস',
-            'nav.upgrade': 'আপগ্রেড',
+        'nav.api_access': 'API অ্যাক্সেস',
+        'nav.upgrade': 'আপগ্রেড',
 
         // Dashboard
         'dashboard.title': 'ড্যাশবোর্ড',
@@ -140,7 +141,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'dashboard.charts': 'পরিসংখ্যান',
         'dashboard.recent_activity': 'সাম্প্রতিক কার্যক্রম',
         'dashboard.no_recent_activity': 'সাম্প্রতিক কোনো কার্যক্রম নেই',
-        'dashboard.no_recent_activity_desc': 'আপনার কোচিং সেন্টার পরিচালনা করার সাথে সাথে কার্যক্রম এখানে দেখা যাবে',
+        'dashboard.no_recent_activity_desc':
+            'আপনার কোচিং সেন্টার পরিচালনা করার সাথে সাথে কার্যক্রম এখানে দেখা যাবে',
         'dashboard.pending_approvals': 'অনুমোদন অপেক্ষমাণ',
         'dashboard.teacher_waiting': 'শিক্ষক অনুমোদনের জন্য অপেক্ষা করছেন',
         'dashboard.teachers_waiting': 'শিক্ষক অনুমোদনের জন্য অপেক্ষা করছেন',
@@ -177,6 +179,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'students.female': 'মহিলা',
         'students.other': 'অন্যান্য',
         'students.active': 'চলমান',
+        'students.paused': 'বিরতিত',
         'students.inactive': 'নিষ্ক্রিয়',
         'students.all_status': 'সব অবস্থা',
         'students.deleted': 'স্টুডেন্ট সফলভাবে মুছে ফেলা হয়েছে',
@@ -302,12 +305,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'roles.created': 'রোল সফলভাবে তৈরি হয়েছে',
         'roles.updated': 'রোল সফলভাবে আপডেট হয়েছে',
         'roles.saving': 'সংরক্ষণ হচ্ছে...',
-        'roles.description': 'রোল এবং প্রতিটি রোলের অ্যাক্সেসযোগ্য রুট পরিচালনা করুন।',
+        'roles.description':
+            'রোল এবং প্রতিটি রোলের অ্যাক্সেসযোগ্য রুট পরিচালনা করুন।',
         'roles.new_role': 'নতুন রোল',
         'roles.search': 'রোল অনুসন্ধান...',
         'roles.no_roles': 'কোনো রোল পাওয়া যায়নি।',
         'roles.delete_title': 'রোল মুছুন',
-        'roles.delete_confirm': 'আপনি কি নিশ্চিত "{name}" রোলটি মুছে ফেলতে চান? এই রোলে নির্ধারিত ব্যবহারকারীরা আর সীমিত বৈশিষ্ট্যগুলো অ্যাক্সেস করতে পারবেন না।',
+        'roles.delete_confirm':
+            'আপনি কি নিশ্চিত "{name}" রোলটি মুছে ফেলতে চান? এই রোলে নির্ধারিত ব্যবহারকারীরা আর সীমিত বৈশিষ্ট্যগুলো অ্যাক্সেস করতে পারবেন না।',
         'roles.name': 'রোলের নাম *',
         'roles.name_placeholder': 'যেমন শিক্ষক',
         'roles.slug': 'স্লাগ *',
@@ -315,8 +320,10 @@ export const translations: Record<Locale, Record<string, string>> = {
         'roles.form_description': 'বিবরণ',
         'roles.description_placeholder': 'এই রোলটি কি করতে পারে?',
         'roles.route_permissions': 'রুট অনুমতি',
-        'roles.create_desc': 'একটি নতুন রোল তৈরি করুন এবং এটি কোন রুট অ্যাক্সেস করতে পারে তা নির্বাচন করুন।',
-        'roles.edit_desc': 'কোন রুট এই রোলটি অ্যাক্সেস করতে পারে তা নির্বাচন করুন।',
+        'roles.create_desc':
+            'একটি নতুন রোল তৈরি করুন এবং এটি কোন রুট অ্যাক্সেস করতে পারে তা নির্বাচন করুন।',
+        'roles.edit_desc':
+            'কোন রুট এই রোলটি অ্যাক্সেস করতে পারে তা নির্বাচন করুন।',
         'roles.save_error': 'রোল সংরক্ষণ করা যায়নি।',
         'roles.col_name': 'নাম',
         'roles.col_slug': 'স্লাগ',
@@ -326,7 +333,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'roles.all': 'সব',
         'roles.routes': 'রুট',
         'roles.deleted': 'রোল সফলভাবে মুছে ফেলা হয়েছে।',
-        'roles.delete_error': 'রোল মুছে ফেলা যায়নি। নিশ্চিত করুন কোনো ব্যবহারকারী এতে নির্ধারিত নেই।',
+        'roles.delete_error':
+            'রোল মুছে ফেলা যায়নি। নিশ্চিত করুন কোনো ব্যবহারকারী এতে নির্ধারিত নেই।',
         'teachers.reactivate': 'পুনরায় সক্রিয় করুন',
         'teachers.reactivate_title': 'শিক্ষক পুনরায় সক্রিয় করুন',
         'teachers.reactivate_confirm':
@@ -538,7 +546,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.no_records': 'কোনো রসিদ পাওয়া যায়নি',
         'receipts.generate_desc': 'একজন শিক্ষার্থীর জন্য বেতন রসিদ তৈরি করুন',
         'receipts.delete_title': 'রসিদ মুছুন',
-        'receipts.delete_confirm': 'আপনি কি নিশ্চিত এই রসিদটি মুছে ফেলতে চান? এটি পূর্বাবস্থায় ফেরানো যাবে না।',
+        'receipts.delete_confirm':
+            'আপনি কি নিশ্চিত এই রসিদটি মুছে ফেলতে চান? এটি পূর্বাবস্থায় ফেরানো যাবে না।',
         'receipts.create_title': 'রসিদ তৈরি করুন',
         'receipts.create_desc': 'একজন শিক্ষার্থীর জন্য বেতন রসিদ তৈরি করুন',
         'receipts.column_number': 'রসিদ #',
@@ -579,7 +588,6 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.coaching_center': 'কোচিং সেন্টার',
         'receipts.print': 'প্রিন্ট',
 
-
         // Payment
         'payment.success_title': 'পেমেন্ট সফল হয়েছে',
         'payment.success_desc':
@@ -615,6 +623,18 @@ export const translations: Record<Locale, Record<string, string>> = {
         'subscription.upgrade_title': 'প্ল্যান আপগ্রেড',
         'subscription.upgrade_desc': 'আপনি কি "{plan}" এ পরিবর্তন করতে চান?',
         'subscription.proceed_to_payment': 'পেমেন্টে এগিয়ে যান',
+        'subscription.pay_with_gateway': 'অনলাইনে পেমেন্ট করুন',
+        'subscription.pay_manually': 'ম্যানুয়াল পেমেন্ট করুন',
+        'subscription.manual_payment_title': 'ম্যানুয়াল পেমেন্ট',
+        'subscription.manual_payment_desc':
+            'নিচের তথ্যগুলো পূরণ করুন। আমাদের টিম যাচাই করার পর আপনার সাবস্ক্রিপশন সক্রিয় হবে।',
+        'subscription.transaction_id': 'ট্রানজেকশন আইডি',
+        'subscription.transaction_id_placeholder': 'যেমন: TX12345678',
+        'subscription.sender_number': 'প্রেরক নম্বর (ঐচ্ছিক)',
+        'subscription.sender_number_placeholder': 'যেমন: 01712345678',
+        'subscription.notes': 'নোট (ঐচ্ছিক)',
+        'subscription.notes_placeholder': 'অতিরিক্ত তথ্য থাকলে লিখুন',
+        'subscription.submit_manual_payment': 'পেমেন্ট জমা দিন',
         'subscription.trial': 'ট্রায়াল',
         'subscription.no_plan': 'কোনো প্ল্যান নেই',
         'subscription.active_until': 'সক্রিয় পর্যন্ত',
@@ -787,16 +807,18 @@ export const translations: Record<Locale, Record<string, string>> = {
         'actions.search': 'অনুসন্ধান',
         'actions.view': 'দেখুন',
         'actions.view_all': 'সব দেখুন',
-        'actions.processing': 'প্রক্রিয়াধীন...',
         'actions.export_csv': 'এক্সপোর্ট',
         'actions.import': 'ইম্পোর্ট',
         'actions.complete': 'সম্পন্ন',
+        'actions.pause': 'বিরতি',
+        'actions.resume': 'পুনরায় শুরু',
 
         // Super Admin
         'super_admin.platform_dashboard': 'প্ল্যাটফর্ম ড্যাশবোর্ড',
         'super_admin.overview_description': 'সমস্ত কোচিং সেন্টারের সারসংক্ষেপ',
         'super_admin.coaching_centers': 'কোচিং সেন্টার',
-        'super_admin.manage_coaching_centers': 'সমস্ত কোচিং সেন্টার পরিচালনা করুন',
+        'super_admin.manage_coaching_centers':
+            'সমস্ত কোচিং সেন্টার পরিচালনা করুন',
         'super_admin.total_revenue': 'মোট আয়',
         'super_admin.active_subs': 'সক্রিয় সাবস্ক্রিপশন',
         'super_admin.total_users': 'মোট ব্যবহারকারী',
@@ -824,6 +846,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.features': 'বৈশিষ্ট্য',
         'super_admin.active': 'সক্রিয়',
         'super_admin.default_plan': 'ডিফল্ট প্ল্যান',
+        'super_admin.preview': 'পূর্বরূপ',
         'super_admin.monthly': 'মাসিক',
         'super_admin.yearly': 'বার্ষিক',
         'super_admin.unlimited': 'অসীমিত',
@@ -870,14 +893,36 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.activate': 'সক্রিয় করুন',
         'super_admin.deactivate_owner': 'মালিক নিষ্ক্রিয় করুন',
         'super_admin.activate_owner': 'মালিক সক্রিয় করুন',
-        'super_admin.deactivate_owner_confirm': 'আপনি কি নিশ্চিত "{name}" কে নিষ্ক্রিয় করতে চান? তারা তাদের কোচিং সেন্টারে প্রবেশ করতে পারবেন না।',
-        'super_admin.activate_owner_confirm': 'আপনি কি নিশ্চিত "{name}" কে সক্রিয় করতে চান?',
+        'super_admin.plan_history': 'প্ল্যান ইতিহাস',
+        'super_admin.upgraded': 'আপগ্রেড করা হয়েছে',
+        'super_admin.downgraded': 'ডাউনগ্রেড করা হয়েছে',
+        'super_admin.renewed': 'নবীকরণ করা হয়েছে',
+        'super_admin.activated': 'সক্রিয় করা হয়েছে',
+        'super_admin.trial_started': 'ট্রায়াল শুরু হয়েছে',
+        'super_admin.no_history': 'এখনো কোনো প্ল্যান ইতিহাস নেই।',
+        'super_admin.deactivate_owner_confirm':
+            'আপনি কি নিশ্চিত "{name}" কে নিষ্ক্রিয় করতে চান? তারা তাদের কোচিং সেন্টারে প্রবেশ করতে পারবেন না।',
+        'super_admin.activate_owner_confirm':
+            'আপনি কি নিশ্চিত "{name}" কে সক্রিয় করতে চান?',
         'super_admin.deactivate_tenant': 'টেন্যান্ট নিষ্ক্রিয় করুন',
         'super_admin.activate_tenant': 'টেন্যান্ট সক্রিয় করুন',
-        'super_admin.deactivate_tenant_confirm': 'আপনি কি নিশ্চিত "{name}" কে নিষ্ক্রিয় করতে চান? সমস্ত ব্যবহারকারী প্রবেশ হারাবেন।',
-        'super_admin.activate_tenant_confirm': 'আপনি কি নিশ্চিত "{name}" কে সক্রিয় করতে চান?',
+        'super_admin.deactivate_tenant_confirm':
+            'আপনি কি নিশ্চিত "{name}" কে নিষ্ক্রিয় করতে চান? সমস্ত ব্যবহারকারী প্রবেশ হারাবেন।',
+        'super_admin.activate_tenant_confirm':
+            'আপনি কি নিশ্চিত "{name}" কে সক্রিয় করতে চান?',
         'super_admin.delete_plan': 'প্ল্যান মুছুন',
-        'super_admin.delete_plan_confirm': 'আপনি কি নিশ্চিত "{name}" প্ল্যানটি মুছে ফেলতে চান? এটি এই প্ল্যান ব্যবহারকারী টেন্যান্টদের প্রভাবিত করতে পারে।',
+        'super_admin.delete_plan_confirm':
+            'আপনি কি নিশ্চিত "{name}" প্ল্যানটি মুছে ফেলতে চান? এটি এই প্ল্যান ব্যবহারকারী টেন্যান্টদের প্রভাবিত করতে পারে।',
+        'super_admin.create_feature': 'বৈশিষ্ট্য তৈরি করুন',
+        'super_admin.edit_feature': 'বৈশিষ্ট্য সম্পাদনা',
+        'super_admin.edit_feature_desc': 'বৈশিষ্ট্যের নাম আপডেট করুন।',
+        'super_admin.create_feature_desc':
+            'একটি নতুন বৈশিষ্ট্য যোগ করুন যা প্ল্যানে নির্বাচন করা যাবে।',
+        'super_admin.feature_name': 'বৈশিষ্ট্যের নাম',
+        'super_admin.feature_name_placeholder': 'যেমন: Online Classes',
+        'super_admin.delete_feature': 'বৈশিষ্ট্য মুছুন',
+        'super_admin.delete_feature_confirm':
+            'আপনি কি নিশ্চিত "{name}" বৈশিষ্ট্যটি মুছে ফেলতে চান?',
         'super_admin.payment_history_short': 'পেমেন্ট ইতিহাস',
         'super_admin.subscription_history': 'সাবস্ক্রিপশন ইতিহাস',
         'super_admin.view_tenant': 'টেন্যান্ট দেখুন',
@@ -893,6 +938,36 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.method': 'পদ্ধতি',
         'super_admin.paid_at': 'পরিশোধিত',
         'super_admin.all_status': 'সব স্ট্যাটাস',
+        'super_admin.payment_settings': 'পেমেন্ট সেটিংস',
+        'super_admin.payment_settings_desc':
+            'পেমেন্ট গেটওয়ে এবং ম্যানুয়াল পেমেন্ট কনফিগার করুন',
+        'super_admin.sandbox_mode': 'স্যান্ডবক্স মোড',
+        'super_admin.store_id': 'স্টোর আইডি',
+        'super_admin.store_password': 'স্টোর পাসওয়ার্ড',
+        'super_admin.currency': 'মুদ্রা',
+        'super_admin.manual_payments': 'ম্যানুয়াল পেমেন্ট',
+        'super_admin.enable_manual_payments': 'ম্যানুয়াল পেমেন্ট সক্রিয় করুন',
+        'super_admin.manual_payment_instructions':
+            'ম্যানুয়াল পেমেন্ট নির্দেশনা',
+        'super_admin.manual_payment_instructions_placeholder':
+            'গ্রাহকদের জন্য পেমেন্ট নির্দেশনা লিখুন...',
+        'super_admin.manual_payment_instructions_help':
+            'এই নির্দেশনা গ্রাহকদের সাবস্ক্রিপশন পেজে দেখানো হবে।',
+        'super_admin.manual_payments_desc':
+            'ম্যানুয়াল পেমেন্ট পর্যালোচনা এবং অনুমোদন করুন',
+        'super_admin.no_manual_payments': 'কোনো ম্যানুয়াল পেমেন্ট নেই',
+        'super_admin.approved': 'অনুমোদিত',
+        'super_admin.rejected': 'প্রত্যাখ্যাত',
+        'super_admin.sender_number': 'প্রেরক নম্বর',
+        'super_admin.notes': 'নোট',
+        'super_admin.submitted_at': 'জমা দেওয়া হয়েছে',
+        'super_admin.approve_payment': 'পেমেন্ট অনুমোদন করুন',
+        'super_admin.approve_payment_confirm':
+            'আপনি কি নিশ্চিত এই পেমেন্টটি অনুমোদন করতে চান? এটি গ্রাহকের সাবস্ক্রিপশন সক্রিয় করবে।',
+        'super_admin.reject_payment': 'পেমেন্ট প্রত্যাখ্যান করুন',
+        'super_admin.reject_payment_confirm':
+            'আপনি কি নিশ্চিত এই পেমেন্টটি প্রত্যাখ্যান করতে চান?',
+        'super_admin.date': 'তারিখ',
         'super_admin.owner_login_activity': 'মালিকদের লগইন কার্যক্রম',
         'super_admin.no_active_owners': 'সাম্প্রতিকে কোনো মালিক সক্রিয় হননি।',
         'super_admin.active_payments': 'সফল',
@@ -921,7 +996,6 @@ export const translations: Record<Locale, Record<string, string>> = {
         'errors.back_to_dashboard': 'ড্যাশবোর্ডে ফিরে যান',
         'errors.go_home': 'হোম পেজে যান',
 
-
         // Confirm Dialogs
         'confirm.delete': 'মুছুন',
         'confirm.are_you_sure': 'আপনি কি নিশ্চিত?',
@@ -930,7 +1004,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Toast
         'toast.deleted_successfully': 'সফলভাবে মুছে ফেলা হয়েছে',
         'toast.receipt_generated': 'রসিদ সফলভাবে তৈরি হয়েছে',
-        'toast.receipt_already_exists': 'এই সময়ের জন্য ইতিমধ্যে একটি রসিদ রয়েছে',
+        'toast.receipt_already_exists':
+            'এই সময়ের জন্য ইতিমধ্যে একটি রসিদ রয়েছে',
         'toast.updated_successfully': 'সফলভাবে আপডেট করা হয়েছে',
         'toast.created_successfully': 'সফলভাবে তৈরি করা হয়েছে',
         'toast.saved_successfully': 'সফলভাবে সংরক্ষণ করা হয়েছে',
@@ -1040,6 +1115,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'plan.feature_custom_branding': 'কাস্টম ব্র্যান্ডিং',
         'plan.feature_multi_branch': 'মাল্টি-ব্রাঞ্চ সাপোর্ট',
         'plan.feature_api_access': 'API অ্যাক্সেস',
+        'plan.feature_sms_notifications': 'এসএমএস বিজ্ঞপ্তি',
 
         // FAQ
         'welcome.faq_title': 'ঘন ঘন জিজ্ঞাসিত প্রশ্নাবলী',
@@ -1050,7 +1126,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'welcome.faq2_q': 'কি কোনো বিনামূল্যের প্ল্যান আছে?',
         'welcome.faq2_a':
             'হ্যাঁ! আমাদের বিনামূল্যে ট্রায়াল প্ল্যান আপনাকে ৩০ জন স্টুডেন্ট, ২ জন স্টাফ এবং ৫টি ব্যাচ পরিচালনা করতে দেয়।',
-        'welcome.faq3_q': 'আমি কি যেকোনো সময় আমার প্ল্যান আপগ্রেড বা ডাউনগ্রেড করতে পারি?',
+        'welcome.faq3_q':
+            'আমি কি যেকোনো সময় আমার প্ল্যান আপগ্রেড বা ডাউনগ্রেড করতে পারি?',
         'welcome.faq3_a':
             'হ্যাঁ, আপনি যেকোনো সময় আপনার প্ল্যান পরিবর্তন করতে পারেন। আপগ্রেড তাৎক্ষণিকভাবে কার্যকর হয় এবং ডাউনগ্রেড আপনার বিলিং চক্রের শেষে প্রযোজ্য হয়।',
         'welcome.faq4_q': 'আমার ডেটা কি নিরাপদ?',
@@ -1106,6 +1183,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.exams': 'Exams',
         'nav.reports': 'Reports',
         'nav.branches': 'Branches',
+        'nav.sms': 'SMS',
         'nav.roles': 'Roles & Permissions',
         'nav.coaching_center': 'Coaching Center',
         'nav.api_settings': 'API Settings',
@@ -1122,8 +1200,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'nav.profile': 'Profile',
         'nav.security': 'Security',
         'nav.appearance': 'Appearance',
-            'nav.api_access': 'API Access',
-            'nav.upgrade': 'Upgrade',
+        'nav.api_access': 'API Access',
+        'nav.upgrade': 'Upgrade',
 
         // Dashboard
         'dashboard.title': 'Dashboard',
@@ -1168,7 +1246,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'dashboard.charts': 'Analytics',
         'dashboard.recent_activity': 'Recent Activity',
         'dashboard.no_recent_activity': 'No recent activity',
-        'dashboard.no_recent_activity_desc': 'Activity will appear here as you manage your coaching center',
+        'dashboard.no_recent_activity_desc':
+            'Activity will appear here as you manage your coaching center',
         'dashboard.pending_approvals': 'Pending Approvals',
         'dashboard.teacher_waiting': 'teacher waiting for approval',
         'dashboard.teachers_waiting': 'teachers waiting for approval',
@@ -1205,6 +1284,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'students.female': 'Female',
         'students.other': 'Other',
         'students.active': 'Active',
+        'students.paused': 'Paused',
         'students.inactive': 'Inactive',
         'students.all_status': 'All Status',
         'students.deleted': 'Student deleted successfully',
@@ -1329,12 +1409,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'roles.created': 'Role created successfully.',
         'roles.updated': 'Role updated successfully.',
         'roles.saving': 'Saving...',
-        'roles.description': 'Manage roles and the routes each role can access.',
+        'roles.description':
+            'Manage roles and the routes each role can access.',
         'roles.new_role': 'New Role',
         'roles.search': 'Search roles...',
         'roles.no_roles': 'No roles found.',
         'roles.delete_title': 'Delete Role',
-        'roles.delete_confirm': 'Are you sure you want to delete the "{name}" role? Users assigned to this role will no longer be able to access restricted features.',
+        'roles.delete_confirm':
+            'Are you sure you want to delete the "{name}" role? Users assigned to this role will no longer be able to access restricted features.',
         'roles.name': 'Role Name *',
         'roles.name_placeholder': 'e.g. Teacher',
         'roles.slug': 'Slug *',
@@ -1342,7 +1424,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'roles.form_description': 'Description',
         'roles.description_placeholder': 'What can this role do?',
         'roles.route_permissions': 'Route Permissions',
-        'roles.create_desc': 'Create a new role and choose which routes it can access.',
+        'roles.create_desc':
+            'Create a new role and choose which routes it can access.',
         'roles.edit_desc': 'Choose which routes this role can access.',
         'roles.save_error': 'Could not save role.',
         'roles.col_name': 'Name',
@@ -1353,7 +1436,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'roles.all': 'All',
         'roles.routes': 'routes',
         'roles.deleted': 'Role deleted successfully.',
-        'roles.delete_error': 'Could not delete role. Make sure no users are assigned to it.',
+        'roles.delete_error':
+            'Could not delete role. Make sure no users are assigned to it.',
         'teachers.reactivate': 'Reactivate',
         'teachers.reactivate_title': 'Reactivate Teacher',
         'teachers.reactivate_confirm':
@@ -1366,7 +1450,6 @@ export const translations: Record<Locale, Record<string, string>> = {
         'teachers.add_desc': 'Add a new teacher to the system',
         'teachers.update_info': 'Update teacher information',
         'teachers.edit_desc': 'Edit teacher information',
-
 
         // Users
         'users.title': 'Users',
@@ -1567,7 +1650,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.no_records': 'No receipts found',
         'receipts.generate_desc': 'Generate a fee receipt for a student',
         'receipts.delete_title': 'Delete Receipt',
-        'receipts.delete_confirm': 'Are you sure you want to delete this receipt? This action cannot be undone.',
+        'receipts.delete_confirm':
+            'Are you sure you want to delete this receipt? This action cannot be undone.',
         'receipts.create_title': 'Create Receipt',
         'receipts.create_desc': 'Generate a fee receipt for a student',
         'receipts.column_number': 'Receipt #',
@@ -1770,10 +1854,11 @@ export const translations: Record<Locale, Record<string, string>> = {
         'actions.search': 'Search',
         'actions.view': 'View',
         'actions.view_all': 'View all',
-        'actions.processing': 'Processing...',
         'actions.export_csv': 'Export',
         'actions.import': 'Import',
         'actions.complete': 'Complete',
+        'actions.pause': 'Pause',
+        'actions.resume': 'Resume',
 
         // Super Admin
         'super_admin.platform_dashboard': 'Platform Dashboard',
@@ -1807,12 +1892,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.features': 'Features',
         'super_admin.active': 'Active',
         'super_admin.default_plan': 'Default Plan',
+        'super_admin.preview': 'Preview',
         'super_admin.monthly': 'Monthly',
         'super_admin.yearly': 'Yearly',
         'super_admin.unlimited': 'Unlimited',
         'super_admin.payments': 'Payments',
         'super_admin.payment_history': 'Payment History',
-        'super_admin.all_transactions': 'All transactions across coaching centers',
+        'super_admin.all_transactions':
+            'All transactions across coaching centers',
         'super_admin.total': 'Total',
         'super_admin.successful': 'Successful',
         'super_admin.pending': 'Pending',
@@ -1821,7 +1908,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.search_tenant_or_tx': 'Search tenant or TX ID...',
         'super_admin.contacts': 'Contacts',
         'super_admin.contact_messages': 'Contact Messages',
-        'super_admin.manage_messages': 'Messages submitted through the contact form',
+        'super_admin.manage_messages':
+            'Messages submitted through the contact form',
         'super_admin.unread': 'Unread',
         'super_admin.replied': 'Replied',
         'super_admin.inbox': 'Inbox',
@@ -1853,14 +1941,36 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.activate': 'Activate',
         'super_admin.deactivate_owner': 'Deactivate Owner',
         'super_admin.activate_owner': 'Activate Owner',
-        'super_admin.deactivate_owner_confirm': 'Are you sure you want to deactivate "{name}"? They will lose access to their coaching center.',
-        'super_admin.activate_owner_confirm': 'Are you sure you want to activate "{name}"?',
+        'super_admin.plan_history': 'Plan History',
+        'super_admin.upgraded': 'Upgraded',
+        'super_admin.downgraded': 'Downgraded',
+        'super_admin.renewed': 'Renewed',
+        'super_admin.activated': 'Activated',
+        'super_admin.trial_started': 'Trial Started',
+        'super_admin.no_history': 'No plan history yet.',
+        'super_admin.deactivate_owner_confirm':
+            'Are you sure you want to deactivate "{name}"? They will lose access to their coaching center.',
+        'super_admin.activate_owner_confirm':
+            'Are you sure you want to activate "{name}"?',
         'super_admin.deactivate_tenant': 'Deactivate Tenant',
         'super_admin.activate_tenant': 'Activate Tenant',
-        'super_admin.deactivate_tenant_confirm': 'Are you sure you want to deactivate "{name}"? All users will lose access.',
-        'super_admin.activate_tenant_confirm': 'Are you sure you want to activate "{name}"?',
+        'super_admin.deactivate_tenant_confirm':
+            'Are you sure you want to deactivate "{name}"? All users will lose access.',
+        'super_admin.activate_tenant_confirm':
+            'Are you sure you want to activate "{name}"?',
         'super_admin.delete_plan': 'Delete Plan',
-        'super_admin.delete_plan_confirm': 'Are you sure you want to delete "{name}"? This may affect tenants using this plan.',
+        'super_admin.delete_plan_confirm':
+            'Are you sure you want to delete "{name}"? This may affect tenants using this plan.',
+        'super_admin.create_feature': 'Create Feature',
+        'super_admin.edit_feature': 'Edit Feature',
+        'super_admin.edit_feature_desc': 'Update the feature name.',
+        'super_admin.create_feature_desc':
+            'Add a new feature that can be selected in plans.',
+        'super_admin.feature_name': 'Feature Name',
+        'super_admin.feature_name_placeholder': 'e.g. Online Classes',
+        'super_admin.delete_feature': 'Delete Feature',
+        'super_admin.delete_feature_confirm':
+            'Are you sure you want to delete "{name}"?',
         'super_admin.payment_history_short': 'Payment History',
         'super_admin.subscription_history': 'Subscription History',
         'super_admin.view_tenant': 'View Tenant',
@@ -1876,11 +1986,43 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.method': 'Method',
         'super_admin.paid_at': 'Paid At',
         'super_admin.all_status': 'All Status',
+        'super_admin.payment_settings': 'Payment Settings',
+        'super_admin.payment_settings_desc':
+            'Configure payment gateway and manual payments',
+        'super_admin.sandbox_mode': 'Sandbox Mode',
+        'super_admin.store_id': 'Store ID',
+        'super_admin.store_password': 'Store Password',
+        'super_admin.currency': 'Currency',
+        'super_admin.manual_payments': 'Manual Payments',
+        'super_admin.enable_manual_payments': 'Enable Manual Payments',
+        'super_admin.manual_payment_instructions':
+            'Manual Payment Instructions',
+        'super_admin.manual_payment_instructions_placeholder':
+            'Enter payment instructions for customers...',
+        'super_admin.manual_payment_instructions_help':
+            'These instructions will be shown to customers on the subscription page.',
+        'super_admin.manual_payments_desc':
+            'Review and approve manual payments',
+        'super_admin.no_manual_payments': 'No manual payments found',
+        'super_admin.approved': 'Approved',
+        'super_admin.rejected': 'Rejected',
+        'super_admin.sender_number': 'Sender Number',
+        'super_admin.notes': 'Notes',
+        'super_admin.submitted_at': 'Submitted At',
+        'super_admin.approve_payment': 'Approve Payment',
+        'super_admin.approve_payment_confirm':
+            "Are you sure you want to approve this payment? This will activate the customer's subscription.",
+        'super_admin.reject_payment': 'Reject Payment',
+        'super_admin.reject_payment_confirm':
+            'Are you sure you want to reject this payment?',
+        'super_admin.date': 'Date',
         'super_admin.active_payments': 'Successful',
         'super_admin.owner_login_activity': 'Owner Login Activity',
         'super_admin.no_active_owners': 'No owners active recently.',
-        'super_admin.all_payments_description': 'All transactions across coaching centers',
-        'super_admin.all_contacts_description': 'Messages submitted through the contact form',
+        'super_admin.all_payments_description':
+            'All transactions across coaching centers',
+        'super_admin.all_contacts_description':
+            'Messages submitted through the contact form',
         'super_admin.name': 'Name',
         'super_admin.email': 'Email',
         'super_admin.inactive': 'Inactive',
@@ -1911,7 +2053,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Toast
         'toast.deleted_successfully': 'Deleted successfully',
         'toast.receipt_generated': 'Receipt generated successfully',
-        'toast.receipt_already_exists': 'A receipt already exists for this period',
+        'toast.receipt_already_exists':
+            'A receipt already exists for this period',
         'toast.updated_successfully': 'Updated successfully',
         'toast.created_successfully': 'Created successfully',
         'toast.saved_successfully': 'Saved successfully',
@@ -2020,6 +2163,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'plan.feature_custom_branding': 'Custom Branding',
         'plan.feature_multi_branch': 'Multi-branch Support',
         'plan.feature_api_access': 'API Access',
+        'plan.feature_sms_notifications': 'SMS Notifications',
 
         // Payment
         'payment.success_title': 'Payment Successful',
@@ -2056,6 +2200,18 @@ export const translations: Record<Locale, Record<string, string>> = {
         'subscription.upgrade_desc':
             'Are you sure you want to switch to "{plan}"?',
         'subscription.proceed_to_payment': 'Proceed to Payment',
+        'subscription.pay_with_gateway': 'Pay Online',
+        'subscription.pay_manually': 'Pay Manually',
+        'subscription.manual_payment_title': 'Manual Payment',
+        'subscription.manual_payment_desc':
+            'Fill in the details below. Your subscription will be activated after our team verifies the payment.',
+        'subscription.transaction_id': 'Transaction ID',
+        'subscription.transaction_id_placeholder': 'e.g. TX12345678',
+        'subscription.sender_number': 'Sender Number (optional)',
+        'subscription.sender_number_placeholder': 'e.g. 01712345678',
+        'subscription.notes': 'Notes (optional)',
+        'subscription.notes_placeholder': 'Any additional information',
+        'subscription.submit_manual_payment': 'Submit Payment',
         'subscription.trial': 'Trial',
         'subscription.no_plan': 'No Plan',
         'subscription.active_until': 'Active until',

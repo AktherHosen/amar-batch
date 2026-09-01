@@ -1,24 +1,45 @@
-import { router } from '@inertiajs/react';
-import { EllipsisVertical, PenLine, Plus, Trash2 } from 'lucide-react';
-import type { FormEvent } from 'react';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable } from '@/components/data-table';
 import type { DataTableProps } from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
+import PlanCard from '@/components/plan-card';
 import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
+import { router } from '@inertiajs/react';
+import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
+import type { FormEvent } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 type Plan = {
     id: number;
@@ -35,6 +56,13 @@ type Plan = {
     is_default: boolean;
 };
 
+type PlanFeature = {
+    id: number;
+    name: string;
+    slug: string;
+    is_system: boolean;
+};
+
 type PageProps = {
     plans: {
         data: Plan[];
@@ -47,19 +75,6 @@ type PageProps = {
         search?: string;
     };
 };
-
-const AVAILABLE_FEATURES = [
-    'students',
-    'batches',
-    'attendance',
-    'fees',
-    'exams',
-    'reports',
-    'notifications',
-    'custom_branding',
-    'multi_branch',
-    'api_access',
-];
 
 const defaultForm = {
     name: '',
@@ -79,7 +94,10 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
     const { t, formatCurrency } = useLocale();
     const [search, setSearch] = useState(filters.search || '');
     const [refreshing, setRefreshing] = useState(false);
-    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: Plan | null }>({
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean;
+        item: Plan | null;
+    }>({
         open: false,
         item: null,
     });
@@ -87,6 +105,49 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
     const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
     const [form, setForm] = useState(defaultForm);
     const [processing, setProcessing] = useState(false);
+
+    const [planFeatures, setPlanFeatures] = useState<PlanFeature[]>([]);
+    const [featureDialog, setFeatureDialog] = useState<{
+        open: boolean;
+        editing: PlanFeature | null;
+    }>({
+        open: false,
+        editing: null,
+    });
+    const [featureName, setFeatureName] = useState('');
+    const [featureProcessing, setFeatureProcessing] = useState(false);
+    const [deleteFeatureDialog, setDeleteFeatureDialog] = useState<{
+        open: boolean;
+        item: PlanFeature | null;
+    }>({
+        open: false,
+        item: null,
+    });
+
+    const fetchFeatures = useCallback(async () => {
+        try {
+            const res = await fetch('/dashboard/plan-features');
+            const data = await res.json();
+            setPlanFeatures(data);
+        } catch {
+            toast.error('Failed to load features');
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchFeatures();
+    }, [fetchFeatures]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get('create') === 'true') {
+            setEditingPlan(null);
+            setForm(defaultForm);
+            setSheetOpen(true);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
 
     const openCreate = () => {
         setEditingPlan(null);
@@ -153,7 +214,11 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get('/dashboard/plans', { search: value }, { preserveState: true });
+        router.get(
+            '/dashboard/plans',
+            { search: value },
+            { preserveState: true },
+        );
     };
 
     const handleDelete = (plan: Plan) => {
@@ -168,7 +233,91 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
         }
     };
 
-    const formatLimit = (value: number) => (value === -1 ? t('super_admin.unlimited') : value.toString());
+    const openFeatureDialog = (editing: PlanFeature | null = null) => {
+        setFeatureName(editing?.name || '');
+        setFeatureDialog({ open: true, editing });
+    };
+
+    const handleFeatureSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setFeatureProcessing(true);
+
+        const url = featureDialog.editing
+            ? `/dashboard/plan-features/${featureDialog.editing.id}`
+            : '/dashboard/plan-features';
+        const method = featureDialog.editing ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-XSRF-TOKEN': decodeURIComponent(
+                        document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '',
+                    ),
+                },
+                body: JSON.stringify({ name: featureName }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to save feature');
+
+                return;
+            }
+
+            toast.success(
+                featureDialog.editing
+                    ? t('toast.updated_successfully')
+                    : t('toast.created_successfully'),
+            );
+            setFeatureDialog({ open: false, editing: null });
+            fetchFeatures();
+        } catch {
+            toast.error('Failed to save feature');
+        } finally {
+            setFeatureProcessing(false);
+        }
+    };
+
+    const handleDeleteFeature = async () => {
+        if (!deleteFeatureDialog.item) {
+            return;
+        }
+
+        try {
+            const res = await fetch(
+                `/dashboard/plan-features/${deleteFeatureDialog.item.id}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-XSRF-TOKEN': decodeURIComponent(
+                            document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ||
+                                '',
+                        ),
+                    },
+                },
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to delete feature');
+
+                return;
+            }
+
+            toast.success(t('toast.deleted_successfully'));
+            setDeleteFeatureDialog({ open: false, item: null });
+            fetchFeatures();
+        } catch {
+            toast.error('Failed to delete feature');
+        }
+    };
+
+    const formatLimit = (value: number) =>
+        value === -1 ? t('super_admin.unlimited') : value.toString();
 
     const columns: NonNullable<DataTableProps<Plan, unknown>['columns']> = [
         {
@@ -181,7 +330,9 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
                 <div className="flex items-center gap-2">
                     <span className="font-medium">{row.original.name}</span>
                     {row.original.is_default && (
-                        <Badge variant="secondary" className="text-xs">{t('super_admin.default_plan')}</Badge>
+                        <Badge variant="secondary" className="text-xs">
+                            {t('super_admin.default_plan')}
+                        </Badge>
                     )}
                 </div>
             ),
@@ -193,7 +344,9 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
             enableSorting: true,
             cell: ({ row }: any) => (
                 <span className="font-semibold">
-                    {row.original.price_monthly === 0 ? 'Free' : formatCurrency(row.original.price_monthly)}
+                    {row.original.price_monthly === 0
+                        ? 'Free'
+                        : formatCurrency(row.original.price_monthly)}
                 </span>
             ),
         },
@@ -227,16 +380,25 @@ export default function PlansIndex({ plans: pagination, filters }: PageProps) {
                 const features = row.original.features;
 
                 if (!features || features.length === 0) {
-return '—';
-}
+                    return '—';
+                }
 
                 return (
                     <div className="flex flex-wrap gap-1">
                         {features.slice(0, 3).map((f: string) => (
-                            <Badge key={f} variant="outline" className="text-xs">{f}</Badge>
+                            <Badge
+                                key={f}
+                                variant="outline"
+                                className="text-xs"
+                            >
+                                {planFeatures.find((pf) => pf.slug === f)
+                                    ?.name || f}
+                            </Badge>
                         ))}
                         {features.length > 3 && (
-                            <Badge variant="outline" className="text-xs">+{features.length - 3}</Badge>
+                            <Badge variant="outline" className="text-xs">
+                                +{features.length - 3}
+                            </Badge>
                         )}
                     </div>
                 );
@@ -253,7 +415,11 @@ return '—';
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="size-8 p-0">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="size-8 p-0"
+                            >
                                 <EllipsisVertical className="size-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -280,18 +446,28 @@ return '—';
         <>
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-3 sm:p-4">
                 <div className="flex items-start justify-between">
-                    <Heading title={t('super_admin.plans')} description={t('super_admin.manage_plans')} />
+                    <Heading
+                        title={t('super_admin.plans')}
+                        description={t('super_admin.manage_plans')}
+                    />
                     <div className="flex items-center gap-1">
                         <RefreshButton
                             refreshing={refreshing}
                             onRefresh={() => {
                                 setRefreshing(true);
-                                router.reload({ only: ['plans'], onFinish: () => setRefreshing(false) });
+                                router.reload({
+                                    only: ['plans'],
+                                    onFinish: () => setRefreshing(false),
+                                });
                             }}
                         />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0"
+                                >
                                     <EllipsisVertical className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -335,16 +511,24 @@ return '—';
             </div>
 
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetContent className="sm:max-w-2xl overflow-y-auto">
+                <SheetContent className="overflow-y-auto sm:max-w-2xl">
                     <SheetHeader>
-                        <SheetTitle>{editingPlan ? t('super_admin.edit_plan') : t('super_admin.create_plan')}</SheetTitle>
+                        <SheetTitle>
+                            {editingPlan
+                                ? t('super_admin.edit_plan')
+                                : t('super_admin.create_plan')}
+                        </SheetTitle>
                         <SheetDescription>
-                            {editingPlan ? `${t('actions.update')} ${editingPlan.name}` : t('super_admin.manage_plans')}
+                            {editingPlan
+                                ? `${t('actions.update')} ${editingPlan.name}`
+                                : t('super_admin.manage_plans')}
                         </SheetDescription>
                     </SheetHeader>
                     <form onSubmit={handleSubmit} className="space-y-4 px-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">{t('super_admin.plan_name')}</Label>
+                            <Label htmlFor="name">
+                                {t('super_admin.plan_name')}
+                            </Label>
                             <Input
                                 id="name"
                                 value={form.name}
@@ -361,50 +545,74 @@ return '—';
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="slug">{t('super_admin.slug')}</Label>
+                            <Label htmlFor="slug">
+                                {t('super_admin.slug')}
+                            </Label>
                             <Input
                                 id="slug"
                                 value={form.slug}
                                 onChange={(e) =>
-                                    setForm((prev) => ({ ...prev, slug: e.target.value }))
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        slug: e.target.value,
+                                    }))
                                 }
                                 required
                             />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="description">{t('super_admin.description')}</Label>
+                            <Label htmlFor="description">
+                                {t('super_admin.description')}
+                            </Label>
                             <Textarea
                                 id="description"
                                 value={form.description}
                                 onChange={(e) =>
-                                    setForm((prev) => ({ ...prev, description: e.target.value }))
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        description: e.target.value,
+                                    }))
                                 }
                             />
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="price_monthly">{t('super_admin.monthly_price')}</Label>
+                                <Label htmlFor="price_monthly">
+                                    {t('super_admin.monthly_price')}
+                                </Label>
                                 <Input
                                     id="price_monthly"
                                     type="number"
                                     min={0}
                                     value={form.price_monthly}
                                     onChange={(e) =>
-                                        setForm((prev) => ({ ...prev, price_monthly: Number(e.target.value) }))
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            price_monthly: Number(
+                                                e.target.value,
+                                            ),
+                                        }))
                                     }
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="price_yearly">{t('super_admin.yearly_price')}</Label>
+                                <Label htmlFor="price_yearly">
+                                    {t('super_admin.yearly_price')}
+                                </Label>
                                 <Input
                                     id="price_yearly"
                                     type="number"
                                     min={0}
                                     value={form.price_yearly}
                                     onChange={(e) =>
-                                        setForm((prev) => ({ ...prev, price_yearly: Number(e.target.value) }))
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            price_yearly: Number(
+                                                e.target.value,
+                                            ),
+                                        }))
                                     }
                                 />
                             </div>
@@ -412,56 +620,126 @@ return '—';
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <div className="grid gap-2">
-                                <Label htmlFor="max_students">{t('super_admin.max_students')}</Label>
+                                <Label htmlFor="max_students">
+                                    {t('super_admin.max_students')}
+                                </Label>
                                 <Input
                                     id="max_students"
                                     type="number"
                                     min={-1}
                                     value={form.max_students}
                                     onChange={(e) =>
-                                        setForm((prev) => ({ ...prev, max_students: Number(e.target.value) }))
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            max_students: Number(
+                                                e.target.value,
+                                            ),
+                                        }))
                                     }
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="max_staff">{t('super_admin.max_staff')}</Label>
+                                <Label htmlFor="max_staff">
+                                    {t('super_admin.max_staff')}
+                                </Label>
                                 <Input
                                     id="max_staff"
                                     type="number"
                                     min={-1}
                                     value={form.max_staff}
                                     onChange={(e) =>
-                                        setForm((prev) => ({ ...prev, max_staff: Number(e.target.value) }))
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            max_staff: Number(e.target.value),
+                                        }))
                                     }
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="max_batches">{t('super_admin.max_batches')}</Label>
+                                <Label htmlFor="max_batches">
+                                    {t('super_admin.max_batches')}
+                                </Label>
                                 <Input
                                     id="max_batches"
                                     type="number"
                                     min={-1}
                                     value={form.max_batches}
                                     onChange={(e) =>
-                                        setForm((prev) => ({ ...prev, max_batches: Number(e.target.value) }))
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            max_batches: Number(e.target.value),
+                                        }))
                                     }
                                 />
                             </div>
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>{t('super_admin.features')}</Label>
+                            <div className="flex items-center justify-between">
+                                <Label>{t('super_admin.features')}</Label>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 gap-1"
+                                    onClick={() => openFeatureDialog()}
+                                >
+                                    <Plus className="size-3" />
+                                    {t('super_admin.create_feature')}
+                                </Button>
+                            </div>
                             <div className="flex flex-wrap gap-2">
-                                {AVAILABLE_FEATURES.map((feature) => (
-                                    <Button
-                                        key={feature}
-                                        type="button"
-                                        variant={form.features.includes(feature) ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => toggleFeature(feature)}
+                                {planFeatures.map((feature) => (
+                                    <div
+                                        key={feature.slug}
+                                        className="group relative"
                                     >
-                                        {feature}
-                                    </Button>
+                                        <Button
+                                            type="button"
+                                            variant={
+                                                form.features.includes(
+                                                    feature.slug,
+                                                )
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
+                                            size="sm"
+                                            onClick={() =>
+                                                toggleFeature(feature.slug)
+                                            }
+                                        >
+                                            {feature.name}
+                                        </Button>
+                                        {!feature.is_system && (
+                                            <div className="absolute -top-1.5 -right-1.5 hidden gap-0.5 group-hover:flex">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openFeatureDialog(
+                                                            feature,
+                                                        );
+                                                    }}
+                                                    className="flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/80"
+                                                >
+                                                    <PenLine className="size-2" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDeleteFeatureDialog({
+                                                            open: true,
+                                                            item: feature,
+                                                        });
+                                                    }}
+                                                    className="flex size-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/80"
+                                                >
+                                                    <Trash2 className="size-2" />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -472,42 +750,181 @@ return '—';
                                     id="is_active"
                                     checked={form.is_active}
                                     onCheckedChange={(checked) =>
-                                        setForm((prev) => ({ ...prev, is_active: checked }))
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            is_active: checked,
+                                        }))
                                     }
                                 />
-                                <Label htmlFor="is_active">{t('super_admin.active')}</Label>
+                                <Label htmlFor="is_active">
+                                    {t('super_admin.active')}
+                                </Label>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Switch
                                     id="is_default"
                                     checked={form.is_default}
                                     onCheckedChange={(checked) =>
-                                        setForm((prev) => ({ ...prev, is_default: checked }))
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            is_default: checked,
+                                        }))
                                     }
                                 />
-                                <Label htmlFor="is_default">{t('super_admin.default_plan')}</Label>
+                                <Label htmlFor="is_default">
+                                    {t('super_admin.default_plan')}
+                                </Label>
+                            </div>
+                        </div>
+
+                        <div className="rounded-lg border bg-muted/30 p-4">
+                            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                <Eye className="size-4" />
+                                {t('super_admin.preview')}
+                            </div>
+                            <div className="mx-auto max-w-[320px]">
+                                <PlanCard
+                                    plan={{
+                                        id: 0,
+                                        name: form.name || 'Plan Name',
+                                        slug: form.slug || 'plan',
+                                        description: form.description || null,
+                                        price_monthly: form.price_monthly,
+                                        price_yearly: form.price_yearly,
+                                        max_students: form.max_students,
+                                        max_staff: form.max_staff,
+                                        max_batches: form.max_batches,
+                                        features: form.features,
+                                        is_default: form.is_default,
+                                    }}
+                                    annual={false}
+                                    isDefault={form.is_default}
+                                    availableFeatures={planFeatures.map(
+                                        (f) => f.slug,
+                                    )}
+                                    featureMap={Object.fromEntries(
+                                        planFeatures.map((f) => [
+                                            f.slug,
+                                            f.name,
+                                        ]),
+                                    )}
+                                />
                             </div>
                         </div>
                     </form>
                     <SheetFooter>
-                        <Button type="button" variant="outline" onClick={() => setSheetOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSheetOpen(false)}
+                        >
                             {t('actions.cancel')}
                         </Button>
-                        <Button type="submit" disabled={processing} onClick={handleSubmit}>
-                            {processing ? t('actions.processing') : editingPlan ? t('actions.update') : t('actions.create')}
+                        <Button
+                            type="submit"
+                            disabled={processing}
+                            onClick={handleSubmit}
+                        >
+                            {processing
+                                ? t('actions.saving')
+                                : editingPlan
+                                  ? t('actions.update')
+                                  : t('actions.create')}
                         </Button>
                     </SheetFooter>
                 </SheetContent>
             </Sheet>
 
+            <Dialog
+                open={featureDialog.open}
+                onOpenChange={(open) =>
+                    setFeatureDialog({ open, editing: featureDialog.editing })
+                }
+            >
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {featureDialog.editing
+                                ? t('super_admin.edit_feature')
+                                : t('super_admin.create_feature')}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {featureDialog.editing
+                                ? t('super_admin.edit_feature_desc')
+                                : t('super_admin.create_feature_desc')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleFeatureSubmit} className="space-y-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="feature_name">
+                                {t('super_admin.feature_name')}
+                            </Label>
+                            <Input
+                                id="feature_name"
+                                value={featureName}
+                                onChange={(e) => setFeatureName(e.target.value)}
+                                placeholder={t(
+                                    'super_admin.feature_name_placeholder',
+                                )}
+                                required
+                                autoFocus
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() =>
+                                    setFeatureDialog({
+                                        open: false,
+                                        editing: null,
+                                    })
+                                }
+                            >
+                                {t('actions.cancel')}
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={
+                                    featureProcessing || !featureName.trim()
+                                }
+                            >
+                                {featureProcessing
+                                    ? t('actions.saving')
+                                    : featureDialog.editing
+                                      ? t('actions.update')
+                                      : t('actions.create')}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
             <ConfirmDialog
                 open={deleteDialog.open}
-                onOpenChange={(open) => setDeleteDialog({ open, item: deleteDialog.item })}
+                onOpenChange={(open) =>
+                    setDeleteDialog({ open, item: deleteDialog.item })
+                }
                 title={t('super_admin.delete_plan')}
                 description={`${t('super_admin.delete_plan_confirm')} "${deleteDialog.item?.name ?? ''}"`}
                 confirmText={t('actions.delete')}
                 variant="destructive"
                 onConfirm={confirmDelete}
+            />
+
+            <ConfirmDialog
+                open={deleteFeatureDialog.open}
+                onOpenChange={(open) =>
+                    setDeleteFeatureDialog({
+                        open,
+                        item: deleteFeatureDialog.item,
+                    })
+                }
+                title={t('super_admin.delete_feature')}
+                description={`${t('super_admin.delete_feature_confirm')} "${deleteFeatureDialog.item?.name ?? ''}"`}
+                confirmText={t('actions.delete')}
+                variant="destructive"
+                onConfirm={handleDeleteFeature}
             />
         </>
     );

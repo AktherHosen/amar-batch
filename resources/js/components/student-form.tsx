@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import {
     Camera,
     X,
@@ -10,8 +10,9 @@ import {
     MapPin,
     Plus,
     Loader2,
+    LogIn,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { FormActions } from '@/components/form-actions';
 import InputError from '@/components/input-error';
@@ -36,6 +37,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/contexts/locale-context';
 import students from '@/routes/students';
@@ -50,6 +52,7 @@ type CoachingClass = {
 type StudentFormProps = {
     student?: Student;
     coachingClasses: CoachingClass[];
+    existingParents?: Array<{ id: number; name: string; email: string }>;
     onSubmit: (data: FormData) => void;
     processing: boolean;
     errors: Record<string, string>;
@@ -77,6 +80,7 @@ function SectionHeader({
 export default function StudentForm({
     student,
     coachingClasses,
+    existingParents = [],
     onSubmit,
     processing,
     errors,
@@ -101,6 +105,10 @@ export default function StudentForm({
         status: student?.status || 'active',
         joined_at: student?.joined_at ? student.joined_at.split('T')[0] : '',
         left_at: student?.left_at ? student.left_at.split('T')[0] : '',
+        create_parent_login: false,
+        parent_email: '',
+        parent_password: '',
+        link_parent_id: '',
     });
 
     const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -114,6 +122,10 @@ export default function StudentForm({
     const [classCreating, setClassCreating] = useState(false);
     const [classErrors, setClassErrors] = useState<Record<string, string>>({});
     const [classes, setClasses] = useState(coachingClasses);
+
+    useEffect(() => {
+        setClasses(coachingClasses);
+    }, [coachingClasses]);
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -154,7 +166,7 @@ export default function StudentForm({
         const formData = new FormData();
         Object.entries(data).forEach(([key, value]) => {
             if (value !== null && value !== undefined && value !== '') {
-                formData.append(key, String(value));
+                formData.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : String(value));
             }
         });
 
@@ -218,6 +230,7 @@ export default function StudentForm({
             setNewClassFee('');
             setClassModalOpen(false);
             toast.success(resData.message || 'Class created successfully.');
+            router.reload({ only: ['coachingClasses'] });
         } catch (err: any) {
             toast.error(err?.message || 'An error occurred while creating class.');
         } finally {
@@ -505,7 +518,7 @@ export default function StudentForm({
                             onValueChange={(value) =>
                                 setData(
                                     'status',
-                                    value as 'active' | 'inactive',
+                                    value as 'active' | 'inactive' | 'paused',
                                 )
                             }
                         >
@@ -515,6 +528,9 @@ export default function StudentForm({
                             <SelectContent>
                                 <SelectItem value="active">
                                     {t('students.active')}
+                                </SelectItem>
+                                <SelectItem value="paused">
+                                    {t('students.paused')}
                                 </SelectItem>
                                 <SelectItem value="inactive">
                                     {t('students.inactive')}
@@ -593,6 +609,107 @@ export default function StudentForm({
                         <InputError message={errors.guardian_phone} />
                     </div>
                 </div>
+
+                {(student?.parents_count ?? 0) === 0 ? (
+                    <div className="rounded-lg border p-3 space-y-3">
+                        <div className="flex items-center gap-3">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                                <LogIn className="size-4 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium">Parent Account</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Link an existing parent or create a new login
+                                </p>
+                            </div>
+                        </div>
+
+                        {existingParents.length > 0 && (
+                            <div className="space-y-2">
+                                <Label htmlFor="link_parent_id">Link Existing Parent</Label>
+                                <Select
+                                    value={data.link_parent_id}
+                                    onValueChange={(v) => {
+                                        setData('link_parent_id', v);
+                                        if (v) {
+                                            setData('create_parent_login', false);
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select an existing parent" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {existingParents.map((p) => (
+                                            <SelectItem key={p.id} value={String(p.id)}>
+                                                {p.name} ({p.email})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                    Or create a new parent login below
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Switch
+                                    checked={data.create_parent_login}
+                                    onCheckedChange={(checked) => {
+                                        setData('create_parent_login', checked);
+                                        if (checked) {
+                                            setData('link_parent_id', '');
+                                        }
+                                    }}
+                                />
+                                <span className="text-sm">Create New Parent Login</span>
+                            </div>
+                        </div>
+
+                        {data.create_parent_login && (
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="parent_email">Parent Email *</Label>
+                                    <Input
+                                        id="parent_email"
+                                        type="email"
+                                        value={data.parent_email}
+                                        onChange={(e) => setData('parent_email', e.target.value)}
+                                        placeholder="parent@example.com"
+                                    />
+                                    <InputError message={errors.parent_email} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="parent_password">Password *</Label>
+                                    <Input
+                                        id="parent_password"
+                                        type="password"
+                                        value={data.parent_password}
+                                        onChange={(e) => setData('parent_password', e.target.value)}
+                                        placeholder="Min 6 characters"
+                                    />
+                                    <InputError message={errors.parent_password} />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="rounded-lg border p-3 space-y-2">
+                        <div className="flex items-center gap-3">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-green-500/10">
+                                <LogIn className="size-4 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium">Parent Account Linked</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {student?.parents?.map((p) => p.email).join(', ') || 'Parent login is active'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {!hideActions && (

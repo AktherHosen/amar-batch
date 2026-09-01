@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import LanguageSwitcher from '@/components/language-switcher';
-import PlanBadge from '@/components/plan-badge';
+import PlanCard from '@/components/plan-card';
 import {
     Accordion,
     AccordionContent,
@@ -24,7 +24,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useLocale } from '@/contexts/locale-context';
 import { dashboard, login, register } from '@/routes';
@@ -52,9 +51,11 @@ type Stats = {
 type Props = {
     stats?: Stats;
     plans?: Plan[];
+    availableFeatures?: string[];
+    featureMap?: Record<string, string>;
 };
 
-export default function Welcome({ stats, plans }: Props) {
+export default function Welcome({ stats, plans, availableFeatures = [], featureMap = {} }: Props) {
     const { auth } = usePage().props;
     const { t, formatNumber, formatCurrency } = useLocale();
     const [annual, setAnnual] = useState(true);
@@ -150,19 +151,6 @@ export default function Welcome({ stats, plans }: Props) {
         { q: t('welcome.faq3_q'), a: t('welcome.faq3_a') },
         { q: t('welcome.faq4_q'), a: t('welcome.faq4_a') },
     ];
-
-    const featureLabels: Record<string, string> = {
-        students: t('plan.feature_students'),
-        batches: t('plan.feature_batches'),
-        attendance: t('plan.feature_attendance'),
-        fees: t('plan.feature_fees'),
-        exams: t('plan.feature_exams'),
-        reports: t('plan.feature_reports'),
-        notifications: t('plan.feature_notifications'),
-        custom_branding: t('plan.feature_custom_branding'),
-        multi_branch: t('plan.feature_multi_branch'),
-        api_access: t('plan.feature_api_access'),
-    };
 
     return (
         <>
@@ -402,122 +390,22 @@ export default function Welcome({ stats, plans }: Props) {
                             <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
                                 {safePlans.map((plan) => {
                                     const isPopular = plan.slug === 'pro';
-                                    const price = annual
-                                        ? plan.price_yearly
-                                        : plan.price_monthly;
-                                    const period = annual
-                                        ? t('plan.year')
-                                        : t('plan.month');
 
                                     return (
-                                        <Card
+                                        <PlanCard
                                             key={plan.id}
-                                            className={`relative flex flex-col ${
-                                                isPopular
-                                                    ? 'scale-[1.02] border-primary shadow-lg shadow-primary/10'
-                                                    : plan.is_default
-                                                      ? 'border-muted'
-                                                      : ''
-                                            }`}
-                                        >
-                                            <PlanBadge
-                                                isPopular={isPopular}
-                                                isDefault={
-                                                    plan.is_default &&
-                                                    !isPopular
-                                                }
-                                                popularLabel={t('plan.popular')}
-                                                defaultLabel={t(
-                                                    'plan.free_trial',
-                                                )}
-                                            />
-                                            <CardHeader className="flex flex-col items-start gap-1.5">
-                                                <CardTitle className="text-xl font-bold tracking-tight">
-                                                    {plan.name}
-                                                </CardTitle>
-                                                {plan.description && (
-                                                    <p className="text-sm leading-relaxed text-muted-foreground">
-                                                        {plan.description}
-                                                    </p>
-                                                )}
-                                            </CardHeader>
-                                            <CardContent className="flex flex-1 flex-col">
-                                                <div className="mb-6">
-                                                    {price === 0 ? (
-                                                        <div className="text-2xl font-bold sm:text-3xl lg:text-4xl">
-                                                            {t('plan.free')}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-2xl font-bold sm:text-3xl lg:text-4xl">
-                                                            {formatCurrency(
-                                                                price,
-                                                            )}
-                                                            <span className="text-sm font-normal text-muted-foreground">
-                                                                /{period}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <Separator className="mb-6" />
-
-                                                <div className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                    {t('plan.limits')}
-                                                </div>
-                                                <ul className="mb-6 space-y-3 text-sm">
-                                                    <li className="flex items-center gap-2">
-                                                        <Check className="h-4 w-4 text-green-500" />
-                                                        {plan.max_students ===
-                                                        -1
-                                                            ? t(
-                                                                  'plan.unlimited_students',
-                                                              )
-                                                            : `${plan.max_students} ${t('plan.students')}`}
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <Check className="h-4 w-4 text-green-500" />
-                                                        {plan.max_staff === -1
-                                                            ? t(
-                                                                  'plan.unlimited_staff',
-                                                              )
-                                                            : `${plan.max_staff} ${t('plan.staff')}`}
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <Check className="h-4 w-4 text-green-500" />
-                                                        {plan.max_batches === -1
-                                                            ? t(
-                                                                  'plan.unlimited_batches',
-                                                              )
-                                                            : `${plan.max_batches} ${t('plan.batches')}`}
-                                                    </li>
-                                                </ul>
-
-                                                <div className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                    {t('plan.includes')}
-                                                </div>
-                                                <ul className="mb-6 flex-1 space-y-3 text-sm">
-                                                    {plan.features.map(
-                                                        (feature) => (
-                                                            <li
-                                                                key={feature}
-                                                                className="flex items-center gap-2"
-                                                            >
-                                                                <Check className="h-4 w-4 text-green-500" />
-                                                                {featureLabels[
-                                                                    feature
-                                                                ] || feature}
-                                                            </li>
-                                                        ),
-                                                    )}
-                                                </ul>
-
+                                            plan={plan}
+                                            annual={annual}
+                                            isPopular={isPopular}
+                                            isDefault={plan.is_default && !isPopular}
+                                            popularLabel={t('plan.popular')}
+                                            defaultLabel={t('plan.free_trial')}
+                                            availableFeatures={availableFeatures}
+                                            featureMap={featureMap}
+                                            cta={
                                                 <Button
                                                     className="w-full"
-                                                    variant={
-                                                        isPopular
-                                                            ? 'default'
-                                                            : 'outline'
-                                                    }
+                                                    variant={isPopular ? 'default' : 'outline'}
                                                     asChild
                                                 >
                                                     <Link href={register()}>
@@ -525,8 +413,8 @@ export default function Welcome({ stats, plans }: Props) {
                                                         <ArrowRight className="ml-2 h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                            </CardContent>
-                                        </Card>
+                                            }
+                                        />
                                     );
                                 })}
                             </div>

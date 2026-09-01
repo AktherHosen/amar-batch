@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -31,10 +32,12 @@ class Tenant extends Model
         return $this->hasOne(Subscription::class);
     }
 
-    /** @return HasMany<User, $this> */
-    public function users(): HasMany
+    /** @return BelongsToMany<User, $this> */
+    public function users(): BelongsToMany
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'tenant_user', 'tenant_id', 'user_id')
+            ->withPivot('role', 'is_approved')
+            ->withTimestamps();
     }
 
     /** @return HasMany<Student, $this> */

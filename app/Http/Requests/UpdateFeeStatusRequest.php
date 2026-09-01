@@ -15,7 +15,7 @@ class UpdateFeeStatusRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        $tenantId = $this->user()->tenant_id;
+        $tenantId = app('tenant_id');
 
         return [
             'student_id' => ['required', Rule::exists('students', 'id')->where('tenant_id', $tenantId)],

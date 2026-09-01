@@ -147,6 +147,15 @@ return [
             'branches.destroy' => 'branches.destroy',
         ],
 
+        'SMS' => [
+            'sms.settings' => 'sms.settings',
+            'sms.settings.update' => 'sms.settings.update',
+            'sms.schedules.update' => 'sms.schedules.update',
+            'sms.send' => 'sms.send',
+            'sms.send.store' => 'sms.send.store',
+            'sms.logs' => 'sms.logs',
+        ],
+
         'Settings' => [
             'settings.tenant.edit' => 'settings.tenant.edit',
             'settings.tenant.update' => 'settings.tenant.update',
@@ -184,6 +193,8 @@ return [
         'payment.ipn',
         'onboarding.show',
         'onboarding.store',
+        'portal.index',
+        'portal.child.show',
     ],
 
     /*
@@ -204,6 +215,7 @@ return [
         'Notices' => 'notifications',
         'Reports' => 'reports',
         'Branches' => 'multi_branch',
+        'SMS' => 'sms_notifications',
     ],
 
     /*
@@ -243,6 +255,13 @@ return [
                 'holidays.show',
                 'reports.index',
             ],
+            'is_system' => true,
+        ],
+        [
+            'name' => 'Parent',
+            'slug' => 'parent',
+            'description' => 'View linked children progress via parent portal',
+            'permissions' => [],
             'is_system' => true,
         ],
     ],

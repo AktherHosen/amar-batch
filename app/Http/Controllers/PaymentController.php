@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use App\Models\PaymentSetting;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Models\SubscriptionHistory;
 use App\Services\SslcommerzService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +27,7 @@ class PaymentController extends Controller
     public function initiate(Request $request, Plan $plan): RedirectResponse
     {
         $user = $request->user();
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
 
         if (! $tenant) {
             return back()->withErrors(['error' => 'No coaching center found.']);
@@ -211,7 +213,7 @@ class PaymentController extends Controller
     public function history(Request $request): Response
     {
         $user = $request->user();
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
 
         if (! $tenant) {
             return to_route('dashboard');
@@ -267,6 +269,7 @@ class PaymentController extends Controller
             : now()->addMonth();
 
         $subscription = $tenant->subscription;
+        $oldPlan = $subscription?->plan;
 
         if ($subscription) {
             // Extend from the current term so mid-term renewals keep paid time.
@@ -283,7 +286,7 @@ class PaymentController extends Controller
                 'ends_at' => $endsAt,
             ]);
         } else {
-            Subscription::create([
+            $subscription = Subscription::create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $plan->id,
                 'status' => 'active',
@@ -293,5 +296,71 @@ class PaymentController extends Controller
         }
 
         $payment->update(['subscription_id' => $tenant->subscription->id]);
+
+        $action = 'renewed';
+        if (! $oldPlan) {
+            $action = 'activated';
+        } elseif ($plan->id !== $oldPlan->id) {
+            $action = $plan->price_monthly > $oldPlan->price_monthly ? 'upgraded' : 'downgraded';
+        }
+
+        SubscriptionHistory::create([
+            'tenant_id' => $tenant->id,
+            'subscription_id' => $tenant->subscription->id,
+            'plan_id' => $plan->id,
+            'action' => $action,
+            'status' => 'active',
+            'billing_type' => $payment->billing_type,
+            'amount' => $payment->amount,
+            'old_plan_name' => $oldPlan?->name,
+            'new_plan_name' => $plan->name,
+        ]);
+    }
+
+    public function submitManual(Request $request, Plan $plan): RedirectResponse
+    {
+        $tenant = $request->user()->current_tenant;
+
+        if (! $tenant) {
+            return back()->withErrors(['error' => 'No coaching center found.']);
+        }
+
+        $setting = PaymentSetting::getForGateway('sslcommerz');
+
+        if (! $setting->manual_payment_enabled) {
+            return back()->withErrors(['error' => 'Manual payments are currently disabled.']);
+        }
+
+        $billingType = $request->query('billing', 'monthly');
+        $amount = $billingType === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
+
+        if ($amount <= 0) {
+            return back()->withErrors(['error' => 'This plan does not require payment.']);
+        }
+
+        $validated = $request->validate([
+            'transaction_id' => ['required', 'string', 'max:255'],
+            'sender_number' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $payment = Payment::create([
+            'tenant_id' => $tenant->id,
+            'plan_id' => $plan->id,
+            'amount' => $amount,
+            'billing_type' => $billingType,
+            'status' => 'pending',
+            'payment_method' => 'manual',
+            'txid' => 'MANUAL-'.Str::upper(Str::random(8)).'-'.time(),
+            'gateway_response' => [
+                'transaction_id' => $validated['transaction_id'],
+                'sender_number' => $validated['sender_number'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'submitted_at' => now()->toISOString(),
+            ],
+        ]);
+
+        return redirect()->route('subscription.index')
+            ->with('success', 'Manual payment submitted. It will be reviewed by our team shortly.');
     }
 }

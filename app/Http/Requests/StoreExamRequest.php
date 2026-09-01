@@ -14,7 +14,7 @@ class StoreExamRequest extends FormRequest
 
     public function rules(): array
     {
-        $tenantId = $this->user()->tenant_id;
+        $tenantId = app('tenant_id');
 
         return [
             'title' => ['required', 'string', 'max:255'],

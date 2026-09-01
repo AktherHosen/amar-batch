@@ -104,16 +104,20 @@ public function store(StoreTeacherRequest $request): RedirectResponse
 
         $allowLogin = $request->input('allow_login', '1') === '1';
 
-        User::create([
+        $teacher = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => $allowLogin && ! empty($request->password)
                 ? Hash::make($request->password)
                 : Hash::make(Str::random(16)),
             'role' => $request->role ?? 'teacher',
-            'tenant_id' => $request->user()->tenant_id,
             'branch_id' => $request->branch_id,
             'avatar' => $data['avatar'] ?? null,
+            'is_approved' => $allowLogin,
+        ]);
+
+        $teacher->tenants()->attach(app('tenant_id'), [
+            'role' => $request->role ?? 'teacher',
             'is_approved' => $allowLogin,
         ]);
 
@@ -287,14 +291,19 @@ public function reject(Request $request, User $teacher): RedirectResponse
             }
 
             try {
-                User::create([
+                $user = User::create([
                     'name' => $row['name'] ?? '',
                     'email' => $row['email'] ?? '',
                     'password' => Hash::make($row['password'] ?? 'password'),
                     'role' => $row['role'] ?? 'teacher',
-                    'tenant_id' => $request->user()->tenant_id,
                     'branch_id' => $row['branch_id'] ?? null,
                 ]);
+
+                $user->tenants()->attach(app('tenant_id'), [
+                    'role' => $row['role'] ?? 'teacher',
+                    'is_approved' => true,
+                ]);
+
                 $imported++;
             } catch (\Illuminate\Database\QueryException $e) {
                 $skipped++;

@@ -16,13 +16,14 @@ class FeeStatus extends Model
     use BelongsToBranch, BelongsToTenant, HasFactory;
 
     protected $fillable = [
-        'tenant_id', 'student_id', 'batch_id', 'month', 'year', 'amount_paid', 'notes',
+        'tenant_id', 'student_id', 'batch_id', 'month', 'year', 'amount_paid', 'amount_due', 'notes',
     ];
 
     protected function casts(): array
     {
         return [
             'amount_paid' => 'decimal:2',
+            'amount_due' => 'decimal:2',
             'month' => 'integer',
             'year' => 'integer',
         ];

@@ -19,7 +19,7 @@ class Student extends Model
 
     protected $fillable = [
         'tenant_id', 'branch_id', 'code', 'name', 'phone', 'coaching_class_id', 'section', 'address', 'date_of_birth',
-        'gender', 'guardian_name', 'guardian_phone', 'photo', 'status', 'joined_at', 'left_at',
+        'gender', 'guardian_name', 'guardian_phone', 'photo', 'status', 'joined_at', 'left_at', 'paused_at',
     ];
 
     protected static function booted(): void
@@ -55,6 +55,7 @@ class Student extends Model
             'date_of_birth' => 'date',
             'joined_at' => 'date',
             'left_at' => 'date',
+            'paused_at' => 'datetime',
         ];
     }
 
@@ -100,5 +101,14 @@ class Student extends Model
     public function batchHistories(): HasMany
     {
         return $this->hasMany(BatchHistory::class);
+    }
+
+    /** @return BelongsToMany<User, $this> */
+    public function parents(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'parent_student', 'student_id', 'user_id')
+            ->withoutGlobalScope('tenant')
+            ->withoutGlobalScope('branch')
+            ->withTimestamps();
     }
 }

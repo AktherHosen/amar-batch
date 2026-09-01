@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Models\SubscriptionHistory;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,19 +50,29 @@ class OnboardingController extends Controller
         // Assign default plan
         $defaultPlan = Plan::where('is_default', true)->first();
         if ($defaultPlan) {
-            Subscription::create([
+            $subscription = Subscription::create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $defaultPlan->id,
                 'status' => 'trial',
                 'trial_ends_at' => now()->addDays(14),
             ]);
+
+            SubscriptionHistory::create([
+                'tenant_id' => $tenant->id,
+                'subscription_id' => $subscription->id,
+                'plan_id' => $defaultPlan->id,
+                'action' => 'trial_started',
+                'status' => 'trial',
+                'new_plan_name' => $defaultPlan->name,
+            ]);
         }
 
-        // Link user to tenant
-        $user->update([
-            'tenant_id' => $tenant->id,
-            'onboarding_complete' => true,
-        ]);
+        // Link user to tenant via pivot
+        $user->tenants()->attach($tenant->id, ['role' => 'owner']);
+        $user->update(['onboarding_complete' => true]);
+
+        // Set active tenant in session
+        $request->session()->put('active_tenant_id', $tenant->id);
 
         \App\Support\DefaultRoles::createForTenant($tenant->id);
 

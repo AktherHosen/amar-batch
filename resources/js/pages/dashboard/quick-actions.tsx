@@ -13,10 +13,10 @@ type QuickAction = {
 };
 
 const defaultActions: QuickAction[] = [
-    { label: 'dashboard.add_student', href: '/students/create', icon: Plus },
+    { label: 'dashboard.add_student', href: '/students?create=true', icon: Plus },
     { label: 'dashboard.mark_attendance', href: '/attendance/create', icon: ClipboardCheck, feature: 'attendance' },
-    { label: 'dashboard.record_payment', href: '/fees', icon: CreditCard, feature: 'fees' },
-    { label: 'dashboard.post_notice', href: '/notices/create', icon: Megaphone, feature: 'notifications' },
+    { label: 'dashboard.record_payment', href: '/fees?create=true', icon: CreditCard, feature: 'fees' },
+    { label: 'dashboard.post_notice', href: '/notices?create=true', icon: Megaphone, feature: 'notifications' },
 ];
 
 const stagger = {
@@ -77,7 +77,7 @@ export default function QuickActions({ features }: { features: string[] }) {
                     </CardHeader>
                     <CardContent>
                         <motion.div
-                            className={`grid grid-cols-2 gap-2 ${actions.length >= 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}
+                            className="grid grid-cols-2 gap-2"
                             initial="hidden"
                             animate="visible"
                             variants={stagger}

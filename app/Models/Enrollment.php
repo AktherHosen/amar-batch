@@ -15,11 +15,15 @@ class Enrollment extends Model
     /** @use HasFactory<EnrollmentFactory> */
     use BelongsToBranch, BelongsToTenant, HasFactory;
 
-    protected $fillable = ['tenant_id', 'student_id', 'batch_id', 'enrolled_at', 'status'];
+    protected $fillable = ['tenant_id', 'student_id', 'batch_id', 'enrolled_at', 'status', 'paused_at', 'resumed_at', 'notes'];
 
     protected function casts(): array
     {
-        return ['enrolled_at' => 'datetime'];
+        return [
+            'enrolled_at' => 'datetime',
+            'paused_at' => 'datetime',
+            'resumed_at' => 'datetime',
+        ];
     }
 
     public function branchScopeQuery(Builder $query, int $branchId): void

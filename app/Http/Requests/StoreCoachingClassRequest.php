@@ -15,7 +15,7 @@ class StoreCoachingClassRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        $tenantId = $this->user()->tenant_id;
+        $tenantId = app('tenant_id');
 
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('coaching_classes', 'name')->where('tenant_id', $tenantId)],

@@ -25,7 +25,7 @@ class CheckExpiredSubscriptions extends Command
 
             $tenant = $subscription->tenant;
             if ($tenant) {
-                $owner = User::where('tenant_id', $tenant->id)->where('role', 'owner')->first();
+                $owner = User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenant->id))->where('role', 'owner')->first();
                 if ($owner) {
                     InAppNotification::create([
                         'user_id' => $owner->id,

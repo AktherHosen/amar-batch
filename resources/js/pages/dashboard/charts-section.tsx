@@ -90,12 +90,13 @@ export default function ChartsSection({
                 </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex flex-wrap gap-4">
                 {showAttendance && (
                     <motion.div
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: 0.1 }}
+                        className="w-full sm:flex-1 sm:min-w-0"
                     >
                         <Card className="h-full">
                             <CardHeader>
@@ -166,6 +167,7 @@ export default function ChartsSection({
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: 0.2 }}
+                        className="w-full sm:flex-1 sm:min-w-0"
                     >
                         <Card className="h-full">
                             <CardHeader>
@@ -216,6 +218,7 @@ export default function ChartsSection({
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: 0.3 }}
+                        className="w-full sm:flex-1 sm:min-w-0"
                     >
                         <Card className="h-full">
                             <CardHeader>

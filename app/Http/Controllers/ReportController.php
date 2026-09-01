@@ -18,7 +18,7 @@ class ReportController extends Controller
     {
         $this->authorize('viewAny', \App\Models\Student::class);
 
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $branchId = $request->input('branch_id');
         $batchId = $request->input('batch_id');
         $month = $request->input('month', now()->month);
@@ -109,6 +109,10 @@ class ReportController extends Controller
         // Student stats
         $studentQuery = Student::where('tenant_id', $tenantId)
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId));
+
+        if ($batchId) {
+            $studentQuery->whereHas('enrollments', fn ($q) => $q->where('batch_id', $batchId)->where('status', 'active'));
+        }
 
         $studentSummary = [
             'total' => (clone $studentQuery)->count(),
@@ -224,7 +228,7 @@ class ReportController extends Controller
     {
         $this->authorize('viewAny', Student::class);
 
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
         $batchId = $request->input('batch_id');
@@ -246,17 +250,82 @@ class ReportController extends Controller
             $query->whereHas('batches', fn ($q) => $q->where('batches.id', $batchId));
         }
 
-        $students = $query->orderBy('name')
-            ->paginate(10)
-            ->withQueryString()
-            ->through(fn ($student) => [
+        $allUnpaidStudents = $query->orderBy('name')->get();
+
+        $studentIds = $allUnpaidStudents->pluck('id')->toArray();
+
+        $paidRecords = FeeStatus::where('tenant_id', $tenantId)
+            ->whereIn('student_id', $studentIds)
+            ->where('amount_paid', '>', 0)
+            ->select('student_id', 'month', 'year')
+            ->get()
+            ->groupBy('student_id');
+
+        $enrolledBatches = \App\Models\Enrollment::where('tenant_id', $tenantId)
+            ->whereIn('student_id', $studentIds)
+            ->where('status', 'active')
+            ->select('student_id', 'enrolled_at')
+            ->get()
+            ->groupBy('student_id');
+
+        $now = now();
+        $currentMonth = (int) $now->format('m');
+        $currentYear = (int) $now->format('Y');
+
+        $studentDueData = $allUnpaidStudents->map(function ($student) use ($paidRecords, $enrolledBatches, $currentMonth, $currentYear) {
+            $defaultFee = (float) ($student->coachingClass?->default_fee ?? 0);
+
+            $earliestEnrollment = $enrolledBatches->get($student->id)?->min('enrolled_at');
+
+            if ($earliestEnrollment) {
+                $enrollDate = \Carbon\Carbon::parse($earliestEnrollment);
+                $startMonth = (int) $enrollDate->format('m');
+                $startYear = (int) $enrollDate->format('Y');
+            } else {
+                $startMonth = 1;
+                $startYear = $currentYear;
+            }
+
+            $paidMonths = collect();
+            if ($studentRecords = $paidRecords->get($student->id)) {
+                $paidMonths = $studentRecords->map(fn ($r) => $r['month'] . '-' . $r['year']);
+            }
+
+            $unpaidCount = 0;
+            $y = $startYear;
+            $m = $startMonth;
+
+            while ($y < $currentYear || ($y === $currentYear && $m <= $currentMonth)) {
+                $key = $m . '-' . $y;
+                if (!$paidMonths->contains($key)) {
+                    $unpaidCount++;
+                }
+                $m++;
+                if ($m > 12) {
+                    $m = 1;
+                    $y++;
+                }
+            }
+
+            return [
                 'id' => $student->id,
                 'name' => $student->name,
                 'phone' => $student->phone,
                 'coaching_class' => $student->coachingClass?->name,
-                'default_fee' => $student->coachingClass?->default_fee ?? 0,
+                'default_fee' => $defaultFee,
+                'unpaid_months' => $unpaidCount,
+                'total_due' => $defaultFee * $unpaidCount,
                 'batches' => $student->batches->map(fn ($b) => ['id' => $b->id, 'name' => $b->name]),
-            ]);
+            ];
+        });
+
+        $students = new \Illuminate\Pagination\LengthAwarePaginator(
+            $studentDueData->forPage($request->input('page', 1), 10),
+            $studentDueData->count(),
+            10,
+            $request->input('page', 1),
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get(['id', 'name']);
         $monthNames = [

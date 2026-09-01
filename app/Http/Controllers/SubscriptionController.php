@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use App\Models\PaymentSetting;
 use App\Models\Plan;
+use App\Models\PlanFeature;
 use App\Models\Subscription;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +17,7 @@ class SubscriptionController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
 
         if (! $tenant) {
             return to_route('dashboard');
@@ -24,9 +26,13 @@ class SubscriptionController extends Controller
         $subscription = $tenant->subscription;
         $plans = Plan::where('is_active', true)->orderBy('price_monthly')->get();
 
+        $planFeatures = PlanFeature::orderBy('name')->get();
+        $availableFeatures = $planFeatures->pluck('slug')->toArray();
+        $featureMap = $planFeatures->pluck('name', 'slug')->toArray();
+
         $currentUsage = [
             'students' => $tenant->students()->where('status', 'active')->count(),
-            'staff' => $tenant->users()->whereIn('role', ['staff', 'teacher'])->count(),
+            'staff' => $tenant->users()->whereIn('users.role', ['staff', 'teacher'])->count(),
             'batches' => $tenant->batches()->count(),
         ];
 
@@ -77,13 +83,17 @@ class SubscriptionController extends Controller
             ]),
             'currentUsage' => $currentUsage,
             'recentPayments' => $recentPayments,
+            'manualPaymentEnabled' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_enabled,
+            'manualPaymentInstructions' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_instructions,
+            'availableFeatures' => $availableFeatures,
+            'featureMap' => $featureMap,
         ]);
     }
 
     public function upgrade(Request $request, Plan $plan): RedirectResponse
     {
         $user = $request->user();
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
 
         if (! $tenant) {
             return back()->withErrors(['error' => 'No coaching center found.']);

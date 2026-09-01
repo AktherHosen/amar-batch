@@ -33,7 +33,7 @@ class ExamController extends Controller
         }
 
         $exams = $query->latest('date')->paginate(10)->withQueryString();
-        $batches = Batch::where('tenant_id', $request->user()->tenant_id)->where('status', 'active')->orderBy('name')->get();
+        $batches = Batch::where('tenant_id', app('tenant_id'))->where('status', 'active')->orderBy('name')->get();
 
         return Inertia::render('exams/index', [
             'exams' => $exams,
@@ -46,7 +46,7 @@ class ExamController extends Controller
     {
         $this->authorize('create', Exam::class);
 
-        $batches = Batch::where('tenant_id', $request->user()->tenant_id)->where('status', 'active')->orderBy('name')->get();
+        $batches = Batch::where('tenant_id', app('tenant_id'))->where('status', 'active')->orderBy('name')->get();
 
         return Inertia::render('exams/create', [
             'batches' => $batches,

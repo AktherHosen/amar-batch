@@ -23,6 +23,8 @@ class SuperAdminController extends Controller
             'total_revenue' => (float) Payment::where('status', 'success')->sum('amount'),
             'active_subscriptions' => Subscription::where('status', 'active')->count(),
             'trial_subscriptions' => Subscription::where('status', 'trial')->count(),
+            'pending_payments' => Payment::where('status', 'pending')->count(),
+            'total_students' => \App\Models\Student::count(),
         ];
 
         $recentPayments = Payment::with(['tenant', 'plan'])
@@ -31,7 +33,7 @@ class SuperAdminController extends Controller
             ->get();
 
         $ownerActivity = User::where('role', 'owner')
-            ->with('tenant')
+            ->with('tenants')
             ->whereIn('id', function ($query) {
                 $query->select('user_id')
                     ->from('sessions')
@@ -39,7 +41,7 @@ class SuperAdminController extends Controller
                     ->groupBy('user_id');
             })
             ->latest('updated_at')
-            ->take(10)
+            ->take(5)
             ->get()
             ->map(function ($user) {
                 $lastSession = DB::table('sessions')
@@ -48,20 +50,58 @@ class SuperAdminController extends Controller
                     ->orderByDesc('last_activity')
                     ->first();
 
+                $tenant = $user->tenants->first();
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'tenant' => $user->tenant ? ['id' => $user->tenant->id, 'name' => $user->tenant->name] : null,
+                    'tenant' => $tenant ? ['id' => $tenant->id, 'name' => $tenant->name] : null,
                     'last_login_at' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->diffForHumans() : null,
                     'last_activity' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->toISOString() : null,
                 ];
             });
 
+        $recentTenants = Tenant::with('subscription.plan')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn ($tenant) => [
+                'id' => $tenant->id,
+                'name' => $tenant->name,
+                'slug' => $tenant->slug,
+                'is_active' => $tenant->is_active,
+                'created_at' => $tenant->created_at->diffForHumans(),
+                'plan' => $tenant->subscription?->plan?->name ?? 'No plan',
+                'status' => $tenant->subscription?->status ?? 'none',
+            ]);
+
+        $revenueTrend = collect(range(11, 0))->map(function ($i) {
+            $date = now()->subMonths($i);
+            return [
+                'month' => $date->format('M Y'),
+                'revenue' => (float) Payment::where('status', 'success')
+                    ->whereMonth('paid_at', $date->month)
+                    ->whereYear('paid_at', $date->year)
+                    ->sum('amount'),
+            ];
+        });
+
+        $planDistribution = Subscription::where('status', 'active')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->select('plans.name', DB::raw('count(*) as count'))
+            ->groupBy('plans.name')
+            ->get()
+            ->pluck('count', 'name')
+            ->toArray();
+
         return Inertia::render('super-admin/dashboard', [
             'stats' => $stats,
             'recentPayments' => $recentPayments,
             'ownerActivity' => $ownerActivity,
+            'recentTenants' => $recentTenants,
+            'revenueTrend' => $revenueTrend,
+            'planDistribution' => $planDistribution,
         ]);
     }
 
@@ -147,7 +187,7 @@ class SuperAdminController extends Controller
             'active_students_count' => \App\Models\Student::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
             'batches_count' => \App\Models\Batch::where('tenant_id', $tenant->id)->count(),
             'active_batches_count' => \App\Models\Batch::where('tenant_id', $tenant->id)->where('status', 'active')->count(),
-            'users_count' => \App\Models\User::where('tenant_id', $tenant->id)->count(),
+            'users_count' => \App\Models\User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenant->id))->count(),
             'total_enrollments' => \App\Models\Enrollment::where('tenant_id', $tenant->id)->count(),
         ];
 

@@ -20,7 +20,7 @@ class StudentController extends Controller
     {
         $this->authorize('viewAny', Student::class);
 
-        $query = Student::with('coachingClass');
+        $query = Student::with('coachingClass')->withCount('parents');
 
         if ($request->user()->isTeacher()) {
             $studentIds = $request->user()->assignedBatches()
@@ -42,11 +42,20 @@ class StudentController extends Controller
             $query->where('status', $status);
         }
 
-        $students = $query->latest()->paginate(10)->withQueryString();
+        $students = $query->latest()->paginate(10)->withQueryString()
+            ->through(fn ($s) => [
+                ...$s->toArray(),
+                'has_parent' => $s->parents()->exists(),
+            ]);
 
         return Inertia::render('students/index', [
             'students' => $students,
             'coachingClasses' => CoachingClass::orderBy('name')->get(['id', 'name']),
+            'existingParents' => \App\Models\User::where('role', 'parent')
+                ->whereHas('tenants', fn ($q) => $q->where('tenants.id', app('tenant_id')))
+                ->select('id', 'name', 'email')
+                ->orderBy('name')
+                ->get(),
             'filters' => $request->only(['search', 'status']),
         ]);
     }
@@ -66,10 +75,18 @@ class StudentController extends Controller
         $remaining = $planLimits->remaining($request->user(), 'students');
         $limit = $planLimits->getLimit($request->user(), 'students');
 
-        $coachingClasses = CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get();
+        $coachingClasses = CoachingClass::where('tenant_id', app('tenant_id'))->orderBy('name')->get();
+
+        $tenantId = app('tenant_id');
+        $existingParents = \App\Models\User::where('role', 'parent')
+            ->whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('students/create', [
             'coachingClasses' => $coachingClasses,
+            'existingParents' => $existingParents,
             'planLimits' => [
                 'can_create' => true,
                 'remaining' => $remaining,
@@ -100,7 +117,47 @@ class StudentController extends Controller
             $validated['photo'] = $request->file('photo')->store('students', 'public');
         }
 
+        $createParent = $validated['create_parent_login'] ?? false;
+        $parentEmail = $validated['parent_email'] ?? null;
+        $parentPassword = $validated['parent_password'] ?? null;
+        $linkParentId = $validated['link_parent_id'] ?? null;
+
+        unset($validated['create_parent_login'], $validated['parent_email'], $validated['parent_password'], $validated['link_parent_id']);
+
         $student = Student::create($validated);
+
+        $tenantId = app('tenant_id');
+
+        if ($linkParentId) {
+            $parentUser = \App\Models\User::where('id', $linkParentId)->where('role', 'parent')->first();
+            if ($parentUser) {
+                if (! $parentUser->tenants()->where('tenants.id', $tenantId)->exists()) {
+                    $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+                }
+                $student->parents()->attach($parentUser->id);
+            }
+        } elseif ($createParent && $parentEmail && $parentPassword) {
+            $parentUser = \App\Models\User::where('email', $parentEmail)->first();
+
+            if (! $parentUser) {
+                $parentUser = \App\Models\User::create([
+                    'name' => $validated['guardian_name'] ?? $student->name . "'s Parent",
+                    'email' => $parentEmail,
+                    'phone' => $validated['guardian_phone'] ?? null,
+                    'password' => bcrypt($parentPassword),
+                    'role' => 'parent',
+                    'is_approved' => true,
+                    'onboarding_complete' => true,
+                ]);
+            }
+
+            if (! $parentUser->tenants()->where('tenants.id', $tenantId)->exists()) {
+                $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+            }
+            if (! $student->parents()->where('users.id', $parentUser->id)->exists()) {
+                $student->parents()->attach($parentUser->id);
+            }
+        }
 
         InAppNotification::create([
             'user_id' => $request->user()->id,
@@ -125,6 +182,9 @@ class StudentController extends Controller
             'batchHistories' => fn ($q) => $q->with('batch', 'user')->latest()->take(100),
         ]);
 
+        $student->loadCount('parents');
+        $student->load('parents:id,name,email');
+
         $attendanceSummary = Attendance::where('student_id', $student->id)
             ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')
             ->groupBy('year', 'month', 'status')
@@ -137,10 +197,18 @@ class StudentController extends Controller
                     });
             });
 
+        $tenantId = app('tenant_id');
+        $existingParents = \App\Models\User::where('role', 'parent')
+            ->whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
         return Inertia::render('students/show', [
             'student' => $student,
             'attendanceSummary' => $attendanceSummary,
-            'coachingClasses' => CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get(),
+            'coachingClasses' => CoachingClass::where('tenant_id', $tenantId)->orderBy('name')->get(),
+            'existingParents' => $existingParents,
         ]);
     }
 
@@ -148,11 +216,21 @@ class StudentController extends Controller
     {
         $this->authorize('update', $student);
 
-        $coachingClasses = CoachingClass::where('tenant_id', $request->user()->tenant_id)->orderBy('name')->get();
+        $student->loadCount('parents');
+        $student->load('parents:id,name,email');
+        $coachingClasses = CoachingClass::where('tenant_id', app('tenant_id'))->orderBy('name')->get();
+
+        $tenantId = app('tenant_id');
+        $existingParents = \App\Models\User::where('role', 'parent')
+            ->whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('students/edit', [
             'student' => $student,
             'coachingClasses' => $coachingClasses,
+            'existingParents' => $existingParents,
         ]);
     }
 
@@ -171,7 +249,57 @@ class StudentController extends Controller
             unset($validated['photo']);
         }
 
+        $createParent = $validated['create_parent_login'] ?? false;
+        $parentEmail = $validated['parent_email'] ?? null;
+        $parentPassword = $validated['parent_password'] ?? null;
+        $linkParentId = $validated['link_parent_id'] ?? null;
+
+        unset($validated['create_parent_login'], $validated['parent_email'], $validated['parent_password'], $validated['link_parent_id']);
+
         $student->update($validated);
+
+        if (isset($validated['guardian_name']) || isset($validated['guardian_phone'])) {
+            $linkedParent = $student->parents()->first();
+            if ($linkedParent) {
+                $linkedParent->update([
+                    'name' => $validated['guardian_name'] ?? $linkedParent->name,
+                    'phone' => $validated['guardian_phone'] ?? $linkedParent->phone,
+                ]);
+            }
+        }
+
+        $tenantId = app('tenant_id');
+
+        if ($linkParentId && ! $student->parents()->where('users.id', $linkParentId)->exists()) {
+            $parentUser = \App\Models\User::where('id', $linkParentId)->where('role', 'parent')->first();
+            if ($parentUser) {
+                if (! $parentUser->tenants()->where('tenants.id', $tenantId)->exists()) {
+                    $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+                }
+                $student->parents()->attach($parentUser->id);
+            }
+        } elseif ($createParent && $parentEmail && $parentPassword && ! $student->parents()->exists()) {
+            $parentUser = \App\Models\User::where('email', $parentEmail)->first();
+
+            if (! $parentUser) {
+                $parentUser = \App\Models\User::create([
+                    'name' => $validated['guardian_name'] ?? $student->name . "'s Parent",
+                    'email' => $parentEmail,
+                    'phone' => $validated['guardian_phone'] ?? null,
+                    'password' => bcrypt($parentPassword),
+                    'role' => 'parent',
+                    'is_approved' => true,
+                    'onboarding_complete' => true,
+                ]);
+            }
+
+            if (! $parentUser->tenants()->where('tenants.id', $tenantId)->exists()) {
+                $parentUser->tenants()->attach($tenantId, ['role' => 'parent', 'is_approved' => true]);
+            }
+            if (! $student->parents()->where('users.id', $parentUser->id)->exists()) {
+                $student->parents()->attach($parentUser->id);
+            }
+        }
 
         return to_route('students.show', $student)->with('toast', ['type' => 'success', 'message' => 'Student updated successfully.']);
     }
@@ -191,12 +319,12 @@ class StudentController extends Controller
 
         $status = $request->input('status');
 
-        if (! in_array($status, ['active', 'inactive'])) {
+        if (! in_array($status, ['active', 'inactive', 'paused'])) {
             abort(422);
         }
 
         // Check plan limit when reactivating a student
-        if ($status === 'active') {
+        if ($status === 'active' && $student->status !== 'active') {
             $planLimits = new PlanLimitsPolicy;
             if (! $planLimits->createStudent($request->user())) {
                 return to_route('subscription.index')->with('toast', [
@@ -206,16 +334,30 @@ class StudentController extends Controller
             }
         }
 
-        $student->update([
-            'status' => $status,
-            'left_at' => $status === 'inactive' ? now() : null,
-        ]);
+        $updateData = ['status' => $status];
+
+        if ($status === 'paused') {
+            $updateData['paused_at'] = now();
+            $updateData['left_at'] = null;
+        } elseif ($status === 'active') {
+            $updateData['paused_at'] = null;
+            $updateData['left_at'] = null;
+        } elseif ($status === 'inactive') {
+            $updateData['paused_at'] = null;
+            $updateData['left_at'] = now();
+        }
+
+        $student->update($updateData);
+
+        $message = match ($status) {
+            'paused' => 'Student paused successfully.',
+            'active' => 'Student resumed successfully.',
+            default => 'Student deactivated successfully.',
+        };
 
         return back()->with('toast', [
             'type' => 'success',
-            'message' => $status === 'active'
-                ? 'Student activated successfully.'
-                : 'Student deactivated successfully.',
+            'message' => $message,
         ]);
     }
 
@@ -261,7 +403,7 @@ class StudentController extends Controller
                 if (! $coachingClassId && ! empty($row['coaching_class'])) {
                     $className = trim($row['coaching_class']);
                     $coachingClass = CoachingClass::firstOrCreate(
-                        ['name' => $className, 'tenant_id' => $request->user()->tenant_id],
+                        ['name' => $className, 'tenant_id' => app('tenant_id')],
                         ['default_fee' => 0]
                     );
                     $coachingClassId = $coachingClass->id;

@@ -47,7 +47,7 @@ class PlanLimitsPolicy
             return null;
         }
 
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
         if (! $tenant || ! $tenant->subscription || ! $tenant->subscription->plan) {
             return 0;
         }
@@ -81,7 +81,7 @@ class PlanLimitsPolicy
             return null;
         }
 
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
         if (! $tenant || ! $tenant->subscription || ! $tenant->subscription->plan) {
             return 0;
         }
@@ -96,14 +96,14 @@ class PlanLimitsPolicy
      */
     public function getCurrentCount(User $user, string $type): int
     {
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
         if (! $tenant) {
             return 0;
         }
 
         return match ($type) {
             'students' => $tenant->students()->where('status', 'active')->count(),
-            'staff' => $tenant->users()->whereIn('role', ['staff', 'teacher'])->count(),
+            'staff' => $tenant->users()->whereIn('users.role', ['staff', 'teacher'])->count(),
             'batches' => $tenant->batches()->count(),
             default => 0,
         };
@@ -111,7 +111,7 @@ class PlanLimitsPolicy
 
     private function checkLimit(User $user, string $type, string $limitField): bool
     {
-        $tenant = $user->tenant;
+        $tenant = $user->current_tenant;
         if (! $tenant) {
             return false;
         }

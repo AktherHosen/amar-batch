@@ -36,8 +36,8 @@ class OnboardingMiddleware
         }
 
         // Check for expired subscriptions (skip for payment/subscription routes)
-        if ($user->isOwner() && $user->tenant && ! $request->routeIs('payment.*') && ! $request->routeIs('subscription.*')) {
-            $subscription = $user->tenant->subscription;
+        if ($user->isOwner() && $user->current_tenant && ! $request->routeIs('payment.*') && ! $request->routeIs('subscription.*')) {
+            $subscription = $user->current_tenant->subscription;
 
             if ($subscription && $subscription->isExpired()) {
                 return redirect()->route('subscription.index')->with('toast', [

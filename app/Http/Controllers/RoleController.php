@@ -16,7 +16,7 @@ class RoleController extends Controller
     {
         $groups = config('role-routes.groups');
         $featureMap = config('role-routes.feature_map');
-        $features = $request->user()->tenant?->subscription?->plan?->features ?? [];
+        $features = $request->user()->current_tenant?->subscription?->plan?->features ?? [];
 
         return collect($groups)
             ->filter(function ($routes, $group) use ($featureMap, $features) {
@@ -63,7 +63,7 @@ class RoleController extends Controller
             'description' => $request->description,
             'permissions' => $request->permissions ?? [],
             'is_system' => false,
-            'tenant_id' => $request->user()->tenant_id,
+            'tenant_id' => app('tenant_id'),
         ]);
 
         return to_route('roles.index')->with('toast', ['type' => 'success', 'message' => 'Role created successfully.']);

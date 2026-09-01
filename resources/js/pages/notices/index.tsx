@@ -1,6 +1,6 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import CellTitle from '@/components/cell-title';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -94,6 +94,16 @@ export default function NoticesIndex({
     }>({ open: false, item: null });
     const [sheetOpen, setSheetOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<Notice | null>(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('create') === 'true') {
+            setEditingItem(null);
+            setSheetOpen(true);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
+
     const { data, setData, post, put, processing, errors, reset } = useForm({
         title: '',
         content: '',

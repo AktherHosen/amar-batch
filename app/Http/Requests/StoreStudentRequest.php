@@ -15,7 +15,7 @@ class StoreStudentRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        $tenantId = $this->user()->tenant_id;
+        $tenantId = app('tenant_id');
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -27,10 +27,14 @@ class StoreStudentRequest extends FormRequest
             'gender' => ['nullable', 'in:male,female,other'],
             'guardian_name' => ['nullable', 'string', 'max:255'],
             'guardian_phone' => ['nullable', 'string', 'max:20'],
-            'status' => ['sometimes', 'in:active,inactive'],
+            'status' => ['sometimes', 'in:active,inactive,paused'],
             'joined_at' => ['nullable', 'date'],
             'left_at' => ['nullable', 'date'],
             'photo' => ['nullable', 'image', 'max:2048'],
+            'create_parent_login' => ['sometimes', 'boolean'],
+            'parent_email' => ['required_if:create_parent_login,true', 'nullable', 'email'],
+            'parent_password' => ['required_if:create_parent_login,true', 'nullable', 'string', 'min:6'],
+            'link_parent_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('role', 'parent')],
         ];
     }
 }

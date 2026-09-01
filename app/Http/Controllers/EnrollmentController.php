@@ -55,17 +55,32 @@ class EnrollmentController extends Controller
         $this->authorize('update', $enrollment);
 
         $request->validate([
-            'status' => 'required|in:active,completed,dropped',
+            'status' => 'required|in:active,completed,dropped,paused,resumed',
+            'paused_at' => 'required_if:status,paused|nullable|date',
+            'resumed_at' => 'required_if:status,resumed|nullable|date',
         ]);
 
-        $enrollment->update(['status' => $request->status]);
+        $newStatus = $request->status;
+        $updateData = ['status' => $newStatus];
+
+        if ($newStatus === 'paused' && $enrollment->status === 'active') {
+            $updateData['paused_at'] = $request->input('paused_at') ?? now()->toDateString();
+            $updateData['resumed_at'] = null;
+        } elseif ($newStatus === 'resumed' && $enrollment->status === 'paused') {
+            $updateData['resumed_at'] = $request->input('resumed_at') ?? now()->toDateString();
+        } elseif ($newStatus === 'active' && $enrollment->status === 'paused') {
+            $updateData['resumed_at'] = $request->input('resumed_at') ?? now()->toDateString();
+        }
+
+        $enrollment->update($updateData);
 
         BatchHistory::create([
             'batch_id' => $enrollment->batch_id,
             'student_id' => $enrollment->student_id,
-            'action' => $request->status,
-            'action_date' => now()->toDateString(),
+            'action' => $newStatus,
+            'action_date' => $request->input('paused_at') ?? $request->input('resumed_at') ?? now()->toDateString(),
             'user_id' => $request->user()->id,
+            'notes' => $request->input('notes'),
         ]);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Enrollment status updated.']);

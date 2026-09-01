@@ -61,7 +61,7 @@ class NoticeController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['tenant_id'] = $request->user()->tenant_id;
+        $validated['tenant_id'] = app('tenant_id');
         $validated['created_by'] = $request->user()->id;
         $validated['published_at'] = $validated['is_active'] ? now() : null;
 
@@ -150,7 +150,7 @@ class NoticeController extends Controller
                     'content' => $row['content'] ?? '',
                     'batch_id' => $row['batch_id'] ?? null,
                     'is_active' => $row['is_active'] ?? true,
-                    'tenant_id' => $request->user()->tenant_id,
+                    'tenant_id' => app('tenant_id'),
                     'created_by' => $request->user()->id,
                     'published_at' => ($row['is_active'] ?? true) ? now() : null,
                 ];

@@ -14,12 +14,20 @@ import {
 } from 'chart.js';
 import { useState } from 'react';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { Check, ChevronsUpDown, Search, X } from 'lucide-react';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import { RefreshButton } from '@/components/refresh-button';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
 import reports from '@/routes/reports';
@@ -121,6 +129,96 @@ const months = [
 
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
+function BatchSearchSelect({
+    batches,
+    value,
+    onChange,
+    placeholder,
+}: {
+    batches: { id: number; name: string }[];
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
+}) {
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState('');
+
+    const selected = batches.find((b) => String(b.id) === value);
+
+    const filtered = search
+        ? batches.filter((b) => b.name.toLowerCase().includes(search.toLowerCase()))
+        : batches;
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="h-9 w-[200px] shrink-0 justify-between"
+                >
+                    <span className="truncate">{selected ? selected.name : placeholder}</span>
+                    <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+                <div className="border-b p-2">
+                    <div className="relative">
+                        <Search className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                            placeholder="Search..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="h-8 w-full rounded-md bg-transparent pl-7 pr-7 text-sm outline-none placeholder:text-muted-foreground"
+                            autoFocus
+                        />
+                        {search && (
+                            <button
+                                type="button"
+                                onClick={() => setSearch('')}
+                                className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                                <X className="size-3.5" />
+                            </button>
+                        )}
+                    </div>
+                </div>
+                <div className="max-h-[200px] overflow-y-auto p-1">
+                    <button
+                        type="button"
+                        onClick={() => { onChange(''); setOpen(false); setSearch(''); }}
+                        className={cn(
+                            'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
+                            !value && 'bg-accent text-accent-foreground',
+                        )}
+                    >
+                        <Check className={cn('size-4', !value ? 'opacity-100' : 'opacity-0')} />
+                        {placeholder}
+                    </button>
+                    {filtered.map((batch) => (
+                        <button
+                            key={batch.id}
+                            type="button"
+                            onClick={() => { onChange(String(batch.id)); setOpen(false); setSearch(''); }}
+                            className={cn(
+                                'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
+                                String(batch.id) === value && 'bg-accent text-accent-foreground',
+                            )}
+                        >
+                            <Check className={cn('size-4', String(batch.id) === value ? 'opacity-100' : 'opacity-0')} />
+                            {batch.name}
+                        </button>
+                    ))}
+                    {filtered.length === 0 && (
+                        <p className="px-2 py-1.5 text-sm text-muted-foreground">No batches found</p>
+                    )}
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+}
+
 export default function ReportsIndex({
     batches,
     branches,
@@ -138,7 +236,6 @@ export default function ReportsIndex({
     const hasMultiBranch = useHasFeature('multi_branch');
     const [branchId, setBranchId] = useState(filters.branch_id || '');
     const [batchId, setBatchId] = useState(filters.batch_id || '');
-    const [search, setSearch] = useState('');
     const [month, setMonth] = useState(
         filters.month || String(new Date().getMonth() + 1),
     );
@@ -185,13 +282,7 @@ params.batch_id = newBatchId ?? batchId;
         router.get(reports.index(), params, { preserveState: true });
     };
 
-    const filteredBatchPerformance = search
-        ? batchPerformance.filter((b) =>
-              b.name.toLowerCase().includes(search.toLowerCase()),
-          )
-        : batchPerformance;
-
-    const activeFilterCount = (branchId ? 1 : 0) + (batchId ? 1 : 0);
+    const activeFilterCount = (branchId ? 1 : 0) + (month !== String(new Date().getMonth() + 1) ? 1 : 0) + (year !== String(new Date().getFullYear()) ? 1 : 0);
 
     const attendanceChartData = {
         labels: attendanceTrend.map((d) => d.month),
@@ -336,85 +427,80 @@ params.batch_id = newBatchId ?? batchId;
                 {/* Filters */}
                 <Card>
                     <CardContent className="pt-6">
-                        <FilterBar
-                            searchPlaceholder="Search batches..."
-                            searchValue={search}
-                            onSearchChange={setSearch}
-                            activeFilterCount={activeFilterCount}
-                            filters={[
-                                ...(hasMultiBranch
-                                    ? [
-                                          {
-                                              id: 'branch_id',
-                                              placeholder: t(
-                                                  'reports.all_branches',
-                                              ),
-                                              value: branchId,
-                                              options: branches.map(
-                                                  (branch) => ({
-                                                      label: branch.name,
-                                                      value: String(branch.id),
-                                                  }),
-                                              ),
-                                              onValueChange: (
-                                                  value: string,
-                                              ) => {
-                                                  setBranchId(value);
-                                                  applyFilters(value);
+                        <div className="flex items-center gap-2">
+                            <BatchSearchSelect
+                                batches={batches}
+                                value={batchId}
+                                onChange={(v) => {
+                                    setBatchId(v);
+                                    applyFilters(undefined, v);
+                                }}
+                                placeholder={t('reports.all_batches')}
+                            />
+                            <FilterBar
+                                activeFilterCount={activeFilterCount}
+                                filters={[
+                                    ...(hasMultiBranch
+                                        ? [
+                                              {
+                                                  id: 'branch_id',
+                                                  placeholder: t(
+                                                      'reports.all_branches',
+                                                  ),
+                                                  value: branchId,
+                                                  options: branches.map(
+                                                      (branch) => ({
+                                                          label: branch.name,
+                                                          value: String(branch.id),
+                                                      }),
+                                                  ),
+                                                  onValueChange: (
+                                                      value: string,
+                                                  ) => {
+                                                      setBranchId(value);
+                                                      applyFilters(value);
+                                                  },
                                               },
-                                          },
-                                      ]
-                                    : []),
-                                {
-                                    id: 'batch_id',
-                                    placeholder: t('reports.all_batches'),
-                                    value: batchId,
-                                    options: batches.map((batch) => ({
-                                        label: batch.name,
-                                        value: String(batch.id),
-                                    })),
-                                    onValueChange: (value: string) => {
-                                        setBatchId(value);
-                                        applyFilters(undefined, value);
+                                          ]
+                                        : []),
+                                    {
+                                        id: 'month',
+                                        placeholder: 'Month',
+                                        value: month,
+                                        options: months.map((m, i) => ({
+                                            label: m,
+                                            value: String(i + 1),
+                                        })),
+                                        onValueChange: (value: string) => {
+                                            setMonth(value);
+                                            applyFilters(
+                                                undefined,
+                                                undefined,
+                                                value,
+                                            );
+                                        },
                                     },
-                                },
-                                {
-                                    id: 'month',
-                                    placeholder: 'Month',
-                                    value: month,
-                                    options: months.map((m, i) => ({
-                                        label: m,
-                                        value: String(i + 1),
-                                    })),
-                                    onValueChange: (value: string) => {
-                                        setMonth(value);
-                                        applyFilters(
-                                            undefined,
-                                            undefined,
-                                            value,
-                                        );
+                                    {
+                                        id: 'year',
+                                        placeholder: 'Year',
+                                        value: year,
+                                        options: years.map((y) => ({
+                                            label: String(y),
+                                            value: String(y),
+                                        })),
+                                        onValueChange: (value: string) => {
+                                            setYear(value);
+                                            applyFilters(
+                                                undefined,
+                                                undefined,
+                                                undefined,
+                                                value,
+                                            );
+                                        },
                                     },
-                                },
-                                {
-                                    id: 'year',
-                                    placeholder: 'Year',
-                                    value: year,
-                                    options: years.map((y) => ({
-                                        label: String(y),
-                                        value: String(y),
-                                    })),
-                                    onValueChange: (value: string) => {
-                                        setYear(value);
-                                        applyFilters(
-                                            undefined,
-                                            undefined,
-                                            undefined,
-                                            value,
-                                        );
-                                    },
-                                },
-                            ]}
-                        />
+                                ]}
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -562,9 +648,9 @@ params.batch_id = newBatchId ?? batchId;
                     <CardContent>
                         <DataTable
                             columns={columns}
-                            data={filteredBatchPerformance}
+                            data={batchPerformance}
                             loading={refreshing}
-                            total={filteredBatchPerformance.length}
+                            total={batchPerformance.length}
                             itemName="batches"
                             emptyMessage={t('reports.no_batches')}
                             getRowId={(row) => String(row.id)}

@@ -21,6 +21,10 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
+        if (method_exists($user, 'isParent') && $user->isParent()) {
+            return redirect('/portal');
+        }
+
         if ($user->isSuperAdmin()) {
             return to_route('super-admin.dashboard');
         }
@@ -48,7 +52,7 @@ class DashboardController extends Controller
 
     private function getPlanFeatures(Request $request): array
     {
-        return $request->user()->tenant?->subscription?->plan?->features ?? [];
+        return $request->user()->current_tenant?->subscription?->plan?->features ?? [];
     }
 
     private function computeTrend(float $current, float $previous): array
@@ -70,12 +74,12 @@ class DashboardController extends Controller
 
     private function adminDashboard(Request $request): Response
     {
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $features = $this->getPlanFeatures($request);
 
         $stats = [
             'total_students' => Student::where('tenant_id', $tenantId)->where('status', 'active')->count(),
-            'total_teachers' => User::where('tenant_id', $tenantId)->where('role', 'teacher')->count(),
+            'total_teachers' => User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))->where('users.role', 'teacher')->count(),
             'active_batches' => Batch::where('tenant_id', $tenantId)->where('status', 'active')->count(),
             'total_enrollments' => Enrollment::where('tenant_id', $tenantId)->where('status', 'active')->count(),
         ];
@@ -85,7 +89,7 @@ class DashboardController extends Controller
                 ->whereMonth('created_at', now()->subMonth()->month)
                 ->whereYear('created_at', now()->subMonth()->year)
                 ->count(),
-            'total_teachers' => User::where('tenant_id', $tenantId)->where('role', 'teacher')
+            'total_teachers' => User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))->where('role', 'teacher')
                 ->whereMonth('created_at', now()->subMonth()->month)
                 ->whereYear('created_at', now()->subMonth()->year)
                 ->count(),
@@ -123,7 +127,7 @@ class DashboardController extends Controller
         ];
         $monthlyRevenue['trend'] = $this->computeTrend($monthlyRevenue['current'], $monthlyRevenue['previous']);
 
-        $pendingApprovals = User::where('tenant_id', $tenantId)
+        $pendingApprovals = User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))
             ->where('role', 'teacher')
             ->where('is_approved', false)
             ->count();
@@ -250,7 +254,7 @@ class DashboardController extends Controller
             ]);
         }
 
-        $recentActivity = $recentActivity->sortByDesc('date')->take(10)->values()->all();
+        $recentActivity = $recentActivity->sortByDesc('date')->take(5)->values()->all();
 
         return Inertia::render('dashboard', [
             'planFeatures' => $features,
@@ -355,7 +359,7 @@ class DashboardController extends Controller
                 ->get();
         }
 
-        $activeNotices = Notice::where('tenant_id', $teacher->tenant_id)
+        $activeNotices = Notice::where('tenant_id', app('tenant_id'))
             ->where('is_active', true)
             ->where(function ($q) use ($assignedBatchIds) {
                 $q->whereNull('batch_id')
@@ -365,7 +369,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $upcomingHolidays = Holiday::where('tenant_id', $teacher->tenant_id)
+        $upcomingHolidays = Holiday::where('tenant_id', app('tenant_id'))
             ->where('end_date', '>=', now())
             ->orderBy('start_date')
             ->take(5)
@@ -447,7 +451,7 @@ class DashboardController extends Controller
             ]);
         }
 
-        $recentActivity = $recentActivity->sortByDesc('date')->take(10)->values()->all();
+        $recentActivity = $recentActivity->sortByDesc('date')->take(5)->values()->all();
 
         return Inertia::render('dashboard', [
             'planFeatures' => $features,

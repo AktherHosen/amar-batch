@@ -23,7 +23,9 @@ class UserController extends Controller
             abort(403);
         }
 
-        $query = User::query();
+        $query = User::whereHas('tenants', function ($q) {
+            $q->where('tenant_id', app('tenant_id'));
+        });
 
         if ($status = $request->input('status')) {
             if ($status === 'active') {
@@ -102,16 +104,20 @@ class UserController extends Controller
             ]);
         }
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'staff',
-            'tenant_id' => $request->user()->tenant_id,
             'branch_id' => $request->branch_id,
             'avatar' => $request->hasFile('avatar')
                 ? $request->file('avatar')->store('avatars', 'public')
                 : null,
+        ]);
+
+        $user->tenants()->attach(app('tenant_id'), [
+            'role' => $request->role ?? 'staff',
+            'is_approved' => true,
         ]);
 
         return to_route('users.index')->with('toast', ['type' => 'success', 'message' => 'User created successfully.']);
@@ -119,6 +125,8 @@ class UserController extends Controller
 
     public function show(User $user): Response
     {
+        abort_unless($user->belongsToTenant(app('tenant_id')), 404);
+
         $user->setAttribute('is_owner', $user->isOwner());
 
         if ($user->role === 'teacher') {
@@ -135,7 +143,8 @@ class UserController extends Controller
 
     public function edit(Request $request, User $user): Response
     {
-        abort_if($user->isOwner(), 403);
+        abort_unless($user->belongsToTenant(app('tenant_id')), 404);
+        abort_if($user->isAdmin(), 403);
 
         if (! $request->user()->hasRoutePermission('users.edit')) {
             abort(403);
@@ -150,7 +159,8 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        if ($user->isOwner()) {
+        abort_unless($user->belongsToTenant(app('tenant_id')), 404);
+        if ($user->isAdmin()) {
             abort(403);
         }
 
@@ -182,7 +192,8 @@ class UserController extends Controller
 
     public function changeRole(ChangeUserRoleRequest $request, User $user): RedirectResponse
     {
-        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.role')) {
+        abort_unless($user->belongsToTenant(app('tenant_id')), 404);
+        if ($user->isAdmin() || ! $request->user()->hasRoutePermission('users.role')) {
             abort(403);
         }
 
@@ -193,7 +204,8 @@ class UserController extends Controller
 
     public function deactivate(Request $request, User $user): RedirectResponse
     {
-        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.deactivate')) {
+        abort_unless($user->belongsToTenant(app('tenant_id')), 404);
+        if ($user->isAdmin() || ! $request->user()->hasRoutePermission('users.deactivate')) {
             abort(403);
         }
 
@@ -205,7 +217,8 @@ class UserController extends Controller
 
     public function reactivate(Request $request, User $user): RedirectResponse
     {
-        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.reactivate')) {
+        abort_unless($user->belongsToTenant(app('tenant_id')), 404);
+        if ($user->isAdmin() || ! $request->user()->hasRoutePermission('users.reactivate')) {
             abort(403);
         }
 
@@ -224,7 +237,8 @@ class UserController extends Controller
 
     public function approve(Request $request, User $user): RedirectResponse
     {
-        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.approve')) {
+        abort_unless($user->belongsToTenant(app('tenant_id')), 404);
+        if ($user->isAdmin() || ! $request->user()->hasRoutePermission('users.approve')) {
             abort(403);
         }
 
@@ -235,7 +249,8 @@ class UserController extends Controller
 
     public function reject(Request $request, User $user): RedirectResponse
     {
-        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.reject')) {
+        abort_unless($user->belongsToTenant(app('tenant_id')), 404);
+        if ($user->isAdmin() || ! $request->user()->hasRoutePermission('users.reject')) {
             abort(403);
         }
 
@@ -246,7 +261,8 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user): RedirectResponse
     {
-        if ($user->isOwner() || ! $request->user()->hasRoutePermission('users.destroy')) {
+        abort_unless($user->belongsToTenant(app('tenant_id')), 404);
+        if ($user->isAdmin() || ! $request->user()->hasRoutePermission('users.destroy')) {
             abort(403);
         }
 

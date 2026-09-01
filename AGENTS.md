@@ -143,6 +143,7 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 - Upcoming holidays widget
 - Quick actions: Add Student, Mark Attendance, Record Payment, Post Notice (admin only)
 - Clickable student/batch links in stat cards
+- **Greeting banner:** Uses accent color from appearance theme settings as background via `color-mix()`, works with all 9 preset accents + custom hex colors, proper dark/light mode handling
 
 ## Batch Detail Pages
 
@@ -197,6 +198,23 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 - Notification index page with read/unread status
 - Routes: `/notifications`, `/notifications/{notification}/read`
 
+## SMS Notifications
+
+- **Provider:** Pluggable SMS providers (Alpha SMS, eSMS) via `SmsService` abstraction
+- **Settings:** Per-tenant `sms_settings` table with provider, api_key, sender_id, is_enabled
+- **Logs:** Every SMS logged in `sms_logs` with recipient, message, type, status, provider_response
+- **Automation:** `notification_schedules` table with configurable rules per tenant
+- **Scheduled Commands:**
+  - `sms:fee-reminders` — daily at 9am, checks unpaid fees, sends SMS to student phones
+  - `sms:absence-alerts` — daily at 6pm, sends SMS for students marked absent today
+  - `sms:exam-reminders` — daily at 8am, sends SMS for exams in next 1-3 days
+- **Manual SMS:** Admin sends SMS to selected students or custom phone numbers
+- **Feature-gated:** `sms_notifications` plan feature (Basic, Pro, Enterprise plans)
+- **Frontend Pages:** SMS Settings (`/dashboard/sms/settings`), Send SMS (`/dashboard/sms/send`), SMS Logs (`/dashboard/sms/logs`)
+- **Providers:** `app/Services/SmsProviders/AlphaSmsProvider.php`, `EsmsProvider.php`
+- **Routes:** `/sms/settings`, `/sms/send`, `/sms/logs`
+- **Sidebar:** Communication section → SMS group (Send SMS, SMS Logs, SMS Settings)
+
 ## Reports & Analytics
 
 - `ReportController` with stats and trends endpoints
@@ -238,9 +256,9 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 | Super Admin | `super_admin` | Global — tenants, plans, cross-tenant stats |
 | Owner | `owner` | Tenant admin — full CRUD on all tenant resources |
 | Staff | `staff` | Tenant teacher — view assigned batches, mark attendance (requires approval) |
+| Parent | `parent` | Parent portal — view linked children's attendance, fees, exams |
 | Inactive | `inactive` | Deactivated user — no access |
 | Student | `student` | Referenced in code but no dedicated controllers |
-| Parent | `parent` | Referenced in code but no dedicated controllers |
 
 ## RBAC (Role-Based Access Control)
 
@@ -280,6 +298,15 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - Enforcement in controllers: `createStudent()`, `createStaff()`, `createBatch()`
 - Exceeded limit redirects to `subscription.index` with warning toast
 
+## Plan Features
+
+- `PlanFeature` model with `name`, `slug`, `is_system` flag
+- System features cannot be renamed or deleted (seeded via `PlanSeeder`)
+- `Plan::hasFeature($feature)` checks feature availability
+- Super admin CRUD: `PlanFeatureController` with JSON responses
+- Frontend: `useFeatures()` and `useHasFeature()` from `resources/js/lib/features.ts`
+- `PlanCard` component shows check/minus comparison for ALL features on both landing and subscription pages
+
 ## Subscription & Payment
 
 - **Gateway:** SSLCommerz (sandbox: `sandbox.sslcommerz.com`, prod: `securepay.sslcommerz.com`)
@@ -291,6 +318,8 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - **Scheduled:** `subscriptions:check-expiry` runs daily
 - **Controller:** `SubscriptionController` (upgrade), `PaymentController` (initiate + callbacks)
 - **Service:** `SslcommerzService` handles gateway API calls
+- **Payment Settings:** `PaymentSetting` model stores gateway config in DB; `SslcommerzService` reads DB first, falls back to env
+- **Manual payments:** Create `Payment` records with `payment_method='manual'` and status `pending`; super admin approves/rejects via Payments page
 
 ## Super Admin Panel
 
@@ -300,7 +329,10 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - **Plans:** Full CRUD. Validates prices, limits (-1 = unlimited), features array
 - **Payments:** List with status/search, approve/cancel pending payments
 - **Contacts:** List with search/unread, reply via email (Mailable), mark as read
-- **Controllers:** `SuperAdminController`, `TenantController`, `PlanController`, `ContactMessageController`
+- **Owners:** List with tenant/plan info, detail page with owner info + subscription + plan history
+- **Payment Settings:** Gateway config (SSLCommerz credentials, manual payment toggle, instructions)
+- **Plan Features:** Dynamic CRUD for plan features (name, slug, is_system flag)
+- **Controllers:** `SuperAdminController`, `TenantController`, `PlanController`, `ContactMessageController`, `OwnerController`, `PaymentSettingController`, `PlanFeatureController`
 
 ## Onboarding Flow
 
@@ -313,13 +345,29 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 7. Seeds default roles via `DefaultRoles::createForTenant()`
 8. Redirects to dashboard with success toast
 
+## Owner Plan History
+
+- `SubscriptionHistory` model tracks all plan changes per tenant
+- Actions: `trial_started`, `activated`, `upgraded`, `downgraded`, `renewed`
+- Records: `tenant_id`, `subscription_id`, `plan_id`, `action`, `status`, `old_plan_name`, `new_plan_name`, `amount`, `billing_type`
+- Created in: `OnboardingController` (trial_started), `OwnerController::assignPlan` (activated/upgraded/downgraded), `PaymentController::activateSubscription` (activated/renewed/upgraded/downgraded)
+- Displayed on super admin owner detail page as a timeline with colored action icons
+- Existing subscriptions backfilled via `SubscriptionHistorySeeder`
+
 ## Enrollment Management
 
-- `Enrollment` model: `student_id`, `batch_id`, `enrolled_at`, `status` (active/completed/dropped)
+- `Enrollment` model: `student_id`, `batch_id`, `enrolled_at`, `status`, `paused_at`, `resumed_at`
+- Statuses: `active`, `completed`, `dropped`, `paused`
 - Traits: `BelongsToBranch` (scoped via batch), `BelongsToTenant`
 - Creates `BatchHistory` record on enroll/update/remove
 - Routes nested under batches: `POST batches/{batch}/enroll`, `PUT/DELETE enrollments/{enrollment}`
 - Duplicate enrollment validation, enrollment date >= batch start date check
+- **Pause/Resume workflow:**
+  - Pausing sets `paused_at`, clears `resumed_at`, records `BatchHistory`
+  - Resuming sets `resumed_at`, records `BatchHistory`
+  - Paused students are excluded from: attendance sheets, fee grid, batch capacity count
+  - `Batch::enrolledCount()` only counts `status = 'active'`
+  - Dropdown actions: Pause (for active), Resume (for paused), Complete, Drop, Unenroll
 
 ## Fee Status Management
 
@@ -466,6 +514,19 @@ After adding new routes, regenerate Wayfinder typed routes:
 ```bash
 php artisan wayfinder:generate
 ```
+
+## Parent Portal
+
+- **Pivot table:** `parent_student` links parent users to students (many-to-many)
+- **Relationships:** `User::children()` returns BelongsToMany Student, `Student::parents()` returns BelongsToMany User
+- **Controller:** `ParentController` with `index` (children list) and `show` (child detail)
+- **Routes:** `/portal` (index), `/portal/child/{studentId}` (child detail) — `role:parent` middleware
+- **Parent sidebar:** Simplified navigation — just dashboard link + account (profile/security)
+- **Admin linking:** `POST students/{student}/link-parent`, `DELETE students/{student}/unlink-parent`
+- **Child detail page:** Attendance summary with monthly breakdown, fee status table, exam results with pass/fail badges
+- **Frontend helper:** `isParent()` in `resources/js/lib/role.ts`
+- **Data scoping:** `ParentController` uses `$user->children()` to ensure parents only see their linked students
+- **Middleware chain:** `auth → verified → onboarding → tenant → role:parent` (no `role.permission` or `teacher.approved`)
 
 ## Common Imports
 

@@ -47,7 +47,7 @@ class HolidayController extends Controller
             'type' => 'required|in:holiday,exam,other',
         ]);
 
-        $validated['tenant_id'] = $request->user()->tenant_id;
+        $validated['tenant_id'] = app('tenant_id');
 
         Holiday::create($validated);
 
@@ -128,7 +128,7 @@ class HolidayController extends Controller
                     'start_date' => $row['start_date'],
                     'end_date' => $row['end_date'],
                     'type' => $row['type'] ?? 'holiday',
-                    'tenant_id' => $request->user()->tenant_id,
+                    'tenant_id' => app('tenant_id'),
                 ]);
                 $imported++;
             } catch (\Illuminate\Database\QueryException $e) {

@@ -18,10 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PlanSeeder::class,
             SuperAdminSeeder::class,
-            AdminSeeder::class,
-            TeacherSeeder::class,
-            CoachingClassSeeder::class,
-            StudentSeeder::class,
         ]);
     }
 }

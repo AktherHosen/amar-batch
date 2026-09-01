@@ -28,6 +28,18 @@ class FeeStatusController extends Controller
         });
     }
 
+    private function calculateAmountDue(Student $student, int $month, int $year): float
+    {
+        $defaultFee = (float) ($student->coachingClass?->default_fee ?? 0);
+        $joinedAt = $student->joined_at ? Carbon::parse($student->joined_at) : null;
+
+        if ($joinedAt && $joinedAt->day > 15 && $joinedAt->month === $month && $joinedAt->year === $year) {
+            return round($defaultFee / 2, 2);
+        }
+
+        return $defaultFee;
+    }
+
     public function index(Request $request): Response
     {
         $year = $request->input('year', date('Y'));
@@ -63,14 +75,12 @@ class FeeStatusController extends Controller
 
         $feeStatuses = $query->orderBy('month')->get();
 
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $students = Student::with('coachingClass')
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->orderBy('name')
-            ->take(500)
             ->get();
-        $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $months = range(1, 12);
         $monthNames = [
@@ -79,19 +89,37 @@ class FeeStatusController extends Controller
             9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
         ];
 
+        $activeEnrollments = Enrollment::where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->with('student.coachingClass', 'batch')
+            ->get();
+
         /** @var array<string, array{student: Student, batch: Batch, enrolled_at: string|null, months: array<int, FeeStatus>}> $grid */
         $grid = [];
+        foreach ($activeEnrollments as $enrollment) {
+            $student = $enrollment->student;
+            if (! $student || $student->status !== 'active') {
+                continue;
+            }
+            $key = "{$enrollment->student_id}_{$enrollment->batch_id}";
+            $enrolledAt = $student->joined_at
+                ? Carbon::parse($student->joined_at)->format('Y-m-d')
+                : $enrollment->enrolled_at?->format('Y-m-d');
+
+            $grid[$key] = [
+                'student' => $student,
+                'batch' => $enrollment->batch,
+                'enrolled_at' => $enrolledAt,
+                'months' => [],
+            ];
+        }
+
         foreach ($feeStatuses as $fee) {
             $key = "{$fee->student_id}_{$fee->batch_id}";
             if (! isset($grid[$key])) {
-                $enrollment = Enrollment::where('student_id', $fee->student_id)
-                    ->where('batch_id', $fee->batch_id)
-                    ->where('status', 'active')
-                    ->first();
-
                 $enrolledAt = $fee->student->joined_at
                     ? Carbon::parse($fee->student->joined_at)->format('Y-m-d')
-                    : ($enrollment?->created_at?->format('Y-m-d') ?? null);
+                    : null;
 
                 $grid[$key] = [
                     'student' => $fee->student,
@@ -103,10 +131,21 @@ class FeeStatusController extends Controller
             $grid[$key]['months'][$fee->month] = $fee;
         }
 
+        $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
+
+        $enrollments = $activeEnrollments->map(fn (Enrollment $e): array => [
+            'student' => $e->student,
+            'batch' => $e->batch,
+            'enrolled_at' => $e->student->joined_at
+                ? Carbon::parse($e->student->joined_at)->format('Y-m-d')
+                : $e->enrolled_at?->format('Y-m-d'),
+        ]);
+
         return Inertia::render('fees/index', [
             'feeGrid' => array_values($grid),
             'students' => $students,
             'batches' => $batches,
+            'enrollments' => $enrollments,
             'months' => $months,
             'monthNames' => $monthNames,
             'year' => (int) $year,
@@ -117,7 +156,7 @@ class FeeStatusController extends Controller
 
     public function create(Request $request): Response
     {
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
         $enrollments = Enrollment::where('tenant_id', $tenantId)->where('status', 'active')
@@ -141,6 +180,7 @@ class FeeStatusController extends Controller
     public function store(StoreFeeStatusRequest $request): RedirectResponse
     {
         $student = Student::find($request->student_id);
+        $amountDue = $this->calculateAmountDue($student, (int) $request->month, (int) $request->year);
 
         FeeStatus::updateOrCreate(
             [
@@ -151,6 +191,7 @@ class FeeStatusController extends Controller
             ],
             [
                 'amount_paid' => $request->amount_paid,
+                'amount_due' => $amountDue,
                 'notes' => $request->notes ?: null,
             ]
         );
@@ -169,7 +210,7 @@ class FeeStatusController extends Controller
     public function edit(Request $request, FeeStatus $fee): Response
     {
         $fee->load(['student', 'batch']);
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = app('tenant_id');
         $students = Student::with('coachingClass')->where('tenant_id', $tenantId)->where('status', 'active')->orderBy('name')->get();
         $batches = Batch::where('tenant_id', $tenantId)->orderBy('name')->get();
         $enrollments = Enrollment::where('tenant_id', $tenantId)->where('status', 'active')
@@ -193,12 +234,16 @@ class FeeStatusController extends Controller
 
     public function update(UpdateFeeStatusRequest $request, FeeStatus $fee): RedirectResponse
     {
+        $student = Student::find($request->student_id);
+        $amountDue = $this->calculateAmountDue($student, (int) $request->month, (int) $request->year);
+
         $fee->update([
             'student_id' => $request->student_id,
             'batch_id' => $request->batch_id,
             'month' => $request->month,
             'year' => $request->year,
             'amount_paid' => $request->amount_paid,
+            'amount_due' => $amountDue,
             'notes' => $request->notes ?: null,
         ]);
 
@@ -231,6 +276,11 @@ class FeeStatusController extends Controller
         $rows = $request->input('rows', []);
 
         foreach ($rows as $row) {
+            $student = Student::find($row['student_id']);
+            $amountDue = $student
+                ? $this->calculateAmountDue($student, (int) $row['month'], (int) $row['year'])
+                : ($row['amount_due'] ?? 0);
+
             FeeStatus::updateOrCreate(
                 [
                     'student_id' => $row['student_id'],
@@ -240,6 +290,7 @@ class FeeStatusController extends Controller
                 ],
                 [
                     'amount_paid' => $row['amount_paid'] ?? 0,
+                    'amount_due' => $amountDue,
                     'notes' => $row['notes'] ?? null,
                 ]
             );

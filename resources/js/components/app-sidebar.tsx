@@ -2,7 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutGrid,
     Users,
-    UsersRound,
+    Shield,
     Layers,
     CheckSquare,
     BarChart3,
@@ -11,9 +11,32 @@ import {
     Settings,
     Crown,
     Receipt,
+    Building2,
+    CreditCard,
+    MessageSquare,
+    GraduationCap,
+    BookOpen,
+    School,
+    UsersRound,
+    Wallet,
+    FileText,
+    CalendarCheck,
+    FileSignature,
+    Bell,
+    CalendarOff,
+    TrendingUp,
+    GitBranch,
+    Palette,
+    Lock,
+    Key,
+    UserCog,
+    ClipboardList,
+    Send,
+    Baby,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
+import { TenantSwitcher } from '@/components/tenant-switcher';
 import {
     Sidebar,
     SidebarContent,
@@ -29,6 +52,7 @@ import { useHasFeature } from '@/lib/features';
 import { usePermissions } from '@/lib/permissions';
 import { isOwner } from '@/lib/role';
 import { isSuperAdmin } from '@/lib/role';
+import { isParent } from '@/lib/role';
 import { dashboard } from '@/routes';
 import { edit as appearanceEdit } from '@/routes/appearance';
 import attendance from '@/routes/attendance';
@@ -54,10 +78,12 @@ export function AppSidebar() {
     const { auth } = usePage().props;
     const isUserOwner = isOwner(auth.user);
     const isUserSuperAdmin = isSuperAdmin(auth.user);
+    const isUserParent = isParent(auth.user);
     const hasExams = useHasFeature('exams');
     const hasReports = useHasFeature('reports');
     const hasMultiBranch = useHasFeature('multi_branch');
     const hasApiAccess = useHasFeature('api_access');
+    const hasSmsNotifications = useHasFeature('sms_notifications');
     const permissions = usePermissions();
 
     const hasPermission = (route: string): boolean => {
@@ -77,7 +103,7 @@ return true;
 
     const filterItem = (item: NavItem): boolean => {
         if (isUserSuperAdmin) {
-            return !!item.superAdminOnly;
+            return !!item.superAdminOnly || (!item.ownerOnly && !item.featureRequired && !item.permission);
         }
 
         if (item.superAdminOnly) {
@@ -101,8 +127,12 @@ return false;
 }
 
         if (item.featureRequired === 'api_access' && !hasApiAccess) {
-return false;
-}
+            return false;
+        }
+
+        if (item.featureRequired === 'sms_notifications' && !hasSmsNotifications) {
+            return false;
+        }
 
         if (item.permission && !hasPermission(item.permission)) {
 return false;
@@ -111,7 +141,58 @@ return false;
         return true;
     };
 
-    const groups: NavItemGroup[] = [
+    const groups: NavItemGroup[] = isUserParent
+        ? [
+            {
+                label: t('nav.group.main'),
+                items: [
+                    {
+                        title: 'Navigation',
+                        icon: LayoutGrid,
+                        items: [
+                            {
+                                title: t('nav.dashboard'),
+                                href: '/portal',
+                                icon: LayoutGrid,
+                            },
+                        ],
+                    } as NavItemSection,
+                ],
+            },
+            {
+                label: t('nav.group.settings'),
+                items: [
+                    {
+                        title: 'Appearance',
+                        icon: Palette,
+                        items: [
+                            {
+                                title: t('nav.appearance'),
+                                href: appearanceEdit(),
+                                icon: Palette,
+                            },
+                        ],
+                    } as NavItemSection,
+                    {
+                        title: 'Account',
+                        icon: User,
+                        items: [
+                            {
+                                title: t('nav.profile'),
+                                href: profileEdit(),
+                                icon: User,
+                            },
+                            {
+                                title: t('nav.security'),
+                                href: securityEdit(),
+                                icon: Lock,
+                            },
+                        ],
+                    } as NavItemSection,
+                ],
+            },
+        ]
+        : [
         {
             label: t('nav.group.main'),
             items: [
@@ -127,33 +208,56 @@ return false;
             collapsible: false,
             items: [
                 {
-                    title: 'Admin',
-                    icon: Crown,
+                    title: 'Tenants',
+                    icon: Building2,
                     items: [
-                        {
-                            title: 'Overview',
-                            href: '/dashboard/overview',
-                            superAdminOnly: true,
-                        },
                         {
                             title: 'Owners',
                             href: '/dashboard/owners',
                             superAdminOnly: true,
+                            icon: UserCog,
                         },
+                    ],
+                } as NavItemSection,
+                {
+                    title: 'Billing',
+                    icon: CreditCard,
+                    items: [
                         {
                             title: 'Plans',
                             href: '/dashboard/plans',
                             superAdminOnly: true,
+                            icon: ClipboardList,
                         },
                         {
                             title: 'Payments',
                             href: '/dashboard/payments',
                             superAdminOnly: true,
+                            icon: Receipt,
                         },
+                        {
+                            title: 'Manual Payments',
+                            href: '/dashboard/manual-payments',
+                            superAdminOnly: true,
+                            icon: FileText,
+                        },
+                        {
+                            title: 'Payment Settings',
+                            href: '/dashboard/payment-settings',
+                            superAdminOnly: true,
+                            icon: Settings,
+                        },
+                    ],
+                } as NavItemSection,
+                {
+                    title: 'Messages',
+                    icon: MessageSquare,
+                    items: [
                         {
                             title: 'Messages',
                             href: '/dashboard/contacts',
                             superAdminOnly: true,
+                            icon: MessageSquare,
                         },
                     ],
                 } as NavItemSection,
@@ -164,17 +268,19 @@ return false;
             items: [
                 {
                     title: 'Users & Roles',
-                    icon: UsersRound,
+                    icon: Shield,
                     items: [
                         {
                             title: t('nav.users'),
                             href: users.index(),
                             permission: 'users.index',
+                            icon: Users,
                         },
                         {
                             title: t('nav.roles'),
                             href: roles.index(),
                             ownerOnly: true,
+                            icon: Key,
                         },
                     ],
                 } as NavItemSection,
@@ -191,11 +297,13 @@ return false;
                             title: t('nav.students'),
                             href: students.index(),
                             permission: 'students.index',
+                            icon: GraduationCap,
                         },
                         {
                             title: t('nav.teachers'),
                             href: teachers.index(),
                             permission: 'teachers.index',
+                            icon: BookOpen,
                         },
                     ],
                 } as NavItemSection,
@@ -207,11 +315,13 @@ return false;
                             title: t('nav.coaching_classes'),
                             href: coachingClasses.index(),
                             permission: 'coaching-classes.index',
+                            icon: School,
                         },
                         {
                             title: t('nav.batches'),
                             href: batches.index(),
                             permission: 'batches.index',
+                            icon: UsersRound,
                         },
                     ],
                 } as NavItemSection,
@@ -229,11 +339,13 @@ return false;
                             href: fees.index(),
                             ownerOnly: true,
                             permission: 'fees.index',
+                            icon: Wallet,
                         },
                         {
                             title: t('nav.receipts'),
                             href: '/fees/receipts',
                             ownerOnly: true,
+                            icon: FileText,
                         },
                     ],
                 } as NavItemSection,
@@ -250,12 +362,14 @@ return false;
                             title: t('nav.attendance'),
                             href: attendance.index(),
                             permission: 'attendance.index',
+                            icon: CalendarCheck,
                         },
                         {
                             title: t('nav.exams'),
                             href: exams.index(),
                             featureRequired: 'exams',
                             permission: 'exams.index',
+                            icon: FileSignature,
                         },
                     ],
                 } as NavItemSection,
@@ -272,11 +386,41 @@ return false;
                             title: 'Notices',
                             href: '/notices',
                             permission: 'notices.index',
+                            icon: Bell,
                         },
                         {
                             title: 'Holidays',
                             href: '/holidays',
                             permission: 'holidays.index',
+                            icon: CalendarOff,
+                        },
+                    ],
+                } as NavItemSection,
+                {
+                    title: 'SMS',
+                    icon: MessageSquare,
+                    featureRequired: 'sms_notifications',
+                    items: [
+                        {
+                            title: 'Send SMS',
+                            href: '/sms/send',
+                            permission: 'sms.send',
+                            featureRequired: 'sms_notifications',
+                            icon: Send,
+                        },
+                        {
+                            title: 'SMS Logs',
+                            href: '/sms/logs',
+                            permission: 'sms.logs',
+                            featureRequired: 'sms_notifications',
+                            icon: MessageSquare,
+                        },
+                        {
+                            title: 'SMS Settings',
+                            href: '/sms/settings',
+                            permission: 'sms.settings',
+                            featureRequired: 'sms_notifications',
+                            icon: Settings,
                         },
                     ],
                 } as NavItemSection,
@@ -294,12 +438,14 @@ return false;
                             href: reports.index(),
                             featureRequired: 'reports',
                             permission: 'reports.index',
+                            icon: TrendingUp,
                         },
                         {
                             title: t('nav.branches'),
                             href: branches.index(),
                             featureRequired: 'multi_branch',
                             permission: 'branches.index',
+                            icon: GitBranch,
                         },
                     ],
                 } as NavItemSection,
@@ -316,10 +462,12 @@ return false;
                             title: t('nav.coaching_center'),
                             href: tenant.edit(),
                             ownerOnly: true,
+                            icon: Building2,
                         },
                         {
                             title: t('nav.appearance'),
                             href: appearanceEdit(),
+                            icon: Palette,
                         },
                     ],
                 } as NavItemSection,
@@ -330,16 +478,19 @@ return false;
                         {
                             title: t('nav.profile'),
                             href: profileEdit(),
+                            icon: User,
                         },
                         {
                             title: t('nav.security'),
                             href: securityEdit(),
+                            icon: Lock,
                         },
                         {
                             title: t('nav.api_access'),
                             href: api.index(),
                             ownerOnly: true,
                             featureRequired: 'api_access',
+                            icon: Key,
                         },
                     ],
                 } as NavItemSection,
@@ -375,6 +526,9 @@ return false;
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <TenantSwitcher />
+                    </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
 
@@ -383,16 +537,18 @@ return false;
             </SidebarContent>
 
             <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton asChild>
-                            <Link href={subscription.index()} prefetch>
-                                <Crown className="size-4" />
-                                <span>{t('nav.upgrade') ?? 'Upgrade'}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                {!isUserSuperAdmin && !isUserParent && (
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                                <Link href={subscription.index()} prefetch>
+                                    <Crown className="size-4" />
+                                    <span>{t('nav.upgrade') ?? 'Upgrade'}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                )}
             </SidebarFooter>
 
             {isUserSuperAdmin && <SidebarRail />}

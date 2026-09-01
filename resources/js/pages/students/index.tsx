@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { EllipsisVertical, Eye, PenLine, Plus, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable } from '@/components/data-table';
@@ -67,6 +67,7 @@ type PageProps = {
         total: number;
     };
     coachingClasses: CoachingClass[];
+    existingParents?: Array<{ id: number; name: string; email: string }>;
     filters: {
         search?: string;
         status?: string;
@@ -76,6 +77,7 @@ type PageProps = {
 export default function StudentsIndex({
     students: pagination,
     coachingClasses,
+    existingParents = [],
     filters,
 }: PageProps) {
     const { t } = useLocale();
@@ -91,6 +93,15 @@ export default function StudentsIndex({
     const [sheetOpen, setSheetOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [processing, setProcessing] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('create') === 'true') {
+            setEditingStudent(null);
+            setSheetOpen(true);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -274,7 +285,7 @@ export default function StudentsIndex({
                         return (
                             <Badge
                                 variant={
-                                    s.status === 'active' ? 'default' : 'danger'
+                                    s.status === 'active' ? 'default' : s.status === 'paused' ? 'warning' : 'danger'
                                 }
                             >
                                 {s.status}
@@ -297,6 +308,12 @@ export default function StudentsIndex({
                                     <span className="flex items-center gap-2">
                                         <span className="size-2 rounded-full bg-green-600" />
                                         {t('students.active')}
+                                    </span>
+                                </SelectItem>
+                                <SelectItem value="paused">
+                                    <span className="flex items-center gap-2">
+                                        <span className="size-2 rounded-full bg-yellow-500" />
+                                        {t('students.paused')}
                                     </span>
                                 </SelectItem>
                                 <SelectItem value="inactive">
@@ -455,6 +472,10 @@ export default function StudentsIndex({
                                                     value: 'active',
                                                 },
                                                 {
+                                                    label: t('students.paused'),
+                                                    value: 'paused',
+                                                },
+                                                {
                                                     label: t(
                                                         'students.inactive',
                                                     ),
@@ -486,6 +507,7 @@ export default function StudentsIndex({
                     <div className="px-4 pb-4">
                         <StudentForm
                             coachingClasses={coachingClasses}
+                            existingParents={existingParents}
                             student={editingStudent ?? undefined}
                             onSubmit={(formData) => {
                                 setProcessing(true);
@@ -503,6 +525,7 @@ export default function StudentsIndex({
                                             onSuccess: () => {
                                                 setSheetOpen(false);
                                                 toast.success(t('toast.updated_successfully'));
+                                                router.reload({ only: ['students', 'coachingClasses'] });
                                             },
                                         },
                                     );
@@ -513,6 +536,7 @@ export default function StudentsIndex({
                                         onSuccess: () => {
                                             setSheetOpen(false);
                                             toast.success(t('toast.created_successfully'));
+                                            router.reload({ only: ['students', 'coachingClasses'] });
                                         },
                                     });
                                 }
