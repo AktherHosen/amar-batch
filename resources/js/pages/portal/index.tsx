@@ -67,9 +67,9 @@ export default function PortalIndex({ children }: PageProps) {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="flex flex-col gap-4">
                         {children.map((child) => (
-                            <Link key={child.id} href={`/portal/child/${child.id}`}>
+                            <Link key={child.id} href={`/portal/child/${child.id}`} className="block">
                                 <Card className="transition-colors hover:bg-muted/50">
                                     <CardContent className="p-0">
                                         {/* Header */}
