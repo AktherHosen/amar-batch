@@ -491,4 +491,99 @@ class StudentController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    public function performance(Request $request, Student $student): Response
+    {
+        $this->authorize('view', $student);
+
+        $tenantId = app('tenant_id');
+
+        $student->load(['coachingClass', 'enrollments' => fn ($q) => $q->with('batch')]);
+
+        $examResults = \App\Models\ExamResult::where('student_id', $student->id)
+            ->with('exam')
+            ->orderBy('created_at')
+            ->get()
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'exam_title' => $r->exam->title,
+                'subject' => $r->exam->subject,
+                'date' => $r->exam->date?->format('Y-m-d'),
+                'marks_obtained' => $r->marks_obtained,
+                'total_marks' => $r->exam->total_marks,
+                'passing_marks' => $r->exam->passing_marks,
+                'percentage' => $r->exam->total_marks > 0
+                    ? round(($r->marks_obtained / $r->exam->total_marks) * 100, 1)
+                    : 0,
+            ]);
+
+        $attendanceByMonth = Attendance::where('student_id', $student->id)
+            ->whereHas('batch', fn ($q) => $q->where('batches.tenant_id', $tenantId))
+            ->selectRaw('YEAR(date) as year, MONTH(date) as month, status, COUNT(*) as count')
+            ->groupBy('year', 'month', 'status')
+            ->get()
+            ->groupBy('year')
+            ->map(function ($yearGroup) {
+                return $yearGroup->groupBy('month')
+                    ->mapWithKeys(function ($monthGroup, $month) {
+                        return [$month => $monthGroup->pluck('count', 'status')->toArray()];
+                    });
+            });
+
+        $totalAttendance = 0;
+        $presentTotal = 0;
+        foreach ($attendanceByMonth as $yearData) {
+            foreach ($yearData as $monthData) {
+                $totalAttendance += array_sum($monthData);
+                $presentTotal += $monthData['present'] ?? 0;
+            }
+        }
+        $attendancePercent = $totalAttendance > 0
+            ? round(($presentTotal / $totalAttendance) * 100)
+            : 0;
+
+        $avgPercentage = 0;
+        if ($examResults->count() > 0) {
+            $avgPercentage = round($examResults->avg('percentage'), 1);
+        }
+
+        $activeEnrollment = $student->enrollments->firstWhere('status', 'active');
+        $batchRank = null;
+        $batchTotal = 0;
+        if ($activeEnrollment) {
+            $batchStudents = \App\Models\Enrollment::where('batch_id', $activeEnrollment->batch_id)
+                ->where('status', 'active')
+                ->pluck('student_id');
+
+            $batchAvgMarks = \App\Models\ExamResult::whereIn('student_id', $batchStudents)
+                ->with('exam')
+                ->get()
+                ->groupBy('student_id')
+                ->map(function ($results) {
+                    return $results->avg(fn ($r) => $r->exam->total_marks > 0
+                        ? ($r->marks_obtained / $r->exam->total_marks) * 100
+                        : 0);
+                })
+                ->sortDesc()
+                ->values();
+
+            $batchTotal = $batchAvgMarks->count();
+            $studentAvg = $avgPercentage;
+            $batchRank = $batchAvgMarks->search(fn ($avg) => $avg <= $studentAvg);
+            if ($batchRank === false) {
+                $batchRank = $batchTotal;
+            }
+            $batchRank++;
+        }
+
+        return Inertia::render('students/performance', [
+            'student' => $student->only('id', 'name', 'coaching_class'),
+            'examResults' => $examResults,
+            'attendanceByMonth' => $attendanceByMonth,
+            'attendancePercent' => $attendancePercent,
+            'avgPercentage' => $avgPercentage,
+            'batchRank' => $batchRank,
+            'batchTotal' => $batchTotal,
+        ]);
+    }
 }

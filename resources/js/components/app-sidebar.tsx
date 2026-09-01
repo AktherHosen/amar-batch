@@ -33,6 +33,7 @@ import {
     ClipboardList,
     Send,
     Baby,
+    Mail,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -424,6 +425,12 @@ return false;
                         },
                     ],
                 } as NavItemSection,
+                {
+                    title: 'Messages',
+                    href: '/messages',
+                    icon: Mail,
+                    items: [],
+                },
             ],
         },
         {

@@ -8,6 +8,7 @@ import {
     XCircle,
     Clock,
     GraduationCap,
+    TrendingUp,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -561,6 +562,12 @@ export default function StudentsShow({
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
+                            <Link href={students.performance(student.id).url}>
+                                <Button variant="outline" className="h-9">
+                                    <TrendingUp className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('students.performance')}</span>
+                                </Button>
+                            </Link>
                             <Sheet open={editOpen} onOpenChange={setEditOpen}>
                                 <SheetTrigger asChild>
                                     <Button variant="outline" className="h-9">

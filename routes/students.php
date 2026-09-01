@@ -7,4 +7,5 @@ Route::get('students/export', [StudentController::class, 'export'])->name('stude
 Route::post('students/import', [StudentController::class, 'import'])->name('students.import');
 Route::patch('students/{student}/status', [StudentController::class, 'updateStatus'])->name('students.status');
 Route::patch('students/{student}/coaching-class', [StudentController::class, 'updateCoachingClass'])->name('students.coaching-class');
+Route::get('students/{student}/performance', [StudentController::class, 'performance'])->name('students.performance');
 Route::resource('students', StudentController::class);
