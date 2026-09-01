@@ -58,6 +58,7 @@ type FeeRecord = {
     month: number;
     year: number;
     amount_paid: number;
+    amount_due: number;
     notes: string | null;
 };
 
@@ -158,17 +159,24 @@ function FeeCell({
     };
 
     if (!isAdmin) {
+        const hasPaid = fee && fee.amount_paid > 0;
+        const hasDue = fee && fee.amount_due > 0;
+
         return (
             <span
                 className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-semibold ${
-                    fee && fee.amount_paid > 0
+                    hasPaid
                         ? 'bg-green-500/10 text-green-600'
-                        : 'bg-muted text-muted-foreground'
+                        : hasDue
+                          ? 'bg-amber-500/10 text-amber-600'
+                          : 'bg-muted text-muted-foreground'
                 }`}
             >
-                {fee && fee.amount_paid > 0
-                    ? `৳${Number(fee.amount_paid).toFixed(0)}`
-                    : '—'}
+                {hasPaid
+                    ? `৳${Number(fee.amount_paid).toFixed(0)}${hasDue && Number(fee.amount_due) !== Number(fee.amount_paid) ? `/৳${Number(fee.amount_due).toFixed(0)}` : ''}`
+                    : hasDue
+                      ? `৳${Number(fee.amount_due).toFixed(0)}`
+                      : '—'}
             </span>
         );
     }
@@ -196,18 +204,30 @@ function FeeCell({
     }
 
     const paid = fee && fee.amount_paid > 0;
+    const due = fee && fee.amount_due > 0;
+    const isPartial = due && paid && Number(fee.amount_paid) < Number(fee.amount_due);
 
     return (
         <button
             type="button"
             className={`inline-flex h-7 min-w-16 cursor-text items-center justify-center rounded-full px-3 text-xs font-semibold transition-all ${
                 paid
-                    ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
-                    : 'border border-dashed border-border bg-muted/40 text-muted-foreground/70 hover:border-muted-foreground/30 hover:bg-muted'
+                    ? isPartial
+                      ? 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20'
+                      : 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
+                    : due
+                      ? 'border border-dashed border-amber-300 bg-amber-50/50 text-amber-600 hover:border-amber-400 hover:bg-amber-100/50'
+                      : 'border border-dashed border-border bg-muted/40 text-muted-foreground/70 hover:border-muted-foreground/30 hover:bg-muted'
             }`}
             onClick={() => setEditing(true)}
         >
-            {paid ? `৳${Number(fee.amount_paid).toFixed(0)}` : '0'}
+            {paid
+                ? isPartial
+                  ? `৳${Number(fee.amount_paid).toFixed(0)}/৳${Number(fee.amount_due).toFixed(0)}`
+                  : `৳${Number(fee.amount_paid).toFixed(0)}`
+                : due
+                  ? `৳${Number(fee.amount_due).toFixed(0)}`
+                  : '0'}
         </button>
     );
 }

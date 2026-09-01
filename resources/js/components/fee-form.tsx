@@ -118,6 +118,30 @@ export default function FeeForm({
         return enrollments.find((e) => e.student.id.toString() === studentId);
     };
 
+    const calculateExpectedFee = (): number | null => {
+        if (!data.student_id || !data.month || !data.year) {
+            return null;
+        }
+
+        const enrollment = getEnrollmentForStudent(data.student_id);
+        if (!enrollment?.student?.coaching_class) {
+            return null;
+        }
+
+        const defaultFee = enrollment.student.coaching_class.default_fee ?? 0;
+        const enrolledAt = enrollment.enrolled_at ? new Date(enrollment.enrolled_at) : null;
+        const selectedMonth = parseInt(data.month);
+        const selectedYear = parseInt(data.year);
+
+        if (enrolledAt && enrolledAt.getDate() > 15 && enrolledAt.getMonth() + 1 === selectedMonth && enrolledAt.getFullYear() === selectedYear) {
+            return Math.round((defaultFee / 2) * 100) / 100;
+        }
+
+        return defaultFee;
+    };
+
+    const expectedFee = calculateExpectedFee();
+
     const handleStudentChange = (v: string) => {
         setData('student_id', v);
         const enrollment = getEnrollmentForStudent(v);
@@ -250,6 +274,14 @@ export default function FeeForm({
                         onChange={(e) => setData('amount_paid', e.target.value)}
                         placeholder="Enter amount"
                     />
+                    {expectedFee !== null && (
+                        <p className="text-xs text-muted-foreground">
+                            Expected: ৳{expectedFee.toFixed(2)}
+                            {expectedFee < (getEnrollmentForStudent(data.student_id)?.student?.coaching_class?.default_fee ?? 0) && (
+                                <span className="ml-1 text-amber-600">(Half-month rate)</span>
+                            )}
+                        </p>
+                    )}
                     <InputError message={errors.amount_paid} />
                 </div>
             </div>

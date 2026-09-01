@@ -55,6 +55,37 @@ class ParentController extends Controller
                     ->whereHas('batch', fn ($q) => $q->where('batches.tenant_id', $tenantId))
                     ->sum('amount_paid');
 
+                $feeStatusesAll = FeeStatus::where('student_id', $student->id)
+                    ->whereHas('batch', fn ($q) => $q->where('batches.tenant_id', $tenantId))
+                    ->get();
+
+                $defaultFee = (float) ($student->coachingClass?->default_fee ?? 0);
+                $joinedAt = $student->joined_at ? Carbon::parse($student->joined_at) : null;
+
+                $totalExpected = 0;
+                if ($joinedAt && $defaultFee > 0) {
+                    $start = $joinedAt->copy()->startOfMonth();
+                    $end = $now->copy()->subMonth()->startOfMonth();
+
+                    while ($start->lte($end)) {
+                        $m = $start->month;
+                        $y = $start->year;
+
+                        $existing = $feeStatusesAll->where('month', $m)->where('year', $y)->first();
+
+                        if ($existing) {
+                            $totalExpected += (float) $existing->amount_due;
+                        } else {
+                            $isFirstMonth = $joinedAt->month === $m && $joinedAt->year === $y;
+                            $totalExpected += ($isFirstMonth && $joinedAt->day > 15) ? round($defaultFee / 2, 2) : $defaultFee;
+                        }
+
+                        $start->addMonth();
+                    }
+                }
+
+                $totalDues = max(0, $totalExpected - $totalPaid);
+
                 $recentExams = ExamResult::where('student_id', $student->id)
                     ->with('exam')
                     ->latest()
@@ -143,9 +174,32 @@ class ParentController extends Controller
 
         $totalPaid = $feeStatuses->sum('amount_paid');
 
-        $defaultFee = $student->coachingClass?->default_fee ?? 0;
-        $monthsEnrolled = max(1, Carbon::parse($student->joined_at)->diffInMonths(now()) + 1);
-        $totalExpected = $defaultFee * $monthsEnrolled * max(1, $student->enrollments->count());
+        $defaultFee = (float) ($student->coachingClass?->default_fee ?? 0);
+        $joinedAt = $student->joined_at ? Carbon::parse($student->joined_at) : null;
+        $now = Carbon::now();
+
+        $totalExpected = 0;
+        if ($joinedAt && $defaultFee > 0) {
+            $start = $joinedAt->copy()->startOfMonth();
+            $end = $now->copy()->subMonth()->startOfMonth();
+
+            while ($start->lte($end)) {
+                $m = $start->month;
+                $y = $start->year;
+
+                $existing = $feeStatuses->where('month', $m)->where('year', $y)->first();
+
+                if ($existing) {
+                    $totalExpected += (float) $existing->amount_due;
+                } else {
+                    $isFirstMonth = $joinedAt->month === $m && $joinedAt->year === $y;
+                    $totalExpected += ($isFirstMonth && $joinedAt->day > 15) ? round($defaultFee / 2, 2) : $defaultFee;
+                }
+
+                $start->addMonth();
+            }
+        }
+
         $totalDues = max(0, $totalExpected - $totalPaid);
 
         $totalAttendance = $attendanceSummary->flatten()->sum();

@@ -54,13 +54,15 @@ class SendFeeReminders extends Command
                     continue;
                 }
 
-                $hasPaid = FeeStatus::where('student_id', $student->id)
+                $feeStatus = FeeStatus::where('student_id', $student->id)
                     ->where('batch_id', $enrollment->batch_id)
                     ->where('month', $currentMonth)
                     ->where('year', $currentYear)
-                    ->exists();
+                    ->first();
 
-                if (! $hasPaid) {
+                $hasUnpaid = ! $feeStatus || $feeStatus->amount_paid < $feeStatus->amount_due;
+
+                if ($hasUnpaid) {
                     $studentPhones[$student->id] = [
                         'phone' => $student->phone,
                         'student_name' => $student->name,

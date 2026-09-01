@@ -28,6 +28,18 @@ class FeeStatusController extends Controller
         });
     }
 
+    private function calculateAmountDue(Student $student, int $month, int $year): float
+    {
+        $defaultFee = (float) ($student->coachingClass?->default_fee ?? 0);
+        $joinedAt = $student->joined_at ? Carbon::parse($student->joined_at) : null;
+
+        if ($joinedAt && $joinedAt->day > 15 && $joinedAt->month === $month && $joinedAt->year === $year) {
+            return round($defaultFee / 2, 2);
+        }
+
+        return $defaultFee;
+    }
+
     public function index(Request $request): Response
     {
         $year = $request->input('year', date('Y'));
@@ -168,6 +180,7 @@ class FeeStatusController extends Controller
     public function store(StoreFeeStatusRequest $request): RedirectResponse
     {
         $student = Student::find($request->student_id);
+        $amountDue = $this->calculateAmountDue($student, (int) $request->month, (int) $request->year);
 
         FeeStatus::updateOrCreate(
             [
@@ -178,6 +191,7 @@ class FeeStatusController extends Controller
             ],
             [
                 'amount_paid' => $request->amount_paid,
+                'amount_due' => $amountDue,
                 'notes' => $request->notes ?: null,
             ]
         );
@@ -220,12 +234,16 @@ class FeeStatusController extends Controller
 
     public function update(UpdateFeeStatusRequest $request, FeeStatus $fee): RedirectResponse
     {
+        $student = Student::find($request->student_id);
+        $amountDue = $this->calculateAmountDue($student, (int) $request->month, (int) $request->year);
+
         $fee->update([
             'student_id' => $request->student_id,
             'batch_id' => $request->batch_id,
             'month' => $request->month,
             'year' => $request->year,
             'amount_paid' => $request->amount_paid,
+            'amount_due' => $amountDue,
             'notes' => $request->notes ?: null,
         ]);
 
@@ -258,6 +276,11 @@ class FeeStatusController extends Controller
         $rows = $request->input('rows', []);
 
         foreach ($rows as $row) {
+            $student = Student::find($row['student_id']);
+            $amountDue = $student
+                ? $this->calculateAmountDue($student, (int) $row['month'], (int) $row['year'])
+                : ($row['amount_due'] ?? 0);
+
             FeeStatus::updateOrCreate(
                 [
                     'student_id' => $row['student_id'],
@@ -267,6 +290,7 @@ class FeeStatusController extends Controller
                 ],
                 [
                     'amount_paid' => $row['amount_paid'] ?? 0,
+                    'amount_due' => $amountDue,
                     'notes' => $row['notes'] ?? null,
                 ]
             );

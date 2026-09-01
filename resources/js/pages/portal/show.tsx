@@ -34,6 +34,7 @@ type FeeStatus = {
     month: number;
     year: number;
     amount_paid: number;
+    amount_due: number;
     notes: string | null;
 };
 
@@ -271,18 +272,29 @@ export default function PortalShow({ student, attendanceSummary, feeStatuses, ex
                                                 <TableHead className="whitespace-nowrap">Batch</TableHead>
                                                 <TableHead className="whitespace-nowrap">Month</TableHead>
                                                 <TableHead className="whitespace-nowrap">Year</TableHead>
-                                                <TableHead className="whitespace-nowrap">Amount Paid</TableHead>
+                                                <TableHead className="whitespace-nowrap">Due</TableHead>
+                                                <TableHead className="whitespace-nowrap">Paid</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {feeStatuses.slice(0, 20).map((fee) => (
-                                                <TableRow key={fee.id}>
-                                                    <TableCell className="whitespace-nowrap font-medium">{fee.batch.name}</TableCell>
-                                                    <TableCell className="whitespace-nowrap">{MONTHS[fee.month - 1]}</TableCell>
-                                                    <TableCell className="whitespace-nowrap">{fee.year}</TableCell>
-                                                    <TableCell className="whitespace-nowrap">{formatCurrency(fee.amount_paid)}</TableCell>
-                                                </TableRow>
-                                            ))}
+                                            {feeStatuses.slice(0, 20).map((fee) => {
+                                                const due = Number(fee.amount_due) || 0;
+                                                const paid = Number(fee.amount_paid) || 0;
+                                                const isPartial = due > 0 && paid > 0 && paid < due;
+                                                return (
+                                                    <TableRow key={fee.id}>
+                                                        <TableCell className="whitespace-nowrap font-medium">{fee.batch.name}</TableCell>
+                                                        <TableCell className="whitespace-nowrap">{MONTHS[fee.month - 1]}</TableCell>
+                                                        <TableCell className="whitespace-nowrap">{fee.year}</TableCell>
+                                                        <TableCell className="whitespace-nowrap">{formatCurrency(due)}</TableCell>
+                                                        <TableCell className="whitespace-nowrap">
+                                                            <span className={isPartial ? 'text-amber-600' : ''}>
+                                                                {formatCurrency(paid)}
+                                                            </span>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
                                         </TableBody>
                                     </Table>
                                 </div>
