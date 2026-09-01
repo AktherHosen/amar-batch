@@ -64,6 +64,7 @@ Route::middleware(['auth', 'verified', 'onboarding', 'tenant', 'block.superadmin
     require __DIR__.'/tenant-settings.php';
     require __DIR__.'/roles.php';
     require __DIR__.'/sms.php';
+    require __DIR__.'/messages.php';
 });
 
 // Super admin routes (inside tenant middleware, super_admin role check)

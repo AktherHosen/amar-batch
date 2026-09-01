@@ -398,6 +398,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Attendance
         'attendance.title': 'উপস্থিতি',
         'attendance.desc': 'দৈনিক উপস্থিতি ট্র্যাক করুন',
+        'attendance.calendar': 'উপস্থিতির ক্যালেন্ডার',
         'attendance.mark': 'উপস্থিতি নির্ধারণ',
         'attendance.batch': 'ব্যাচ',
         'attendance.date': 'তারিখ',
@@ -445,6 +446,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'exams.student': 'স্টুডেন্ট',
         'exams.marks_obtained': 'অর্জিত নম্বর',
         'exams.status': 'অবস্থা',
+        'exams.grade': 'গ্রেড',
         'exams.pass': 'পাস',
         'exams.fail': 'ফেল',
         'exams.results': 'ফলাফল',
@@ -587,6 +589,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.signature': 'স্বাক্ষর',
         'receipts.coaching_center': 'কোচিং সেন্টার',
         'receipts.print': 'প্রিন্ট',
+        'receipts.download_pdf': 'PDF ডাউনলোড',
 
         // Payment
         'payment.success_title': 'পেমেন্ট সফল হয়েছে',
@@ -1501,6 +1504,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Attendance
         'attendance.title': 'Attendance',
         'attendance.desc': 'Track daily attendance',
+        'attendance.calendar': 'Calendar',
         'attendance.create': 'New Attendance',
         'attendance.mark': 'Mark Attendance',
         'attendance.batch': 'Batch',
@@ -1547,6 +1551,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'exams.student': 'Student',
         'exams.marks_obtained': 'Marks Obtained',
         'exams.status': 'Status',
+        'exams.grade': 'Grade',
         'exams.pass': 'Pass',
         'exams.fail': 'Fail',
         'exams.results': 'Results',
@@ -1691,6 +1696,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.signature': 'Signature',
         'receipts.coaching_center': 'Coaching Center',
         'receipts.print': 'Print',
+        'receipts.download_pdf': 'Download PDF',
 
         // Classes
         'classes.title': 'Coaching Classes',

@@ -46,6 +46,7 @@ type User = {
     role: string;
     is_owner: boolean;
     is_approved: boolean;
+    avatar?: string | null;
     assigned_batches?: Batch[];
     assigned_batches_count?: number;
 };

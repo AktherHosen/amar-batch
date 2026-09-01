@@ -506,12 +506,12 @@ return false;
                     if ('items' in item) {
                         const filteredItems = item.items.filter(filterItem);
 
-                        return filteredItems.length > 0 ? { ...item, items: filteredItems } : null;
+                        return filteredItems.length > 0 ? ({ ...item, items: filteredItems } as NavItemSection) : null;
                     }
 
                     return filterItem(item) ? item : null;
                 })
-                .filter(Boolean),
+                .filter((item): item is NavItem | NavItemSection => item !== null),
         }))
         .filter((group) => group.items.length > 0);
 

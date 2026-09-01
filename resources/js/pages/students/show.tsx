@@ -29,6 +29,7 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
+import { getGrade, getGradeBadgeVariant } from '@/lib/grades';
 import { generateTablePDF } from '@/lib/pdf-table';
 import { isOwner } from '@/lib/role';
 import students from '@/routes/students';
@@ -374,6 +375,17 @@ export default function StudentsShow({
                             {result.marks_obtained}/{result.exam.total_marks}
                         </span>
                     );
+                },
+            } as Col,
+            {
+                id: 'grade',
+                header: t('exams.grade'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const result: ExamResult = row.original;
+                    const grade = getGrade(result.marks_obtained, result.exam.total_marks);
+                    const variant = getGradeBadgeVariant(grade);
+                    return <Badge variant={variant}>{grade}</Badge>;
                 },
             } as Col,
         ];

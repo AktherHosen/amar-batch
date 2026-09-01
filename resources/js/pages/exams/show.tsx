@@ -12,7 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useLocale } from '@/contexts/locale-context';
+import { getGrade, getGradeBadgeVariant } from '@/lib/grades';
 import { isOwner } from '@/lib/role';
+import exams from '@/routes/exams';
 import exams from '@/routes/exams';
 
 type Student = {
@@ -173,6 +175,7 @@ function generatePDF(
         i + 1,
         r.student.name,
         r.hasResult ? String(r.obtained) : '-',
+        r.hasResult ? getGrade(r.obtained, exam.total_marks) : '-',
         r.hasResult ? (r.passed ? t('exams.pass') : t('exams.fail')) : '-',
         results[r.student.id]?.notes || '-',
     ]);
@@ -184,6 +187,7 @@ function generatePDF(
                 '#',
                 t('exams.student'),
                 t('exams.marks_obtained'),
+                t('exams.grade'),
                 t('exams.status'),
                 t('exams.notes'),
             ],
@@ -389,6 +393,27 @@ export default function ExamsShow({
                                 {passed ? t('exams.pass') : t('exams.fail')}
                             </Badge>
                         )
+                    );
+                },
+            } as Col,
+            {
+                id: 'grade',
+                header: t('exams.grade'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const student: Student = row.original;
+                    const obtained = Number(results[student.id]?.marks || 0);
+                    const hasResult =
+                        results[student.id]?.marks !== undefined &&
+                        results[student.id]?.marks !== '';
+
+                    if (!hasResult) return null;
+
+                    const grade = getGrade(obtained, exam.total_marks);
+                    const variant = getGradeBadgeVariant(grade);
+
+                    return (
+                        <Badge variant={variant}>{grade}</Badge>
                     );
                 },
             } as Col,
