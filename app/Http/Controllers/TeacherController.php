@@ -23,17 +23,18 @@ public function index(Request $request): Response
             abort(403);
         }
 
-        $query = User::where(function ($q) {
-            $q->where('role', 'teacher')->orWhere('role', 'inactive');
+        $tenant = app('tenant');
+        $query = $tenant->users()->where(function ($q) {
+            $q->where('users.role', 'teacher')->orWhere('users.role', 'inactive');
         });
 
         if ($status = $request->input('status')) {
             if ($status === 'active') {
-                $query->where('role', 'teacher')->where('is_approved', true);
+                $query->where('users.role', 'teacher')->where('users.is_approved', true);
             } elseif ($status === 'pending') {
-                $query->where('role', 'teacher')->where('is_approved', false);
+                $query->where('users.role', 'teacher')->where('users.is_approved', false);
             } elseif ($status === 'inactive') {
-                $query->where('role', 'inactive');
+                $query->where('users.role', 'inactive');
             }
         }
 
