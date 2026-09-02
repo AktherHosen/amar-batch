@@ -88,6 +88,8 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('d
     Route::get('owners/{owner}', [OwnerController::class, 'show'])->name('owners.show');
     Route::post('owners/{owner}/toggle-active', [OwnerController::class, 'toggleActive'])->name('owners.toggle-active');
     Route::post('owners/{owner}/assign-plan', [OwnerController::class, 'assignPlan'])->name('owners.assign-plan');
+    Route::post('owners/{owner}/expire-plan', [OwnerController::class, 'expirePlan'])->name('owners.expire-plan');
+    Route::post('owners/{owner}/update-expiry', [OwnerController::class, 'updateExpiry'])->name('owners.update-expiry');
     Route::get('payment-settings', [PaymentSettingController::class, 'index'])->name('payment-settings.index');
     Route::put('payment-settings', [PaymentSettingController::class, 'update'])->name('payment-settings.update');
 });

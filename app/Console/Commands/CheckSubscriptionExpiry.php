@@ -77,23 +77,44 @@ class CheckSubscriptionExpiry extends Command
             ->where('ends_at', '<=', now())
             ->get();
 
+        $freePlan = \App\Models\Plan::where('slug', 'free-trial')->first();
+
         foreach ($expiredPaid as $subscription) {
-            $subscription->update(['status' => 'past_due']);
+            if ($freePlan) {
+                $subscription->update([
+                    'plan_id' => $freePlan->id,
+                    'status' => 'active',
+                    'ends_at' => null,
+                    'trial_ends_at' => null,
+                ]);
 
-            SubscriptionHistory::create([
-                'tenant_id' => $subscription->tenant_id,
-                'subscription_id' => $subscription->id,
-                'plan_id' => $subscription->plan_id,
-                'action' => 'expired',
-                'status' => 'past_due',
-                'old_plan_name' => $subscription->plan?->name,
-                'new_plan_name' => $subscription->plan?->name,
-            ]);
+                SubscriptionHistory::create([
+                    'tenant_id' => $subscription->tenant_id,
+                    'subscription_id' => $subscription->id,
+                    'plan_id' => $freePlan->id,
+                    'action' => 'downgraded',
+                    'status' => 'active',
+                    'old_plan_name' => $subscription->plan?->name,
+                    'new_plan_name' => $freePlan->name,
+                ]);
+            } else {
+                $subscription->update(['status' => 'past_due']);
 
-            $this->notifyOwner($subscription, 'Subscription Expired', 'Your subscription has expired. Please renew to continue using all features.');
+                SubscriptionHistory::create([
+                    'tenant_id' => $subscription->tenant_id,
+                    'subscription_id' => $subscription->id,
+                    'plan_id' => $subscription->plan_id,
+                    'action' => 'expired',
+                    'status' => 'past_due',
+                    'old_plan_name' => $subscription->plan?->name,
+                    'new_plan_name' => $subscription->plan?->name,
+                ]);
+            }
+
+            $this->notifyOwner($subscription, 'Subscription Expired', 'Your subscription has expired. You have been migrated to the Free Trial plan. Please upgrade to continue using all features.');
         }
 
-        $this->info("Updated {$expiredPaid->count()} expired paid subscriptions to past_due.");
+        $this->info("Processed {$expiredPaid->count()} expired paid subscriptions.");
     }
 
     protected function sendExpiryWarnings(): void

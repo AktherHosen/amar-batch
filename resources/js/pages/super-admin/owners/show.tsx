@@ -15,20 +15,31 @@ import {
     PlayCircle,
     RotateCcw,
     Users,
+    Settings,
+    CalendarIcon,
+    Copy,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -38,6 +49,9 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useLocale } from '@/contexts/locale-context';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { DatePicker } from '@/components/ui/date-picker';
 
 type Owner = {
     id: number;
@@ -104,10 +118,23 @@ type PageProps = {
 
 export default function OwnerShow({ owner, plans, history }: PageProps) {
     const { formatCurrency, formatDate, t } = useLocale();
-    const [planDialog, setPlanDialog] = useState(false);
+    const [manageSheet, setManageSheet] = useState(false);
+    const [confirmExpireOpen, setConfirmExpireOpen] = useState(false);
     const [selectedPlanId, setSelectedPlanId] = useState(
         String(owner.tenant?.subscription?.plan?.id || ''),
     );
+    const [billingType, setBillingType] = useState(
+        owner.tenant?.subscription?.billing_type || 'monthly'
+    );
+    const [expiryDate, setExpiryDate] = useState<string | undefined>(
+        owner.tenant?.subscription?.ends_at ? owner.tenant.subscription.ends_at.split('T')[0] : undefined
+    );
+
+    useEffect(() => {
+        setSelectedPlanId(String(owner.tenant?.subscription?.plan?.id || ''));
+        setBillingType(owner.tenant?.subscription?.billing_type || 'monthly');
+        setExpiryDate(owner.tenant?.subscription?.ends_at ? owner.tenant.subscription.ends_at.split('T')[0] : undefined);
+    }, [owner.tenant?.subscription]);
 
     const tenant = owner.tenant;
     const subscription = tenant?.subscription;
@@ -118,12 +145,43 @@ export default function OwnerShow({ owner, plans, history }: PageProps) {
 
         router.post(
             `/dashboard/owners/${owner.id}/assign-plan`,
-            { plan_id: Number(selectedPlanId) },
+            { plan_id: Number(selectedPlanId), billing_type: billingType },
             {
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success(t('toast.updated_successfully'));
-                    setPlanDialog(false);
+                    setManageSheet(false);
+                },
+            },
+        );
+    };
+
+    const handleUpdateExpiry = () => {
+        if (!expiryDate) return;
+
+        router.post(
+            `/dashboard/owners/${owner.id}/update-expiry`,
+            { ends_at: expiryDate },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Expiry date updated successfully.');
+                    setManageSheet(false);
+                },
+            },
+        );
+    };
+
+    const handleExpirePlan = () => {
+        router.post(
+            `/dashboard/owners/${owner.id}/expire-plan`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Subscription plan expired successfully.');
+                    setConfirmExpireOpen(false);
+                    setManageSheet(false);
                 },
             },
         );
@@ -151,30 +209,28 @@ export default function OwnerShow({ owner, plans, history }: PageProps) {
             <Head title={owner.name} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex min-w-0 items-center justify-between">
-                    <div className="flex min-w-0 items-center gap-2">
+                <div className="flex gap-4 items-center justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
                         <Link href="/dashboard/owners" className="shrink-0">
                             <Button variant="ghost" size="icon" className="size-9">
                                 <ArrowLeft className="size-4" />
                             </Button>
                         </Link>
                         <div className="min-w-0">
-                            <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">
-                                {owner.name}
-                            </h1>
+                            <div className="flex items-center gap-3">
+                                <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">
+                                    {owner.name}
+                                </h1>
+
+                            </div>
                             <p className="truncate text-sm text-muted-foreground">{owner.email}</p>
                         </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                        <Badge variant="outline" className="capitalize">
-                            {owner.role}
+                    {tenant && (
+                        <Badge variant={tenant.is_active ? 'default' : 'secondary'} className="h-6">
+                            {tenant.is_active ? 'Active' : 'Inactive'}
                         </Badge>
-                        {tenant && (
-                            <Badge variant={tenant.is_active ? 'default' : 'secondary'}>
-                                {tenant.is_active ? 'Active' : 'Inactive'}
-                            </Badge>
-                        )}
-                    </div>
+                    )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
@@ -197,7 +253,23 @@ export default function OwnerShow({ owner, plans, history }: PageProps) {
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Phone</p>
+                                <div className="flex items-center gap-1.5">
                                     <p className="text-sm font-medium">{owner.phone || '—'}</p>
+                                    {owner.phone && (
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="size-5" 
+                                            title="Copy phone number"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(owner.phone!);
+                                                toast.success('Phone number copied to clipboard');
+                                            }}
+                                        >
+                                            <Copy className="size-3 text-muted-foreground" />
+                                        </Button>
+                                    )}
+                                </div>
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Role</p>
@@ -229,9 +301,23 @@ export default function OwnerShow({ owner, plans, history }: PageProps) {
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground">Center Phone</p>
-                                            <div className="flex items-center gap-1.5">
+                                            <div className="flex items-center gap-1.5 group">
                                                 <Phone className="size-3.5 text-muted-foreground" />
                                                 <p className="text-sm font-medium">{tenant.phone || '—'}</p>
+                                                {tenant.phone && (
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="size-5" 
+                                                        title="Copy phone number"
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(tenant.phone!);
+                                                            toast.success('Phone number copied to clipboard');
+                                                        }}
+                                                    >
+                                                        <Copy className="size-3 text-muted-foreground" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -246,9 +332,21 @@ export default function OwnerShow({ owner, plans, history }: PageProps) {
                                 <CreditCard className="size-4 text-muted-foreground" />
                                 Subscription
                             </CardTitle>
-                            <Button variant="outline" size="sm" onClick={() => setPlanDialog(true)}>
-                                {t('super_admin.change_plan')}
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" onClick={() => setManageSheet(true)}>
+                                                <Settings className="size-4" />
+                                                <span className="sr-only">Manage Subscription</span>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Manage Subscription</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {currentPlan ? (
@@ -421,63 +519,119 @@ export default function OwnerShow({ owner, plans, history }: PageProps) {
                 </Card>
             </div>
 
-            <Dialog open={planDialog} onOpenChange={setPlanDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{t('super_admin.change_plan')}</DialogTitle>
-                        <DialogDescription>
-                            Assign a new plan to {tenant?.name || owner.name}
-                        </DialogDescription>
-                    </DialogHeader>
+            <Sheet open={manageSheet} onOpenChange={setManageSheet}>
+                <SheetContent className="flex h-full flex-col overflow-y-auto sm:max-w-md">
+                    <SheetHeader>
+                        <SheetTitle>Manage Subscription</SheetTitle>
+                        <SheetDescription>
+                            Update the plan or expiry date for {tenant?.name || owner.name}
+                        </SheetDescription>
+                    </SheetHeader>
 
-                    <div className="space-y-4">
-                        <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
-                            <SelectTrigger>
-                                <SelectValue placeholder={t('super_admin.select_plan')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {plans.map((plan) => (
-                                    <SelectItem key={plan.id} value={String(plan.id)}>
-                                        <div className="flex items-center justify-between gap-4">
-                                            <span>{plan.name}</span>
-                                            <span className="text-muted-foreground">
-                                                {formatCurrency(Number(plan.price_monthly))}/mo
-                                            </span>
+                    <div className="flex flex-1 flex-col gap-4 px-4 pb-4">
+                        <div className="space-y-4 rounded-lg border p-4 shadow-sm bg-card">
+                            <div className="space-y-1">
+                                <h4 className="text-sm font-medium leading-none">Change Plan</h4>
+                                <p className="text-sm text-muted-foreground">Select a new plan to assign.</p>
+                            </div>
+                            <div className="grid gap-2">
+                                <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('super_admin.select_plan')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {plans.map((plan) => (
+                                            <SelectItem key={plan.id} value={String(plan.id)}>
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <span>{plan.name}</span>
+                                                    <span className="text-muted-foreground">
+                                                        {formatCurrency(billingType === 'yearly' ? Number(plan.price_yearly) : Number(plan.price_monthly))}/{billingType === 'yearly' ? 'yr' : 'mo'}
+                                                    </span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select value={billingType} onValueChange={setBillingType}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Billing Cycle" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="monthly">Monthly</SelectItem>
+                                        <SelectItem value="yearly">Yearly</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {selectedPlanId &&
+                                (() => {
+                                    const plan = plans.find((p) => p.id === Number(selectedPlanId));
+                                    if (!plan) return null;
+
+                                    return (
+                                        <div className="rounded-md bg-muted/50 p-3 text-sm space-y-3">
+                                            <div className="font-medium">{plan.name}</div>
+                                            <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                                                <div>Students: {plan.max_students === -1 ? '∞' : plan.max_students}</div>
+                                                <div>Staff: {plan.max_staff === -1 ? '∞' : plan.max_staff}</div>
+                                                <div>Batches: {plan.max_batches === -1 ? '∞' : plan.max_batches}</div>
+                                                <div>Price: {formatCurrency(billingType === 'yearly' ? Number(plan.price_yearly) : Number(plan.price_monthly))}/{billingType === 'yearly' ? 'yr' : 'mo'}</div>
+                                            </div>
                                         </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                                    );
+                                })()}
 
-                        {selectedPlanId &&
-                            (() => {
-                                const plan = plans.find((p) => p.id === Number(selectedPlanId));
-                                if (!plan) return null;
+                            <Button onClick={handleAssignPlan} disabled={!selectedPlanId} className="w-full">
+                                {t('super_admin.change_plan')}
+                            </Button>
+                        </div>
 
-                                return (
-                                    <div className="rounded-lg border p-3 text-sm space-y-3">
-                                        <div className="font-medium">{plan.name}</div>
-                                        <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-                                            <div>Students: {plan.max_students === -1 ? '∞' : plan.max_students}</div>
-                                            <div>Staff: {plan.max_staff === -1 ? '∞' : plan.max_staff}</div>
-                                            <div>Batches: {plan.max_batches === -1 ? '∞' : plan.max_batches}</div>
-                                            <div>Price: {formatCurrency(Number(plan.price_monthly))}/mo</div>
-                                        </div>
-                                    </div>
-                                );
-                            })()}
+                        <div className="space-y-4 rounded-lg border p-4 shadow-sm bg-card">
+                            <div className="space-y-1">
+                                <h4 className="text-sm font-medium leading-none">Update Expiry Date</h4>
+                                <p className="text-sm text-muted-foreground">Manually change when this subscription expires.</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <Label htmlFor="expiryDate" className="sr-only">Expiry Date</Label>
+                                    <DatePicker
+                                        value={expiryDate || null}
+                                        onValueChange={(val) => setExpiryDate(val)}
+                                        placeholder="Pick a date"
+                                        className="w-full"
+                                    />
+                                </div>
+                                <Button onClick={handleUpdateExpiry} disabled={!expiryDate} variant="secondary" className="shrink-0">
+                                    Update
+                                </Button>
+                            </div>
+                        </div>
+
+                        {subscription?.status !== 'past_due' && (
+                            <div className="mt-auto space-y-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 shadow-sm">
+                                <div className="space-y-1">
+                                    <h4 className="text-sm font-medium leading-none text-destructive">Danger Zone</h4>
+                                    <p className="text-sm text-destructive/80">Immediately expire this plan and revoke access.</p>
+                                </div>
+                                <Button variant="destructive" className="w-full" onClick={() => setConfirmExpireOpen(true)}>
+                                    Expire Plan Now
+                                </Button>
+                            </div>
+                        )}
                     </div>
+                </SheetContent>
+            </Sheet>
 
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setPlanDialog(false)}>
-                            {t('actions.cancel')}
-                        </Button>
-                        <Button onClick={handleAssignPlan} disabled={!selectedPlanId}>
-                            {t('super_admin.change_plan')}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <ConfirmDialog
+                open={confirmExpireOpen}
+                onOpenChange={setConfirmExpireOpen}
+                title="Expire Subscription"
+                description="Are you sure you want to expire this subscription immediately? This action will set the plan status to past due and revoke access."
+                confirmText="Expire Plan"
+                variant="destructive"
+                onConfirm={handleExpirePlan}
+            />
         </>
     );
 }

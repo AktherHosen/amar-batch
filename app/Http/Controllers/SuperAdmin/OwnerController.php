@@ -225,4 +225,118 @@ class OwnerController extends Controller
             'message' => "Plan changed to {$plan->name} successfully.",
         ]);
     }
+
+    public function expirePlan(Request $request, User $owner)
+    {
+        $tenant = $owner->tenants->first();
+        if (! $tenant || ! $tenant->subscription) {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Owner has no active subscription.',
+            ]);
+        }
+
+        $subscription = $tenant->subscription;
+        $oldPlan = $subscription->plan;
+        
+        $freePlan = \App\Models\Plan::where('slug', 'free-trial')->first();
+
+        if ($freePlan) {
+            $subscription->update([
+                'plan_id' => $freePlan->id,
+                'status' => 'active',
+                'trial_ends_at' => null,
+                'ends_at' => null,
+            ]);
+
+            SubscriptionHistory::create([
+                'tenant_id' => $tenant->id,
+                'subscription_id' => $subscription->id,
+                'plan_id' => $freePlan->id,
+                'action' => 'downgraded',
+                'status' => 'active',
+                'old_plan_name' => $oldPlan?->name,
+                'new_plan_name' => $freePlan->name,
+            ]);
+        } else {
+            $subscription->update([
+                'status' => 'past_due',
+                'trial_ends_at' => now(),
+                'ends_at' => now(),
+            ]);
+
+            SubscriptionHistory::create([
+                'tenant_id' => $tenant->id,
+                'subscription_id' => $subscription->id,
+                'plan_id' => $subscription->plan_id,
+                'action' => 'expired',
+                'status' => 'past_due',
+                'old_plan_name' => $oldPlan?->name,
+                'new_plan_name' => $oldPlan?->name,
+            ]);
+        }
+
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Subscription plan expired and migrated to Free Trial successfully.',
+        ]);
+    }
+
+    public function updateExpiry(Request $request, User $owner)
+    {
+        $validated = $request->validate([
+            'ends_at' => 'required|date',
+        ]);
+
+        $tenant = $owner->tenants->first();
+        if (! $tenant || ! $tenant->subscription) {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Owner has no active subscription.',
+            ]);
+        }
+
+        $subscription = $tenant->subscription;
+        $newEndsAt = \Carbon\Carbon::parse($validated['ends_at'])->endOfDay();
+        $isPast = $newEndsAt->isPast();
+
+        if ($isPast) {
+            $freePlan = \App\Models\Plan::where('slug', 'free-trial')->first();
+            $oldPlan = $subscription->plan;
+            
+            if ($freePlan && $subscription->plan_id !== $freePlan->id) {
+                $subscription->update([
+                    'plan_id' => $freePlan->id,
+                    'status' => 'active',
+                    'trial_ends_at' => null,
+                    'ends_at' => null,
+                ]);
+
+                SubscriptionHistory::create([
+                    'tenant_id' => $tenant->id,
+                    'subscription_id' => $subscription->id,
+                    'plan_id' => $freePlan->id,
+                    'action' => 'downgraded',
+                    'status' => 'active',
+                    'old_plan_name' => $oldPlan?->name,
+                    'new_plan_name' => $freePlan->name,
+                ]);
+                
+                return redirect()->back()->with('toast', [
+                    'type' => 'success',
+                    'message' => 'Expiry date updated and plan migrated to Free Trial due to past expiry.',
+                ]);
+            }
+        }
+
+        $subscription->update([
+            'ends_at' => $newEndsAt,
+            'status' => $isPast ? 'past_due' : 'active',
+        ]);
+
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Subscription expiry date updated successfully.',
+        ]);
+    }
 }
