@@ -195,6 +195,12 @@ return [
         'onboarding.store',
         'portal.index',
         'portal.child.show',
+        'messages.index',
+        'messages.store',
+        'messages.show',
+        'messages.reply',
+        'messages.read',
+        'messages.destroy',
     ],
 
     /*

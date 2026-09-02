@@ -7,6 +7,8 @@ use App\Models\Attendance;
 use App\Models\Batch;
 use App\Models\Enrollment;
 use App\Models\InAppNotification;
+use App\Models\Student;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,6 +37,152 @@ class AttendanceController extends Controller
             'attendances' => $attendances,
             'batches' => $batches,
             'filters' => $request->only(['batch_id', 'date']),
+        ]);
+    }
+
+    public function calendar(Request $request): Response
+    {
+        $this->authorize('viewAny', Attendance::class);
+
+        $tenantId = app('tenant_id');
+        $batchId = $request->input('batch_id');
+        $month = $request->input('month', now()->format('Y-m'));
+
+        $startDate = Carbon::parse($month.'-01')->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+
+        $batches = Batch::where('tenant_id', $tenantId)
+            ->where('status', '!=', 'completed')
+            ->orderBy('name')
+            ->get();
+
+        $calendarData = [];
+        $students = [];
+
+        if ($batchId) {
+            $enrolledStudents = Enrollment::where('tenant_id', $tenantId)
+                ->where('batch_id', $batchId)
+                ->where('status', 'active')
+                ->whereHas('student', fn ($q) => $q->where('status', 'active'))
+                ->with('student:id,name')
+                ->get()
+                ->map(fn ($e) => ['id' => $e->student->id, 'name' => $e->student->name])
+                ->sortBy('name')
+                ->values()
+                ->all();
+
+            $students = $enrolledStudents;
+
+            $studentIds = collect($enrolledStudents)->pluck('id')->all();
+
+            $attendances = Attendance::where('batch_id', $batchId)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->whereIn('student_id', $studentIds)
+                ->get(['student_id', 'date', 'status']);
+
+            $calendarData = $attendances
+                ->groupBy(fn ($a) => $a->date->format('Y-m-d'))
+                ->mapWithKeys(fn ($dayGroup, $date) => [
+                    $date => $dayGroup->mapWithKeys(fn ($a) => [
+                        $a->student_id => $a->status,
+                    ])->all(),
+                ])
+                ->all();
+        }
+
+        $summary = [
+            'total_records' => 0,
+            'present' => 0,
+            'absent' => 0,
+            'late' => 0,
+        ];
+
+        foreach ($calendarData as $dayData) {
+            foreach ($dayData as $status) {
+                $summary['total_records']++;
+                if (isset($summary[$status])) {
+                    $summary[$status]++;
+                }
+            }
+        }
+
+        return Inertia::render('attendance/calendar', [
+            'batches' => $batches,
+            'students' => $students,
+            'calendarData' => $calendarData,
+            'summary' => $summary,
+            'batchId' => $batchId ? (int) $batchId : null,
+            'month' => $month,
+        ]);
+    }
+
+    public function calendarData(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('viewAny', Attendance::class);
+
+        $tenantId = app('tenant_id');
+        $batchId = $request->input('batch_id');
+        $month = $request->input('month', now()->format('Y-m'));
+
+        $startDate = Carbon::parse($month.'-01')->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+
+        $calendarData = [];
+        $students = [];
+
+        if ($batchId) {
+            $enrolledStudents = Enrollment::where('tenant_id', $tenantId)
+                ->where('batch_id', $batchId)
+                ->where('status', 'active')
+                ->whereHas('student', fn ($q) => $q->where('status', 'active'))
+                ->with('student:id,name')
+                ->get()
+                ->map(fn ($e) => ['id' => $e->student->id, 'name' => $e->student->name])
+                ->sortBy('name')
+                ->values()
+                ->all();
+
+            $students = $enrolledStudents;
+
+            $studentIds = collect($enrolledStudents)->pluck('id')->all();
+
+            $attendances = Attendance::where('batch_id', $batchId)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->whereIn('student_id', $studentIds)
+                ->get(['student_id', 'date', 'status']);
+
+            $calendarData = $attendances
+                ->groupBy(fn ($a) => $a->date->format('Y-m-d'))
+                ->mapWithKeys(fn ($dayGroup, $date) => [
+                    $date => $dayGroup->mapWithKeys(fn ($a) => [
+                        $a->student_id => $a->status,
+                    ])->all(),
+                ])
+                ->all();
+        }
+
+        $summary = [
+            'total_records' => 0,
+            'present' => 0,
+            'absent' => 0,
+            'late' => 0,
+        ];
+
+        foreach ($calendarData as $dayData) {
+            foreach ($dayData as $status) {
+                $summary['total_records']++;
+                if (isset($summary[$status])) {
+                    $summary[$status]++;
+                }
+            }
+        }
+
+        return response()->json([
+            'students' => $students,
+            'calendarData' => $calendarData,
+            'summary' => $summary,
+            'batchId' => $batchId ? (int) $batchId : null,
+            'month' => $month,
         ]);
     }
 

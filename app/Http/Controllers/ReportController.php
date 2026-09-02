@@ -341,4 +341,85 @@ class ReportController extends Controller
             'filters' => $request->only(['month', 'year', 'batch_id']),
         ]);
     }
+
+    public function branchComparison(Request $request)
+    {
+        $this->authorize('viewAny', Student::class);
+
+        $tenantId = app('tenant_id');
+        $branches = Branch::where('tenant_id', $tenantId)->orderBy('name')->get();
+
+        $branchData = $branches->map(function ($branch) use ($tenantId) {
+            $studentCount = Student::where('tenant_id', $tenantId)
+                ->where('branch_id', $branch->id)
+                ->where('status', 'active')
+                ->count();
+
+            $batchCount = Batch::where('tenant_id', $tenantId)
+                ->where('branch_id', $branch->id)
+                ->where('status', 'active')
+                ->count();
+
+            $activeEnrollments = Enrollment::where('tenant_id', $tenantId)
+                ->where('status', 'active')
+                ->whereHas('batch', fn ($q) => $q->where('branch_id', $branch->id))
+                ->count();
+
+            $feesCollected = (float) FeeStatus::where('tenant_id', $tenantId)
+                ->whereHas('student', fn ($q) => $q->where('branch_id', $branch->id))
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('amount_paid');
+
+            $totalFeesCollected = (float) FeeStatus::where('tenant_id', $tenantId)
+                ->whereHas('student', fn ($q) => $q->where('branch_id', $branch->id))
+                ->sum('amount_paid');
+
+            $totalAttendance = Attendance::where('tenant_id', $tenantId)
+                ->whereHas('batch', fn ($q) => $q->where('branch_id', $branch->id))
+                ->whereMonth('date', now()->month)
+                ->whereYear('date', now()->year)
+                ->count();
+
+            $presentCount = Attendance::where('tenant_id', $tenantId)
+                ->whereHas('batch', fn ($q) => $q->where('branch_id', $branch->id))
+                ->whereMonth('date', now()->month)
+                ->whereYear('date', now()->year)
+                ->where('status', 'present')
+                ->count();
+
+            $attendanceRate = $totalAttendance > 0
+                ? round(($presentCount / $totalAttendance) * 100)
+                : 0;
+
+            return [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'code' => $branch->code,
+                'is_active' => $branch->is_active,
+                'students' => $studentCount,
+                'batches' => $batchCount,
+                'enrollments' => $activeEnrollments,
+                'fees_collected_month' => $feesCollected,
+                'fees_collected_total' => $totalFeesCollected,
+                'attendance_rate' => $attendanceRate,
+            ];
+        });
+
+        $totals = [
+            'students' => $branchData->sum('students'),
+            'batches' => $branchData->sum('batches'),
+            'enrollments' => $branchData->sum('enrollments'),
+            'fees_collected_month' => $branchData->sum('fees_collected_month'),
+            'fees_collected_total' => $branchData->sum('fees_collected_total'),
+            'avg_attendance' => $branchData->pluck('attendance_rate')->filter()->count() > 0
+                ? round($branchData->pluck('attendance_rate')->filter()->avg())
+                : 0,
+        ];
+
+        return Inertia::render('reports/branch-comparison', [
+            'branches' => $branchData->values(),
+            'totals' => $totals,
+        ]);
+    }
 }

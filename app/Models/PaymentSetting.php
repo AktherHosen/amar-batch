@@ -12,6 +12,7 @@ class PaymentSetting extends Model
         'store_id',
         'store_password',
         'currency',
+        'online_payment_enabled',
         'manual_payment_enabled',
         'manual_payment_instructions',
         'metadata',
@@ -19,6 +20,7 @@ class PaymentSetting extends Model
 
     protected $casts = [
         'sandbox' => 'boolean',
+        'online_payment_enabled' => 'boolean',
         'manual_payment_enabled' => 'boolean',
         'metadata' => 'array',
     ];

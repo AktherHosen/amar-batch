@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Subscription;
+use App\Models\SubscriptionHistory;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -109,11 +110,19 @@ class SuperAdminController extends Controller
     {
         $query = Payment::with(['tenant', 'plan']);
 
-        if ($request->has('status') && $request->status !== 'all') {
+        if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
-        if ($request->has('search') && $request->search) {
+        if ($request->filled('method') && $request->method !== 'all') {
+            if ($request->method === 'manual') {
+                $query->where('payment_method', 'manual');
+            } elseif ($request->method === 'gateway') {
+                $query->whereNull('payment_method')->orWhere('payment_method', '!=', 'manual');
+            }
+        }
+
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('tenant', fn ($q) => $q->where('name', 'like', "%{$search}%"))
                 ->orWhere('txid', 'like', "%{$search}%");
@@ -126,13 +135,14 @@ class SuperAdminController extends Controller
             'successful' => Payment::where('status', 'success')->count(),
             'pending' => Payment::where('status', 'pending')->count(),
             'failed' => Payment::where('status', 'failed')->count(),
+            'cancelled' => Payment::where('status', 'cancelled')->count(),
             'total_revenue' => (float) Payment::where('status', 'success')->sum('amount'),
         ];
 
         return Inertia::render('super-admin/payments', [
             'payments' => $payments,
             'stats' => $stats,
-            'filters' => $request->only(['status', 'search']),
+            'filters' => $request->only(['status', 'search', 'method']),
         ]);
     }
 
@@ -161,6 +171,17 @@ class SuperAdminController extends Controller
         $payment->update(['status' => 'cancelled']);
 
         return back()->with('success', 'Payment cancelled.');
+    }
+
+    public function rejectPayment(Payment $payment): \Illuminate\Http\RedirectResponse
+    {
+        if ($payment->payment_method !== 'manual' || $payment->status !== 'pending') {
+            return back()->withErrors(['error' => 'Invalid payment.']);
+        }
+
+        $payment->update(['status' => 'failed']);
+
+        return back()->with('success', 'Payment rejected.');
     }
 
     public function showTenant(Tenant $tenant): Response
@@ -208,13 +229,15 @@ class SuperAdminController extends Controller
             return;
         }
 
-        $endsAt = $payment->billing_type === 'yearly'
-            ? now()->addYear()
-            : now()->addMonth();
-
         $subscription = $tenant->subscription;
+        $oldPlan = $subscription?->plan;
 
         if ($subscription) {
+            $base = $subscription->ends_at && $subscription->ends_at->isFuture() ? $subscription->ends_at : now();
+            $endsAt = $payment->billing_type === 'yearly'
+                ? $base->copy()->addYear()
+                : $base->copy()->addMonth();
+
             $subscription->update([
                 'plan_id' => $plan->id,
                 'status' => 'active',
@@ -223,15 +246,34 @@ class SuperAdminController extends Controller
                 'ends_at' => $endsAt,
             ]);
         } else {
-            Subscription::create([
+            $subscription = Subscription::create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $plan->id,
                 'status' => 'active',
                 'billing_type' => $payment->billing_type,
-                'ends_at' => $endsAt,
+                'ends_at' => $payment->billing_type === 'yearly' ? now()->addYear() : now()->addMonth(),
             ]);
         }
 
         $payment->update(['subscription_id' => $tenant->subscription->id]);
+
+        $action = 'renewed';
+        if (! $oldPlan) {
+            $action = 'activated';
+        } elseif ($plan->id !== $oldPlan->id) {
+            $action = $plan->price_monthly > $oldPlan->price_monthly ? 'upgraded' : 'downgraded';
+        }
+
+        SubscriptionHistory::create([
+            'tenant_id' => $tenant->id,
+            'subscription_id' => $tenant->subscription->id,
+            'plan_id' => $plan->id,
+            'action' => $action,
+            'status' => 'active',
+            'billing_type' => $payment->billing_type,
+            'amount' => $payment->amount,
+            'old_plan_name' => $oldPlan?->name,
+            'new_plan_name' => $plan->name,
+        ]);
     }
 }

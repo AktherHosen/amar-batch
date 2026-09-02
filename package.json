@@ -71,6 +71,7 @@
         "react-day-picker": "^10.0.1",
         "react-dom": "^19.2.0",
         "react-i18next": "^17.0.11",
+        "react-quill-new": "^3.8.3",
         "sonner": "^2.0.0",
         "tailwind-merge": "^3.0.1",
         "tailwindcss": "^4.0.0",

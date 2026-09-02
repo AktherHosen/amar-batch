@@ -8,6 +8,8 @@ import {
     XCircle,
     Clock,
     GraduationCap,
+    TrendingUp,
+    IdCard,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -29,7 +31,9 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { useLocale } from '@/contexts/locale-context';
+import { getGrade, getGradeBadgeVariant } from '@/lib/grades';
 import { generateTablePDF } from '@/lib/pdf-table';
+import { generateStudentIDCard } from '@/lib/student-id-card';
 import { isOwner } from '@/lib/role';
 import students from '@/routes/students';
 import type { Student } from '@/types';
@@ -376,6 +380,17 @@ export default function StudentsShow({
                     );
                 },
             } as Col,
+            {
+                id: 'grade',
+                header: t('exams.grade'),
+                enableSorting: false,
+                cell: ({ row }: any) => {
+                    const result: ExamResult = row.original;
+                    const grade = getGrade(result.marks_obtained, result.exam.total_marks);
+                    const variant = getGradeBadgeVariant(grade);
+                    return <Badge variant={variant}>{grade}</Badge>;
+                },
+            } as Col,
         ];
     })();
 
@@ -549,6 +564,29 @@ export default function StudentsShow({
                     </div>
                     {isAdmin && (
                         <div className="flex gap-2">
+                            <Link href={students.performance(student.id).url}>
+                                <Button variant="outline" className="h-9">
+                                    <TrendingUp className="size-4" />
+                                    <span className="ml-2 hidden sm:inline">{t('students.performance')}</span>
+                                </Button>
+                            </Link>
+                            <Button variant="outline" className="h-9" onClick={() => generateStudentIDCard({
+                                student: {
+                                    name: student.name,
+                                    code: student.code || '',
+                                    phone: student.phone || '',
+                                    guardian_name: student.guardian_name || '',
+                                    guardian_phone: student.guardian_phone || '',
+                                    coaching_class: student.coaching_class?.name || null,
+                                    section: student.section || null,
+                                    batch_name: student.enrollments?.[0]?.batch?.name || null,
+                                },
+                                centerName: tenant?.name || '',
+                                primaryColor: tenant?.primary_color || '#6366f1',
+                            })}>
+                                <IdCard className="size-4" />
+                                <span className="ml-2 hidden sm:inline">{t('students.id_card')}</span>
+                            </Button>
                             <Sheet open={editOpen} onOpenChange={setEditOpen}>
                                 <SheetTrigger asChild>
                                     <Button variant="outline" className="h-9">

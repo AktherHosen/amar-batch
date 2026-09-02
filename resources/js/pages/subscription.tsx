@@ -26,7 +26,7 @@ import {
     Layers,
     Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 type Plan = {
@@ -74,9 +74,55 @@ type PageProps = {
     recentPayments: PaymentRecord[];
     manualPaymentEnabled: boolean;
     manualPaymentInstructions: string | null;
+    onlinePaymentEnabled: boolean;
     availableFeatures: string[];
     featureMap: Record<string, string>;
 };
+
+function InstructionsWithCopy({ html }: { html: string }) {
+    const ref = useRef<HTMLDivElement>(null);
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!ref.current) return;
+        const codes = ref.current.querySelectorAll('code');
+        codes.forEach((code) => {
+            const text = code.textContent?.trim() || '';
+            if (!/^\d{10,11}$/.test(text)) return;
+
+            const wrapper = document.createElement('span');
+            wrapper.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.setAttribute('data-copy', text);
+            btn.className = 'inline-flex items-center justify-center size-5 rounded bg-muted hover:bg-muted/80 transition-colors';
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
+            btn.title = 'Copy number';
+            btn.addEventListener('click', async () => {
+                await navigator.clipboard.writeText(text);
+                setCopiedId(text);
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+                setTimeout(() => {
+                    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
+                    setCopiedId(null);
+                }, 1500);
+            });
+
+            code.parentNode?.insertBefore(wrapper, code);
+            wrapper.appendChild(code);
+            wrapper.appendChild(btn);
+        });
+    }, [html]);
+
+    return (
+        <div
+            ref={ref}
+            className="rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground prose dark:prose-invert max-w-none break-words overflow-hidden [&_h1]:text-lg [&_h1]:font-bold [&_h1]:text-foreground [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-foreground [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_p]:whitespace-pre-wrap"
+            dangerouslySetInnerHTML={{ __html: html }}
+        />
+    );
+}
 
 export default function SubscriptionPage({
     subscription,
@@ -85,6 +131,7 @@ export default function SubscriptionPage({
     recentPayments,
     manualPaymentEnabled,
     manualPaymentInstructions,
+    onlinePaymentEnabled,
     availableFeatures,
     featureMap,
 }: PageProps) {
@@ -139,6 +186,8 @@ export default function SubscriptionPage({
                 return t('students.active');
             case 'trial':
                 return t('subscription.trial');
+            case 'past_due':
+                return t('subscription.past_due');
             case 'expired':
                 return t('students.inactive');
             case 'cancelled':
@@ -610,41 +659,50 @@ export default function SubscriptionPage({
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-3">
-                        <Button
-                            className="w-full justify-start gap-3"
-                            variant="outline"
-                            onClick={() => {
-                                setUpgradeDialog({
-                                    ...upgradeDialog,
-                                    open: false,
-                                });
-                                submitPayment(
-                                    upgradeDialog.plan!.id,
-                                    upgradeDialog.billing,
-                                );
-                            }}
-                        >
-                            <CreditCard className="size-4" />
-                            {t('subscription.pay_with_gateway')}
-                        </Button>
-                        <Button
-                            className="w-full justify-start gap-3"
-                            variant="outline"
-                            onClick={() => {
-                                setUpgradeDialog({
-                                    ...upgradeDialog,
-                                    open: false,
-                                });
-                                setManualDialog({
-                                    open: true,
-                                    plan: upgradeDialog.plan,
-                                    billing: upgradeDialog.billing,
-                                });
-                            }}
-                        >
-                            <Banknote className="size-4" />
-                            {t('subscription.pay_manually')}
-                        </Button>
+                        {onlinePaymentEnabled && (
+                            <Button
+                                className="w-full justify-start gap-3"
+                                variant="outline"
+                                onClick={() => {
+                                    setUpgradeDialog({
+                                        ...upgradeDialog,
+                                        open: false,
+                                    });
+                                    submitPayment(
+                                        upgradeDialog.plan!.id,
+                                        upgradeDialog.billing,
+                                    );
+                                }}
+                            >
+                                <CreditCard className="size-4" />
+                                {t('subscription.pay_with_gateway')}
+                            </Button>
+                        )}
+                        {manualPaymentEnabled && (
+                            <Button
+                                className="w-full justify-start gap-3"
+                                variant="outline"
+                                onClick={() => {
+                                    setUpgradeDialog({
+                                        ...upgradeDialog,
+                                        open: false,
+                                    });
+                                    setManualDialog({
+                                        open: true,
+                                        plan: upgradeDialog.plan,
+                                        billing: upgradeDialog.billing,
+                                    });
+                                }}
+                            >
+                                <Banknote className="size-4" />
+                                {t('subscription.pay_manually')}
+                            </Button>
+                        )}
+                        {!onlinePaymentEnabled && !manualPaymentEnabled && (
+                            <p className="text-center text-sm text-muted-foreground">
+                                {t('subscription.no_payment_methods')}
+                            </p>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>
@@ -655,7 +713,7 @@ export default function SubscriptionPage({
                     setManualDialog({ ...manualDialog, open })
                 }
             >
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-2xl w-full shrink">
                     <DialogHeader>
                         <DialogTitle>
                             {t('subscription.manual_payment_title')}
@@ -665,9 +723,7 @@ export default function SubscriptionPage({
                         </DialogDescription>
                     </DialogHeader>
                     {manualPaymentInstructions && (
-                        <div className="rounded-lg border bg-muted/50 p-3 text-sm whitespace-pre-wrap text-muted-foreground">
-                            {manualPaymentInstructions}
-                        </div>
+                        <InstructionsWithCopy html={manualPaymentInstructions} />
                     )}
                     <div className="space-y-3">
                         <div className="grid gap-2">

@@ -1,6 +1,6 @@
-import { Head, router, usePage } from '@inertiajs/react';
-import { EllipsisVertical, Loader2, PenLine, Plus, Trash2, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { CalendarDays, ChevronLeft, ChevronRight, EllipsisVertical, Loader2, PenLine, Plus, Trash2, X } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable  } from '@/components/data-table';
@@ -12,7 +12,7 @@ import PageActions from '@/components/page-actions';
 import { RefreshButton } from '@/components/refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
     Dialog,
@@ -117,6 +117,16 @@ export default function AttendanceIndex({
     }, []);
     const [batchCreating, setBatchCreating] = useState(false);
     const [batchErrors, setBatchErrors] = useState<Record<string, string>>({});
+    const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
+    const [calendarBatchId, setCalendarBatchId] = useState('');
+    const [calendarMonth, setCalendarMonth] = useState(() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    });
+    const [calendarData, setCalendarData] = useState<Record<string, Record<number, string>>>({});
+    const [calendarStudents, setCalendarStudents] = useState<{ id: number; name: string }[]>([]);
+    const [calendarSummary, setCalendarSummary] = useState({ total_records: 0, present: 0, absent: 0, late: 0 });
+    const [calendarLoading, setCalendarLoading] = useState(false);
 
     const handleFilter = (overrideDate?: string) => {
         router.get(
@@ -340,6 +350,77 @@ export default function AttendanceIndex({
         }
     };
 
+    const fetchCalendarData = useCallback(async (batchId: string, month: string) => {
+        if (!batchId) {
+            setCalendarData({});
+            setCalendarStudents([]);
+            setCalendarSummary({ total_records: 0, present: 0, absent: 0, late: 0 });
+            return;
+        }
+
+        setCalendarLoading(true);
+        try {
+            const response = await fetch(`/attendance/calendar-data?batch_id=${batchId}&month=${month}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                toast.error('Failed to load calendar data.');
+                return;
+            }
+
+            const data = await response.json();
+            setCalendarData(data.calendarData);
+            setCalendarStudents(data.students);
+            setCalendarSummary(data.summary);
+        } catch {
+            toast.error('Failed to load calendar data.');
+        } finally {
+            setCalendarLoading(false);
+        }
+    }, []);
+
+    const navigateMonth = useCallback((offset: number) => {
+        const [year, monthNum] = calendarMonth.split('-').map(Number);
+        const d = new Date(year, monthNum - 1 + offset, 1);
+        const newMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        setCalendarMonth(newMonth);
+        if (calendarBatchId) {
+            fetchCalendarData(calendarBatchId, newMonth);
+        }
+    }, [calendarMonth, calendarBatchId, fetchCalendarData]);
+
+    const handleCalendarBatchChange = (value: string) => {
+        setCalendarBatchId(value);
+        if (value) {
+            fetchCalendarData(value, calendarMonth);
+        } else {
+            setCalendarData({});
+            setCalendarStudents([]);
+            setCalendarSummary({ total_records: 0, present: 0, absent: 0, late: 0 });
+        }
+    };
+
+    const getDaysInMonth = (year: number, month: number) => new Date(year, month, 0).getDate();
+    const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month - 1, 1).getDay();
+
+    const getCalendarWeeks = () => {
+        const [year, monthNum] = calendarMonth.split('-').map(Number);
+        const daysInMonth = getDaysInMonth(year, monthNum);
+        const firstDay = getFirstDayOfMonth(year, monthNum);
+        const cells: (number | null)[] = [];
+        for (let i = 0; i < firstDay; i++) cells.push(null);
+        for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+        const result: (number | null)[][] = [];
+        for (let i = 0; i < cells.length; i += 7) {
+            result.push(cells.slice(i, i + 7));
+        }
+        return result;
+    };
+
     const getStatusBadge = (status: string) => {
         const variants: Record<
             string,
@@ -507,6 +588,39 @@ export default function AttendanceIndex({
                         description={t('attendance.desc')}
                     />
                     <div className="flex items-center gap-1">
+                        <div className="flex items-center rounded-lg border bg-muted p-0.5">
+                            <button
+                                type="button"
+                                onClick={() => setViewMode('table')}
+                                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                                    viewMode === 'table'
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                <svg className="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18M3 6h18M3 18h18" />
+                                </svg>
+                                Table
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setViewMode('calendar');
+                                    if (calendarBatchId) {
+                                        fetchCalendarData(calendarBatchId, calendarMonth);
+                                    }
+                                }}
+                                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                                    viewMode === 'calendar'
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                <CalendarDays className="size-3.5" />
+                                Calendar
+                            </button>
+                        </div>
                         <RefreshButton
                             refreshing={refreshing}
                             onRefresh={() => {
@@ -551,87 +665,286 @@ export default function AttendanceIndex({
                     </div>
                 </div>
 
-                <Card>
-                    <CardContent className="pt-6">
-                        <DataTable
-                            columns={columns}
-                            data={pagination.data}
-                            loading={refreshing}
-                            currentPage={pagination.current_page}
-                            lastPage={pagination.last_page}
-                            total={pagination.total}
-                            itemName={t('attendance.title').toLowerCase()}
-                            baseUrl={attendance.index().url}
-                            preserveParams={{ search, batch_id: batchId, date }}
-                            emptyMessage="No attendance records found"
-                            getRowId={(row) => String(row.id)}
-                            toolbar={
-                                <FilterBar
-                                    searchPlaceholder={
-                                        t('actions.search') + '...'
-                                    }
-                                    searchValue={search}
-                                    onSearchChange={handleSearch}
-                                    activeFilterCount={activeFilterCount}
-                                    onClearAll={clearAll}
-                                    filters={[
-                                        {
-                                            id: 'batch_id',
-                                            placeholder: t('attendance.batch'),
-                                            value: batchId,
-                                            options: batches.map((batch) => ({
-                                                label: batch.name,
-                                                value: batch.id.toString(),
-                                            })),
-                                            onValueChange: handleBatchChange,
-                                        },
-                                    ]}
-                                    customFilters={
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-muted-foreground">
-                                                {t('attendance.date')}
-                                            </label>
-                                            <div className="relative">
-                                                <DatePicker
-                                                    value={date}
-                                                    onValueChange={(value) => {
-                                                        setDate(value);
-                                                        handleFilter(value);
-                                                    }}
-                                                    placeholder={t(
-                                                        'attendance.date',
-                                                    )}
-                                                />
-                                                {date && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setDate('');
-                                                            router.get(
-                                                                attendance.index(),
-                                                                {
-                                                                    search,
-                                                                    batch_id:
-                                                                        batchId,
-                                                                },
-                                                                {
-                                                                    preserveState: true,
-                                                                },
-                                                            );
+                {viewMode === 'table' ? (
+                    <Card>
+                        <CardContent className="pt-6">
+                            <DataTable
+                                columns={columns}
+                                data={pagination.data}
+                                loading={refreshing}
+                                currentPage={pagination.current_page}
+                                lastPage={pagination.last_page}
+                                total={pagination.total}
+                                itemName={t('attendance.title').toLowerCase()}
+                                baseUrl={attendance.index().url}
+                                preserveParams={{ search, batch_id: batchId, date }}
+                                emptyMessage="No attendance records found"
+                                getRowId={(row) => String(row.id)}
+                                toolbar={
+                                    <FilterBar
+                                        searchPlaceholder={
+                                            t('actions.search') + '...'
+                                        }
+                                        searchValue={search}
+                                        onSearchChange={handleSearch}
+                                        activeFilterCount={activeFilterCount}
+                                        onClearAll={clearAll}
+                                        filters={[
+                                            {
+                                                id: 'batch_id',
+                                                placeholder: t('attendance.batch'),
+                                                value: batchId,
+                                                options: batches.map((batch) => ({
+                                                    label: batch.name,
+                                                    value: batch.id.toString(),
+                                                })),
+                                                onValueChange: handleBatchChange,
+                                            },
+                                        ]}
+                                        customFilters={
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-medium text-muted-foreground">
+                                                    {t('attendance.date')}
+                                                </label>
+                                                <div className="relative">
+                                                    <DatePicker
+                                                        value={date}
+                                                        onValueChange={(value) => {
+                                                            setDate(value);
+                                                            handleFilter(value);
                                                         }}
-                                                        className="absolute top-1/2 right-9 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                                    >
-                                                        <X className="size-4" />
-                                                    </button>
-                                                )}
+                                                        placeholder={t(
+                                                            'attendance.date',
+                                                        )}
+                                                    />
+                                                    {date && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setDate('');
+                                                                router.get(
+                                                                    attendance.index(),
+                                                                    {
+                                                                        search,
+                                                                        batch_id:
+                                                                            batchId,
+                                                                    },
+                                                                    {
+                                                                        preserveState: true,
+                                                                    },
+                                                                );
+                                                            }}
+                                                            className="absolute top-1/2 right-9 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                        >
+                                                            <X className="size-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
+                                        }
+                                    ></FilterBar>
+                                }
+                            />
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <Select value={calendarBatchId} onValueChange={handleCalendarBatchChange}>
+                                <SelectTrigger className="w-full sm:w-[200px]">
+                                    <SelectValue placeholder="Select a batch" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {batches.map((b) => (
+                                        <SelectItem key={b.id} value={b.id.toString()}>
+                                            {b.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <div className="flex items-center justify-center gap-1 sm:justify-start">
+                                <Button variant="outline" size="icon" className="size-9" onClick={() => navigateMonth(-1)}>
+                                    <ChevronLeft className="size-4" />
+                                </Button>
+                                <span className="min-w-[120px] text-center text-sm font-medium sm:min-w-[140px]">
+                                    {new Date(parseInt(calendarMonth.split('-')[0]), parseInt(calendarMonth.split('-')[1]) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                                </span>
+                                <Button variant="outline" size="icon" className="size-9" onClick={() => navigateMonth(1)}>
+                                    <ChevronRight className="size-4" />
+                                </Button>
+                            </div>
+
+                            <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground sm:ml-auto">
+                                <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-green-500" /> Present</span>
+                                <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-red-500" /> Absent</span>
+                                <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-yellow-500" /> Late</span>
+                            </div>
+                        </div>
+
+                        {calendarBatchId && (
+                            <Card>
+                                <CardContent className="pt-6">
+                                    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                                        <div className="text-center">
+                                            <p className="text-2xl font-bold">{calendarStudents.length}</p>
+                                            <p className="text-xs text-muted-foreground">Students</p>
                                         </div>
-                                    }
-                                ></FilterBar>
-                            }
-                        />
-                    </CardContent>
-                </Card>
+                                        <div className="text-center">
+                                            <p className="text-2xl font-bold text-green-600">{calendarSummary.present}</p>
+                                            <p className="text-xs text-muted-foreground">Present</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-2xl font-bold text-red-600">{calendarSummary.absent}</p>
+                                            <p className="text-xs text-muted-foreground">Absent</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-2xl font-bold text-yellow-600">{calendarSummary.late}</p>
+                                            <p className="text-xs text-muted-foreground">Late</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        <Card>
+                            <CardContent className="pt-6">
+                                {calendarLoading ? (
+                                    <div className="flex items-center justify-center py-20">
+                                        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                                    </div>
+                                ) : calendarBatchId ? (
+                                    <>
+                                        <div className="grid grid-cols-7 gap-px text-xs text-muted-foreground">
+                                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                                                <div key={i} className="py-2 text-center font-medium">{d}</div>
+                                            ))}
+                                        </div>
+                                        <div className="grid grid-cols-7 gap-px">
+                                            {getCalendarWeeks().flat().map((day, idx) => {
+                                                if (day === null) {
+                                                    return <div key={`empty-${idx}`} className="min-h-[48px] bg-muted/20 sm:min-h-[80px]" />;
+                                                }
+
+                                                const [year, monthNum] = calendarMonth.split('-').map(Number);
+                                                const dateStr = `${year}-${String(monthNum).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                                const today = new Date();
+                                                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                                                const isToday = dateStr === todayStr;
+                                                const dayData = calendarData[dateStr] || {};
+                                                const vals = Object.values(dayData);
+                                                const totals = {
+                                                    total: vals.length,
+                                                    present: vals.filter((s) => s === 'present').length,
+                                                    absent: vals.filter((s) => s === 'absent').length,
+                                                    late: vals.filter((s) => s === 'late').length,
+                                                };
+
+                                                return (
+                                                    <div
+                                                        key={day}
+                                                        className={`min-h-[48px] rounded-md border border-border/30 p-1 transition-colors hover:bg-muted/30 sm:min-h-[80px] sm:p-1.5 ${
+                                                            isToday ? 'bg-primary/5 ring-1 ring-primary/20' : ''
+                                                        }`}
+                                                    >
+                                                        <div className={`mb-0.5 text-[9px] font-medium sm:mb-1 sm:text-[10px] ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                                                            {day}
+                                                        </div>
+                                                        {totals.total > 0 ? (
+                                                            <div className="flex flex-wrap gap-0.5">
+                                                                {totals.present > 0 && (
+                                                                    <span className="flex items-center justify-center rounded bg-green-500/10 px-0.5 py-px text-[8px] font-medium text-green-700 dark:text-green-400 sm:px-1 sm:py-0.5 sm:text-[9px]">
+                                                                        {totals.present}P
+                                                                    </span>
+                                                                )}
+                                                                {totals.absent > 0 && (
+                                                                    <span className="flex items-center justify-center rounded bg-red-500/10 px-0.5 py-px text-[8px] font-medium text-red-700 dark:text-red-400 sm:px-1 sm:py-0.5 sm:text-[9px]">
+                                                                        {totals.absent}A
+                                                                    </span>
+                                                                )}
+                                                                {totals.late > 0 && (
+                                                                    <span className="flex items-center justify-center rounded bg-yellow-500/10 px-0.5 py-px text-[8px] font-medium text-yellow-700 dark:text-yellow-400 sm:px-1 sm:py-0.5 sm:text-[9px]">
+                                                                        {totals.late}L
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-[8px] text-muted-foreground/50 sm:text-[9px]">—</span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                                        <CalendarDays className="mb-3 size-10 opacity-40" />
+                                        <p className="text-sm">Select a batch to view the attendance calendar</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {calendarBatchId && calendarStudents.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">
+                                        Student Summary — {new Date(parseInt(calendarMonth.split('-')[0]), parseInt(calendarMonth.split('-')[1]) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b text-left text-xs text-muted-foreground">
+                                                    <th className="sticky left-0 z-10 bg-background py-2 pr-4 font-medium whitespace-nowrap">Student</th>
+                                                    <th className="whitespace-nowrap px-3 py-2 text-center font-medium text-green-600">P</th>
+                                                    <th className="whitespace-nowrap px-3 py-2 text-center font-medium text-red-600">A</th>
+                                                    <th className="whitespace-nowrap px-3 py-2 text-center font-medium text-yellow-600">L</th>
+                                                    <th className="whitespace-nowrap px-3 py-2 text-center font-medium">Total</th>
+                                                    <th className="whitespace-nowrap px-3 py-2 text-center font-medium">Rate</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {calendarStudents.map((student) => {
+                                                    const [year, monthNum] = calendarMonth.split('-').map(Number);
+                                                    const daysInMonth = getDaysInMonth(year, monthNum);
+                                                    let p = 0, a = 0, l = 0;
+                                                    for (let d = 1; d <= daysInMonth; d++) {
+                                                        const dateStr = `${year}-${String(monthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                                                        const status = calendarData[dateStr]?.[student.id];
+                                                        if (status === 'present') p++;
+                                                        else if (status === 'absent') a++;
+                                                        else if (status === 'late') l++;
+                                                    }
+                                                    const total = p + a + l;
+                                                    const rate = total > 0 ? Math.round((p / total) * 100) : null;
+
+                                                    return (
+                                                        <tr key={student.id} className="border-b border-border/40">
+                                                            <td className="sticky left-0 z-10 bg-background py-2 pr-4 font-medium whitespace-nowrap">{student.name}</td>
+                                                            <td className="whitespace-nowrap px-3 py-2 text-center text-green-600">{p || '—'}</td>
+                                                            <td className="whitespace-nowrap px-3 py-2 text-center text-red-600">{a || '—'}</td>
+                                                            <td className="whitespace-nowrap px-3 py-2 text-center text-yellow-600">{l || '—'}</td>
+                                                            <td className="whitespace-nowrap px-3 py-2 text-center">{total || '—'}</td>
+                                                            <td className="whitespace-nowrap px-3 py-2 text-center">
+                                                                {rate !== null ? (
+                                                                    <Badge variant={rate >= 80 ? 'default' : rate >= 60 ? 'secondary' : 'destructive'}>
+                                                                        {rate}%
+                                                                    </Badge>
+                                                                ) : '—'}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </>
+                )}
             </div>
 
             <ConfirmDialog

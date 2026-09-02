@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
+import { getGrade, getGradeBadgeVariant } from '@/lib/grades';
 
 type Student = {
     id: number;
@@ -321,12 +322,15 @@ export default function PortalShow({ student, attendanceSummary, feeStatuses, ex
                                                 <TableHead className="whitespace-nowrap">Subject</TableHead>
                                                 <TableHead className="whitespace-nowrap">Batch</TableHead>
                                                 <TableHead className="whitespace-nowrap">Marks</TableHead>
+                                                <TableHead className="whitespace-nowrap">Grade</TableHead>
                                                 <TableHead className="whitespace-nowrap">Status</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {examResults.slice(0, 20).map((result) => {
                                                 const passed = result.marks_obtained >= result.exam.passing_marks;
+                                                const grade = getGrade(result.marks_obtained, result.exam.total_marks);
+                                                const gradeVariant = getGradeBadgeVariant(grade);
                                                 return (
                                                     <TableRow key={result.id}>
                                                         <TableCell className="whitespace-nowrap font-medium">{result.exam.title}</TableCell>
@@ -334,6 +338,9 @@ export default function PortalShow({ student, attendanceSummary, feeStatuses, ex
                                                         <TableCell className="whitespace-nowrap">{result.exam.batch.name}</TableCell>
                                                         <TableCell className="whitespace-nowrap">
                                                             {result.marks_obtained}/{result.exam.total_marks}
+                                                        </TableCell>
+                                                        <TableCell className="whitespace-nowrap">
+                                                            <Badge variant={gradeVariant}>{grade}</Badge>
                                                         </TableCell>
                                                         <TableCell className="whitespace-nowrap">
                                                             <Badge variant={passed ? 'success' : 'destructive'}>

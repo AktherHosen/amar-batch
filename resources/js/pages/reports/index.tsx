@@ -1,22 +1,5 @@
-import { Head, router } from '@inertiajs/react';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    ArcElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler,
-} from 'chart.js';
-import { useState } from 'react';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
-import { Check, ChevronsUpDown, Search, X } from 'lucide-react';
-import { DataTable  } from '@/components/data-table';
-import type {DataTableProps} from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
 import Heading from '@/components/heading';
 import { RefreshButton } from '@/components/refresh-button';
@@ -27,10 +10,27 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
 import { useLocale } from '@/contexts/locale-context';
 import { useHasFeature } from '@/lib/features';
+import { cn } from '@/lib/utils';
 import reports from '@/routes/reports';
+import { Head, Link, router } from '@inertiajs/react';
+import {
+    ArcElement,
+    BarElement,
+    CategoryScale,
+    Chart as ChartJS,
+    Filler,
+    Legend,
+    LinearScale,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+} from 'chart.js';
+import { Building2, Check, ChevronsUpDown, Search, X } from 'lucide-react';
+import { useState } from 'react';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 
 ChartJS.register(
     CategoryScale,
@@ -134,11 +134,13 @@ function BatchSearchSelect({
     value,
     onChange,
     placeholder,
+    className,
 }: {
     batches: { id: number; name: string }[];
     value: string;
     onChange: (value: string) => void;
     placeholder: string;
+    className?: string;
 }) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -146,7 +148,9 @@ function BatchSearchSelect({
     const selected = batches.find((b) => String(b.id) === value);
 
     const filtered = search
-        ? batches.filter((b) => b.name.toLowerCase().includes(search.toLowerCase()))
+        ? batches.filter((b) =>
+              b.name.toLowerCase().includes(search.toLowerCase()),
+          )
         : batches;
 
     return (
@@ -156,9 +160,11 @@ function BatchSearchSelect({
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="h-9 w-[200px] shrink-0 justify-between"
+                    className={cn("h-9 min-w-[200px] shrink-0 justify-between", className)}
                 >
-                    <span className="truncate">{selected ? selected.name : placeholder}</span>
+                    <span className="truncate">
+                        {selected ? selected.name : placeholder}
+                    </span>
                     <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
@@ -170,7 +176,7 @@ function BatchSearchSelect({
                             placeholder="Search..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="h-8 w-full rounded-md bg-transparent pl-7 pr-7 text-sm outline-none placeholder:text-muted-foreground"
+                            className="h-8 w-full rounded-md bg-transparent pr-7 pl-7 text-sm outline-none placeholder:text-muted-foreground"
                             autoFocus
                         />
                         {search && (
@@ -187,31 +193,54 @@ function BatchSearchSelect({
                 <div className="max-h-[200px] overflow-y-auto p-1">
                     <button
                         type="button"
-                        onClick={() => { onChange(''); setOpen(false); setSearch(''); }}
+                        onClick={() => {
+                            onChange('');
+                            setOpen(false);
+                            setSearch('');
+                        }}
                         className={cn(
                             'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
                             !value && 'bg-accent text-accent-foreground',
                         )}
                     >
-                        <Check className={cn('size-4', !value ? 'opacity-100' : 'opacity-0')} />
+                        <Check
+                            className={cn(
+                                'size-4',
+                                !value ? 'opacity-100' : 'opacity-0',
+                            )}
+                        />
                         {placeholder}
                     </button>
                     {filtered.map((batch) => (
                         <button
                             key={batch.id}
                             type="button"
-                            onClick={() => { onChange(String(batch.id)); setOpen(false); setSearch(''); }}
+                            onClick={() => {
+                                onChange(String(batch.id));
+                                setOpen(false);
+                                setSearch('');
+                            }}
                             className={cn(
                                 'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
-                                String(batch.id) === value && 'bg-accent text-accent-foreground',
+                                String(batch.id) === value &&
+                                    'bg-accent text-accent-foreground',
                             )}
                         >
-                            <Check className={cn('size-4', String(batch.id) === value ? 'opacity-100' : 'opacity-0')} />
+                            <Check
+                                className={cn(
+                                    'size-4',
+                                    String(batch.id) === value
+                                        ? 'opacity-100'
+                                        : 'opacity-0',
+                                )}
+                            />
                             {batch.name}
                         </button>
                     ))}
                     {filtered.length === 0 && (
-                        <p className="px-2 py-1.5 text-sm text-muted-foreground">No batches found</p>
+                        <p className="px-2 py-1.5 text-sm text-muted-foreground">
+                            No batches found
+                        </p>
                     )}
                 </div>
             </PopoverContent>
@@ -270,19 +299,22 @@ export default function ReportsIndex({
         const params: Record<string, string> = {};
 
         if (newBranchId ?? branchId) {
-params.branch_id = newBranchId ?? branchId;
-}
+            params.branch_id = newBranchId ?? branchId;
+        }
 
         if (newBatchId ?? batchId) {
-params.batch_id = newBatchId ?? batchId;
-}
+            params.batch_id = newBatchId ?? batchId;
+        }
 
         params.month = newMonth ?? month;
         params.year = newYear ?? year;
         router.get(reports.index(), params, { preserveState: true });
     };
 
-    const activeFilterCount = (branchId ? 1 : 0) + (month !== String(new Date().getMonth() + 1) ? 1 : 0) + (year !== String(new Date().getFullYear()) ? 1 : 0);
+    const activeFilterCount =
+        (branchId ? 1 : 0) +
+        (month !== String(new Date().getMonth() + 1) ? 1 : 0) +
+        (year !== String(new Date().getFullYear()) ? 1 : 0);
 
     const attendanceChartData = {
         labels: attendanceTrend.map((d) => d.month),
@@ -417,6 +449,21 @@ params.batch_id = newBatchId ?? batchId;
                         description={t('reports.desc')}
                     />
                     <div className="flex items-center gap-1">
+                        {hasMultiBranch && (
+                            <Link href={reports.branches().url}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-1.5 whitespace-nowrap"
+                                >
+                                    <Building2 className="size-4 shrink-0" />
+                                    <span className="hidden sm:inline">
+                                        {' '}
+                                        {t('reports.branch_comparison')}
+                                    </span>
+                                </Button>
+                            </Link>
+                        )}
                         <RefreshButton
                             refreshing={refreshing}
                             onRefresh={handleRefresh}
@@ -436,6 +483,7 @@ params.batch_id = newBatchId ?? batchId;
                                     applyFilters(undefined, v);
                                 }}
                                 placeholder={t('reports.all_batches')}
+                                className="flex-1"
                             />
                             <FilterBar
                                 activeFilterCount={activeFilterCount}
@@ -451,7 +499,9 @@ params.batch_id = newBatchId ?? batchId;
                                                   options: branches.map(
                                                       (branch) => ({
                                                           label: branch.name,
-                                                          value: String(branch.id),
+                                                          value: String(
+                                                              branch.id,
+                                                          ),
                                                       }),
                                                   ),
                                                   onValueChange: (

@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
+import { Toggle } from '@/components/ui/toggle';
 import { useLocale } from '@/contexts/locale-context';
 import { useForm } from '@inertiajs/react';
-import { CreditCard, Save, Settings } from 'lucide-react';
+import { CreditCard, Power, Save, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 type PaymentSetting = {
@@ -17,6 +18,7 @@ type PaymentSetting = {
     store_id: string | null;
     store_password: string | null;
     currency: string;
+    online_payment_enabled: boolean;
     manual_payment_enabled: boolean;
     manual_payment_instructions: string | null;
 };
@@ -32,6 +34,7 @@ export default function PaymentSettingsPage({ setting }: PageProps) {
         store_id: setting.store_id || '',
         store_password: setting.store_password || '',
         currency: setting.currency,
+        online_payment_enabled: setting.online_payment_enabled,
         manual_payment_enabled: setting.manual_payment_enabled,
         manual_payment_instructions: setting.manual_payment_instructions || '',
     });
@@ -54,11 +57,25 @@ export default function PaymentSettingsPage({ setting }: PageProps) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-2">
                             <CreditCard className="size-5" />
                             SSLCommerz Gateway
                         </CardTitle>
+                        <Toggle
+                            pressed={data.online_payment_enabled}
+                            onPressedChange={(pressed) =>
+                                setData('online_payment_enabled', pressed)
+                            }
+                            variant="outline"
+                            size="sm"
+                            className={`gap-1.5 ${data.online_payment_enabled ? 'border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950' : 'text-muted-foreground'}`}
+                        >
+                            <Power className="size-3.5" />
+                            {data.online_payment_enabled
+                                ? t('super_admin.enabled')
+                                : t('super_admin.disabled')}
+                        </Toggle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center gap-3">
@@ -124,43 +141,42 @@ export default function PaymentSettingsPage({ setting }: PageProps) {
                 </Card>
 
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-2">
                             <Settings className="size-5" />
                             {t('super_admin.manual_payments')}
                         </CardTitle>
+                        <Toggle
+                            pressed={data.manual_payment_enabled}
+                            onPressedChange={(pressed) =>
+                                setData('manual_payment_enabled', pressed)
+                            }
+                            variant="outline"
+                            size="sm"
+                            className={`gap-1.5 ${data.manual_payment_enabled ? 'border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950' : 'text-muted-foreground'}`}
+                        >
+                            <Power className="size-3.5" />
+                            {data.manual_payment_enabled
+                                ? t('super_admin.enabled')
+                                : t('super_admin.disabled')}
+                        </Toggle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <Switch
-                                id="manual_payment_enabled"
-                                checked={data.manual_payment_enabled}
-                                onCheckedChange={(checked) =>
-                                    setData('manual_payment_enabled', checked)
-                                }
-                            />
-                            <Label htmlFor="manual_payment_enabled">
-                                {t('super_admin.enable_manual_payments')}
-                            </Label>
-                        </div>
-
                         <div className="grid gap-2">
                             <Label htmlFor="manual_payment_instructions">
                                 {t('super_admin.manual_payment_instructions')}
                             </Label>
-                            <Textarea
-                                id="manual_payment_instructions"
+                            <RichTextEditor
                                 value={data.manual_payment_instructions}
-                                onChange={(e) =>
+                                onChange={(value) =>
                                     setData(
                                         'manual_payment_instructions',
-                                        e.target.value,
+                                        value,
                                     )
                                 }
                                 placeholder={t(
                                     'super_admin.manual_payment_instructions_placeholder',
                                 )}
-                                rows={4}
                             />
                             <p className="text-xs text-muted-foreground">
                                 {t(

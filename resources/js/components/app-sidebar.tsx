@@ -33,6 +33,7 @@ import {
     ClipboardList,
     Send,
     Baby,
+    Mail,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -236,12 +237,6 @@ return false;
                             icon: Receipt,
                         },
                         {
-                            title: 'Manual Payments',
-                            href: '/dashboard/manual-payments',
-                            superAdminOnly: true,
-                            icon: FileText,
-                        },
-                        {
                             title: 'Payment Settings',
                             href: '/dashboard/payment-settings',
                             superAdminOnly: true,
@@ -424,6 +419,12 @@ return false;
                         },
                     ],
                 } as NavItemSection,
+                {
+                    title: 'Messages',
+                    href: '/messages',
+                    icon: Mail,
+                    items: [],
+                },
             ],
         },
         {
@@ -506,12 +507,12 @@ return false;
                     if ('items' in item) {
                         const filteredItems = item.items.filter(filterItem);
 
-                        return filteredItems.length > 0 ? { ...item, items: filteredItems } : null;
+                        return filteredItems.length > 0 ? ({ ...item, items: filteredItems } as NavItemSection) : null;
                     }
 
                     return filterItem(item) ? item : null;
                 })
-                .filter(Boolean),
+                .filter((item): item is NavItem | NavItemSection => item !== null),
         }))
         .filter((group) => group.items.length > 0);
 

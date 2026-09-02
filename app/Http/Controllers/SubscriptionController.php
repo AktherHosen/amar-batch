@@ -7,6 +7,7 @@ use App\Models\PaymentSetting;
 use App\Models\Plan;
 use App\Models\PlanFeature;
 use App\Models\Subscription;
+use App\Models\SubscriptionHistory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -85,6 +86,7 @@ class SubscriptionController extends Controller
             'recentPayments' => $recentPayments,
             'manualPaymentEnabled' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_enabled,
             'manualPaymentInstructions' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_instructions,
+            'onlinePaymentEnabled' => PaymentSetting::getForGateway('sslcommerz')->online_payment_enabled,
             'availableFeatures' => $availableFeatures,
             'featureMap' => $featureMap,
         ]);
@@ -104,6 +106,7 @@ class SubscriptionController extends Controller
         }
 
         $subscription = $tenant->subscription;
+        $oldPlan = $subscription?->plan;
 
         if ($subscription) {
             $subscription->update([
@@ -113,12 +116,27 @@ class SubscriptionController extends Controller
                 'ends_at' => null,
             ]);
         } else {
-            Subscription::create([
+            $subscription = Subscription::create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $plan->id,
                 'status' => 'active',
             ]);
         }
+
+        $action = $oldPlan ? 'upgraded' : 'activated';
+        if ($oldPlan && $plan->price_monthly < $oldPlan->price_monthly) {
+            $action = 'downgraded';
+        }
+
+        SubscriptionHistory::create([
+            'tenant_id' => $tenant->id,
+            'subscription_id' => $subscription->id,
+            'plan_id' => $plan->id,
+            'action' => $action,
+            'status' => 'active',
+            'old_plan_name' => $oldPlan?->name,
+            'new_plan_name' => $plan->name,
+        ]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Switched to {$plan->name} successfully."]);
     }

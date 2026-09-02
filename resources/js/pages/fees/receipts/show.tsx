@@ -1,9 +1,12 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, Printer } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { ArrowLeft, Download, Mail, Printer } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLocale } from '@/contexts/locale-context';
+import { generateReceiptPDF } from '@/lib/receipt-pdf';
 
 type Receipt = {
     id: number;
@@ -21,6 +24,7 @@ type Receipt = {
 
 type PageProps = {
     receipt: Receipt;
+    auth: { user: { tenant?: { name?: string } } };
 };
 
 const MONTHS = [
@@ -29,12 +33,31 @@ const MONTHS = [
 ];
 
 export default function FeeReceiptShow() {
-    const { receipt } = usePage<PageProps>().props;
-    const { auth } = usePage().props;
+    const { receipt, auth } = usePage<PageProps>().props;
     const { t, formatCurrency } = useLocale();
+
+    const balance = Number(receipt.amount_due) - Number(receipt.amount_paid);
 
     const handlePrint = () => {
         window.print();
+    };
+
+    const handleDownloadPDF = () => {
+        generateReceiptPDF({
+            receipt,
+            centerName: auth.user?.tenant?.name || '',
+        });
+    };
+
+    const [sending, setSending] = useState(false);
+
+    const handleSendEmail = () => {
+        setSending(true);
+        router.post(`/fees/receipts/${receipt.id}/send-email`, {}, {
+            preserveState: true,
+            onSuccess: () => toast.success(t('receipts.email_sent')),
+            onFinish: () => setSending(false),
+        });
     };
 
     return (
@@ -42,102 +65,120 @@ export default function FeeReceiptShow() {
             <Head title={`${t('receipts.show_title')} ${receipt.receipt_number}`} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex items-center gap-4 print:hidden">
-                    <Link href="/fees/receipts">
-                        <Button variant="ghost" size="icon" className="size-9">
-                            <ArrowLeft className="size-4" />
+                {/* Header */}
+                <div className="flex min-w-0 items-center justify-between gap-3 print:hidden">
+                    <div className="flex min-w-0 items-center gap-2">
+                        <Link href="/fees/receipts" className="shrink-0">
+                            <Button variant="ghost" size="icon" className="size-9">
+                                <ArrowLeft className="size-4" />
+                            </Button>
+                        </Link>
+                        <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">
+                            {receipt.receipt_number}
+                        </h1>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <Button variant="outline" size="icon" className="size-9 shrink-0" onClick={handleSendEmail} disabled={sending}>
+                            <Mail className="size-4" />
+                            <span className="sr-only">{t('receipts.send_email')}</span>
                         </Button>
-                    </Link>
-                    <Heading
-                        title={`${t('receipts.show_title')} ${receipt.receipt_number}`}
-                        description={`${t('receipts.show_generated')} ${new Date(receipt.created_at).toLocaleDateString()}`}
-                    />
-                    <div className="ml-auto">
-                        <Button onClick={handlePrint}>
-                            <Printer className="mr-2 size-4" />
-                            {t('receipts.print')}
+                        <Button variant="outline" size="icon" className="size-9 shrink-0" onClick={handleDownloadPDF}>
+                            <Download className="size-4" />
+                            <span className="sr-only">{t('receipts.download_pdf')}</span>
+                        </Button>
+                        <Button size="icon" className="size-9 shrink-0" onClick={handlePrint}>
+                            <Printer className="size-4" />
+                            <span className="sr-only">{t('receipts.print')}</span>
                         </Button>
                     </div>
                 </div>
 
-                <Card className="print:border-0 print:shadow-none">
-                    <CardContent className="p-6 print:p-0">
-                        <div className="mb-8 text-center">
-                            <h2 className="text-xl font-bold sm:text-2xl">{auth.user?.tenant?.name || t('receipts.coaching_center')}</h2>
-                            <p className="text-muted-foreground">{t('receipts.fee_receipt')}</p>
+                {/* Receipt */}
+                <Card id="print-area" className="print:border-0 print:shadow-none">
+                    <CardContent className="p-0">
+                        {/* Header */}
+                        <div className="border-b px-6 py-6 text-center sm:px-8">
+                            <h2 className="text-lg font-bold uppercase tracking-wide sm:text-xl">
+                                {auth.user?.tenant?.name || t('receipts.coaching_center')}
+                            </h2>
+                            <p className="mt-1 text-sm font-medium text-muted-foreground">{t('receipts.fee_receipt')}</p>
                         </div>
 
-                        <div className="mb-6 grid grid-cols-2 gap-4 border-b pb-4">
+                        {/* Receipt info */}
+                        <div className="grid grid-cols-2 gap-4 border-b px-6 py-4 sm:px-8">
                             <div>
-                                <p className="text-sm text-muted-foreground">{t('receipts.receipt_number')}</p>
-                                <p className="font-semibold">{receipt.receipt_number}</p>
+                                <p className="text-xs text-muted-foreground">{t('receipts.receipt_number')}</p>
+                                <p className="mt-0.5 text-sm font-semibold">{receipt.receipt_number}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-sm text-muted-foreground">{t('receipts.date')}</p>
-                                <p className="font-semibold">{new Date(receipt.created_at).toLocaleDateString()}</p>
+                                <p className="text-xs text-muted-foreground">{t('receipts.date')}</p>
+                                <p className="mt-0.5 text-sm font-semibold">
+                                    {new Date(receipt.created_at).toLocaleDateString('en-GB', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric',
+                                    })}
+                                </p>
                             </div>
                         </div>
 
-                        <div className="mb-6 grid grid-cols-2 gap-4 border-b pb-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('receipts.student_name')}</p>
-                                <p className="font-semibold">{receipt.student.name}</p>
+                        {/* Student & Batch in one row */}
+                        <div className="grid grid-cols-1 gap-0 border-b sm:grid-cols-2">
+                            <div className="border-b px-6 py-4 sm:border-b-0 sm:border-r sm:px-8">
+                                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('receipts.student_name')}</p>
+                                <div className="space-y-1 text-sm">
+                                    <p className="font-semibold">{receipt.student.name}</p>
+                                    <p className="text-muted-foreground">{receipt.student.phone || '-'}</p>
+                                    {receipt.student.guardian_name && (
+                                        <p className="text-muted-foreground">{receipt.student.guardian_name} &middot; {receipt.student.guardian_phone || '-'}</p>
+                                    )}
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('receipts.phone')}</p>
-                                <p className="font-semibold">{receipt.student.phone || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('receipts.guardian_name')}</p>
-                                <p className="font-semibold">{receipt.student.guardian_name || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('receipts.guardian_phone')}</p>
-                                <p className="font-semibold">{receipt.student.guardian_phone || 'N/A'}</p>
-                            </div>
-                        </div>
-
-                        <div className="mb-6 grid grid-cols-2 gap-4 border-b pb-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('fees.batch')}</p>
-                                <p className="font-semibold">{receipt.batch.name}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('receipts.subject')}</p>
-                                <p className="font-semibold">{receipt.batch.subject || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('receipts.period')}</p>
-                                <p className="font-semibold">{MONTHS[receipt.month - 1]} {receipt.year}</p>
+                            <div className="px-6 py-4 sm:px-8">
+                                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('fees.batch')}</p>
+                                <div className="space-y-1 text-sm">
+                                    <p className="font-semibold">{receipt.batch.name}</p>
+                                    <p className="text-muted-foreground">{receipt.batch.subject || '-'}</p>
+                                    <p className="text-muted-foreground">{MONTHS[receipt.month - 1]} {receipt.year}</p>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="mb-6 grid grid-cols-2 gap-4 border-b pb-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('receipts.amount_due')}</p>
-                                <p className="text-base font-bold sm:text-lg">{formatCurrency(Number(receipt.amount_due))}</p>
+                        {/* Amount */}
+                        <div className="grid grid-cols-3 gap-4 border-b px-6 py-5 sm:px-8">
+                            <div className="text-center">
+                                <p className="text-xs text-muted-foreground">{t('receipts.amount_due')}</p>
+                                <p className="mt-1 text-base font-bold sm:text-lg">{formatCurrency(Number(receipt.amount_due))}</p>
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('receipts.amount_paid')}</p>
-                                <p className="text-base font-bold text-green-600 sm:text-lg">{formatCurrency(Number(receipt.amount_paid))}</p>
+                            <div className="text-center">
+                                <p className="text-xs text-muted-foreground">{t('receipts.amount_paid')}</p>
+                                <p className="mt-1 text-base font-bold text-green-600 sm:text-lg">{formatCurrency(Number(receipt.amount_paid))}</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-xs text-muted-foreground">Balance</p>
+                                <p className={`mt-1 text-base font-bold sm:text-lg ${balance <= 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                                    {formatCurrency(Math.max(0, balance))}
+                                </p>
                             </div>
                         </div>
 
+                        {/* Notes */}
                         {receipt.notes && (
-                            <div className="mb-6 border-b pb-4">
-                                <p className="text-sm text-muted-foreground">{t('receipts.notes')}</p>
-                                <p>{receipt.notes}</p>
+                            <div className="border-b px-6 py-4 sm:px-8">
+                                <p className="text-xs text-muted-foreground">{t('receipts.notes')}</p>
+                                <p className="mt-1 text-sm">{receipt.notes}</p>
                             </div>
                         )}
 
-                        <div className="mt-8 grid grid-cols-2 gap-4 text-sm">
+                        {/* Footer */}
+                        <div className="grid grid-cols-2 gap-4 px-6 py-5 sm:px-8">
                             <div>
-                                <p className="text-muted-foreground">{t('receipts.received_by')}</p>
-                                <p className="font-semibold">{receipt.creator.name}</p>
+                                <p className="text-xs text-muted-foreground">{t('receipts.received_by')}</p>
+                                <p className="mt-1 text-sm font-semibold">{receipt.creator.name}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-muted-foreground">{t('receipts.signature')}</p>
-                                <div className="mt-8 border-t border-dashed pt-2">
+                                <p className="text-xs text-muted-foreground">{t('receipts.signature')}</p>
+                                <div className="mt-8 border-t pt-2 text-sm text-muted-foreground">
                                     _______________________
                                 </div>
                             </div>
@@ -151,20 +192,15 @@ export default function FeeReceiptShow() {
                     body * {
                         visibility: hidden;
                     }
-                    .print\\:border-0,
-                    .print\\:shadow-none,
-                    .print\\:p-0,
-                    .print\\:hidden {
-                        visibility: visible !important;
+                    #print-area,
+                    #print-area * {
+                        visibility: visible;
                     }
-                    .print\\:border-0 {
-                        border: 0 !important;
-                    }
-                    .print\\:shadow-none {
-                        box-shadow: none !important;
-                    }
-                    .print\\:p-0 {
-                        padding: 0 !important;
+                    #print-area {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
                     }
                     .print\\:hidden {
                         display: none !important;

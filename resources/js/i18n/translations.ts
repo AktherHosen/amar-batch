@@ -196,6 +196,12 @@ export const translations: Record<Locale, Record<string, string>> = {
         'students.guardian_info': 'অভিভাবকের তথ্য',
         'students.update': 'স্টুডেন্ট আপডেট করুন',
         'students.photo': 'স্টুডেন্টের ছবি',
+        'students.performance': 'পারফরম্যান্স',
+        'students.id_card': 'আইডি কার্ড',
+        'students.avg_marks': 'গড় নম্বর',
+        'students.attendance_rate': 'উপস্থিতির হার',
+        'students.batch_rank': 'ব্যাচ র‍্যাঙ্ক',
+        'students.exams_taken': 'পরীক্ষা দেওয়া হয়েছে',
         'pagination.showing': '{from}-{to} এর {total} {itemName} দেখাচ্ছে',
 
         // Batches
@@ -398,6 +404,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Attendance
         'attendance.title': 'উপস্থিতি',
         'attendance.desc': 'দৈনিক উপস্থিতি ট্র্যাক করুন',
+        'attendance.calendar': 'উপস্থিতির ক্যালেন্ডার',
         'attendance.mark': 'উপস্থিতি নির্ধারণ',
         'attendance.batch': 'ব্যাচ',
         'attendance.date': 'তারিখ',
@@ -445,6 +452,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'exams.student': 'স্টুডেন্ট',
         'exams.marks_obtained': 'অর্জিত নম্বর',
         'exams.status': 'অবস্থা',
+        'exams.grade': 'গ্রেড',
         'exams.pass': 'পাস',
         'exams.fail': 'ফেল',
         'exams.results': 'ফলাফল',
@@ -469,6 +477,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
         // Reports
         'reports.title': 'রিপোর্ট ও বিশ্লেষণ',
+        'reports.branch_comparison': 'শাখা তুলনা',
         'reports.desc': 'উপস্থিতি, বেতন এবং ভর্তি বিশ্লেষণ দেখুন',
         'reports.all_batches': 'সব ব্যাচ',
         'reports.all_branches': 'সব শাখা',
@@ -490,6 +499,21 @@ export const translations: Record<Locale, Record<string, string>> = {
         'reports.unpaid_total_due': 'মোট বকেয়া',
         'reports.due_amount': 'বকেয়া পরিমাণ',
         'reports.no_unpaid_students': 'কোনো বকেয়া স্টুডেন্ট পাওয়া যায়নি',
+        'reports.branch_comparison_desc': 'শাখা অনুযায়ী পরিসংখ্যান তুলনা করুন',
+        'reports.total_batches': 'মোট ব্যাচ',
+        'reports.students_by_branch': 'শাখা অনুযায়ী স্টুডেন্ট',
+        'reports.fees_by_branch': 'শাখা অনুযায়ী বেতন',
+        'reports.branch_details': 'শাখার বিস্তারিত',
+        'reports.branch_name': 'শাখার নাম',
+        'reports.code': 'কোড',
+        'reports.status': 'অবস্থা',
+        'reports.students': 'স্টুডেন্ট',
+        'reports.batches': 'ব্যাচ',
+        'reports.fees': 'বেতন',
+        'reports.enrollments': 'ভর্তি',
+        'reports.fees_month': 'বেতন (মাসিক)',
+        'reports.fees_total': 'বেতন (মোট)',
+        'reports.attendance': 'উপস্থিতি %',
 
         // Branches
         'branches.title': 'ব্রাঞ্চ',
@@ -587,6 +611,10 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.signature': 'স্বাক্ষর',
         'receipts.coaching_center': 'কোচিং সেন্টার',
         'receipts.print': 'প্রিন্ট',
+        'receipts.download_pdf': 'PDF ডাউনলোড',
+        'receipts.send_email': 'ইমেইল পাঠান',
+        'receipts.sending': 'পাঠাচ্ছে...',
+        'receipts.email_sent': 'ইমেইল সফলভাবে পাঠানো হয়েছে',
 
         // Payment
         'payment.success_title': 'পেমেন্ট সফল হয়েছে',
@@ -625,6 +653,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'subscription.proceed_to_payment': 'পেমেন্টে এগিয়ে যান',
         'subscription.pay_with_gateway': 'অনলাইনে পেমেন্ট করুন',
         'subscription.pay_manually': 'ম্যানুয়াল পেমেন্ট করুন',
+        'subscription.no_payment_methods': 'কোনো পেমেন্ট পদ্ধতি সক্রিয় নেই। অ্যাডমিনের সাথে যোগাযোগ করুন।',
         'subscription.manual_payment_title': 'ম্যানুয়াল পেমেন্ট',
         'subscription.manual_payment_desc':
             'নিচের তথ্যগুলো পূরণ করুন। আমাদের টিম যাচাই করার পর আপনার সাবস্ক্রিপশন সক্রিয় হবে।',
@@ -636,6 +665,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'subscription.notes_placeholder': 'অতিরিক্ত তথ্য থাকলে লিখুন',
         'subscription.submit_manual_payment': 'পেমেন্ট জমা দিন',
         'subscription.trial': 'ট্রায়াল',
+        'subscription.past_due': 'বকেয়',
         'subscription.no_plan': 'কোনো প্ল্যান নেই',
         'subscription.active_until': 'সক্রিয় পর্যন্ত',
         'subscription.trial_ends_in': 'ট্রায়াল শেষ হচ্ছে {days} দিনে ({date})',
@@ -812,6 +842,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'actions.complete': 'সম্পন্ন',
         'actions.pause': 'বিরতি',
         'actions.resume': 'পুনরায় শুরু',
+        'common.active': 'সক্রিয়',
+        'common.inactive': 'নিষ্ক্রিয়',
 
         // Super Admin
         'super_admin.platform_dashboard': 'প্ল্যাটফর্ম ড্যাশবোর্ড',
@@ -831,6 +863,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.owners': 'মালিক',
         'super_admin.manage_owners': 'কোচিং সেন্টার মালিক পরিচালনা করুন',
         'super_admin.coaching_center': 'কোচিং সেন্টার',
+        'super_admin.payment_details': 'পেমেন্ট বিস্তারিত',
         'super_admin.plans': 'প্ল্যান',
         'super_admin.manage_plans': 'সাবস্ক্রিপশন প্ল্যান পরিচালনা করুন',
         'super_admin.create_plan': 'প্ল্যান তৈরি করুন',
@@ -928,6 +961,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.view_tenant': 'টেন্যান্ট দেখুন',
         'super_admin.approve': 'অনুমোদন',
         'super_admin.cancel': 'বাতিল',
+        'super_admin.success': 'সফল',
+        'super_admin.cancelled': 'বাতিলকৃত',
+        'super_admin.successful': 'সফল',
+        'super_admin.manual': 'ম্যানুয়াল',
+        'super_admin.gateway': 'গেটওয়ে',
+        'super_admin.all_methods': 'সব পদ্ধতি',
+        'super_admin.reject': 'প্রত্যাখ্যান',
+        'super_admin.transaction_id': 'লেনদেন আইডি',
         'super_admin.no_owners': 'কোনো মালিক পাওয়া যায়নি',
         'super_admin.view_details': 'বিস্তারিত দেখুন',
         'super_admin.received': 'প্রাপ্ত',
@@ -942,11 +983,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.payment_settings_desc':
             'পেমেন্ট গেটওয়ে এবং ম্যানুয়াল পেমেন্ট কনফিগার করুন',
         'super_admin.sandbox_mode': 'স্যান্ডবক্স মোড',
+        'super_admin.enabled': 'সক্রিয়',
+        'super_admin.disabled': 'নিষ্ক্রিয়',
         'super_admin.store_id': 'স্টোর আইডি',
         'super_admin.store_password': 'স্টোর পাসওয়ার্ড',
         'super_admin.currency': 'মুদ্রা',
         'super_admin.manual_payments': 'ম্যানুয়াল পেমেন্ট',
         'super_admin.enable_manual_payments': 'ম্যানুয়াল পেমেন্ট সক্রিয় করুন',
+        'super_admin.enable_online_payments': 'অনলাইন পেমেন্ট সক্রিয় করুন',
         'super_admin.manual_payment_instructions':
             'ম্যানুয়াল পেমেন্ট নির্দেশনা',
         'super_admin.manual_payment_instructions_placeholder':
@@ -1018,6 +1062,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.assigned_successfully': 'সফলভাবে নির্ধারিত হয়েছে',
         'toast.completed_successfully': 'সফলভাবে সম্পন্ন করা হয়েছে',
         'toast.copied_to_clipboard': 'ক্লিপবোর্ডে কপি করা হয়েছে',
+        'toast.cancelled_successfully': 'সফলভাবে বাতিল করা হয়েছে',
+        'toast.rejected_successfully': 'সফলভাবে প্রত্যাখ্যান করা হয়েছে',
         'toast.error_occurred': 'কিছু একটা ভুল হয়েছে',
 
         // Months
@@ -1162,6 +1208,31 @@ export const translations: Record<Locale, Record<string, string>> = {
         'footer.documentation': 'ডকুমেন্টেশন',
         'footer.terms': 'সেবার শর্তাবলী',
         'footer.privacy': 'গোপনীয়তা নীতি',
+
+        // Messages
+        'messages.title': 'বার্তা',
+        'messages.desc': 'বার্তা পরিচালনা করুন',
+        'messages.new': 'নতুন বার্তা',
+        'messages.new_desc': 'একটি নতুন বার্তা পাঠান',
+        'messages.to': 'প্রাপক',
+        'messages.select_recipient': 'প্রাপক নির্বাচন করুন',
+        'messages.related_student': 'সম্পর্কিত শিক্ষার্থী',
+        'messages.optional': 'ঐচ্ছিক',
+        'messages.subject': 'বিষয়',
+        'messages.subject_placeholder': 'ঐচ্ছিক বিষয়',
+        'messages.body': 'বার্তা',
+        'messages.body_placeholder': 'আপনার বার্তা লিখুন...',
+        'messages.send': 'পাঠান',
+        'messages.sent': 'বার্তা সফলভাবে পাঠানো হয়েছে',
+        'messages.deleted': 'বার্তা মুছে ফেলা হয়েছে',
+        'messages.no_messages': 'কোনো বার্তা নেই',
+        'messages.filter_all': 'সব',
+        'messages.filter_sent': 'পাঠানো',
+        'messages.filter_received': 'প্রাপ্ত',
+        'messages.filter_unread': 'অপঠিত',
+        'messages.from': 'প্রেরক',
+        'messages.to_label': 'প্রাপক',
+        'messages.reply_placeholder': 'উত্তর লিখুন...',
     },
     en: {
         // Common
@@ -1301,6 +1372,12 @@ export const translations: Record<Locale, Record<string, string>> = {
         'students.guardian_info': 'Guardian Info',
         'students.update': 'Update Student',
         'students.photo': 'Student Photo',
+        'students.performance': 'Performance',
+        'students.id_card': 'ID Card',
+        'students.avg_marks': 'Average Marks',
+        'students.attendance_rate': 'Attendance Rate',
+        'students.batch_rank': 'Batch Rank',
+        'students.exams_taken': 'Exams Taken',
         'pagination.showing': 'Showing {from}-{to} of {total} {itemName}',
 
         // Batches
@@ -1501,6 +1578,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         // Attendance
         'attendance.title': 'Attendance',
         'attendance.desc': 'Track daily attendance',
+        'attendance.calendar': 'Calendar',
         'attendance.create': 'New Attendance',
         'attendance.mark': 'Mark Attendance',
         'attendance.batch': 'Batch',
@@ -1547,6 +1625,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'exams.student': 'Student',
         'exams.marks_obtained': 'Marks Obtained',
         'exams.status': 'Status',
+        'exams.grade': 'Grade',
         'exams.pass': 'Pass',
         'exams.fail': 'Fail',
         'exams.results': 'Results',
@@ -1572,6 +1651,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
         // Reports
         'reports.title': 'Reports & Analytics',
+        'reports.branch_comparison': 'Branch Comparison',
         'reports.desc': 'View attendance, fee, and enrollment analytics',
         'reports.all_batches': 'All Batches',
         'reports.all_branches': 'All Branches',
@@ -1593,6 +1673,21 @@ export const translations: Record<Locale, Record<string, string>> = {
         'reports.unpaid_total_due': 'total due',
         'reports.due_amount': 'Due Amount',
         'reports.no_unpaid_students': 'No unpaid students found',
+        'reports.branch_comparison_desc': 'Compare statistics across branches',
+        'reports.total_batches': 'Total Batches',
+        'reports.students_by_branch': 'Students by Branch',
+        'reports.fees_by_branch': 'Fees by Branch',
+        'reports.branch_details': 'Branch Details',
+        'reports.branch_name': 'Branch Name',
+        'reports.code': 'Code',
+        'reports.status': 'Status',
+        'reports.students': 'Students',
+        'reports.batches': 'Batches',
+        'reports.fees': 'Fees',
+        'reports.enrollments': 'Enrollments',
+        'reports.fees_month': 'Fees (Month)',
+        'reports.fees_total': 'Fees (Total)',
+        'reports.attendance': 'Attendance %',
 
         // Branches
         'branches.title': 'Branches',
@@ -1691,6 +1786,10 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.signature': 'Signature',
         'receipts.coaching_center': 'Coaching Center',
         'receipts.print': 'Print',
+        'receipts.download_pdf': 'Download PDF',
+        'receipts.send_email': 'Send Email',
+        'receipts.sending': 'Sending...',
+        'receipts.email_sent': 'Receipt emailed successfully',
 
         // Classes
         'classes.title': 'Coaching Classes',
@@ -1859,6 +1958,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'actions.complete': 'Complete',
         'actions.pause': 'Pause',
         'actions.resume': 'Resume',
+        'common.active': 'Active',
+        'common.inactive': 'Inactive',
 
         // Super Admin
         'super_admin.platform_dashboard': 'Platform Dashboard',
@@ -1877,6 +1978,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.owners': 'Owners',
         'super_admin.manage_owners': 'Manage coaching center owners',
         'super_admin.coaching_center': 'Coaching Center',
+        'super_admin.payment_details': 'Payment Details',
         'super_admin.plans': 'Plans',
         'super_admin.manage_plans': 'Manage subscription plans',
         'super_admin.create_plan': 'Create Plan',
@@ -1976,6 +2078,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.view_tenant': 'View Tenant',
         'super_admin.approve': 'Approve',
         'super_admin.cancel': 'Cancel',
+        'super_admin.success': 'Success',
+        'super_admin.cancelled': 'Cancelled',
+        'super_admin.successful': 'Successful',
+        'super_admin.manual': 'Manual',
+        'super_admin.gateway': 'Gateway',
+        'super_admin.all_methods': 'All Methods',
+        'super_admin.reject': 'Reject',
+        'super_admin.transaction_id': 'Transaction ID',
         'super_admin.no_owners': 'No owners found',
         'super_admin.view_details': 'View Details',
         'super_admin.received': 'Received',
@@ -1990,11 +2100,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.payment_settings_desc':
             'Configure payment gateway and manual payments',
         'super_admin.sandbox_mode': 'Sandbox Mode',
+        'super_admin.enabled': 'Enabled',
+        'super_admin.disabled': 'Disabled',
         'super_admin.store_id': 'Store ID',
         'super_admin.store_password': 'Store Password',
         'super_admin.currency': 'Currency',
         'super_admin.manual_payments': 'Manual Payments',
         'super_admin.enable_manual_payments': 'Enable Manual Payments',
+        'super_admin.enable_online_payments': 'Enable Online Payments',
         'super_admin.manual_payment_instructions':
             'Manual Payment Instructions',
         'super_admin.manual_payment_instructions_placeholder':
@@ -2067,6 +2180,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.assigned_successfully': 'Assigned successfully',
         'toast.completed_successfully': 'Completed successfully',
         'toast.copied_to_clipboard': 'Copied to clipboard',
+        'toast.cancelled_successfully': 'Cancelled successfully',
+        'toast.rejected_successfully': 'Rejected successfully',
         'toast.error_occurred': 'Something went wrong',
 
         // Months
@@ -2202,6 +2317,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'subscription.proceed_to_payment': 'Proceed to Payment',
         'subscription.pay_with_gateway': 'Pay Online',
         'subscription.pay_manually': 'Pay Manually',
+        'subscription.no_payment_methods': 'No payment methods are enabled. Please contact admin.',
         'subscription.manual_payment_title': 'Manual Payment',
         'subscription.manual_payment_desc':
             'Fill in the details below. Your subscription will be activated after our team verifies the payment.',
@@ -2213,6 +2329,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'subscription.notes_placeholder': 'Any additional information',
         'subscription.submit_manual_payment': 'Submit Payment',
         'subscription.trial': 'Trial',
+        'subscription.past_due': 'Past Due',
         'subscription.no_plan': 'No Plan',
         'subscription.active_until': 'Active until',
         'subscription.trial_ends_in': 'Trial ends in {days} days ({date})',
@@ -2244,6 +2361,31 @@ export const translations: Record<Locale, Record<string, string>> = {
         'footer.documentation': 'Documentation',
         'footer.terms': 'Terms of Service',
         'footer.privacy': 'Privacy Policy',
+
+        // Messages
+        'messages.title': 'Messages',
+        'messages.desc': 'Manage your messages',
+        'messages.new': 'New Message',
+        'messages.new_desc': 'Send a new message',
+        'messages.to': 'To',
+        'messages.select_recipient': 'Select recipient',
+        'messages.related_student': 'Related Student',
+        'messages.optional': 'Optional',
+        'messages.subject': 'Subject',
+        'messages.subject_placeholder': 'Optional subject',
+        'messages.body': 'Message',
+        'messages.body_placeholder': 'Type your message...',
+        'messages.send': 'Send',
+        'messages.sent': 'Message sent successfully',
+        'messages.deleted': 'Message deleted',
+        'messages.no_messages': 'No messages',
+        'messages.filter_all': 'All',
+        'messages.filter_sent': 'Sent',
+        'messages.filter_received': 'Received',
+        'messages.filter_unread': 'Unread',
+        'messages.from': 'From',
+        'messages.to_label': 'To',
+        'messages.reply_placeholder': 'Type your reply...',
 
         // Docs page
         'docs.page_title': 'Documentation',

@@ -126,6 +126,10 @@ export default function SuperAdminDashboard({
                 return <Badge className="bg-green-600 text-white whitespace-nowrap text-[10px]">Active</Badge>;
             case 'trial':
                 return <Badge className="bg-blue-600 text-white whitespace-nowrap text-[10px]">Trial</Badge>;
+            case 'past_due':
+                return <Badge className="bg-orange-600 text-white whitespace-nowrap text-[10px]">Past Due</Badge>;
+            case 'expired':
+                return <Badge className="bg-red-600 text-white whitespace-nowrap text-[10px]">Expired</Badge>;
             default:
                 return <Badge variant="secondary" className="whitespace-nowrap text-[10px]">None</Badge>;
         }

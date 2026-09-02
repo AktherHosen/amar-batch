@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('store_password')->nullable();
             $table->string('currency')->default('BDT');
             $table->boolean('manual_payment_enabled')->default(true);
-            $table->string('manual_payment_instructions')->nullable();
+            $table->text('manual_payment_instructions')->nullable();
             $table->json('metadata')->nullable();
             $table->timestamps();
 

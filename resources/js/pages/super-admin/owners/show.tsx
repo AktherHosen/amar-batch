@@ -153,7 +153,7 @@ export default function OwnerShow({ owner, plans, history }: PageProps) {
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex min-w-0 items-center justify-between">
                     <div className="flex min-w-0 items-center gap-2">
-                        <Link href="/super-admin/owners" className="shrink-0">
+                        <Link href="/dashboard/owners" className="shrink-0">
                             <Button variant="ghost" size="icon" className="size-9">
                                 <ArrowLeft className="size-4" />
                             </Button>
