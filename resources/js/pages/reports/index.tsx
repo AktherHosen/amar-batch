@@ -28,7 +28,7 @@ import {
     Title,
     Tooltip,
 } from 'chart.js';
-import { Building2, Check, ChevronsUpDown, Search, X } from 'lucide-react';
+import { Building2, Check, ChevronsUpDown, Search, X, Eye, Users, CheckCircle2, Wallet, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 
@@ -149,8 +149,8 @@ function BatchSearchSelect({
 
     const filtered = search
         ? batches.filter((b) =>
-              b.name.toLowerCase().includes(search.toLowerCase()),
-          )
+            b.name.toLowerCase().includes(search.toLowerCase()),
+        )
         : batches;
 
     return (
@@ -168,7 +168,7 @@ function BatchSearchSelect({
                     <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                 <div className="border-b p-2">
                     <div className="relative">
                         <Search className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -223,7 +223,7 @@ function BatchSearchSelect({
                             className={cn(
                                 'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
                                 String(batch.id) === value &&
-                                    'bg-accent text-accent-foreground',
+                                'bg-accent text-accent-foreground',
                             )}
                         >
                             <Check
@@ -272,6 +272,7 @@ export default function ReportsIndex({
         filters.year || String(new Date().getFullYear()),
     );
     const [refreshing, setRefreshing] = useState(false);
+    const [batchSearch, setBatchSearch] = useState('');
 
     const handleRefresh = () => {
         setRefreshing(true);
@@ -421,7 +422,7 @@ export default function ReportsIndex({
                 header: t('reports.active_students'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
-                    <span>{row.original.active_students}</span>
+                    <span className="whitespace-nowrap">{row.original.active_students}</span>
                 ),
             } as Col,
             {
@@ -430,9 +431,25 @@ export default function ReportsIndex({
                 header: t('reports.fees_collected'),
                 enableSorting: false,
                 cell: ({ row }: any) => (
-                    <span>
+                    <span className="whitespace-nowrap">
                         {formatCurrency(row.original.total_fees_collected)}
                     </span>
+                ),
+            } as Col,
+            {
+                id: 'actions',
+                header: '',
+                enableSorting: false,
+                enableHiding: false,
+                cell: ({ row }: any) => (
+                    <div className="flex justify-end">
+                        <Link href={`/batches/${row.original.id}`}>
+                            <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
+                                <Eye className="size-4" />
+                                <span className="hidden sm:inline-block whitespace-nowrap">View</span>
+                            </Button>
+                        </Link>
+                    </div>
                 ),
             } as Col,
         ];
@@ -448,7 +465,7 @@ export default function ReportsIndex({
                         title={t('reports.title')}
                         description={t('reports.desc')}
                     />
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                         {hasMultiBranch && (
                             <Link href={reports.branches().url}>
                                 <Button
@@ -472,151 +489,161 @@ export default function ReportsIndex({
                 </div>
 
                 {/* Filters */}
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="flex items-center gap-2">
-                            <BatchSearchSelect
-                                batches={batches}
-                                value={batchId}
-                                onChange={(v) => {
-                                    setBatchId(v);
-                                    applyFilters(undefined, v);
-                                }}
-                                placeholder={t('reports.all_batches')}
-                                className="flex-1"
-                            />
-                            <FilterBar
-                                activeFilterCount={activeFilterCount}
-                                filters={[
-                                    ...(hasMultiBranch
-                                        ? [
-                                              {
-                                                  id: 'branch_id',
-                                                  placeholder: t(
-                                                      'reports.all_branches',
-                                                  ),
-                                                  value: branchId,
-                                                  options: branches.map(
-                                                      (branch) => ({
-                                                          label: branch.name,
-                                                          value: String(
-                                                              branch.id,
-                                                          ),
-                                                      }),
-                                                  ),
-                                                  onValueChange: (
-                                                      value: string,
-                                                  ) => {
-                                                      setBranchId(value);
-                                                      applyFilters(value);
-                                                  },
-                                              },
-                                          ]
-                                        : []),
+
+                <div className="flex items-center gap-2">
+                    <BatchSearchSelect
+                        batches={batches}
+                        value={batchId}
+                        onChange={(v) => {
+                            setBatchId(v);
+                            applyFilters(undefined, v);
+                        }}
+                        placeholder={t('reports.all_batches')}
+                        className="min-w-0 flex-1 sm:w-[200px] sm:flex-none"
+                    />
+                    <FilterBar
+                        className="!w-auto shrink-0"
+                        activeFilterCount={activeFilterCount}
+                        filters={[
+                            ...(hasMultiBranch
+                                ? [
                                     {
-                                        id: 'month',
-                                        placeholder: 'Month',
-                                        value: month,
-                                        options: months.map((m, i) => ({
-                                            label: m,
-                                            value: String(i + 1),
-                                        })),
-                                        onValueChange: (value: string) => {
-                                            setMonth(value);
-                                            applyFilters(
-                                                undefined,
-                                                undefined,
-                                                value,
-                                            );
+                                        id: 'branch_id',
+                                        placeholder: t(
+                                            'reports.all_branches',
+                                        ),
+                                        value: branchId,
+                                        options: branches.map(
+                                            (branch) => ({
+                                                label: branch.name,
+                                                value: String(
+                                                    branch.id,
+                                                ),
+                                            }),
+                                        ),
+                                        onValueChange: (
+                                            value: string,
+                                        ) => {
+                                            setBranchId(value);
+                                            applyFilters(value);
                                         },
                                     },
-                                    {
-                                        id: 'year',
-                                        placeholder: 'Year',
-                                        value: year,
-                                        options: years.map((y) => ({
-                                            label: String(y),
-                                            value: String(y),
-                                        })),
-                                        onValueChange: (value: string) => {
-                                            setYear(value);
-                                            applyFilters(
-                                                undefined,
-                                                undefined,
-                                                undefined,
-                                                value,
-                                            );
-                                        },
-                                    },
-                                ]}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
+                                ]
+                                : []),
+                            {
+                                id: 'month',
+                                placeholder: 'Month',
+                                value: month,
+                                options: months.map((m, i) => ({
+                                    label: m,
+                                    value: String(i + 1),
+                                })),
+                                onValueChange: (value: string) => {
+                                    setMonth(value);
+                                    applyFilters(
+                                        undefined,
+                                        undefined,
+                                        value,
+                                    );
+                                },
+                            },
+                            {
+                                id: 'year',
+                                placeholder: 'Year',
+                                value: year,
+                                options: years.map((y) => ({
+                                    label: String(y),
+                                    value: String(y),
+                                })),
+                                onValueChange: (value: string) => {
+                                    setYear(value);
+                                    applyFilters(
+                                        undefined,
+                                        undefined,
+                                        undefined,
+                                        value,
+                                    );
+                                },
+                            },
+                        ]}
+                    />
+                </div>
 
                 {/* Summary Cards */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
                                 {t('reports.total_students')}
-                            </div>
+                            </CardTitle>
+                            <Users className="size-3.5 text-muted-foreground sm:size-4" />
+                        </CardHeader>
+                        <CardContent>
                             <div className="text-xl font-bold sm:text-2xl">
                                 {studentSummary.total}
                             </div>
-                            <div className="mt-1 text-xs text-muted-foreground">
+                            <p className="mt-1 text-xs text-muted-foreground">
                                 {studentSummary.active} active,{' '}
                                 {studentSummary.inactive} inactive
-                            </div>
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
                                 {t('reports.attendance_rate')}
-                            </div>
+                            </CardTitle>
+                            <CheckCircle2 className="size-3.5 text-muted-foreground sm:size-4" />
+                        </CardHeader>
+                        <CardContent>
                             <div className="text-xl font-bold sm:text-2xl">
                                 {totalAttendance > 0
                                     ? Math.round(
-                                          (attendanceSummary.present /
-                                              totalAttendance) *
-                                              100,
-                                      )
+                                        (attendanceSummary.present /
+                                            totalAttendance) *
+                                        100,
+                                    )
                                     : 0}
                                 %
                             </div>
-                            <div className="mt-1 text-xs text-muted-foreground">
+                            <p className="mt-1 text-xs text-muted-foreground">
                                 {attendanceSummary.present} present /{' '}
                                 {totalAttendance} total
-                            </div>
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
                                 {t('reports.fees_collected')}
-                            </div>
+                            </CardTitle>
+                            <Wallet className="size-3.5 text-muted-foreground sm:size-4" />
+                        </CardHeader>
+                        <CardContent>
                             <div className="text-xl font-bold sm:text-2xl">
                                 {formatCurrency(feeSummary.total_collected)}
                             </div>
-                            <div className="mt-1 text-xs text-muted-foreground">
+                            <p className="mt-1 text-xs text-muted-foreground">
                                 {formatCurrency(feeSummary.total_due)} due,{' '}
                                 {feeSummary.unpaid} unpaid
-                            </div>
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-sm text-muted-foreground">
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
                                 {t('reports.active_enrollments')}
-                            </div>
+                            </CardTitle>
+                            <GraduationCap className="size-3.5 text-muted-foreground sm:size-4" />
+                        </CardHeader>
+                        <CardContent>
                             <div className="text-xl font-bold sm:text-2xl">
                                 {enrollmentSummary.active}
                             </div>
-                            <div className="mt-1 text-xs text-muted-foreground">
+                            <p className="mt-1 text-xs text-muted-foreground">
                                 {enrollmentSummary.completed} completed,{' '}
                                 {enrollmentSummary.dropped} dropped
-                            </div>
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
@@ -698,12 +725,21 @@ export default function ReportsIndex({
                     <CardContent>
                         <DataTable
                             columns={columns}
-                            data={batchPerformance}
+                            data={batchPerformance.filter((batch) =>
+                                batch.name.toLowerCase().includes(batchSearch.toLowerCase())
+                            )}
                             loading={refreshing}
                             total={batchPerformance.length}
                             itemName="batches"
                             emptyMessage={t('reports.no_batches')}
                             getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder={t('reports.search_batches', 'Search batches...')}
+                                    searchValue={batchSearch}
+                                    onSearchChange={setBatchSearch}
+                                />
+                            }
                         />
                     </CardContent>
                 </Card>

@@ -15,7 +15,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DataTable, type DataTableProps } from '@/components/data-table';
 import { useLocale } from '@/contexts/locale-context';
 import reports from '@/routes/reports';
 
@@ -48,39 +48,8 @@ type PageProps = {
     totals: Totals;
 };
 
-type SortKey = keyof BranchData;
-type SortDir = 'asc' | 'desc';
-
 export default function BranchComparison({ branches, totals }: PageProps) {
     const { t, formatCurrency } = useLocale();
-    const [sortKey, setSortKey] = useState<SortKey>('students');
-    const [sortDir, setSortDir] = useState<SortDir>('desc');
-
-    const sortedBranches = [...branches].sort((a, b) => {
-        const aVal = a[sortKey];
-        const bVal = b[sortKey];
-        if (typeof aVal === 'string' && typeof bVal === 'string') {
-            return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-        }
-        if (typeof aVal === 'boolean' && typeof bVal === 'boolean') {
-            return sortDir === 'asc' ? (aVal === bVal ? 0 : aVal ? -1 : 1) : (aVal === bVal ? 0 : aVal ? 1 : -1);
-        }
-        return sortDir === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
-    });
-
-    const handleSort = (key: SortKey) => {
-        if (sortKey === key) {
-            setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortKey(key);
-            setSortDir('desc');
-        }
-    };
-
-    const SortIcon = ({ column }: { column: SortKey }) => {
-        if (sortKey !== column) return null;
-        return sortDir === 'asc' ? <ChevronUp className="ml-1 inline size-3" /> : <ChevronDown className="ml-1 inline size-3" />;
-    };
 
     const chartLabels = branches.map((b) => b.name);
     const studentsChartData = {
@@ -116,6 +85,92 @@ export default function BranchComparison({ branches, totals }: PageProps) {
         },
     };
 
+    const columns = (() => {
+        type Col = NonNullable<DataTableProps<BranchData, unknown>['columns']>[number];
+
+        return [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: t('reports.branch_name') || 'Branch Name',
+                enableSorting: true,
+                meta: { sticky: true },
+                cell: ({ row }: any) => (
+                    <div className="flex items-center gap-2 whitespace-nowrap font-medium">
+                        <Building2 className="size-4 text-muted-foreground" />
+                        {row.original.name}
+                    </div>
+                ),
+            } as Col,
+            {
+                id: 'code',
+                accessorKey: 'code',
+                header: t('reports.code') || 'Code',
+                enableSorting: true,
+                cell: ({ row }: any) => (
+                    <span className="whitespace-nowrap text-muted-foreground">
+                        {row.original.code || '-'}
+                    </span>
+                ),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'is_active',
+                header: t('reports.status') || 'Status',
+                enableSorting: true,
+                cell: ({ row }: any) => (
+                    <span className="whitespace-nowrap">
+                        <Badge variant={row.original.is_active ? 'success' : 'danger'}>
+                            {row.original.is_active ? (t('common.active') || 'Active') : (t('common.inactive') || 'Inactive')}
+                        </Badge>
+                    </span>
+                ),
+            } as Col,
+            {
+                id: 'students',
+                accessorKey: 'students',
+                header: t('reports.students') || 'Students',
+                enableSorting: true,
+                cell: ({ row }: any) => <span className="whitespace-nowrap">{row.original.students}</span>,
+            } as Col,
+            {
+                id: 'batches',
+                accessorKey: 'batches',
+                header: t('reports.batches') || 'Batches',
+                enableSorting: true,
+                cell: ({ row }: any) => <span className="whitespace-nowrap">{row.original.batches}</span>,
+            } as Col,
+            {
+                id: 'enrollments',
+                accessorKey: 'enrollments',
+                header: t('reports.enrollments') || 'Enrollments',
+                enableSorting: true,
+                cell: ({ row }: any) => <span className="whitespace-nowrap">{row.original.enrollments}</span>,
+            } as Col,
+            {
+                id: 'fees_collected_month',
+                accessorKey: 'fees_collected_month',
+                header: t('reports.fees_month') || 'Fees (Month)',
+                enableSorting: true,
+                cell: ({ row }: any) => <span className="whitespace-nowrap">{formatCurrency(row.original.fees_collected_month)}</span>,
+            } as Col,
+            {
+                id: 'fees_collected_total',
+                accessorKey: 'fees_collected_total',
+                header: t('reports.fees_total') || 'Fees (Total)',
+                enableSorting: true,
+                cell: ({ row }: any) => <span className="whitespace-nowrap">{formatCurrency(row.original.fees_collected_total)}</span>,
+            } as Col,
+            {
+                id: 'attendance_rate',
+                accessorKey: 'attendance_rate',
+                header: t('reports.attendance') || 'Attendance %',
+                enableSorting: true,
+                cell: ({ row }: any) => <span className="whitespace-nowrap">{row.original.attendance_rate.toFixed(1)}%</span>,
+            } as Col,
+        ];
+    })();
+
     return (
         <>
             <Head title={t('reports.branch_comparison') || 'Branch Comparison'} />
@@ -133,39 +188,47 @@ export default function BranchComparison({ branches, totals }: PageProps) {
 
                 <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Users className="size-4" />
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
                                 {t('reports.total_students') || 'Total Students'}
-                            </div>
-                            <div className="mt-1 text-2xl font-bold">{totals.students}</div>
+                            </CardTitle>
+                            <Users className="size-3.5 text-muted-foreground sm:size-4" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{totals.students}</div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Layers className="size-4" />
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
                                 {t('reports.total_batches') || 'Total Batches'}
-                            </div>
-                            <div className="mt-1 text-2xl font-bold">{totals.batches}</div>
+                            </CardTitle>
+                            <Layers className="size-3.5 text-muted-foreground sm:size-4" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{totals.batches}</div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Wallet className="size-4" />
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
                                 {t('reports.fees_collected') || 'Fees Collected (Month)'}
-                            </div>
-                            <div className="mt-1 text-2xl font-bold">{formatCurrency(totals.fees_collected_month)}</div>
+                            </CardTitle>
+                            <Wallet className="size-3.5 text-muted-foreground sm:size-4" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{formatCurrency(totals.fees_collected_month)}</div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <CalendarCheck className="size-4" />
+                        <CardHeader>
+                            <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
                                 {t('reports.attendance_rate') || 'Avg Attendance'}
-                            </div>
-                            <div className="mt-1 text-2xl font-bold">{totals.avg_attendance.toFixed(1)}%</div>
+                            </CardTitle>
+                            <CalendarCheck className="size-3.5 text-muted-foreground sm:size-4" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-xl font-bold sm:text-2xl">{totals.avg_attendance.toFixed(1)}%</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -204,95 +267,16 @@ export default function BranchComparison({ branches, totals }: PageProps) {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead
-                                            className="cursor-pointer select-none whitespace-nowrap"
-                                            onClick={() => handleSort('name')}
-                                        >
-                                            {t('reports.branch_name') || 'Branch Name'}
-                                            <SortIcon column="name" />
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('reports.code') || 'Code'}
-                                        </TableHead>
-                                        <TableHead className="whitespace-nowrap">
-                                            {t('reports.status') || 'Status'}
-                                        </TableHead>
-                                        <TableHead
-                                            className="cursor-pointer select-none whitespace-nowrap"
-                                            onClick={() => handleSort('students')}
-                                        >
-                                            {t('reports.students') || 'Students'}
-                                            <SortIcon column="students" />
-                                        </TableHead>
-                                        <TableHead
-                                            className="cursor-pointer select-none whitespace-nowrap"
-                                            onClick={() => handleSort('batches')}
-                                        >
-                                            {t('reports.batches') || 'Batches'}
-                                            <SortIcon column="batches" />
-                                        </TableHead>
-                                        <TableHead
-                                            className="cursor-pointer select-none whitespace-nowrap"
-                                            onClick={() => handleSort('enrollments')}
-                                        >
-                                            {t('reports.enrollments') || 'Enrollments'}
-                                            <SortIcon column="enrollments" />
-                                        </TableHead>
-                                        <TableHead
-                                            className="cursor-pointer select-none whitespace-nowrap"
-                                            onClick={() => handleSort('fees_collected_month')}
-                                        >
-                                            {t('reports.fees_month') || 'Fees (Month)'}
-                                            <SortIcon column="fees_collected_month" />
-                                        </TableHead>
-                                        <TableHead
-                                            className="cursor-pointer select-none whitespace-nowrap"
-                                            onClick={() => handleSort('fees_collected_total')}
-                                        >
-                                            {t('reports.fees_total') || 'Fees (Total)'}
-                                            <SortIcon column="fees_collected_total" />
-                                        </TableHead>
-                                        <TableHead
-                                            className="cursor-pointer select-none whitespace-nowrap"
-                                            onClick={() => handleSort('attendance_rate')}
-                                        >
-                                            {t('reports.attendance') || 'Attendance %'}
-                                            <SortIcon column="attendance_rate" />
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {sortedBranches.map((branch) => (
-                                        <TableRow key={branch.id}>
-                                            <TableCell className="whitespace-nowrap font-medium">
-                                                <div className="flex items-center gap-2">
-                                                    <Building2 className="size-4 text-muted-foreground" />
-                                                    {branch.name}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap text-muted-foreground">
-                                                {branch.code || '-'}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                <Badge variant={branch.is_active ? 'success' : 'danger'}>
-                                                    {branch.is_active ? (t('common.active') || 'Active') : (t('common.inactive') || 'Inactive')}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap">{branch.students}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{branch.batches}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{branch.enrollments}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{formatCurrency(branch.fees_collected_month)}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{formatCurrency(branch.fees_collected_total)}</TableCell>
-                                            <TableCell className="whitespace-nowrap">{branch.attendance_rate.toFixed(1)}%</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
+                        <DataTable
+                            columns={columns}
+                            data={branches}
+                            total={branches.length}
+                            itemName="branches"
+                            emptyMessage="No branches found."
+                            getRowId={(row) => String(row.id)}
+                            enableSorting={true}
+                            enableColumnVisibility={false}
+                        />
                     </CardContent>
                 </Card>
             </div>

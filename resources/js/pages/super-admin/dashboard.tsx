@@ -233,7 +233,7 @@ export default function SuperAdminDashboard({
     };
 
     return (
-        <div className="flex h-full flex-1 flex-col gap-4 overflow-hidden rounded-xl p-3 sm:p-4">
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden p-3 pb-20 sm:rounded-xl sm:p-4 sm:pb-4">
             <Heading
                 title={t('super_admin.platform_dashboard')}
                 description={t('super_admin.overview_description')}
@@ -415,39 +415,76 @@ export default function SuperAdminDashboard({
                     </CardContent>
                 </Card>
 
-                <Card className="min-w-0">
-                    <CardHeader>
-                        <CardTitle>Quick Actions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                            <Link href="/dashboard/plans?create=true">
-                                <Button variant="outline" className="w-full justify-start">
-                                    <Settings className="mr-2 size-4" />
-                                    Create Plan
-                                </Button>
+                <>
+                    {/* Mobile: floating bottom nav */}
+                    <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-border/50 bg-background/95 px-2 py-2 backdrop-blur-md sm:hidden">
+                        <div className="flex items-center justify-around">
+                            <Link
+                                href="/dashboard/plans?create=true"
+                                className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                                <Settings className="size-5 shrink-0" />
+                                <span className="w-full truncate text-center text-[10px] font-medium">Create Plan</span>
                             </Link>
-                            <Link href="/dashboard/payments?status=pending">
-                                <Button variant="outline" className="w-full justify-start">
-                                    <CreditCard className="mr-2 size-4" />
-                                    Approve Payment
-                                </Button>
+                            <Link
+                                href="/dashboard/payments?status=pending"
+                                className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                                <CreditCard className="size-5 shrink-0" />
+                                <span className="w-full truncate text-center text-[10px] font-medium">Approve</span>
                             </Link>
-                            <Link href="/dashboard/owners">
-                                <Button variant="outline" className="w-full justify-start">
-                                    <Building2 className="mr-2 size-4" />
-                                    Manage Owners
-                                </Button>
+                            <Link
+                                href="/dashboard/owners"
+                                className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                                <Building2 className="size-5 shrink-0" />
+                                <span className="w-full truncate text-center text-[10px] font-medium">Owners</span>
                             </Link>
-                            <Link href="/dashboard/contacts?status=unread">
-                                <Button variant="outline" className="w-full justify-start">
-                                    <MessageSquare className="mr-2 size-4" />
-                                    Reply Messages
-                                </Button>
+                            <Link
+                                href="/dashboard/contacts?status=unread"
+                                className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                                <MessageSquare className="size-5 shrink-0" />
+                                <span className="w-full truncate text-center text-[10px] font-medium">Messages</span>
                             </Link>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+
+                    {/* Desktop: card */}
+                    <Card className="hidden min-w-0 sm:block">
+                        <CardHeader>
+                            <CardTitle>Quick Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Link href="/dashboard/plans?create=true">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        <Settings className="mr-2 size-4" />
+                                        Create Plan
+                                    </Button>
+                                </Link>
+                                <Link href="/dashboard/payments?status=pending">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        <CreditCard className="mr-2 size-4" />
+                                        Approve Payment
+                                    </Button>
+                                </Link>
+                                <Link href="/dashboard/owners">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        <Building2 className="mr-2 size-4" />
+                                        Manage Owners
+                                    </Button>
+                                </Link>
+                                <Link href="/dashboard/contacts?status=unread">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        <MessageSquare className="mr-2 size-4" />
+                                        Reply Messages
+                                    </Button>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </>
             </div>
         </div>
     );

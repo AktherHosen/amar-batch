@@ -1,15 +1,15 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { MessageSquare, Search, X } from 'lucide-react';
-import { useState } from 'react';
+import { MessageSquare, RefreshCw } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import Heading from '@/components/heading';
-import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useLocale } from '@/contexts/locale-context';
+import { DataTable } from '@/components/data-table';
+import type { DataTableProps } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
+import { RefreshButton } from '@/components/refresh-button';
 
 type SmsLogItem = {
     id: number;
@@ -45,32 +45,45 @@ type PageProps = {
     };
 };
 
-export default function SmsLogs({ logs, stats, filters }: PageProps) {
+export default function SmsLogs({ logs: pagination, stats, filters }: PageProps) {
     const { t } = useLocale();
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const [search, setSearch] = useState(filters.search || '');
+    const [status, setStatus] = useState(filters.status || '');
+    const [type, setType] = useState(filters.type || '');
+    const [refreshing, setRefreshing] = useState(false);
 
     if (flash?.success) toast.success(flash.success);
     if (flash?.error) toast.error(flash.error);
 
-    const applyFilter = (key: string, value: string) => {
-        const params = new URLSearchParams(window.location.search);
-        if (value) {
-            params.set(key, value);
-        } else {
-            params.delete(key);
-        }
-        params.delete('page');
-        router.get(`/sms/logs?${params.toString()}`);
+    const applyFilters = (newSearch: string, newStatus: string, newType: string) => {
+        router.get(
+            '/sms/logs',
+            { search: newSearch, status: newStatus, type: newType },
+            { preserveState: true }
+        );
     };
 
-    const handleSearch = () => {
-        applyFilter('search', search);
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        applyFilters(value, status, type);
     };
 
-    const resetFilters = () => {
+    const handleStatusChange = (value: string) => {
+        setStatus(value);
+        applyFilters(search, value, type);
+    };
+
+    const handleTypeChange = (value: string) => {
+        setType(value);
+        applyFilters(search, status, value);
+    };
+
+    const clearAll = () => {
         setSearch('');
-        router.get('/sms/logs');
+        setStatus('');
+        setType('');
+        router.get('/sms/logs', {}, { preserveState: true });
     };
 
     const getTypeBadge = (type: string) => {
@@ -92,12 +105,84 @@ export default function SmsLogs({ logs, stats, filters }: PageProps) {
         return variants[status] || 'secondary';
     };
 
+    const activeFilterCount = (status ? 1 : 0) + (type ? 1 : 0);
+
+    const columns = useMemo(() => {
+        type Col = NonNullable<DataTableProps<SmsLogItem, unknown>['columns']>[number];
+
+        return [
+            {
+                id: 'recipient',
+                accessorKey: 'recipient',
+                header: 'Recipient',
+                enableSorting: false,
+                meta: { sticky: true },
+                cell: ({ row }: any) => <span className="whitespace-nowrap font-medium">{row.original.recipient}</span>,
+            } as Col,
+            {
+                id: 'message',
+                accessorKey: 'message',
+                header: 'Message',
+                enableSorting: false,
+                cell: ({ row }: any) => <span className="max-w-[200px] truncate block text-muted-foreground">{row.original.message}</span>,
+            } as Col,
+            {
+                id: 'type',
+                accessorKey: 'type',
+                header: 'Type',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <span className={`whitespace-nowrap inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeBadge(row.original.type)}`}>
+                        {row.original.type.replace(/_/g, ' ')}
+                    </span>
+                ),
+            } as Col,
+            {
+                id: 'status',
+                accessorKey: 'status',
+                header: 'Status',
+                enableSorting: false,
+                cell: ({ row }: any) => (
+                    <Badge variant={getStatusBadge(row.original.status)} className="whitespace-nowrap">
+                        {row.original.status}
+                    </Badge>
+                ),
+            } as Col,
+            {
+                id: 'user',
+                accessorKey: 'user.name',
+                header: 'Sent By',
+                enableSorting: false,
+                cell: ({ row }: any) => <span className="whitespace-nowrap text-muted-foreground">{row.original.user?.name || '—'}</span>,
+            } as Col,
+            {
+                id: 'created_at',
+                accessorKey: 'created_at',
+                header: 'Date',
+                enableSorting: false,
+                cell: ({ row }: any) => <span className="whitespace-nowrap text-muted-foreground">{new Date(row.original.created_at).toLocaleDateString()}</span>,
+            } as Col,
+        ];
+    }, []);
+
     return (
         <>
             <Head title="SMS Logs" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Heading title="SMS Logs" description="View all sent SMS messages" />
+                <div className="flex items-start justify-between">
+                    <Heading title="SMS Logs" description="View all sent SMS messages" />
+                    <RefreshButton
+                        refreshing={refreshing}
+                        onRefresh={() => {
+                            setRefreshing(true);
+                            router.reload({
+                                only: ['logs', 'stats'],
+                                onFinish: () => setRefreshing(false),
+                            });
+                        }}
+                    />
+                </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <Card>
@@ -147,100 +232,66 @@ export default function SmsLogs({ logs, stats, filters }: PageProps) {
                 </div>
 
                 <Card>
-                    <CardHeader>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <MessageSquare className="size-4 text-muted-foreground" />
-                                Messages
-                            </CardTitle>
-                            <div className="flex items-center gap-2">
-                                <div className="flex gap-1">
-                                    {['', 'sent', 'failed'].map((status) => (
-                                        <Button
-                                            key={status}
-                                            variant={filters.status === status || (!filters.status && !status) ? 'default' : 'outline'}
-                                            size="sm"
-                                            className="h-7 text-xs"
-                                            onClick={() => applyFilter('status', status)}
-                                        >
-                                            {status || 'All'}
-                                        </Button>
-                                    ))}
-                                </div>
-                                <div className="relative">
-                                    <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        placeholder="Search..."
-                                        className="h-7 w-40 pl-8 text-xs"
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    />
-                                </div>
-                                {(filters.search || filters.type || filters.status) && (
-                                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={resetFilters}>
-                                        <X className="size-3" />
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="whitespace-nowrap">Recipient</TableHead>
-                                        <TableHead className="whitespace-nowrap">Message</TableHead>
-                                        <TableHead className="whitespace-nowrap">Type</TableHead>
-                                        <TableHead className="whitespace-nowrap">Status</TableHead>
-                                        <TableHead className="whitespace-nowrap">Sent By</TableHead>
-                                        <TableHead className="whitespace-nowrap">Date</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {logs.data.length > 0 ? (
-                                        logs.data.map((log) => (
-                                            <TableRow key={log.id}>
-                                                <TableCell className="whitespace-nowrap font-medium">{log.recipient}</TableCell>
-                                                <TableCell className="max-w-[200px] truncate text-muted-foreground">{log.message}</TableCell>
-                                                <TableCell className="whitespace-nowrap">
-                                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeBadge(log.type)}`}>
-                                                        {log.type.replace(/_/g, ' ')}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap">
-                                                    <Badge variant={getStatusBadge(log.status)}>{log.status}</Badge>
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap text-muted-foreground">{log.user?.name || '—'}</TableCell>
-                                                <TableCell className="whitespace-nowrap text-muted-foreground">
-                                                    {new Date(log.created_at).toLocaleDateString()}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                                                No SMS logs found
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                        {logs.last_page > 1 && (
-                            <Pagination
-                                currentPage={logs.current_page}
-                                lastPage={logs.last_page}
-                                total={logs.total}
-                                perPage={logs.per_page}
-                                itemName="SMS logs"
-                                baseUrl="/sms/logs"
-                            />
-                        )}
+                    <CardContent className="pt-6">
+                        <DataTable
+                            columns={columns}
+                            data={pagination.data}
+                            loading={refreshing}
+                            currentPage={pagination.current_page}
+                            lastPage={pagination.last_page}
+                            total={pagination.total}
+                            itemName="SMS logs"
+                            baseUrl="/sms/logs"
+                            preserveParams={{ search, status, type }}
+                            emptyMessage="No SMS logs found"
+                            getRowId={(row) => String(row.id)}
+                            toolbar={
+                                <FilterBar
+                                    searchPlaceholder="Search recipient or message..."
+                                    searchValue={search}
+                                    onSearchChange={handleSearch}
+                                    activeFilterCount={activeFilterCount}
+                                    onClearAll={clearAll}
+                                    filters={[
+                                        {
+                                            id: 'status',
+                                            placeholder: 'All Statuses',
+                                            value: status,
+                                            options: [
+                                                { label: 'Sent', value: 'sent' },
+                                                { label: 'Failed', value: 'failed' },
+                                                { label: 'Pending', value: 'pending' },
+                                            ],
+                                            onValueChange: handleStatusChange,
+                                        },
+                                        {
+                                            id: 'type',
+                                            placeholder: 'All Types',
+                                            value: type,
+                                            options: [
+                                                { label: 'Manual', value: 'manual' },
+                                                { label: 'Fee Reminder', value: 'fee_reminder' },
+                                                { label: 'Absence Alert', value: 'absence_alert' },
+                                                { label: 'Exam Reminder', value: 'exam_reminder' },
+                                            ],
+                                            onValueChange: handleTypeChange,
+                                        },
+                                    ]}
+                                />
+                            }
+                        />
                     </CardContent>
                 </Card>
             </div>
         </>
     );
 }
+
+SmsLogs.layout = {
+    breadcrumbs: [
+        {
+            title: 'SMS Logs',
+            href: '/sms/logs',
+        },
+    ],
+};
