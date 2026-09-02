@@ -164,6 +164,7 @@ class OwnerController extends Controller
     {
         $validated = $request->validate([
             'plan_id' => 'required|exists:plans,id',
+            'billing_type' => 'nullable|in:monthly,yearly',
         ]);
 
         $tenant = $owner->tenants->first();
@@ -175,21 +176,29 @@ class OwnerController extends Controller
         }
 
         $plan = Plan::findOrFail($validated['plan_id']);
+        $billingType = $validated['billing_type'] ?? 'monthly';
         $oldPlan = $tenant->subscription?->plan;
+
+        $period = $billingType === 'yearly' ? now()->addYear() : now()->addMonth();
 
         $subscription = $tenant->subscription;
         if ($subscription) {
+            $base = $subscription->ends_at && $subscription->ends_at->isFuture() ? $subscription->ends_at : now();
+            $endsAt = $billingType === 'yearly' ? $base->copy()->addYear() : $base->copy()->addMonth();
+
             $subscription->update([
                 'plan_id' => $plan->id,
                 'status' => 'active',
-                'ends_at' => now()->addMonth(),
+                'billing_type' => $billingType,
+                'ends_at' => $endsAt,
                 'trial_ends_at' => null,
             ]);
         } else {
             $subscription = $tenant->subscription()->create([
                 'plan_id' => $plan->id,
                 'status' => 'active',
-                'ends_at' => now()->addMonth(),
+                'billing_type' => $billingType,
+                'ends_at' => $period,
             ]);
         }
 
@@ -204,6 +213,7 @@ class OwnerController extends Controller
             'plan_id' => $plan->id,
             'action' => $action,
             'status' => 'active',
+            'billing_type' => $billingType,
             'old_plan_name' => $oldPlan?->name,
             'new_plan_name' => $plan->name,
         ]);

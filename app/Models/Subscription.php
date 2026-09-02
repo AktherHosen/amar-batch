@@ -60,6 +60,10 @@ class Subscription extends Model
 
     public function isExpired(): bool
     {
+        if ($this->status === 'past_due') {
+            return true;
+        }
+
         if ($this->isTrial() && $this->trial_ends_at) {
             return $this->trial_ends_at->isPast();
         }

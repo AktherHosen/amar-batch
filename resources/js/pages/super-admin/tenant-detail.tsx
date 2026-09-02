@@ -95,6 +95,8 @@ export default function TenantDetail({ tenant, payments, subscriptionHistory, st
                 return <Badge className="bg-blue-600 text-white whitespace-nowrap">Trial</Badge>;
             case 'expired':
                 return <Badge className="bg-red-600 text-white whitespace-nowrap">Expired</Badge>;
+            case 'past_due':
+                return <Badge className="bg-orange-600 text-white whitespace-nowrap">Past Due</Badge>;
             case 'cancelled':
                 return <Badge variant="secondary" className="whitespace-nowrap">Cancelled</Badge>;
             default:

@@ -186,6 +186,8 @@ export default function SubscriptionPage({
                 return t('students.active');
             case 'trial':
                 return t('subscription.trial');
+            case 'past_due':
+                return t('subscription.past_due');
             case 'expired':
                 return t('students.inactive');
             case 'cancelled':
