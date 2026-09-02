@@ -47,23 +47,23 @@ class OnboardingController extends Controller
             'is_active' => true,
         ]);
 
-        // Assign default plan
-        $defaultPlan = Plan::where('is_default', true)->first();
-        if ($defaultPlan) {
+        // Assign Pro plan for 3-days trial, then free plan after trial ends
+        $proPlan = Plan::where('slug', 'pro')->first() ?? Plan::where('slug', 'free-trial')->first();
+        if ($proPlan) {
             $subscription = Subscription::create([
                 'tenant_id' => $tenant->id,
-                'plan_id' => $defaultPlan->id,
+                'plan_id' => $proPlan->id,
                 'status' => 'trial',
-                'trial_ends_at' => now()->addDays(14),
+                'trial_ends_at' => now()->addDays(3),
             ]);
 
             SubscriptionHistory::create([
                 'tenant_id' => $tenant->id,
                 'subscription_id' => $subscription->id,
-                'plan_id' => $defaultPlan->id,
+                'plan_id' => $proPlan->id,
                 'action' => 'trial_started',
                 'status' => 'trial',
-                'new_plan_name' => $defaultPlan->name,
+                'new_plan_name' => $proPlan->name,
             ]);
         }
 

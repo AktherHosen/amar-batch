@@ -666,10 +666,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'subscription.notes_placeholder': 'অতিরিক্ত তথ্য থাকলে লিখুন',
         'subscription.submit_manual_payment': 'পেমেন্ট জমা দিন',
         'subscription.trial': 'ট্রায়াল',
-        'subscription.past_due': 'বকেয়',
+        'subscription.past_due': 'বকেয়া',
         'subscription.no_plan': 'কোনো প্ল্যান নেই',
         'subscription.active_until': 'সক্রিয় পর্যন্ত',
         'subscription.trial_ends_in': 'ট্রায়াল শেষ হচ্ছে {days} দিনে ({date})',
+        'subscription.trial_active': 'প্রো প্ল্যান ট্রায়াল সক্রিয়',
+        'subscription.trial_desc': 'সকল প্রো ফিচার উপভোগ করুন। ট্রায়াল শেষে অ্যাকাউন্ট স্বয়ংক্রিয়ভাবে ফ্রি প্ল্যানে স্থানান্তরিত হবে।',
+        'subscription.upgrade': 'আপগ্রেড',
+        'subscription.days': 'দিন',
 
         // Toast
         'toast.upgraded': 'সফলভাবে আপগ্রেড হয়েছে!',

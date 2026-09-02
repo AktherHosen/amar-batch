@@ -27,6 +27,7 @@ import NoticesWidget from './dashboard/notices-widget';
 import PendingApprovals from './dashboard/pending-approvals';
 import QuickActions from './dashboard/quick-actions';
 import StatCards from './dashboard/stat-cards';
+import TrialCountdownBanner from './dashboard/trial-banner';
 import UpgradePrompt from './dashboard/upgrade-prompt';
 
 type Stats = {
@@ -244,7 +245,11 @@ export default function Dashboard({
         <>
             <Head title={t('dashboard.title')} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-hidden p-3 pb-20 sm:rounded-xl sm:p-4 sm:pb-4">
+            <div className="flex h-full flex-1 flex-col gap-3 overflow-x-hidden p-3 pb-20 sm:rounded-xl sm:p-4 sm:pb-4">
+                {isTrial && tenant?.subscription?.trial_ends_at && (
+                    <TrialCountdownBanner trialEndsAt={tenant.subscription.trial_ends_at} />
+                )}
+
                 <GreetingBanner
                     userName={isTeacher ? auth.user?.name : tenant?.name}
                     subtitle={
