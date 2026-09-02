@@ -15,7 +15,9 @@ class OwnerController extends Controller
     public function index(Request $request): Response
     {
         $query = User::with('tenants')
-            ->whereIn('role', ['owner', 'inactive'])
+            ->whereHas('tenants', function ($q) {
+                $q->where('tenant_user.role', 'owner');
+            })
             ->when($request->search, function ($q, $search) {
                 $q->where(function ($q2) use ($search) {
                     $q2->where('name', 'like', "%{$search}%")
@@ -24,9 +26,9 @@ class OwnerController extends Controller
             })
             ->when($request->status, function ($q, $status) {
                 if ($status === 'active') {
-                    $q->where('role', 'owner');
+                    $q->where('users.role', 'owner');
                 } elseif ($status === 'inactive') {
-                    $q->where('role', 'inactive');
+                    $q->where('users.role', 'inactive');
                 }
             });
 

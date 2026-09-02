@@ -21,6 +21,9 @@ class Plan extends Model
         return [
             'price_monthly' => 'decimal:2',
             'price_yearly' => 'decimal:2',
+            'max_students' => 'integer',
+            'max_staff' => 'integer',
+            'max_batches' => 'integer',
             'features' => 'array',
             'is_active' => 'boolean',
             'is_default' => 'boolean',
