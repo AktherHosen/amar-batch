@@ -33,6 +33,11 @@ class PaymentController extends Controller
             return back()->withErrors(['error' => 'No coaching center found.']);
         }
 
+        $setting = PaymentSetting::getForGateway('sslcommerz');
+        if (! $setting->online_payment_enabled) {
+            return back()->withErrors(['error' => 'Online payment is currently disabled.']);
+        }
+
         $billingType = $request->query('billing', 'monthly');
         $amount = $billingType === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
 

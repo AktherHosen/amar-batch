@@ -85,6 +85,7 @@ class SubscriptionController extends Controller
             'recentPayments' => $recentPayments,
             'manualPaymentEnabled' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_enabled,
             'manualPaymentInstructions' => PaymentSetting::getForGateway('sslcommerz')->manual_payment_instructions,
+            'onlinePaymentEnabled' => PaymentSetting::getForGateway('sslcommerz')->online_payment_enabled,
             'availableFeatures' => $availableFeatures,
             'featureMap' => $featureMap,
         ]);

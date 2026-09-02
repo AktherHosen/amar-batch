@@ -237,12 +237,6 @@ return false;
                             icon: Receipt,
                         },
                         {
-                            title: 'Manual Payments',
-                            href: '/dashboard/manual-payments',
-                            superAdminOnly: true,
-                            icon: FileText,
-                        },
-                        {
                             title: 'Payment Settings',
                             href: '/dashboard/payment-settings',
                             superAdminOnly: true,

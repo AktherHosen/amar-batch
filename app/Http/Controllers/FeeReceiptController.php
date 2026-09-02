@@ -128,4 +128,36 @@ class FeeReceiptController extends Controller
         return redirect()->route('fees.receipts.index')
             ->with('toast', ['type' => 'success', 'message' => 'Receipt deleted successfully.']);
     }
+
+    public function sendEmail(FeeReceipt $receipt)
+    {
+        $this->authorize('view', $receipt);
+
+        $receipt->load(['student', 'batch', 'creator']);
+
+        $student = $receipt->student;
+        $parentEmail = $student->parents()->first()?->email;
+
+        if (empty($parentEmail)) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'No parent email found for this student.']);
+        }
+
+        $tenantName = $this->getTenantName();
+
+        \Illuminate\Support\Facades\Mail::to($parentEmail)->send(
+            new \App\Mail\FeeReceiptMail($receipt, $tenantName)
+        );
+
+        return back()->with('toast', ['type' => 'success', 'message' => 'Receipt emailed successfully.']);
+    }
+
+    private function getTenantName(): string
+    {
+        $tenantId = app('tenant_id');
+        if ($tenantId) {
+            $tenant = \App\Models\Tenant::find($tenantId);
+            return $tenant->name ?? config('app.name');
+        }
+        return config('app.name');
+    }
 }

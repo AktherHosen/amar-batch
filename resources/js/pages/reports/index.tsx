@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -14,7 +14,7 @@ import {
 } from 'chart.js';
 import { useState } from 'react';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
-import { Check, ChevronsUpDown, Search, X } from 'lucide-react';
+import { Building2, Check, ChevronsUpDown, Search, X } from 'lucide-react';
 import { DataTable  } from '@/components/data-table';
 import type {DataTableProps} from '@/components/data-table';
 import { FilterBar } from '@/components/filter-bar';
@@ -417,6 +417,14 @@ params.batch_id = newBatchId ?? batchId;
                         description={t('reports.desc')}
                     />
                     <div className="flex items-center gap-1">
+                        {hasMultiBranch && (
+                            <Link href={reports.branches().url}>
+                                <Button variant="outline" size="sm">
+                                    <Building2 className="mr-1.5 size-4" />
+                                    {t('reports.branch_comparison')}
+                                </Button>
+                            </Link>
+                        )}
                         <RefreshButton
                             refreshing={refreshing}
                             onRefresh={handleRefresh}

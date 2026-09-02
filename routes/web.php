@@ -80,6 +80,7 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('d
     Route::get('payments', [SuperAdminController::class, 'payments'])->name('payments');
     Route::post('payments/{payment}/approve', [SuperAdminController::class, 'approvePayment'])->name('payments.approve');
     Route::post('payments/{payment}/cancel', [SuperAdminController::class, 'cancelPayment'])->name('payments.cancel');
+    Route::post('payments/{payment}/reject', [SuperAdminController::class, 'rejectPayment'])->name('payments.reject');
     Route::get('contacts', [ContactMessageController::class, 'index'])->name('contacts.index');
     Route::post('contacts/{contactMessage}/reply', [ContactMessageController::class, 'reply'])->name('contacts.reply');
     Route::post('contacts/{contactMessage}/read', [ContactMessageController::class, 'markRead'])->name('contacts.read');
@@ -89,9 +90,6 @@ Route::middleware(['auth', 'verified', 'tenant', 'role:super_admin'])->prefix('d
     Route::post('owners/{owner}/assign-plan', [OwnerController::class, 'assignPlan'])->name('owners.assign-plan');
     Route::get('payment-settings', [PaymentSettingController::class, 'index'])->name('payment-settings.index');
     Route::put('payment-settings', [PaymentSettingController::class, 'update'])->name('payment-settings.update');
-    Route::get('manual-payments', [PaymentSettingController::class, 'manualPayments'])->name('manual-payments');
-    Route::post('manual-payments/{payment}/approve', [PaymentSettingController::class, 'approveManualPayment'])->name('manual-payments.approve');
-    Route::post('manual-payments/{payment}/reject', [PaymentSettingController::class, 'rejectManualPayment'])->name('manual-payments.reject');
 });
 
 // Parent portal routes (auth required, parent role only)

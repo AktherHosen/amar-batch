@@ -15,7 +15,6 @@ import { useLocale } from '@/contexts/locale-context';
 import { getGrade, getGradeBadgeVariant } from '@/lib/grades';
 import { isOwner } from '@/lib/role';
 import exams from '@/routes/exams';
-import exams from '@/routes/exams';
 
 type Student = {
     id: number;

@@ -197,6 +197,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'students.update': 'স্টুডেন্ট আপডেট করুন',
         'students.photo': 'স্টুডেন্টের ছবি',
         'students.performance': 'পারফরম্যান্স',
+        'students.id_card': 'আইডি কার্ড',
         'students.avg_marks': 'গড় নম্বর',
         'students.attendance_rate': 'উপস্থিতির হার',
         'students.batch_rank': 'ব্যাচ র‍্যাঙ্ক',
@@ -476,6 +477,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
         // Reports
         'reports.title': 'রিপোর্ট ও বিশ্লেষণ',
+        'reports.branch_comparison': 'শাখা তুলনা',
         'reports.desc': 'উপস্থিতি, বেতন এবং ভর্তি বিশ্লেষণ দেখুন',
         'reports.all_batches': 'সব ব্যাচ',
         'reports.all_branches': 'সব শাখা',
@@ -595,6 +597,9 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.coaching_center': 'কোচিং সেন্টার',
         'receipts.print': 'প্রিন্ট',
         'receipts.download_pdf': 'PDF ডাউনলোড',
+        'receipts.send_email': 'ইমেইল পাঠান',
+        'receipts.sending': 'পাঠাচ্ছে...',
+        'receipts.email_sent': 'ইমেইল সফলভাবে পাঠানো হয়েছে',
 
         // Payment
         'payment.success_title': 'পেমেন্ট সফল হয়েছে',
@@ -633,6 +638,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'subscription.proceed_to_payment': 'পেমেন্টে এগিয়ে যান',
         'subscription.pay_with_gateway': 'অনলাইনে পেমেন্ট করুন',
         'subscription.pay_manually': 'ম্যানুয়াল পেমেন্ট করুন',
+        'subscription.no_payment_methods': 'কোনো পেমেন্ট পদ্ধতি সক্রিয় নেই। অ্যাডমিনের সাথে যোগাযোগ করুন।',
         'subscription.manual_payment_title': 'ম্যানুয়াল পেমেন্ট',
         'subscription.manual_payment_desc':
             'নিচের তথ্যগুলো পূরণ করুন। আমাদের টিম যাচাই করার পর আপনার সাবস্ক্রিপশন সক্রিয় হবে।',
@@ -839,6 +845,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.owners': 'মালিক',
         'super_admin.manage_owners': 'কোচিং সেন্টার মালিক পরিচালনা করুন',
         'super_admin.coaching_center': 'কোচিং সেন্টার',
+        'super_admin.payment_details': 'পেমেন্ট বিস্তারিত',
         'super_admin.plans': 'প্ল্যান',
         'super_admin.manage_plans': 'সাবস্ক্রিপশন প্ল্যান পরিচালনা করুন',
         'super_admin.create_plan': 'প্ল্যান তৈরি করুন',
@@ -936,6 +943,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.view_tenant': 'টেন্যান্ট দেখুন',
         'super_admin.approve': 'অনুমোদন',
         'super_admin.cancel': 'বাতিল',
+        'super_admin.success': 'সফল',
+        'super_admin.cancelled': 'বাতিলকৃত',
+        'super_admin.successful': 'সফল',
+        'super_admin.manual': 'ম্যানুয়াল',
+        'super_admin.gateway': 'গেটওয়ে',
+        'super_admin.all_methods': 'সব পদ্ধতি',
+        'super_admin.reject': 'প্রত্যাখ্যান',
+        'super_admin.transaction_id': 'লেনদেন আইডি',
         'super_admin.no_owners': 'কোনো মালিক পাওয়া যায়নি',
         'super_admin.view_details': 'বিস্তারিত দেখুন',
         'super_admin.received': 'প্রাপ্ত',
@@ -950,6 +965,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.payment_settings_desc':
             'পেমেন্ট গেটওয়ে এবং ম্যানুয়াল পেমেন্ট কনফিগার করুন',
         'super_admin.sandbox_mode': 'স্যান্ডবক্স মোড',
+        'super_admin.enabled': 'সক্রিয়',
+        'super_admin.disabled': 'নিষ্ক্রিয়',
         'super_admin.store_id': 'স্টোর আইডি',
         'super_admin.store_password': 'স্টোর পাসওয়ার্ড',
         'super_admin.currency': 'মুদ্রা',
@@ -1026,6 +1043,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.assigned_successfully': 'সফলভাবে নির্ধারিত হয়েছে',
         'toast.completed_successfully': 'সফলভাবে সম্পন্ন করা হয়েছে',
         'toast.copied_to_clipboard': 'ক্লিপবোর্ডে কপি করা হয়েছে',
+        'toast.cancelled_successfully': 'সফলভাবে বাতিল করা হয়েছে',
+        'toast.rejected_successfully': 'সফলভাবে প্রত্যাখ্যান করা হয়েছে',
         'toast.error_occurred': 'কিছু একটা ভুল হয়েছে',
 
         // Months
@@ -1335,6 +1354,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'students.update': 'Update Student',
         'students.photo': 'Student Photo',
         'students.performance': 'Performance',
+        'students.id_card': 'ID Card',
         'students.avg_marks': 'Average Marks',
         'students.attendance_rate': 'Attendance Rate',
         'students.batch_rank': 'Batch Rank',
@@ -1612,6 +1632,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
         // Reports
         'reports.title': 'Reports & Analytics',
+        'reports.branch_comparison': 'Branch Comparison',
         'reports.desc': 'View attendance, fee, and enrollment analytics',
         'reports.all_batches': 'All Batches',
         'reports.all_branches': 'All Branches',
@@ -1732,6 +1753,9 @@ export const translations: Record<Locale, Record<string, string>> = {
         'receipts.coaching_center': 'Coaching Center',
         'receipts.print': 'Print',
         'receipts.download_pdf': 'Download PDF',
+        'receipts.send_email': 'Send Email',
+        'receipts.sending': 'Sending...',
+        'receipts.email_sent': 'Receipt emailed successfully',
 
         // Classes
         'classes.title': 'Coaching Classes',
@@ -1918,6 +1942,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.owners': 'Owners',
         'super_admin.manage_owners': 'Manage coaching center owners',
         'super_admin.coaching_center': 'Coaching Center',
+        'super_admin.payment_details': 'Payment Details',
         'super_admin.plans': 'Plans',
         'super_admin.manage_plans': 'Manage subscription plans',
         'super_admin.create_plan': 'Create Plan',
@@ -2017,6 +2042,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.view_tenant': 'View Tenant',
         'super_admin.approve': 'Approve',
         'super_admin.cancel': 'Cancel',
+        'super_admin.success': 'Success',
+        'super_admin.cancelled': 'Cancelled',
+        'super_admin.successful': 'Successful',
+        'super_admin.manual': 'Manual',
+        'super_admin.gateway': 'Gateway',
+        'super_admin.all_methods': 'All Methods',
+        'super_admin.reject': 'Reject',
+        'super_admin.transaction_id': 'Transaction ID',
         'super_admin.no_owners': 'No owners found',
         'super_admin.view_details': 'View Details',
         'super_admin.received': 'Received',
@@ -2031,6 +2064,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'super_admin.payment_settings_desc':
             'Configure payment gateway and manual payments',
         'super_admin.sandbox_mode': 'Sandbox Mode',
+        'super_admin.enabled': 'Enabled',
+        'super_admin.disabled': 'Disabled',
         'super_admin.store_id': 'Store ID',
         'super_admin.store_password': 'Store Password',
         'super_admin.currency': 'Currency',
@@ -2108,6 +2143,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.assigned_successfully': 'Assigned successfully',
         'toast.completed_successfully': 'Completed successfully',
         'toast.copied_to_clipboard': 'Copied to clipboard',
+        'toast.cancelled_successfully': 'Cancelled successfully',
+        'toast.rejected_successfully': 'Rejected successfully',
         'toast.error_occurred': 'Something went wrong',
 
         // Months
@@ -2243,6 +2280,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'subscription.proceed_to_payment': 'Proceed to Payment',
         'subscription.pay_with_gateway': 'Pay Online',
         'subscription.pay_manually': 'Pay Manually',
+        'subscription.no_payment_methods': 'No payment methods are enabled. Please contact admin.',
         'subscription.manual_payment_title': 'Manual Payment',
         'subscription.manual_payment_desc':
             'Fill in the details below. Your subscription will be activated after our team verifies the payment.',
