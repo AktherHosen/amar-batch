@@ -32,6 +32,16 @@
 - Badge variants: `success` (green-600) for completed, `danger` (red-600) for inactive/dropped
 - Button `destructive` variant: `bg-red-600 text-white`
 
+## Rich Text Editor
+
+- **Component:** `resources/js/components/ui/rich-text-editor.tsx`
+- **Library:** react-quill-new (Snow theme) with CSS overrides in `resources/css/app.css`
+- **Interface:** `value: string`, `onChange: (html: string) => void`, `placeholder?`, `className?`
+- **CSS overrides:** Quill toolbar/editor themed to match shadcn design tokens (`--border`, `--primary`, `--foreground`, etc.), dark mode support
+- **Min-height:** 120px desktop, 100px mobile
+- **Usage:** Currently used in payment settings for manual payment instructions
+- **InstructionsWithCopy:** Renders HTML instructions with copy-to-clipboard buttons on phone/account numbers (10-11 digit `\d{10,11}` in `<code>` tags)
+
 ## Multi-Tenancy
 
 - All tenant models use the `BelongsToTenant` trait (`app/Concerns/BelongsToTenant.php`)
@@ -220,7 +230,8 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 - `ReportController` with stats and trends endpoints
 - Reports page with Chart.js charts
 - Feature-gated by `reports` plan feature
-- Routes: `/reports`
+- Branch Comparison page with sortable table, bar charts, and stat cards
+- Routes: `/reports`, `/reports/branches` (branch comparison)
 
 ## Multi-Branch Support
 
@@ -277,7 +288,7 @@ Use `ConfirmDialog` component (not browser `confirm()`) with `sonner` toast for 
 Tenant routes use this middleware chain: `auth → verified → onboarding → tenant → role.permission → teacher.approved`
 
 - **OnboardingMiddleware:** Redirects owners with `onboarding_complete=false` to setup wizard. Also redirects expired subscriptions to payment page.
-- **TenantMiddleware:** Sets `app('branch_id')` for branch-scoped users. Bypassed for super_admin.
+- **TenantMiddleware:** Sets `app('tenant_id')`, `app('tenant')` (model instance), and `app('branch_id')` for branch-scoped users. Bypassed for super_admin.
 - **CheckRoutePermission:** Enforces RBAC for non-admin users. Resolves user's Role by slug, checks route permission.
 - **CheckTeacherApproval:** Blocks unapproved teachers with warning toast redirect.
 
@@ -287,7 +298,8 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - `scopeForBranch($query, $branchId)` — manual scoping helper
 - Used by: `Student`, `Batch`, `Enrollment`, `FeeStatus`, `ExamResult`
 - Models without direct `branch_id` override `branchScopeQuery()` (e.g., Enrollment scopes via batch)
-- `TenantMiddleware` sets `app('branch_id')` when `$user->isBranchScoped()` is true
+- `TenantMiddleware` sets `app('tenant_id')`, `app('tenant')` (model instance), and `app('branch_id')` when `$user->isBranchScoped()` is true
+- Middleware chain: `auth → verified → onboarding → tenant → role:parent` (no `role.permission` or `teacher.approved`)
 
 ## Plan Limits
 
@@ -306,6 +318,7 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - Super admin CRUD: `PlanFeatureController` with JSON responses
 - Frontend: `useFeatures()` and `useHasFeature()` from `resources/js/lib/features.ts`
 - `PlanCard` component shows check/minus comparison for ALL features on both landing and subscription pages
+- Feature labels hidden on mobile (`hidden sm:inline`), only check/minus icons visible
 
 ## Subscription & Payment
 
@@ -319,6 +332,7 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - **Controller:** `SubscriptionController` (upgrade), `PaymentController` (initiate + callbacks)
 - **Service:** `SslcommerzService` handles gateway API calls
 - **Payment Settings:** `PaymentSetting` model stores gateway config in DB; `SslcommerzService` reads DB first, falls back to env
+- **Payment toggles:** `online_payment_enabled` and `manual_payment_enabled` flags on `PaymentSetting` — control which payment methods appear in subscription purchase modal
 - **Manual payments:** Create `Payment` records with `payment_method='manual'` and status `pending`; super admin approves/rejects via Payments page
 
 ## Super Admin Panel
@@ -330,7 +344,7 @@ Tenant routes use this middleware chain: `auth → verified → onboarding → t
 - **Payments:** List with status/search, approve/cancel pending payments
 - **Contacts:** List with search/unread, reply via email (Mailable), mark as read
 - **Owners:** List with tenant/plan info, detail page with owner info + subscription + plan history
-- **Payment Settings:** Gateway config (SSLCommerz credentials, manual payment toggle, instructions)
+- **Payment Settings:** Gateway config (SSLCommerz credentials, online/manual payment toggles, instructions). Toggles use shadcn `Toggle` in card header with green=enabled / gray=disabled styling
 - **Plan Features:** Dynamic CRUD for plan features (name, slug, is_system flag)
 - **Controllers:** `SuperAdminController`, `TenantController`, `PlanController`, `ContactMessageController`, `OwnerController`, `PaymentSettingController`, `PlanFeatureController`
 
