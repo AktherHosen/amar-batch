@@ -842,6 +842,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'actions.complete': 'সম্পন্ন',
         'actions.pause': 'বিরতি',
         'actions.resume': 'পুনরায় শুরু',
+        'common.active': 'সক্রিয়',
+        'common.inactive': 'নিষ্ক্রিয়',
 
         // Super Admin
         'super_admin.platform_dashboard': 'প্ল্যাটফর্ম ড্যাশবোর্ড',
@@ -1956,6 +1958,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'actions.complete': 'Complete',
         'actions.pause': 'Pause',
         'actions.resume': 'Resume',
+        'common.active': 'Active',
+        'common.inactive': 'Inactive',
 
         // Super Admin
         'super_admin.platform_dashboard': 'Platform Dashboard',

@@ -1,0 +1,1 @@
+function e(e,t){if(t===0)return`N/A`;let n=e/t*100;return n>=90?`A+`:n>=80?`A`:n>=70?`B+`:n>=60?`B`:n>=50?`C+`:n>=40?`C`:n>=33?`D`:`F`}function t(e){switch(e){case`A+`:case`A`:return`success`;case`B+`:case`B`:return`default`;case`C+`:case`C`:return`warning`;case`D`:return`secondary`;case`F`:return`destructive`;default:return`secondary`}}export{t as n,e as t};
