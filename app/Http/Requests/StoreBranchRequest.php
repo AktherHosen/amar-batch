@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\PhoneNumber;
 
 class StoreBranchRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ class StoreBranchRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:500'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', new PhoneNumber],
             'email' => ['nullable', 'string', 'email', 'max:255'],
         ];
     }

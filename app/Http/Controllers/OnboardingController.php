@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Rules\PhoneNumber;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,7 +37,7 @@ class OnboardingController extends Controller
         $validated = $request->validate([
             'coaching_name' => ['required', 'string', 'max:255'],
             'coaching_email' => ['nullable', 'string', 'email', 'max:255'],
-            'coaching_phone' => ['nullable', 'string', 'max:20'],
+            'coaching_phone' => ['nullable', 'string', new PhoneNumber],
         ]);
 
         $tenant = Tenant::create([

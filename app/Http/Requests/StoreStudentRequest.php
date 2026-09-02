@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Rules\PhoneNumber;
 
 class StoreStudentRequest extends FormRequest
 {
@@ -19,14 +20,14 @@ class StoreStudentRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', new PhoneNumber],
             'coaching_class_id' => ['required', Rule::exists('coaching_classes', 'id')->where('tenant_id', $tenantId)],
             'section' => ['nullable', 'string', 'max:10'],
             'address' => ['nullable', 'string'],
             'date_of_birth' => ['nullable', 'date'],
             'gender' => ['nullable', 'in:male,female,other'],
             'guardian_name' => ['nullable', 'string', 'max:255'],
-            'guardian_phone' => ['nullable', 'string', 'max:20'],
+            'guardian_phone' => ['nullable', 'string', new PhoneNumber],
             'status' => ['sometimes', 'in:active,inactive,paused'],
             'joined_at' => ['nullable', 'date'],
             'left_at' => ['nullable', 'date'],

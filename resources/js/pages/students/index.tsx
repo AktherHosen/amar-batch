@@ -542,7 +542,7 @@ export default function StudentsIndex({
                                 }
                             }}
                             processing={processing}
-                            errors={{}}
+                            errors={usePage<PageProps>().props.errors as Record<string, string>}
                             hideActions
                         />
                     </div>
