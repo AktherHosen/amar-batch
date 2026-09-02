@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import LanguageSwitcher from '@/components/language-switcher';
+import ThemeToggle from '@/components/theme-toggle';
 import PlanCard from '@/components/plan-card';
 import {
     Accordion,
@@ -174,6 +175,7 @@ export default function Welcome({ stats, plans, availableFeatures = [], featureM
                         </div>
                         <div className="flex items-center gap-1 sm:gap-2">
                             <LanguageSwitcher />
+                            <ThemeToggle />
                             {auth.user ? (
                                 <Button
                                     asChild
