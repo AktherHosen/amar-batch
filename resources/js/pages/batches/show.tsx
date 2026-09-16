@@ -282,12 +282,18 @@ export default function BatchesShow({
     const openStatusDialog = (
         enrollmentId: number,
         action: 'paused' | 'resumed' | 'active',
+        pausedAt?: string | null
     ) => {
+        let defaultDate = new Date().toISOString().split('T')[0];
+        if ((action === 'active' || action === 'resumed') && pausedAt) {
+            defaultDate = pausedAt.split('T')[0];
+        }
+
         setStatusDialog({
             open: true,
             enrollmentId,
             action,
-            date: new Date().toISOString().split('T')[0],
+            date: defaultDate,
             notes: '',
         });
     };
@@ -597,6 +603,7 @@ export default function BatchesShow({
                                             openStatusDialog(
                                                 enrollment.id,
                                                 'active',
+                                                enrollment.paused_at
                                             )
                                         }
                                     >
