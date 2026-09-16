@@ -267,13 +267,13 @@ export default function StudentPerformance({
                             transition={{ duration: 0.3, delay: index * 0.07 }}
                         >
                             <Card>
-                                <CardContent className="flex items-center gap-3 p-4">
-                                    <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted`}>
-                                        <card.icon className={`size-5 ${card.color}`} />
+                                <CardContent className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4">
+                                    <div className={`flex size-8 sm:size-10 shrink-0 items-center justify-center rounded-lg bg-muted`}>
+                                        <card.icon className={`size-4 sm:size-5 ${card.color}`} />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-xs text-muted-foreground">{card.title}</p>
-                                        <p className="truncate text-lg font-bold">{card.value}</p>
+                                        <p className="truncate text-[10px] sm:text-xs text-muted-foreground">{card.title}</p>
+                                        <p className="truncate text-base sm:text-lg font-bold">{card.value}</p>
                                     </div>
                                 </CardContent>
                             </Card>
