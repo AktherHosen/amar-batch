@@ -674,11 +674,13 @@ export default function BatchesShow({
                     return (
                         <Badge
                             variant={
-                                item.action === 'enrolled'
+                                ['enrolled', 'active', 'resumed'].includes(item.action)
                                     ? 'default'
                                     : item.action === 'completed'
                                       ? 'success'
-                                      : 'danger'
+                                      : item.action === 'paused'
+                                        ? 'secondary'
+                                        : 'danger'
                             }
                         >
                             {item.action}
