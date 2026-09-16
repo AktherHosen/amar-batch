@@ -180,7 +180,10 @@ class FeeStatusController extends Controller
     public function store(StoreFeeStatusRequest $request): RedirectResponse
     {
         $student = Student::find($request->student_id);
-        $amountDue = $this->calculateAmountDue($student, (int) $request->month, (int) $request->year);
+        $amountDueInput = $request->input('amount_due');
+        $amountDue = ($amountDueInput !== null && $amountDueInput !== '') 
+            ? (float) $amountDueInput 
+            : $this->calculateAmountDue($student, (int) $request->month, (int) $request->year);
 
         FeeStatus::updateOrCreate(
             [
@@ -235,7 +238,10 @@ class FeeStatusController extends Controller
     public function update(UpdateFeeStatusRequest $request, FeeStatus $fee): RedirectResponse
     {
         $student = Student::find($request->student_id);
-        $amountDue = $this->calculateAmountDue($student, (int) $request->month, (int) $request->year);
+        $amountDueInput = $request->input('amount_due');
+        $amountDue = ($amountDueInput !== null && $amountDueInput !== '') 
+            ? (float) $amountDueInput 
+            : $this->calculateAmountDue($student, (int) $request->month, (int) $request->year);
 
         $fee->update([
             'student_id' => $request->student_id,

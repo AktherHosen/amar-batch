@@ -37,6 +37,7 @@ type FeeFormData = {
     month: string;
     year: string;
     amount_paid: string;
+    amount_due: string;
     notes: string;
 };
 
@@ -47,6 +48,7 @@ type FeeStatus = {
     month: number;
     year: number;
     amount_paid: number;
+    amount_due: number;
     notes: string | null;
 };
 
@@ -113,6 +115,7 @@ export default function FeeForm({
             month: getDefaultMonth(),
             year: getDefaultYear(),
             amount_paid: fee?.amount_paid?.toString() || '',
+            amount_due: fee?.amount_due?.toString() || '',
             notes: fee?.notes || '',
         });
 
@@ -266,6 +269,28 @@ export default function FeeForm({
                 </div>
 
                 <div className="space-y-2">
+                    <Label htmlFor="amount_due">Amount Due (Optional)</Label>
+                    <Input
+                        id="amount_due"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={data.amount_due}
+                        onChange={(e) => setData('amount_due', e.target.value)}
+                        placeholder="Leave blank to auto-calculate"
+                    />
+                    {expectedFee !== null && !data.amount_due && (
+                        <p className="text-xs text-muted-foreground">
+                            Will auto-calculate to: ৳{expectedFee.toFixed(2)}
+                            {expectedFee < (getEnrollmentForStudent(data.student_id)?.student?.coaching_class?.default_fee ?? 0) && (
+                                <span className="ml-1 text-amber-600">(Half-month rate)</span>
+                            )}
+                        </p>
+                    )}
+                    <InputError message={errors.amount_due} />
+                </div>
+
+                <div className="space-y-2">
                     <Label htmlFor="amount_paid">Amount Paid *</Label>
                     <Input
                         id="amount_paid"
@@ -276,14 +301,6 @@ export default function FeeForm({
                         onChange={(e) => setData('amount_paid', e.target.value)}
                         placeholder="Enter amount"
                     />
-                    {expectedFee !== null && (
-                        <p className="text-xs text-muted-foreground">
-                            Expected: ৳{expectedFee.toFixed(2)}
-                            {expectedFee < (getEnrollmentForStudent(data.student_id)?.student?.coaching_class?.default_fee ?? 0) && (
-                                <span className="ml-1 text-amber-600">(Half-month rate)</span>
-                            )}
-                        </p>
-                    )}
                     <InputError message={errors.amount_paid} />
                 </div>
             </div>

@@ -23,6 +23,7 @@ class UpdateFeeStatusRequest extends FormRequest
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer|min:2020|max:2100',
             'amount_paid' => 'required|numeric|min:0',
+            'amount_due' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ];
     }
