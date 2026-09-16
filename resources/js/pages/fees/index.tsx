@@ -250,7 +250,7 @@ function MobileFeeList({
     year: number;
     isAdmin: boolean;
     isMonthDisabled: (
-        enrolledAt: string | null,
+        item: FeeGridItem,
         month: number,
         year: number,
     ) => boolean;
