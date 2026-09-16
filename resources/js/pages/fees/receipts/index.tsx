@@ -1,4 +1,4 @@
-﻿import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Eye, Trash2, Plus, EllipsisVertical, X } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
@@ -151,8 +151,8 @@ return batches;
             ...form,
             month: Number(form.month),
             year: Number(form.year),
-            amount_paid: Number(form.amount_paid),
-            amount_due: Number(form.amount_due),
+            amount_paid: form.amount_paid === '' ? null : Number(form.amount_paid),
+            amount_due: form.amount_due === '' ? null : Number(form.amount_due),
         }, {
             preserveScroll: true,
             onSuccess: () => {

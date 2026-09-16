@@ -84,17 +84,22 @@ class FeeReceiptController extends Controller
                 ->with('toast', ['type' => 'info', 'message' => 'A receipt already exists for this period.']);
         }
 
-        if (empty($validated['amount_due']) || $validated['amount_due'] <= 0) {
-            $student = Student::with('coachingClass')->find($validated['student_id']);
-            $validated['amount_due'] = $student?->coachingClass?->default_fee ?? 0;
+        $feeStatus = FeeStatus::where('student_id', $validated['student_id'])
+            ->where('batch_id', $validated['batch_id'])
+            ->where('month', $validated['month'])
+            ->where('year', $validated['year'])
+            ->first();
+
+        if (!isset($validated['amount_due'])) {
+            if ($feeStatus) {
+                $validated['amount_due'] = $feeStatus->amount_due;
+            } else {
+                $student = Student::with('coachingClass')->find($validated['student_id']);
+                $validated['amount_due'] = $student?->coachingClass?->default_fee ?? 0;
+            }
         }
 
-        if (empty($validated['amount_paid']) || $validated['amount_paid'] <= 0) {
-            $feeStatus = FeeStatus::where('student_id', $validated['student_id'])
-                ->where('batch_id', $validated['batch_id'])
-                ->where('month', $validated['month'])
-                ->where('year', $validated['year'])
-                ->first();
+        if (!isset($validated['amount_paid'])) {
             $validated['amount_paid'] = $feeStatus?->amount_paid ?? 0;
         }
 
