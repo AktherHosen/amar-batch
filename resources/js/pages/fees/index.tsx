@@ -66,6 +66,8 @@ type FeeGridItem = {
     student: Student;
     batch: Batch;
     enrolled_at: string | null;
+    paused_at?: string | null;
+    resumed_at?: string | null;
     months: Record<number, FeeRecord>;
 };
 
@@ -367,7 +369,7 @@ function MobileFeeList({
                                                 year={year}
                                                 isAdmin={isAdmin}
                                                 disabled={isMonthDisabled(
-                                                    item.enrolled_at,
+                                                    item,
                                                     m,
                                                     year,
                                                 )}
@@ -453,27 +455,42 @@ export default function FeesIndex({
         yearOptions.length > 0 ? yearOptions : [currentYear];
 
     const isMonthDisabled = (
-        enrolledAt: string | null,
+        item: FeeGridItem,
         month: number,
         year: number,
     ): boolean => {
-        if (!enrolledAt) {
+        if (!item.enrolled_at) {
             return false;
         }
 
-        const enrollDate = new Date(enrolledAt);
-        const enrollYear = enrollDate.getFullYear();
-        const enrollMonth = enrollDate.getMonth() + 1;
+        const enrollDate = new Date(item.enrolled_at);
+        if (year < enrollDate.getFullYear()) return true;
+        if (year === enrollDate.getFullYear() && month < enrollDate.getMonth() + 1) return true;
 
-        if (year < enrollYear) {
-            return true;
+        const cellStart = new Date(year, month - 1, 1);
+        const cellEnd = new Date(year, month, 0, 23, 59, 59);
+
+        let effectiveStart = new Date(year, month - 1, 1);
+        if (year === enrollDate.getFullYear() && month === enrollDate.getMonth() + 1) {
+            effectiveStart = enrollDate;
+        }
+        
+        let activeDays = Math.floor((cellEnd.getTime() - effectiveStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+        if (item.paused_at) {
+            const pAt = new Date(item.paused_at);
+            const rAt = item.resumed_at ? new Date(item.resumed_at) : null;
+            
+            const pauseStart = pAt > effectiveStart ? pAt : effectiveStart;
+            const pauseEnd = rAt && rAt < cellEnd ? rAt : cellEnd;
+            
+            if (pauseStart <= pauseEnd) {
+                const pausedDays = Math.floor((pauseEnd.getTime() - pauseStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                activeDays -= pausedDays;
+            }
         }
 
-        if (year === enrollYear && month < enrollMonth) {
-            return true;
-        }
-
-        return false;
+        return activeDays <= 0;
     };
 
     const handleDeleteRow = (studentId: number, batchId: number) => {
@@ -670,7 +687,7 @@ export default function FeesIndex({
                                         year={year}
                                         isAdmin={isAdmin}
                                         disabled={isMonthDisabled(
-                                            item.enrolled_at,
+                                            item,
                                             m,
                                             year,
                                         )}

@@ -125,7 +125,9 @@ class FeeStatusController extends Controller
             ->with('student.coachingClass', 'batch')
             ->get();
 
-        /** @var array<string, array{student: Student, batch: Batch, enrolled_at: string|null, months: array<int, FeeStatus>}> $grid */
+        $allEnrollmentsMap = Enrollment::where('tenant_id', $tenantId)->get()->keyBy(fn ($e) => "{$e->student_id}_{$e->batch_id}");
+
+        /** @var array<string, array{student: Student, batch: Batch, enrolled_at: string|null, paused_at: string|null, resumed_at: string|null, months: array<int, FeeStatus>}> $grid */
         $grid = [];
         foreach ($activeEnrollments as $enrollment) {
             $student = $enrollment->student;
@@ -141,6 +143,8 @@ class FeeStatusController extends Controller
                 'student' => $student,
                 'batch' => $enrollment->batch,
                 'enrolled_at' => $enrolledAt,
+                'paused_at' => $enrollment->paused_at?->format('Y-m-d'),
+                'resumed_at' => $enrollment->resumed_at?->format('Y-m-d'),
                 'months' => [],
             ];
         }
@@ -151,11 +155,14 @@ class FeeStatusController extends Controller
                 $enrolledAt = $fee->student->joined_at
                     ? Carbon::parse($fee->student->joined_at)->format('Y-m-d')
                     : null;
+                $enrollment = $allEnrollmentsMap->get($key);
 
                 $grid[$key] = [
                     'student' => $fee->student,
                     'batch' => $fee->batch,
                     'enrolled_at' => $enrolledAt,
+                    'paused_at' => $enrollment?->paused_at?->format('Y-m-d'),
+                    'resumed_at' => $enrollment?->resumed_at?->format('Y-m-d'),
                     'months' => [],
                 ];
             }
