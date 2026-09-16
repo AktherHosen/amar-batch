@@ -30,31 +30,45 @@ class FeeStatusController extends Controller
 
     private function calculateAmountDue(Student $student, int $month, int $year, ?int $batchId = null): float
     {
+        $defaultFee = (float) ($student->coachingClass?->default_fee ?? 0);
+        $joinedAt = $student->joined_at ? Carbon::parse($student->joined_at) : null;
+        
+        $startOfMonth = Carbon::create($year, $month, 1)->startOfDay();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth()->endOfDay();
+        
+        $effectiveStart = $startOfMonth->copy();
+        if ($joinedAt && $joinedAt->format('Y-m') === $startOfMonth->format('Y-m')) {
+            $effectiveStart = $joinedAt->copy()->startOfDay();
+        }
+        
+        $activeDays = $effectiveStart->diffInDays($endOfMonth) + 1;
+
         if ($batchId) {
             $enrollment = Enrollment::where('student_id', $student->id)
                 ->where('batch_id', $batchId)
                 ->first();
 
-            if ($enrollment) {
-                $startOfMonth = Carbon::create($year, $month, 1)->startOfDay();
-                $endOfMonth = $startOfMonth->copy()->endOfMonth()->endOfDay();
-                $pausedAt = $enrollment->paused_at;
-                $resumedAt = $enrollment->resumed_at;
+            if ($enrollment && $enrollment->paused_at) {
+                $pausedAt = Carbon::parse($enrollment->paused_at)->startOfDay();
+                $resumedAt = $enrollment->resumed_at ? Carbon::parse($enrollment->resumed_at)->startOfDay() : null;
+                
+                $pauseStart = $pausedAt->copy()->max($effectiveStart);
+                $pauseEnd = $resumedAt ? $resumedAt->copy()->min($endOfMonth) : $endOfMonth;
 
-                if ($pausedAt && $pausedAt->lte($startOfMonth) && (!$resumedAt || $resumedAt->gt($endOfMonth))) {
-                    return 0;
+                if ($pauseStart->lte($pauseEnd)) {
+                    $pausedDays = $pauseStart->diffInDays($pauseEnd) + 1;
+                    $activeDays -= $pausedDays;
                 }
             }
         }
 
-        $defaultFee = (float) ($student->coachingClass?->default_fee ?? 0);
-        $joinedAt = $student->joined_at ? Carbon::parse($student->joined_at) : null;
-
-        if ($joinedAt && $joinedAt->day > 15 && $joinedAt->month === $month && $joinedAt->year === $year) {
+        if ($activeDays <= 0) {
+            return 0;
+        } elseif ($activeDays <= 15) {
             return round($defaultFee / 2, 2);
+        } else {
+            return $defaultFee;
         }
-
-        return $defaultFee;
     }
 
     public function index(Request $request): Response
