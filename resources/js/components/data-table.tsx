@@ -19,10 +19,13 @@ import {
     Columns3,
     Search,
     X,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState  } from 'react';
 import type {ReactNode} from 'react';
-import Pagination from '@/components/pagination';
+import Pagination, { generatePageNumbers } from '@/components/pagination';
+import { useLocale } from '@/contexts/locale-context';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -91,6 +94,7 @@ export function DataTable<TData, TValue>({
     searchPlaceholder = 'Search...',
     getRowId,
 }: DataTableProps<TData, TValue>) {
+    const { t } = useLocale();
     const resolvedStorageKey =
         storageKey ??
         (columns.length > 0
@@ -427,30 +431,59 @@ return {};
                   !baseUrl &&
                   !onPaginationChange &&
                   table.getPageCount() > 1 ? (
-                    <div className="flex w-full items-center justify-between">
-                        <div className="text-sm text-muted-foreground">
-                            {data.length} {itemName}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">
-                                Page {table.getState().pagination.pageIndex + 1} of{' '}
-                                {table.getPageCount()}
-                            </span>
+                    <div className="flex w-full items-center justify-between gap-3">
+                        <p className="min-w-0 truncate text-sm text-muted-foreground">
+                            {t('pagination.showing')
+                                .replace('{from}', String(table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1))
+                                .replace('{to}', String(Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, data.length)))
+                                .replace('{total}', String(data.length))
+                                .replace('{itemName}', itemName)}
+                        </p>
+                        <div className="flex shrink-0 items-center gap-1">
                             <Button
                                 variant="outline"
-                                size="sm"
+                                size="icon"
+                                className="h-8 w-8"
                                 onClick={() => table.previousPage()}
                                 disabled={!table.getCanPreviousPage()}
                             >
-                                Previous
+                                <ChevronLeft className="h-4 w-4" />
                             </Button>
+                            {generatePageNumbers(
+                                table.getState().pagination.pageIndex + 1,
+                                table.getPageCount()
+                            ).map((page, i) =>
+                                page === '...' ? (
+                                    <span
+                                        key={`dots-${i}`}
+                                        className="px-2 text-muted-foreground"
+                                    >
+                                        ...
+                                    </span>
+                                ) : (
+                                    <Button
+                                        key={page}
+                                        variant={
+                                            table.getState().pagination.pageIndex + 1 === page
+                                                ? 'default'
+                                                : 'outline'
+                                        }
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => table.setPageIndex((page as number) - 1)}
+                                    >
+                                        {page}
+                                    </Button>
+                                ),
+                            )}
                             <Button
                                 variant="outline"
-                                size="sm"
+                                size="icon"
+                                className="h-8 w-8"
                                 onClick={() => table.nextPage()}
                                 disabled={!table.getCanNextPage()}
                             >
-                                Next
+                                <ChevronRight className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>

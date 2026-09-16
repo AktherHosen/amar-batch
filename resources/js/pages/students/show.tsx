@@ -33,7 +33,6 @@ import {
 import { useLocale } from '@/contexts/locale-context';
 import { getGrade, getGradeBadgeVariant } from '@/lib/grades';
 import { generateTablePDF } from '@/lib/pdf-table';
-import { generateStudentIDCard } from '@/lib/student-id-card';
 import { isOwner } from '@/lib/role';
 import students from '@/routes/students';
 import type { Student } from '@/types';
@@ -570,20 +569,7 @@ export default function StudentsShow({
                                     <span className="ml-2 hidden sm:inline">{t('students.performance')}</span>
                                 </Button>
                             </Link>
-                            <Button variant="outline" className="h-9" onClick={() => generateStudentIDCard({
-                                student: {
-                                    name: student.name,
-                                    code: student.code || '',
-                                    phone: student.phone || '',
-                                    guardian_name: student.guardian_name || '',
-                                    guardian_phone: student.guardian_phone || '',
-                                    coaching_class: student.coaching_class?.name || null,
-                                    section: student.section || null,
-                                    batch_name: student.enrollments?.[0]?.batch?.name || null,
-                                },
-                                centerName: tenant?.name || '',
-                                primaryColor: tenant?.primary_color || '#6366f1',
-                            })}>
+                            <Button variant="outline" className="h-9" onClick={() => window.print()}>
                                 <IdCard className="size-4" />
                                 <span className="ml-2 hidden sm:inline">{t('students.id_card')}</span>
                             </Button>

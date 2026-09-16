@@ -9,6 +9,7 @@ use App\Models\Enrollment;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class EnrollmentController extends Controller
 {
@@ -101,5 +102,73 @@ class EnrollmentController extends Controller
         $enrollment->delete();
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Student unenrolled successfully.']);
+    }
+
+    public function transfer(Request $request, Enrollment $enrollment): RedirectResponse
+    {
+        $this->authorize('update', $enrollment);
+
+        $request->validate([
+            'target_batch_id' => [
+                'required',
+                'exists:batches,id',
+            ],
+        ]);
+
+        $targetBatch = Batch::findOrFail($request->target_batch_id);
+
+        if ($targetBatch->id === $enrollment->batch_id) {
+            return back()->withErrors(['target_batch_id' => 'Student is already enrolled in this batch.']);
+        }
+
+        $existingInTarget = Enrollment::where('batch_id', $targetBatch->id)
+            ->where('student_id', $enrollment->student_id)
+            ->first();
+
+        if ($existingInTarget && $existingInTarget->status !== 'dropped') {
+            return back()->withErrors(['target_batch_id' => 'Student is already actively enrolled in this batch.']);
+        }
+
+        $activeCount = Enrollment::where('batch_id', $targetBatch->id)->where('status', 'active')->count();
+        if ($targetBatch->capacity > 0 && $activeCount >= $targetBatch->capacity) {
+            return back()->withErrors(['target_batch_id' => 'Target batch is at full capacity (' . $activeCount . '/' . $targetBatch->capacity . ').']);
+        }
+
+        $enrollment->update(['status' => 'dropped']);
+
+        BatchHistory::create([
+            'batch_id' => $enrollment->batch_id,
+            'student_id' => $enrollment->student_id,
+            'action' => 'moved',
+            'action_date' => now()->toDateString(),
+            'user_id' => $request->user()->id,
+            'notes' => 'Transferred to batch: ' . $targetBatch->name,
+        ]);
+
+        if ($existingInTarget) {
+            $existingInTarget->update([
+                'status' => 'active',
+                'enrolled_at' => now()->toDateString(),
+            ]);
+            $newEnrollment = $existingInTarget;
+        } else {
+            $newEnrollment = Enrollment::create([
+                'student_id' => $enrollment->student_id,
+                'batch_id' => $targetBatch->id,
+                'enrolled_at' => now()->toDateString(),
+                'status' => 'active',
+            ]);
+        }
+
+        BatchHistory::create([
+            'batch_id' => $targetBatch->id,
+            'student_id' => $enrollment->student_id,
+            'action' => 'enrolled',
+            'action_date' => $newEnrollment->enrolled_at,
+            'user_id' => $request->user()->id,
+            'notes' => 'Transferred from batch: ' . $enrollment->batch->name,
+        ]);
+
+        return back()->with('toast', ['type' => 'success', 'message' => 'Student transferred to ' . $targetBatch->name . ' successfully.']);
     }
 }

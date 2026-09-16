@@ -8,6 +8,7 @@ import {
     PenLine,
     Play,
     Trash2,
+    ArrowRightLeft,
     UserMinus,
     UserX,
 } from 'lucide-react';
@@ -109,6 +110,7 @@ type BatchesShowProps = {
     teachers: Teacher[];
     students: Student[];
     enrolledStudentIds: number[];
+    availableBatches: { id: number; name: string; capacity: number }[];
 };
 
 export default function BatchesShow({
@@ -116,6 +118,7 @@ export default function BatchesShow({
     teachers,
     students,
     enrolledStudentIds,
+    availableBatches,
 }: BatchesShowProps) {
     const { t } = useLocale();
     const { auth, tenant, errors: pageErrors } = usePage<PageProps>().props;
@@ -155,6 +158,17 @@ export default function BatchesShow({
         action: null,
         date: new Date().toISOString().split('T')[0],
         notes: '',
+    });
+    const [transferDialog, setTransferDialog] = useState<{
+        open: boolean;
+        enrollmentId: number | null;
+        targetBatchId: string;
+        studentName: string;
+    }>({
+        open: false,
+        enrollmentId: null,
+        targetBatchId: '',
+        studentName: '',
     });
 
     const activeEnrollments = batch.enrollments.filter((e) => e.status === 'active');
@@ -310,6 +324,38 @@ export default function BatchesShow({
         }
 
         setUnenrollDialog({ open: false, enrollmentId: null });
+    };
+
+    const handleTransfer = (enrollmentId: number, studentName: string) => {
+        setTransferDialog({
+            open: true,
+            enrollmentId,
+            targetBatchId: '',
+            studentName,
+        });
+    };
+
+    const confirmTransfer = () => {
+        if (transferDialog.enrollmentId && transferDialog.targetBatchId) {
+            router.post(
+                `/enrollments/${transferDialog.enrollmentId}/transfer`,
+                {
+                    target_batch_id: parseInt(transferDialog.targetBatchId),
+                },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        setTransferDialog({
+                            open: false,
+                            enrollmentId: null,
+                            targetBatchId: '',
+                            studentName: '',
+                        });
+                        toast.success(t('toast.transferred_successfully'));
+                    },
+                },
+            );
+        }
     };
 
     const getStatusBadge = (status: string) => {
@@ -509,6 +555,17 @@ export default function BatchesShow({
                                         >
                                             <Pause className="mr-2 size-4" />
                                             {t('actions.pause') ?? 'Pause'}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                handleTransfer(
+                                                    enrollment.id,
+                                                    enrollment.student.name,
+                                                )
+                                            }
+                                        >
+                                            <ArrowRightLeft className="mr-2 size-4" />
+                                            {t('batches.transfer') ?? 'Transfer'}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() =>
@@ -1265,6 +1322,65 @@ export default function BatchesShow({
                         </Button>
                         <Button onClick={confirmStatusChange}>
                             {t('actions.save')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={transferDialog.open}
+                onOpenChange={(open) =>
+                    setTransferDialog((prev) => ({ ...prev, open }))
+                }
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {t('batches.transfer_title') ?? 'Transfer Student'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {(t('batches.transfer_confirm') ?? 'Transfer {student} to another batch.').replace(
+                                '{student}',
+                                transferDialog.studentName,
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">
+                                {t('batches.select_target_batch') ?? 'Target Batch'}
+                            </label>
+                            <SearchableSelect
+                                value={transferDialog.targetBatchId}
+                                onValueChange={(value: string) =>
+                                    setTransferDialog((prev) => ({
+                                        ...prev,
+                                        targetBatchId: value,
+                                    }))
+                                }
+                                options={availableBatches.map((b) => ({
+                                    value: String(b.id),
+                                    label: `${b.name}${b.capacity > 0 ? ` (${b.capacity} capacity)` : ''}`,
+                                }))}
+                                placeholder={t('batches.search_batches') ?? 'Search batches...'}
+                                emptyMessage={t('batches.no_batches') ?? 'No batches found'}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                setTransferDialog((prev) => ({ ...prev, open: false }))
+                            }
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button
+                            onClick={confirmTransfer}
+                            disabled={!transferDialog.targetBatchId}
+                        >
+                            {t('batches.transfer') ?? 'Transfer'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

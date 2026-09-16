@@ -258,6 +258,11 @@ export const translations: Record<Locale, Record<string, string>> = {
         'batches.unenroll_title': 'ভর্তি বাতিল',
         'batches.full': 'পূর্ণ',
         'batches.drop': 'বাদ দিন',
+        'batches.transfer': 'স্থানান্তর',
+        'batches.transfer_title': 'শিক্ষার্থী স্থানান্তর',
+        'batches.transfer_confirm': '{student}কে অন্য ব্যাচে স্থানান্তর করুন।',
+        'batches.select_target_batch': 'টার্গেট ব্যাচ',
+        'batches.search_batches': 'ব্যাচ খুঁজুন...',
 
         // Teachers
         'teachers.title': 'শিক্ষক',
@@ -1063,6 +1068,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.deactivated_successfully': 'সফলভাবে নিষ্ক্রিয় করা হয়েছে',
         'toast.removed_successfully': 'সফলভাবে সরিয়ে ফেলা হয়েছে',
         'toast.unenrolled_successfully': 'সফলভাবে ভর্তি বাতিল করা হয়েছে',
+        'toast.transferred_successfully': 'সফলভাবে স্থানান্তর করা হয়েছে',
         'toast.enrolled_successfully': 'সফলভাবে ভর্তি করা হয়েছে',
         'toast.assigned_successfully': 'সফলভাবে নির্ধারিত হয়েছে',
         'toast.completed_successfully': 'সফলভাবে সম্পন্ন করা হয়েছে',
@@ -1439,6 +1445,11 @@ export const translations: Record<Locale, Record<string, string>> = {
         'batches.unenroll_title': 'Unenroll Student',
         'batches.full': 'Full',
         'batches.drop': 'Drop',
+        'batches.transfer': 'Transfer',
+        'batches.transfer_title': 'Transfer Student',
+        'batches.transfer_confirm': 'Transfer {student} to another batch.',
+        'batches.select_target_batch': 'Target Batch',
+        'batches.search_batches': 'Search batches...',
 
         // Teachers
         'teachers.title': 'Teachers',
@@ -2182,6 +2193,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'toast.deactivated_successfully': 'Deactivated successfully',
         'toast.removed_successfully': 'Removed successfully',
         'toast.unenrolled_successfully': 'Unenrolled successfully',
+        'toast.transferred_successfully': 'Transferred successfully',
         'toast.enrolled_successfully': 'Enrolled successfully',
         'toast.assigned_successfully': 'Assigned successfully',
         'toast.completed_successfully': 'Completed successfully',

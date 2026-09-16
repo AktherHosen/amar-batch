@@ -132,11 +132,18 @@ class BatchController extends Controller
             ->unique()
             ->toArray();
 
+        $availableBatches = Batch::where('tenant_id', $tenantId)
+            ->where('id', '!=', $batch->id)
+            ->where('status', '!=', 'completed')
+            ->orderBy('name')
+            ->get();
+
         return Inertia::render('batches/show', [
             'batch' => $batch,
             'teachers' => $teachers,
             'students' => $students,
             'enrolledStudentIds' => $enrolledStudentIds,
+            'availableBatches' => $availableBatches,
         ]);
     }
 

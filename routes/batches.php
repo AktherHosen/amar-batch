@@ -12,4 +12,5 @@ Route::delete('batches/{batch}/remove-teacher', [BatchController::class, 'remove
 
 Route::post('batches/{batch}/enroll', [EnrollmentController::class, 'store'])->name('enrollments.store');
 Route::put('enrollments/{enrollment}', [EnrollmentController::class, 'update'])->name('enrollments.update');
+Route::post('enrollments/{enrollment}/transfer', [EnrollmentController::class, 'transfer'])->name('enrollments.transfer');
 Route::delete('enrollments/{enrollment}', [EnrollmentController::class, 'destroy'])->name('enrollments.destroy');

@@ -94,7 +94,7 @@ return null;
     );
 }
 
-function generatePageNumbers(
+export function generatePageNumbers(
     current: number,
     last: number,
 ): (number | string)[] {
