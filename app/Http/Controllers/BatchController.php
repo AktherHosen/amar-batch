@@ -22,7 +22,9 @@ class BatchController extends Controller
     {
         $this->authorize('viewAny', Batch::class);
 
-        $query = Batch::withCount('enrollments');
+        $query = Batch::withCount(['enrollments' => function ($q) {
+            $q->where('status', 'active');
+        }]);
 
         if ($request->user()->isTeacher()) {
             $query->whereHas('teachers', fn ($q) => $q->where('users.id', $request->user()->id));
