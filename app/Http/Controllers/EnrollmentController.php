@@ -145,6 +145,22 @@ class EnrollmentController extends Controller
             'notes' => 'Transferred to batch: ' . $targetBatch->name,
         ]);
 
+        $oldFees = \App\Models\FeeStatus::where('student_id', $enrollment->student_id)
+            ->where('batch_id', $enrollment->batch_id)
+            ->get();
+
+        foreach ($oldFees as $fee) {
+            $conflict = \App\Models\FeeStatus::where('student_id', $enrollment->student_id)
+                ->where('batch_id', $targetBatch->id)
+                ->where('month', $fee->month)
+                ->where('year', $fee->year)
+                ->exists();
+
+            if (!$conflict) {
+                $fee->update(['batch_id' => $targetBatch->id]);
+            }
+        }
+
         if ($existingInTarget) {
             $existingInTarget->update([
                 'status' => 'active',
