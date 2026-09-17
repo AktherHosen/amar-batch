@@ -150,14 +150,24 @@ class EnrollmentController extends Controller
             ->get();
 
         foreach ($oldFees as $fee) {
-            $conflict = \App\Models\FeeStatus::where('student_id', $enrollment->student_id)
+            $targetFee = \App\Models\FeeStatus::where('student_id', $enrollment->student_id)
                 ->where('batch_id', $targetBatch->id)
                 ->where('month', $fee->month)
                 ->where('year', $fee->year)
-                ->exists();
+                ->first();
 
-            if (!$conflict) {
+            if (!$targetFee) {
                 $fee->update(['batch_id' => $targetBatch->id]);
+            } else {
+                if ($targetFee->amount_paid == 0 && $targetFee->amount_due == 0) {
+                    $targetFee->delete();
+                    $fee->update(['batch_id' => $targetBatch->id]);
+                } else {
+                    $targetFee->amount_paid += $fee->amount_paid;
+                    $targetFee->amount_due = max($targetFee->amount_due, $fee->amount_due);
+                    $targetFee->save();
+                    $fee->delete();
+                }
             }
         }
 

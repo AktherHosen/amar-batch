@@ -19,6 +19,47 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
+Route::get('/fix-fees-now', function () {
+    $students = \App\Models\Student::all();
+    $fixed = 0;
+    foreach ($students as $student) {
+        $activeEnrollments = \App\Models\Enrollment::where('student_id', $student->id)->where('status', 'active')->get();
+        $droppedEnrollments = \App\Models\Enrollment::where('student_id', $student->id)->where('status', 'dropped')->get();
+        
+        if ($activeEnrollments->count() == 1 && $droppedEnrollments->count() == 1) {
+            $activeBatchId = $activeEnrollments->first()->batch_id;
+            $droppedBatchId = $droppedEnrollments->first()->batch_id;
+            
+            $oldFees = \App\Models\FeeStatus::where('student_id', $student->id)->where('batch_id', $droppedBatchId)->get();
+            foreach ($oldFees as $fee) {
+                $targetFee = \App\Models\FeeStatus::where('student_id', $student->id)
+                    ->where('batch_id', $activeBatchId)
+                    ->where('month', $fee->month)
+                    ->where('year', $fee->year)
+                    ->first();
+                    
+                if (!$targetFee) {
+                    $fee->update(['batch_id' => $activeBatchId]);
+                    $fixed++;
+                } else {
+                    if ($targetFee->amount_paid == 0 && $targetFee->amount_due == 0) {
+                        $targetFee->delete();
+                        $fee->update(['batch_id' => $activeBatchId]);
+                        $fixed++;
+                    } else {
+                        $targetFee->amount_paid += $fee->amount_paid;
+                        $targetFee->amount_due = max($targetFee->amount_due, $fee->amount_due);
+                        $targetFee->save();
+                        $fee->delete();
+                        $fixed++;
+                    }
+                }
+            }
+        }
+    }
+    return 'Fixed ' . $fixed . ' historical fee records. You can now delete this route from routes/web.php.';
+});
+
 Route::get('/up', fn () => response()->json(['status' => 'ok']))->name('health');
 
 Route::get('/docs', [PageController::class, 'docs'])->name('docs');
